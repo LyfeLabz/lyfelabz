@@ -1,3 +1,4 @@
+import { teacherUnitsAvailable } from "../../teacherUnits/releaseAvailability";
 import type { Session } from "../../session/types";
 import {
   readStoredCurriculumFilters,
@@ -930,7 +931,7 @@ export function renderCurriculumSurface(
   // U2.2: with the gate open, a Browse | My Units switch sits above the
   // existing Curriculum content, which moves unchanged into a Browse host.
   // With the gate closed the DOM is exactly as before.
-  const teacherUnits = deps.teacherUnits ?? null;
+  const teacherUnits = teacherUnitsAvailable() ? deps.teacherUnits ?? null : null;
   let browseParent: HTMLElement = mount;
   let unitsHost: HTMLElement | null = null;
   let viewSwitch: { tablist: HTMLElement; browse: HTMLButtonElement; units: HTMLButtonElement } | null =

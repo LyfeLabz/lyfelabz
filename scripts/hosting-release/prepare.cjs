@@ -2,8 +2,8 @@
 
 // Prepare one paired Hosting release. Never deploys.
 //
-//   node scripts/hosting-release/prepare.cjs --project lyfelabz-prod [--expect-sha <sha>]
-//   node scripts/hosting-release/prepare.cjs --project lyfelabz-staging [--allow-dirty] [--offline]
+//   node scripts/hosting-release/prepare.cjs --project lyfelabz-prod --intent general|teacher-units [--expect-sha <sha>]
+//   node scripts/hosting-release/prepare.cjs --project lyfelabz-staging --intent general|teacher-units [--allow-dirty] [--offline]
 //
 // Refuses an unsupported or missing project, a dirty checkout (staging may
 // opt in with --allow-dirty), a SHA mismatch, catalog or staging-config
@@ -40,6 +40,7 @@ const {
   shellQuote,
   writeRecord
 } = require('./release.cjs');
+const { verifyBackend, receipt, releaseCandidate, releaseIntent } = require('./backend-state.cjs');
 const { checkStagingConfig } = require('./staging-config.cjs');
 
 const HOSTING_TEST_FILES = Object.freeze([
@@ -49,11 +50,12 @@ const HOSTING_TEST_FILES = Object.freeze([
   'scripts/hosting-release/config.test.cjs',
   'scripts/hosting-release/pair.test.cjs',
   'scripts/hosting-release/release.test.cjs',
+  'scripts/hosting-release/backend-state.test.cjs',
   'scripts/unit-placement/check-parity.test.cjs'
 ]);
 
 // Source and configuration gates that need no build, network, or git writes.
-function preflight({ project, expectSha, allowDirty, offline }, { git = gitState } = {}) {
+function preflight({ project, intent, expectSha, allowDirty, offline }, { git = gitState } = {}) {
   const contract = loadContract();
   const environment = environmentForProject(project, contract);
   const production = environment.name === 'production';
@@ -70,8 +72,9 @@ function preflight({ project, expectSha, allowDirty, offline }, { git = gitState
   readHostingTargets(readConfigFile('firebase.json'));
   readHostingTargets(readConfigFile('firebase.staging.json'));
   if (!checkStagingConfig().ok) throw new Error('[hosting-release] firebase.staging.json drifted from firebase.json; regenerate it');
+  releaseIntent(intent);
   const sites = readTargetSites(project);
-  return { contract, environment, source, sites, message: releaseMessage(source.sha, source.dirty) };
+  return { contract, environment, source, sites, intent, message: releaseMessage(source.sha, source.dirty) };
 }
 
 // The check commands, in order. The application bundle (ignored build output
@@ -94,9 +97,10 @@ function runChecks({ run = execFileSync, log = console.log } = {}) {
 }
 
 // Checks, then the pair build that produces the artifacts to deploy.
-function checkAndBuild({ run = execFileSync, build = buildPair, log = console.log } = {}) {
+function checkAndBuild({ intent, run = execFileSync, build = buildPair, log = console.log } = {}) {
+  releaseIntent(intent);
   runChecks({ run, log });
-  return build();
+  return build({intent});
 }
 
 async function liveComparison({ environment, sites, built, run }) {
@@ -104,14 +108,7 @@ async function liveComparison({ environment, sites, built, run }) {
   const directories = { app: built.appDirectory, marketing: built.marketingDirectory };
   const surfaces = {};
   for (const target of TARGETS) {
-    let baseline = null;
-    try {
-      baseline = liveRelease({ project: environment.project, site: sites[target], run });
-    } catch (error) {
-      if (environment.name === 'production') throw error;
-      surfaces[target] = { site: sites[target], baseline: null, note: `no live baseline: ${error.message}` };
-      continue;
-    }
+    const baseline = liveRelease({ project: environment.project, site: sites[target], run });
     const files = servedFiles(directories[target], config[target]);
     const bytes = await compareLiveFiles({ origin: environment.origins[target], directory: directories[target], files, entry: config[target] });
     surfaces[target] = {
@@ -124,7 +121,7 @@ async function liveComparison({ environment, sites, built, run }) {
   return surfaces;
 }
 
-function summarize({ environment, source, message, built, surfaces }) {
+function summarize({ environment, source, message, built, surfaces, backend, intent }) {
   const lines = [
     '',
     `Hosting pair release prepared for ${environment.project} (${environment.name})`,
@@ -145,7 +142,12 @@ function summarize({ environment, source, message, built, surfaces }) {
     lines.push(`            routing config ${surface.routingChanges ? 'WOULD CHANGE' : 'unchanged'}; ${surface.bytes.changed.length} changed, ${surface.bytes.new.length} new, ${surface.bytes.unchanged} unchanged, ${surface.bytes.redirected} shadowed by redirects`);
     for (const file of [...surface.bytes.changed.map((f) => `changed ${f}`), ...surface.bytes.new.map((f) => `new     ${f}`)]) lines.push(`              ${file}`);
   }
-  lines.push('', 'Deploy (separately authorized; NOT atomic across the two sites):', `  ${shellQuote(deployCommand(environment, message))}`);
+  if (surfaces && (intent === 'general' || backend)) {
+    lines.push('', backend ? 'Teacher Units backend compatibility observed; predeploy retrieves it again.' : 'General Hosting scope only; Teacher Units readiness NOT EVALUATED.',
+      'Deploy (separately authorized; NOT atomic across the two sites):', `  ${shellQuote(deployCommand(environment, message))}`);
+  } else {
+    lines.push('', 'LOCAL BUILD ONLY: release readiness is NOT certified; no deploy command is issued.');
+  }
   const baselines = TARGETS.filter((target) => surfaces?.[target]?.baseline);
   if (baselines.length > 0) {
     lines.push('', 'Paired rollback to the recorded baseline (restore BOTH sites):');
@@ -153,18 +155,32 @@ function summarize({ environment, source, message, built, surfaces }) {
       lines.push(`  ${shellQuote(rollbackCommand(environment.project, surfaces[target].site, surfaces[target].baseline.version))}`);
     }
   }
-  lines.push('', `Then certify: node scripts/hosting-release/certify.cjs --project ${environment.project}`);
+  if (surfaces && (intent === 'general' || backend)) lines.push('', `Then certify: node scripts/hosting-release/certify.cjs --project ${environment.project} --intent ${intent}`);
   return lines.join('\n');
 }
 
+function verifyBuildSource(source, built) {
+  if (built.record.source?.sha !== source.sha || built.record.source?.dirty !== source.dirty) {
+    throw new Error('[hosting-release] source revision or cleanliness changed during preparation; prepare again');
+  }
+}
+
 async function main(argv = process.argv.slice(2)) {
-  const args = parseArgs(argv, { values: ['project', 'expect-sha'], flags: ['allow-dirty', 'offline'] });
-  const gate = preflight({ project: args.project, expectSha: args['expect-sha'], allowDirty: Boolean(args['allow-dirty']), offline: Boolean(args.offline) });
-  const built = checkAndBuild();
+  const args = parseArgs(argv, { values: ['project', 'intent', 'expect-sha'], flags: ['allow-dirty', 'offline'] });
+  const gate = preflight({ project: args.project, intent:args.intent, expectSha: args['expect-sha'], allowDirty: Boolean(args['allow-dirty']), offline: Boolean(args.offline) });
+  const built = checkAndBuild({intent:gate.intent});
+  verifyBuildSource(gate.source, built);
   const surfaces = args.offline ? null : await liveComparison({ environment: gate.environment, sites: gate.sites, built });
+  // Long Hosting comparisons complete before obtaining fresh backend evidence.
+  const backend = !args.offline && gate.intent === 'teacher-units' ? await verifyBackend({ project:gate.environment.project, pair:built.record }) : null;
+  const candidate = releaseCandidate(built.record);
   const record = {
     kind: 'lyfelabz.hostingPreparedRelease',
-    schemaVersion: 1,
+    schemaVersion: 3,
+    releaseIntent: gate.intent,
+    readiness: args.offline ? 'local-only-not-ready' : gate.intent === 'general' ? 'general-hosting-prepared' : 'teacher-units-backend-observed',
+    evidenceReceipt: args.offline ? null : receipt({ phase:'prepared', project:gate.environment.project, intent:gate.intent, candidate, evidence:backend?.evidence, hosting:surfaces }),
+    candidate,
     preparedAt: new Date().toISOString(),
     project: gate.environment.project,
     environment: gate.environment.name,
@@ -174,7 +190,7 @@ async function main(argv = process.argv.slice(2)) {
     surfaces
   };
   const recordPath = writeRecord(`prepare-${gate.environment.project}.json`, record);
-  console.log(summarize({ ...gate, built, surfaces }));
+  console.log(summarize({ ...gate, built, surfaces, backend }));
   console.log(`\nRecord: ${path.relative(repositoryRoot, recordPath)}`);
 }
 
@@ -185,4 +201,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { HOSTING_TEST_FILES, checkAndBuild, checkCommands, liveComparison, preflight, summarize };
+module.exports = { HOSTING_TEST_FILES, checkAndBuild, checkCommands, liveComparison, preflight, summarize, verifyBuildSource };

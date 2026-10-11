@@ -76,7 +76,7 @@ function shellQuote(args) {
 function runFirebaseJson(args, run = execFileSync) {
   let output;
   try {
-    output = run('firebase', [...args, '--json', '--non-interactive'], { cwd: repositoryRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    output = run('firebase', [...args, '--json', '--non-interactive'], { cwd: repositoryRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout:60000, maxBuffer:8 * 1024 * 1024 });
   } catch (error) {
     output = error.stdout ? String(error.stdout) : '';
     if (!output) fail(`firebase ${args.join(' ')} failed: ${error.message}`);
@@ -86,19 +86,29 @@ function runFirebaseJson(args, run = execFileSync) {
   return parsed.result;
 }
 
-// The live release of one site, read-only (`hosting:channel:list`).
+// Documented responses use sites/... for channels/versions, while older CLI
+// shapes can include projects/... . Short names carry no project identity:
+// verify membership independently using the projects.sites LIST response.
 function liveRelease({ project, site, run }) {
+  require('./contract.cjs').environmentForProject(project);
+  const { PROJECT_NUMBERS } = require('./backend-state.cjs');
+  const projects = [project, PROJECT_NUMBERS[project]];
+  const membership = runFirebaseJson(['hosting:sites:list', '--project', project], run);
+  if (!Array.isArray(membership?.sites)) fail('unverifiable Hosting project/site membership');
+  const matches = membership.sites.filter(s => projects.some(p => s?.name === `projects/${p}/sites/${site}`));
+  if (matches.length !== 1 || membership.sites.some(s => typeof s?.name !== 'string' || !projects.some(p => s.name.startsWith(`projects/${p}/sites/`)))) fail('wrong-project or unverifiable Hosting project/site membership');
+  const validName = (name, suffix) => typeof name === 'string' &&
+    [ `sites/${site}/${suffix}`, ...projects.map(p => `projects/${p}/sites/${site}/${suffix}`) ].includes(name);
   const result = runFirebaseJson(['hosting:channel:list', '--site', site, '--project', project], run);
-  const live = (result.channels || []).find((channel) => channel.name.endsWith('/channels/live'));
-  const release = live && live.release;
-  if (!release || !release.version) fail(`site ${site} has no live release`);
-  return {
-    site,
-    version: release.version.name.split('/').pop(),
-    releaseTime: release.releaseTime,
-    message: release.message || null,
-    config: release.version.config || {}
-  };
+  if (!Array.isArray(result?.channels)) fail('unverifiable Hosting channels inventory');
+  const lives = result.channels.filter(channel => typeof channel?.name === 'string' && channel.name.endsWith('/channels/live'));
+  if (lives.length !== 1) fail(`site ${site} has no unique live release`);
+  const live = lives[0];
+  if (!validName(live.name, 'channels/live')) fail('wrong-project or cross-site Hosting live channel identity');
+  const release = live.release;
+  const version = release?.version?.name?.split('/').pop();
+  if (!/^[a-f0-9]+$/.test(version || '') || !validName(release.version.name, `versions/${version}`) || !Number.isFinite(Date.parse(release.releaseTime)) || Date.parse(release.releaseTime) > Date.now()) fail('unverifiable Hosting release identity');
+  return { site, version, releaseTime:release.releaseTime, message:release.message || null, config:release.version.config || {} };
 }
 
 async function fetchStatus(url, { fetchImpl = fetch, redirect = 'manual' } = {}) {
