@@ -1,3 +1,4 @@
+import { requireTeacherUnitsAvailable } from "../../teacherUnits/releaseAvailability";
 import {
   TEACHER_UNIT_DESCRIPTION_MAX_LENGTH,
   TEACHER_UNIT_GRADES,
@@ -142,6 +143,7 @@ export function renderTeacherUnitsPanel(
   host: HTMLElement,
   controller: TeacherUnitsController,
 ): { readonly dispose: () => void } {
+  requireTeacherUnitsAvailable();
   const doc = host.ownerDocument;
   let disposed = false;
   let idSeq = 0;
