@@ -21,6 +21,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { certifyPublicEntry } = require('../marketing-hosting/certify-delivery.cjs');
+const { verifyBackend, receipt, verifyPrepared } = require('./backend-state.cjs');
 const { pairRecordPath } = require('./build-pair.cjs');
 const {
   TARGETS,
@@ -60,25 +61,27 @@ function verifyLocalPair(record, directories) {
   }
 }
 
-async function certify({ project, fetchImpl = fetch, run, certifyEntry = certifyPublicEntry, log = console.log }) {
+async function certify({ project, fetchImpl = fetch, run, backendVerify = verifyBackend, certifyEntry = certifyPublicEntry, log = console.log, readJson = readJsonIfPresent, write = writeRecord, directories: suppliedDirectories }) {
   const contract = loadContract();
   const environment = environmentForProject(project, contract);
   const config = readHostingTargets(readConfigFile(environment.config));
   const prodTargets = readHostingTargets(readConfigFile('firebase.json'));
-  const directories = { app: path.join(repositoryRoot, prodTargets.app.public), marketing: path.join(repositoryRoot, prodTargets.marketing.public) };
-  const pairRecord = readJsonIfPresent(pairRecordPath);
+  const directories = suppliedDirectories || { app: path.join(repositoryRoot, prodTargets.app.public), marketing: path.join(repositoryRoot, prodTargets.marketing.public) };
+  const pairRecord = readJson(pairRecordPath);
   verifyLocalPair(pairRecord, directories);
   const { sha, dirty } = pairRecord.source;
   if (environment.name === 'production' && dirty !== false) throw new Error('[hosting-release] production certification requires artifacts built from a clean checkout');
   const message = releaseMessage(sha, dirty);
-  const prepared = readJsonIfPresent(path.join(repositoryRoot, 'dist', 'hosting-release', `prepare-${project}.json`));
+  const prepared = readJson(path.join(repositoryRoot, 'dist', 'hosting-release', `prepare-${project}.json`));
+  const backend = await backendVerify({ project, pair: pairRecord });
+  verifyPrepared(prepared, project, backend.candidate);
   const sites = readTargetSites(project);
   const failures = [];
   const surfaces = {};
 
   for (const target of TARGETS) {
     const live = liveRelease({ project, site: sites[target], run });
-    const previous = prepared && prepared.source?.sha === sha ? prepared.surfaces?.[target]?.baseline?.version ?? null : null;
+    const previous = prepared.surfaces[target].baseline.version;
     surfaces[target] = { site: sites[target], version: live.version, releaseTime: live.releaseTime, previous };
     if (live.message !== message) failures.push(`${target}: live release message is ${JSON.stringify(live.message)}, expected ${JSON.stringify(message)}`);
     if (previous && previous === live.version) failures.push(`${target}: live version ${live.version} is still the pre-release baseline`);
@@ -126,7 +129,8 @@ async function certify({ project, fetchImpl = fetch, run, certifyEntry = certify
 
   const record = {
     kind: 'lyfelabz.hostingCertifiedRelease',
-    schemaVersion: 1,
+    schemaVersion: 2,
+    evidenceReceipt: receipt({ phase: 'certified', project, ...backend, hosting: surfaces }),
     certifiedAt: new Date().toISOString(),
     project,
     source: { sha, dirty },
@@ -134,7 +138,7 @@ async function certify({ project, fetchImpl = fetch, run, certifyEntry = certify
     app: surfaces.app,
     marketing: surfaces.marketing
   };
-  return { record, recordPath: writeRecord(`certified-${project}-${sha}.json`, record) };
+  return { record, recordPath: write(`certified-${project}-${sha}.json`, record) };
 }
 
 async function main(argv = process.argv.slice(2)) {

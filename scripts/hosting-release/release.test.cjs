@@ -269,3 +269,94 @@ test('certification refuses artifacts that changed after the recorded pair build
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+const { certify } = require('./certify.cjs');
+const { summarize, liveComparison } = require('./prepare.cjs');
+const { fingerprint, receipt, REQUIRED_FUNCTIONS, PROJECT_NUMBERS } = require('./backend-state.cjs');
+
+function certificationFixture() {
+  const root = fs.mkdtempSync(path.join(repositoryRoot, 'dist', 'a1-certification-test-'));
+  const directories = { app:path.join(root,'app'), marketing:path.join(root,'marketing') };
+  for (const dir of Object.values(directories)) {fs.mkdirSync(dir);fs.writeFileSync(path.join(dir,'index.html'),'home');}
+  const pair = {kind:'lyfelabz.hostingPairBuild',schemaVersion:2,source:{sha:SHA,dirty:false},files:{app:{'index.html':sha256('home')},marketing:{'index.html':sha256('home')}}};
+  const runtimeFiles={'lib/index.js':sha256('runtime')};
+  const candidate={source:pair.source,hostingArtifactFingerprint:fingerprint(pair.files),functionsArtifactFingerprint:fingerprint(runtimeFiles),runtimeFiles,
+    placementFingerprint:sha256('placement'),rulesSourceHash:sha256('rules'),indexes:{indexes:[],fieldOverrides:[]}};
+  pair.backendCandidate=candidate;
+  const now=new Date().toISOString();
+  const evidence={kind:'lyfelabz.backendObservation',schemaVersion:1,project:'lyfelabz-staging',projectNumber:PROJECT_NUMBERS['lyfelabz-staging'],environment:'staging',startedAt:now,observedAt:now,
+    functions:REQUIRED_FUNCTIONS.map(entryPoint=>({entryPoint,runtimeFiles,artifactFingerprint:fingerprint(runtimeFiles),placementFingerprint:candidate.placementFingerprint})),rules:{sourceHash:candidate.rulesSourceHash},indexes:{configuration:candidate.indexes,configurationHash:fingerprint(candidate.indexes)}};
+  const backend={candidate,evidence,compatibility:{policy:'u26-a1-exact-backend-artifact-v1',compatible:true}};
+  const surfaces={app:{site:'lyfelabz-staging',baseline:{version:'aaa',releaseTime:now}},marketing:{site:'lyfelabz-staging-marketing',baseline:{version:'bbb',releaseTime:now}}};
+  const prepared={kind:'lyfelabz.hostingPreparedRelease',schemaVersion:2,project:'lyfelabz-staging',environment:'staging',source:pair.source,candidate,preparedAt:now,surfaces,
+    evidenceReceipt:receipt({phase:'prepared',project:'lyfelabz-staging',...backend,hosting:surfaces,recordedAt:now})};
+  const contract=loadContract();const routes={};
+  for(const sample of contract.redirectSamples)routes[`${staging.origins[sample.target]}${sample.path}`]={status:sample.status,location:sample.location.replace('{app}',staging.origins.app).replace('{marketing}',staging.origins.marketing)};
+  for(const sample of contract.routeSamples)routes[`${staging.origins[sample.target]}${sample.path}`]={status:sample.status,body:'home'};
+  const live={app:{version:'ccc',message:`release ${SHA}`},marketing:{version:'ddd',message:`release ${SHA}`}};
+  const calls=[];
+  const run=(command,args)=>{
+    calls.push([command,...args]);assert.equal(command,'firebase');assert.equal(args[0],'hosting:channel:list');
+    const site=args[args.indexOf('--site')+1];const target=site==='lyfelabz-staging'?'app':'marketing';
+    return JSON.stringify({status:'success',result:{channels:[{name:`projects/lyfelabz-staging/sites/${site}/channels/live`,release:{message:live[target].message,releaseTime:now,version:{name:`projects/lyfelabz-staging/sites/${site}/versions/${live[target].version}`,config:toApiRouting(stagingTargets[target])}}}]}});
+  };
+  const writes=[];let backendReads=0;
+  const args={project:'lyfelabz-staging',directories,readJson:file=>file.endsWith('pair-build.json')?pair:prepared,run,fetchImpl:fakeFetch(routes),
+    backendVerify:async()=>{backendReads++;return backend;},certifyEntry:async()=>({checked:1}),log:()=>{},write:(name,record)=>{writes.push(record);return name;}};
+  return {args,root,pair,prepared,backend,live,calls,writes,backendReads:()=>backendReads};
+}
+test('paired certification independently rechecks backend, records Hosting versions and historical rollback baselines',async()=>{
+  const f=certificationFixture();try {
+    const result=await certify(f.args);
+    assert.equal(f.backendReads(),1);assert.equal(f.writes.length,1);
+    assert.equal(result.record.evidenceReceipt.phase,'certified');
+    assert.equal(result.record.app.version,'ccc');assert.equal(result.record.app.previous,'aaa');
+    assert.equal(result.record.marketing.previous,'bbb');
+    assert.ok(f.calls.every(call=>call[1]==='hosting:channel:list'));
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('partial Hosting release refuses certification without writing success and supplies paired rollback references',async()=>{
+  const f=certificationFixture();try {
+    f.live.marketing.version='bbb';f.live.marketing.message='release older';
+    await assert.rejects(certify(f.args),error=>{
+      assert.match(error.message,/still the pre-release baseline/);assert.match(error.message,/marketing.*release older/);
+      assert.match(error.message,/lyfelabz-staging@aaa/);assert.match(error.message,/lyfelabz-staging-marketing@bbb/);return true;
+    });
+    assert.equal(f.writes.length,0);
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('old schema, wrong project and different candidate receipts cannot supply rollback or readiness authority',async()=>{
+  for(const mutation of [p=>{p.schemaVersion=1;},p=>{p.preparedAt='2020-01-01T00:00:00Z';},p=>{p.project='lyfelabz-prod';},p=>{p.candidate={...p.candidate,hostingArtifactFingerprint:sha256('other')};},p=>{delete p.surfaces.app.baseline;}]) {
+    const f=certificationFixture();try{
+      mutation(f.prepared);await assert.rejects(certify(f.args),/prepare evidence|rollback evidence|rollback baseline|stale or future prepare/);
+      assert.equal(f.writes.length,0);assert.equal(f.calls.length,0);
+    }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+  }
+});
+test('unavailable backend refuses before Hosting discovery, byte checks or receipt writes',async()=>{
+  const f=certificationFixture();try{
+    await assert.rejects(certify({...f.args,backendVerify:async()=>{throw new Error('missing credentials');}}),/missing credentials/);
+    assert.equal(f.calls.length,0);assert.equal(f.writes.length,0);
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('offline preparation reports local-only status and never emits deploy/certify instructions',()=>{
+  const text=summarize({environment:staging,source:{sha:SHA,dirty:true},message:`release ${SHA} uncommitted`,built:{record:{pair:{identical:1,shared:1,app:1,marketing:1}}},surfaces:null,backend:null});
+  assert.match(text,/LOCAL BUILD ONLY/);assert.doesNotMatch(text,/firebase deploy|Then certify/);
+});
+test('staging no longer tolerates an unverifiable live rollback baseline',async()=>{
+  await assert.rejects(liveComparison({environment:staging,sites:{app:'lyfelabz-staging',marketing:'lyfelabz-staging-marketing'},built:{appDirectory:'unused',marketingDirectory:'unused'},run:()=>{throw new Error('missing credentials');}}),/missing credentials/);
+});
+test('Hosting identity is retrieved and verified, never inferred from requested CLI project',()=>{
+  for(const wrong of ['channel','version']){
+    const run=()=>JSON.stringify({status:'success',result:{channels:[{name:`projects/${wrong==='channel'?'lyfelabz-prod':'lyfelabz-staging'}/sites/lyfelabz-staging/channels/live`,release:{releaseTime:new Date().toISOString(),version:{name:`projects/${wrong==='version'?'lyfelabz-prod':'lyfelabz-staging'}/sites/lyfelabz-staging/versions/abc`}}}]}});
+    assert.throws(()=>liveRelease({project:'lyfelabz-staging',site:'lyfelabz-staging',run}),/wrong-project|unverifiable/);
+  }
+});
+
+test('preparation refuses a source revision or cleanliness change during local checks/build',()=>{
+  const {verifyBuildSource}=require('./prepare.cjs');
+  const source={sha:SHA,dirty:false};
+  verifyBuildSource(source,{record:{source}});
+  assert.throws(()=>verifyBuildSource(source,{record:{source:{sha:'f'.repeat(40),dirty:false}}}),/changed during preparation/);
+  assert.throws(()=>verifyBuildSource(source,{record:{source:{sha:SHA,dirty:true}}}),/changed during preparation/);
+});

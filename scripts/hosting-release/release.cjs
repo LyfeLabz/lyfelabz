@@ -90,8 +90,10 @@ function runFirebaseJson(args, run = execFileSync) {
 function liveRelease({ project, site, run }) {
   const result = runFirebaseJson(['hosting:channel:list', '--site', site, '--project', project], run);
   const live = (result.channels || []).find((channel) => channel.name.endsWith('/channels/live'));
+  if (live && live.name !== `projects/${project}/sites/${site}/channels/live`) fail('wrong-project Hosting live channel identity');
   const release = live && live.release;
   if (!release || !release.version) fail(`site ${site} has no live release`);
+  if (!release.version.name.startsWith(`projects/${project}/sites/${site}/versions/`) || !/^[a-f0-9]+$/.test(release.version.name.split('/').pop()) || !Number.isFinite(Date.parse(release.releaseTime))) fail('unverifiable Hosting release identity');
   return {
     site,
     version: release.version.name.split('/').pop(),
