@@ -12,6 +12,7 @@ import {
   type CreateRecoveryEntry,
   type TeacherUnitsController,
   type TeacherUnitsViewState,
+  type ResourceMoveDirection,
   type UnitMutationResult,
 } from "../../teacherUnits/unitsController";
 import {
@@ -954,20 +955,34 @@ export function renderTeacherUnitsPanel(
   // by the same presenter for initial announcement and every retained view.
   const membershipOutcome = (
     result: Saved,
-    action: "add" | "remove" | "repair",
+    action: "add" | "remove" | "repair" | "move",
     targets: ReadonlyArray<string>,
     name: string,
     count: number,
+    // U2.4 move only: the 1-based position the request placed the resource
+    // at, and the list length, from the committed (or no-op) list.
+    position?: { readonly at: number; readonly of: number },
   ): NoticeText => {
     const title = result.unit.title;
     const write = !result.noop;
     const revision = baseRevision(result);
+    const at = position?.at ?? 0;
+    const of = position?.of ?? 0;
+    const positionNow = (u: TeacherUnit): string => {
+      const i = u.resourceIds.indexOf(targets[0]);
+      return i === -1
+        ? `"${name}" isn't in "${u.title}" now.`
+        : `"${name}" is at position ${i + 1} of ${u.resourceIds.length} in "${u.title}" now`;
+    };
     const agrees = (u: TeacherUnit): boolean => action === "add"
       ? targets.every(id => u.resourceIds.includes(id))
-      : action === "remove" ? !u.resourceIds.includes(targets[0]) : retiredCount(u) === 0;
+      : action === "remove" ? !u.resourceIds.includes(targets[0])
+      : action === "move" ? u.resourceIds.indexOf(targets[0]) === at - 1 && u.resourceIds.length === of
+      : retiredCount(u) === 0;
     const fact = !write ? "Nothing was changed."
       : action === "add" ? `Added ${plural(count, "resource", "resources")} to "${title}".`
       : action === "remove" ? `Removed "${name}" from "${title}".`
+      : action === "move" ? `Moved "${name}" to position ${at} of ${of}.`
       : `Removed ${plural(count, "unavailable resource", "unavailable resources")} from "${title}".`;
     return contextualNotice(fact, ctx => {
       const cur = ctx.unit;
@@ -978,8 +993,10 @@ export function renderTeacherUnitsPanel(
         ? write ? null
           : action === "add" ? `Those resources are already in "${cur.title}" now.`
           : action === "remove" ? `"${name}" isn't in "${cur.title}" now.`
+          : action === "move" ? `${positionNow(cur)}.`
           : `"${cur.title}" has no unavailable resources now.`
         : !newer ? "The latest loaded resources don't establish this request's effect. Refresh to check them."
+          : action === "move" ? (cur.resourceIds.includes(targets[0]) ? `${positionNow(cur)}, after this unit changed.` : positionNow(cur))
           : action === "add" ? `"${cur.title}" changed since that request, so not every resource you ${write ? "added" : "chose"} is in it now.`
           : action === "remove" ? `"${name}" is in "${cur.title}"${write ? " again" : ""} after this unit changed.`
           : `"${cur.title}" has unavailable resources${write ? " again" : ""} after it changed.`;
@@ -1000,6 +1017,13 @@ export function renderTeacherUnitsPanel(
     const targets = !result.noop && commit !== undefined
       ? commit.resourceIds.filter(id => !commit.previous.includes(id)) : ids.slice();
     return membershipOutcome(result, "add", targets, "", targets.length);
+  };
+  // Position facts come from the committed list (what this write did); a
+  // no-op reports the list the server already held.
+  const moveOutcome = (result: Saved, resourceId: string, name: string): NoticeText => {
+    const list = !result.noop && result.committed !== undefined ? result.committed.resourceIds : result.unit.resourceIds;
+    const at = list.indexOf(resourceId) + 1;
+    return membershipOutcome(result, "move", [resourceId], name, 1, { at, of: list.length });
   };
   const repairOutcome = (result: Saved, before: ReadonlySet<string>): NoticeText => {
     const commit = result.committed;
@@ -1035,7 +1059,7 @@ export function renderTeacherUnitsPanel(
   // follows where the unit stands now.
   const conflictNotice = (
     card: CardView,
-    what: "edit" | "add" | "remove",
+    what: "edit" | "add" | "remove" | "move",
     latest: TeacherUnit | null,
     base: number,
   ): NoticeText => {
@@ -1043,7 +1067,7 @@ export function renderTeacherUnitsPanel(
     const outcome =
       what === "edit"
         ? "This unit changed somewhere else, so your change wasn't saved."
-        : `This unit changed somewhere else, so ${what === "add" ? "nothing was added" : "nothing was removed"}.`;
+        : `This unit changed somewhere else, so ${what === "add" ? "nothing was added" : what === "move" ? "nothing was moved" : "nothing was removed"}.`;
     return contextualNotice(outcome, (ctx) => {
       const loaded = ctx.unit !== null && ctx.unit.revision >= min ? ctx.unit : null;
       const editing = what === "edit" && card.editor !== null;
@@ -1149,11 +1173,11 @@ export function renderTeacherUnitsPanel(
   const membershipNotice = (
     card: CardView,
     result: UnitMutationResult,
-    action: "add" | "remove",
+    action: "add" | "remove" | "move",
     base: number,
   ): void => {
     render();
-    const nothing = action === "add" ? "nothing was added" : "nothing was removed";
+    const nothing = action === "add" ? "nothing was added" : action === "move" ? "nothing was moved" : "nothing was removed";
     switch (result.kind) {
       case "conflict":
         showNotice(card, conflictNotice(card, action, result.latest, base), "conflict");
@@ -1372,6 +1396,40 @@ export function renderTeacherUnitsPanel(
     });
   };
 
+  // U2.4. One move per click, saved at once; the row moves only when the
+  // server's response is accepted. Focus stays on the same resource: the
+  // same direction's control, or the opposite one at a boundary.
+  const moveTestId = (unitId: string, dir: ResourceMoveDirection, resourceId: string): string =>
+    `units-resource-move-${dir}-${unitId}-${resourceId}`;
+  const moveFocusTarget = (card: CardView, resourceId: string, dir: ResourceMoveDirection): HTMLElement | null => {
+    const unitId = card.unit.unitId;
+    const same = card.li.querySelector<HTMLElement>(`[data-testid="${moveTestId(unitId, dir, resourceId)}"]`);
+    const other = card.li.querySelector<HTMLElement>(
+      `[data-testid="${moveTestId(unitId, dir === "up" ? "down" : "up", resourceId)}"]`,
+    );
+    if (same !== null && same.getAttribute("aria-disabled") !== "true") return same;
+    if (other !== null && other.getAttribute("aria-disabled") !== "true") return other;
+    return same ?? other ??
+      card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${unitId}-${resourceId}"]`) ??
+      addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button");
+  };
+  const moveResource = (card: CardView, resourceId: string, name: string, dir: ResourceMoveDirection): void => {
+    const unitTitle = card.unit.title;
+    const base = baseOf(card);
+    const clearPending = announcePending(`Moving "${name}" ${dir} in "${unitTitle}"...`);
+    void controller.moveResource(card.unit.unitId, resourceId, dir).then((result) => {
+      if (disposed) return;
+      clearPending();
+      if (result.kind === "stale" || result.kind === "busy") return;
+      if (result.kind === "saved") {
+        showOutcome(card, moveOutcome(result, resourceId, name));
+      } else {
+        membershipNotice(card, result, "move", base);
+      }
+      focus(moveFocusTarget(card, resourceId, dir));
+    });
+  };
+
   const isUnavailable = (id: string): boolean => resolveUnitResources([id])[0].status === "unavailable";
   const retiredCount = (u: TeacherUnit): number =>
     resolveUnitResources(u.resourceIds).filter((r) => r.status === "unavailable").length;
@@ -1415,7 +1473,7 @@ export function renderTeacherUnitsPanel(
         el(
           "p",
           "shell-units-recovery-message",
-          `${count === 1 ? "1 resource in this unit is" : `${count} resources in this unit are`} no longer available. Remove ${count === 1 ? "it" : "them"} before adding or removing other resources.`,
+          `${count === 1 ? "1 resource in this unit is" : `${count} resources in this unit are`} no longer available. Remove ${count === 1 ? "it" : "them"} before adding, removing, or reordering other resources.`,
         ),
       );
       const start = button(`Remove ${plural(count, "unavailable resource", "unavailable resources")}`);
@@ -1491,6 +1549,31 @@ export function renderTeacherUnitsPanel(
           text.appendChild(el("span", "shell-lesson-resource-title", name));
         }
         li.appendChild(text);
+        // U2.4 ordering: only while every resource is placeable (the server
+        // refuses any list that still names a retired id) and there is
+        // something to reorder. Boundary and pending controls stay focusable
+        // (aria-disabled) and ignore activation.
+        if (u.status === "active" && entry.status === "available" && retired === 0 && resolved.length > 1) {
+          const moves = el("span", "shell-units-resource-moves");
+          for (const dir of ["up", "down"] as const) {
+            const label = dir === "up" ? "Move up" : "Move down";
+            const move = button(label);
+            move.setAttribute("data-action", "move-resource");
+            move.setAttribute("data-testid", moveTestId(u.unitId, dir, entry.id));
+            move.setAttribute("aria-label", `Move ${name} ${dir} in ${u.title}`);
+            const edge = dir === "up" ? i === 0 : i === resolved.length - 1;
+            if (edge || busy) move.setAttribute("aria-disabled", "true");
+            move.addEventListener("click", (ev) => {
+              if (move.getAttribute("aria-disabled") === "true") {
+                ev.preventDefault();
+                return;
+              }
+              moveResource(card, entry.id, name, dir);
+            });
+            moves.appendChild(move);
+          }
+          li.appendChild(moves);
+        }
         // Retired rows are removed together (below); one at a time would be
         // refused while another retired id remains.
         if (u.status === "active" && entry.status === "available") {
