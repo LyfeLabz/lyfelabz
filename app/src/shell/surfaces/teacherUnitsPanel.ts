@@ -24,6 +24,7 @@ import {
 import type { FlatResource } from "../../curriculum/resourceProjection";
 import { FORMAL_RESOURCE_LABEL, type FormalResourceType } from "../../curriculum/curriculumManifest";
 import type { TeacherUnitError } from "../../teacherUnits/errors";
+import type { UnresolvedCreateReason } from "../../teacherUnits/saveCoordination";
 
 // U2.2 - My Units panel inside Curriculum (docs/platform/TEACHER_UNITS.md
 // §9.4). DOM only: no Firebase, no browser storage. Everything it shows
@@ -80,6 +81,17 @@ type CardView = {
   noticeText: NoticeText | null;
   readonly notice: HTMLParagraphElement;
   readonly body: HTMLDivElement;
+  // U2.5: what the body was last built from (see `renderCardBody`), and the
+  // picker options' inputs (see `renderPickerOptions`).
+  rendered: {
+    readonly unit: TeacherUnit;
+    readonly gone: boolean;
+    readonly editor: EditorView | null;
+    readonly picker: PickerView | null;
+    readonly confirmRetired: number | null;
+    readonly where: string | null;
+  } | null;
+  pickerKey: { readonly unit: TeacherUnit; readonly search: string } | null;
 };
 
 // Where a unit stands for the teacher right now, derived from the current
@@ -150,20 +162,39 @@ export function renderTeacherUnitsPanel(
     b.type = "button";
     return b;
   };
-  const focus = (target: HTMLElement | null): void => {
-    if (target === null) return;
+  // U2.5 focus rules (TEACHER_UNITS.md "U2.5"). Focus only ever moves to a
+  // connected, enabled, visible element; a detached or disabled target is
+  // skipped, never "focused" into the void.
+  const canFocus = (t: HTMLElement | null): boolean =>
+    t !== null && t.isConnected && !(t as HTMLButtonElement).disabled && t.closest("[hidden]") === null;
+  const focus = (target: HTMLElement | null): boolean => {
+    if (target === null || !canFocus(target)) return false;
     try {
       target.focus({ preventScroll: false });
     } catch {
-      // ignored
+      return false;
     }
+    return doc.activeElement === target;
+  };
+  const focusFirst = (...targets: ReadonlyArray<HTMLElement | null>): boolean => {
+    for (const t of targets) if (focus(t)) return true;
+    return false;
+  };
+  // Pending and edge controls stay focusable (aria-disabled); activation is
+  // refused by one capturing guard on the panel (see below).
+  const isInert = (b: HTMLElement): boolean =>
+    (b as HTMLButtonElement).disabled === true || b.getAttribute("aria-disabled") === "true";
+  const setAriaDisabled = (b: HTMLElement, off: boolean): void => {
+    if (off) {
+      if (b.getAttribute("aria-disabled") !== "true") b.setAttribute("aria-disabled", "true");
+    } else if (b.hasAttribute("aria-disabled")) b.removeAttribute("aria-disabled");
   };
   // Rebuild `container` and, when focus was inside it, return focus to the
-  // control with the same test id (or to `fallback`).
+  // control with the same test id (or to `fallback`, given that test id).
   const rebuildKeepingFocus = (
     container: HTMLElement,
     build: () => void,
-    fallback: () => HTMLElement | null,
+    fallback: (tid: string | null) => HTMLElement | null,
   ): void => {
     const active = doc.activeElement as HTMLElement | null;
     const inside = active !== null && container.contains(active);
@@ -172,7 +203,7 @@ export function renderTeacherUnitsPanel(
     build();
     if (!inside) return;
     const same = tid ? container.querySelector<HTMLElement>(`[data-testid="${tid}"]`) : null;
-    focus(same && !(same as HTMLButtonElement).disabled ? same : fallback());
+    focusFirst(same, fallback(tid));
   };
 
   const root = el("section", "shell-units");
@@ -213,6 +244,33 @@ export function renderTeacherUnitsPanel(
   archivedLabel.appendChild(archivedBox);
   archivedLabel.appendChild(doc.createTextNode(" Show archived units"));
   toolbar.appendChild(archivedLabel);
+  // U2.5 Check for changes: the controller's own list read (`refresh`),
+  // which accepts only evidence newer than what is held. Never a page
+  // reload, never a replay of an unconfirmed change.
+  const checkChanges = button("Check for changes");
+  checkChanges.setAttribute("data-testid", "units-check-changes");
+  toolbar.appendChild(checkChanges);
+  let checking = false;
+
+  // One guard for every aria-disabled control (pending, or a list edge):
+  // it stays focusable, and a click, Enter, or Space does nothing.
+  root.addEventListener(
+    "click",
+    (ev) => {
+      const t = ev.target instanceof Element ? ev.target.closest<HTMLElement>('[aria-disabled="true"]') : null;
+      if (t !== null && root.contains(t)) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+      }
+    },
+    true,
+  );
+  // Focus parked by the panel after a card left the list. The operation
+  // that started in that card still owns it until the teacher moves on.
+  let parked: { readonly unitId: string; readonly el: Element } | null = null;
+  root.addEventListener("focusin", (ev) => {
+    if (parked !== null && ev.target !== parked.el) parked = null;
+  });
 
   // One polite live region for confirmations.
   const status = el("p", "shell-units-status");
@@ -330,6 +388,16 @@ export function renderTeacherUnitsPanel(
   createSection.appendChild(createForm);
   createForm.appendChild(el("h4", "shell-units-subheading", "New unit"));
 
+  // aria-invalid and aria-describedby for a field and its error message.
+  const markInvalid = (control: HTMLInputElement | HTMLTextAreaElement, error: HTMLElement | null): void => {
+    if (error === null) {
+      control.removeAttribute("aria-invalid");
+      control.removeAttribute("aria-describedby");
+      return;
+    }
+    control.setAttribute("aria-invalid", "true");
+    control.setAttribute("aria-describedby", error.id);
+  };
   const field = (
     labelText: string,
     control: HTMLInputElement | HTMLTextAreaElement,
@@ -355,6 +423,7 @@ export function renderTeacherUnitsPanel(
   createDescription.maxLength = TEACHER_UNIT_DESCRIPTION_MAX_LENGTH;
   createForm.appendChild(field("Description (optional)", createDescription, "units-create-description"));
   const createError = el("p", "shell-units-error");
+  createError.id = uid("create-error");
   createError.setAttribute("role", "alert");
   createError.setAttribute("data-testid", "units-create-error");
   createError.hidden = true;
@@ -391,19 +460,24 @@ export function renderTeacherUnitsPanel(
   });
 
   let shownError: string | null = null;
-  const showCreateError = (msg: string | null): void => {
+  // `field` names the control the message is about (validation only); that
+  // control is marked invalid and described by the message.
+  const showCreateError = (msg: string | null, field: "title" | "description" | null = null): void => {
     shownError = msg;
     createError.hidden = msg === null;
     if (createError.textContent !== (msg ?? "")) createError.textContent = msg ?? "";
+    markInvalid(createTitle, msg !== null && field === "title" ? createError : null);
+    markInvalid(createDescription, msg !== null && field === "description" ? createError : null);
   };
 
   createForm.addEventListener("submit", (ev) => {
     ev.preventDefault();
+    if (isInert(createSubmit)) return;
     const s = controller.getState();
     const titleMsg = validateUnitTitle(createTitle.value);
     const descMsg = validateUnitDescription(createDescription.value);
     if (titleMsg !== null || descMsg !== null) {
-      showCreateError(titleMsg ?? descMsg);
+      showCreateError(titleMsg ?? descMsg, titleMsg !== null ? "title" : "description");
       focus(titleMsg !== null ? createTitle : createDescription);
       return;
     }
@@ -461,7 +535,7 @@ export function renderTeacherUnitsPanel(
       });
       actions.appendChild(done);
     } else {
-      msg.textContent = `"${title}" (${gradeLabel(grade)}): ${createFailure(st.error)}`;
+      msg.textContent = `"${title}" (${gradeLabel(grade)}): ${createUnresolved(st.reason)}`;
       if (!needsCheck(entry)) {
         const again = button("Check again", "primary");
         again.setAttribute("data-testid", `units-recovery-reconcile-${entry.key}`);
@@ -648,14 +722,25 @@ export function renderTeacherUnitsPanel(
       create.kind === "abandoned" ||
       create.kind === "created";
     createForm.hidden = create.kind === "created";
-    createTitle.disabled = locked;
-    createDescription.disabled = locked;
-    createSubmit.disabled = locked;
-    createSubmit.setAttribute("aria-busy", create.kind === "inFlight" ? "true" : "false");
+    // While the request is pending, the fields are read-only and the submit
+    // is aria-disabled, so the control the teacher used keeps focus. Every
+    // other lock (unconfirmed requests first) disables them.
+    const pending = create.kind === "inFlight";
+    const blocked = locked && !pending;
+    createTitle.disabled = blocked;
+    createDescription.disabled = blocked;
+    createTitle.readOnly = pending;
+    createDescription.readOnly = pending;
+    createSubmit.disabled = blocked;
+    setAriaDisabled(createSubmit, pending);
+    createSubmit.setAttribute("aria-busy", pending ? "true" : "false");
     createSubmit.textContent = create.kind === "inFlight" ? "Creating..." : `Create ${gradeLabel(s.grade)} unit`;
 
     const blockedMsg = s.createBlocked !== null ? BLOCKED_MESSAGES[s.createBlocked] ?? null : null;
-    if (create.kind === "rejected") showCreateError(createFailure(create.error));
+    if (create.kind === "rejected") {
+      const f = create.error.field;
+      showCreateError(createRejected(create.error), f === "title" || f === "description" ? f : null);
+    }
     else if (blockedMsg !== null) showCreateError(blockedMsg);
     else if (s.storage.kind === "unavailable") {
       showCreateError(
@@ -675,7 +760,7 @@ export function renderTeacherUnitsPanel(
         announce(`Created "${create.unit.title}" in ${gradeLabel(create.unit.grade)}.`);
         focus(createAnother);
       } else if (prevCreateKind === "inFlight" && create.kind === "unresolved") {
-        announce(createFailure(create.error));
+        announce(createUnresolved(create.reason));
         focus(
           recovery.querySelector<HTMLElement>(`[data-testid=units-recovery-reconcile-${create.key}]`) ??
             recovery.querySelector<HTMLElement>("[data-testid=units-recovery-check]"),
@@ -701,18 +786,70 @@ export function renderTeacherUnitsPanel(
   root.appendChild(list);
   const cards = new Map<string, CardView>();
 
+  // ---------- Focus ownership (U2.5) ----------
+  //
+  // An asynchronous operation may move focus when it settles only while the
+  // focus is still its own: inside its card, parked by the panel when its
+  // card left the list, or lost (the body). A teacher who moved on keeps
+  // their focus.
+  const owns = (card: CardView): boolean => {
+    const a = doc.activeElement;
+    if (a === null || a === doc.body) return true;
+    if (card.li.isConnected && card.li.contains(a)) return true;
+    return parked !== null && parked.unitId === card.unit.unitId && parked.el === a;
+  };
+  const latestDismissFor = (unitId: string): HTMLElement | null => {
+    let found: HTMLElement | null = null;
+    for (const e of entries.values()) if (e.unitId === unitId) found = e.dismiss;
+    return found;
+  };
+  // A card's main action: its first available unit-level button (Add
+  // resources, Edit, Archive, or Restore), else its first available button.
+  const cardAction = (card: CardView): HTMLElement | null => {
+    if (!card.li.isConnected) return null;
+    const actions = card.body.querySelectorAll<HTMLElement>(":scope > .shell-units-actions button");
+    for (const b of Array.from(actions)) if (canFocus(b)) return b;
+    for (const b of Array.from(card.li.querySelectorAll<HTMLElement>("button"))) if (canFocus(b)) return b;
+    return null;
+  };
+  const settleFocus = (card: CardView, ...targets: ReadonlyArray<HTMLElement | null>): void => {
+    if (!owns(card)) return;
+    if (!card.li.isConnected) {
+      // Its card left; the departure already chose a destination. Only lost
+      // focus is placed again.
+      const a = doc.activeElement;
+      if (a === null || a === doc.body) focusFirst(latestDismissFor(card.unit.unitId), heading);
+      return;
+    }
+    focusFirst(...targets, cardAction(card));
+  };
+  // A card holding focus is leaving the list: focus the card now at its
+  // position (else the one before it), else this unit's newest notice in the
+  // outcome region, else the heading. The destination stays owned by the
+  // departing unit's pending operation until the teacher moves.
+  const departFocus = (unitId: string, index: number): void => {
+    const remaining = Array.from(list.children)
+      .map((li) => cards.get(li.getAttribute("data-unit-id") ?? ""))
+      .filter((c): c is CardView => c !== undefined && c.unit.unitId !== unitId);
+    const next = remaining[Math.min(index, remaining.length - 1)] ?? null;
+    focusFirst(next !== null ? cardAction(next) : null, latestDismissFor(unitId), heading);
+    parked = { unitId, el: doc.activeElement as Element };
+  };
+
   const closeEditor = (card: CardView, focusEdit: boolean): void => {
+    const hadFocus = card.li.contains(doc.activeElement);
     card.editor?.form.remove();
     card.editor = null;
     if (!cards.has(card.unit.unitId) || !isListed(card.unit.unitId)) {
       // A pinned card (kept only for its editor) leaves with the editor.
+      const index = Array.prototype.indexOf.call(list.children, card.li);
       card.li.remove();
       cards.delete(card.unit.unitId);
-      if (focusEdit) focus(heading);
+      if (focusEdit || hadFocus) departFocus(card.unit.unitId, index);
       return;
     }
     renderCardBody(card);
-    if (focusEdit) focus(card.li.querySelector<HTMLButtonElement>("[data-action=edit]"));
+    if (focusEdit) focusFirst(card.li.querySelector<HTMLButtonElement>("[data-action=edit]"));
   };
 
   const isListed = (unitId: string): boolean => {
@@ -746,7 +883,12 @@ export function renderTeacherUnitsPanel(
 
   // `base` is the revision the request was based on (the held record when it
   // was made), so a conflict never presents that older record as current.
-  const handleResult = (card: CardView, result: UnitMutationResult, verb: string, base: number): void => {
+  const VERB: Readonly<Record<LifecycleOp, string>> = Object.freeze({
+    edit: "Saved",
+    archive: "Archived",
+    restore: "Restored",
+  });
+  const handleResult = (card: CardView, result: UnitMutationResult, op: LifecycleOp, base: number): void => {
     if (disposed || result.kind === "stale") return;
     // Acceptance can settle while list rendering is unavailable. Reconcile
     // presentation explicitly; the controller's verified contract stays intact.
@@ -754,13 +896,16 @@ export function renderTeacherUnitsPanel(
     switch (result.kind) {
       case "saved":
         showNotice(card, null);
-        announce(result.noop ? "This request made no changes." : `${verb}: "${result.unit.title}".`);
+        announce(result.noop ? "This request made no changes." : `${VERB[op]}: "${result.unit.title}".`);
         return;
       case "invalid":
         if (card.editor) {
+          const target = result.field === "title" ? card.editor.title : card.editor.description;
           card.editor.error.hidden = false;
           card.editor.error.textContent = result.message;
-          focus(result.field === "title" ? card.editor.title : card.editor.description);
+          markInvalid(card.editor.title, result.field === "title" ? card.editor.error : null);
+          markInvalid(card.editor.description, result.field === "description" ? card.editor.error : null);
+          settleFocus(card, target);
         }
         return;
       case "conflict":
@@ -770,7 +915,7 @@ export function renderTeacherUnitsPanel(
         showNotice(
           card,
           contextualNotice(
-            "This unit was archived somewhere else, so your changes weren't saved.",
+            "This unit was archived, so your changes weren't saved.",
             (ctx) => sentences([
               card.editor !== null ? "Your edits are still here." : null,
               afterArchivedRefusal(
@@ -785,7 +930,7 @@ export function renderTeacherUnitsPanel(
         return;
       case "error":
       case "uncertain":
-        showNotice(card, failureNotice(result.error));
+        showNotice(card, failureNotice(result.error, { card, op, base }));
         return;
       case "busy":
         return;
@@ -807,6 +952,7 @@ export function renderTeacherUnitsPanel(
     description.value = card.unit.description;
     form.appendChild(field("Description", description, `units-edit-description-${card.unit.unitId}`));
     const error = el("p", "shell-units-error");
+    error.id = uid("edit-error");
     error.setAttribute("role", "alert");
     error.hidden = true;
     form.appendChild(error);
@@ -814,6 +960,7 @@ export function renderTeacherUnitsPanel(
     const save = button("Save", "primary");
     save.type = "submit";
     save.setAttribute("data-testid", `units-edit-save-${card.unit.unitId}`);
+    save.setAttribute("data-busy-gate", "");
     const cancel = button("Cancel");
     cancel.setAttribute("data-testid", `units-edit-cancel-${card.unit.unitId}`);
     actions.appendChild(save);
@@ -834,14 +981,16 @@ export function renderTeacherUnitsPanel(
     });
     form.addEventListener("submit", (ev) => {
       ev.preventDefault();
-      if (save.disabled) return;
+      if (isInert(save)) return;
       error.hidden = true;
+      markInvalid(title, null);
+      markInvalid(description, null);
       const base = baseOf(card);
       void controller
         .updateUnit(card.unit.unitId, { title: title.value, description: description.value })
         .then((result) => {
-          handleResult(card, result, "Saved", base);
-          if (result.kind === "saved" && card.editor === editor) closeEditor(card, true);
+          handleResult(card, result, "edit", base);
+          if (result.kind === "saved" && card.editor === editor) closeEditor(card, owns(card));
         });
     });
     renderCardBody(card);
@@ -895,7 +1044,7 @@ export function renderTeacherUnitsPanel(
     const view = controller.getState();
     if (st.kind === "absent") return "This unit is no longer in your units.";
     if (st.kind !== "active" && st.kind !== "archived") {
-      return "This unit's current state hasn't been confirmed. Refresh to check it.";
+      return "This unit's current state hasn't been confirmed. Choose Check for changes to see it.";
     }
     const card = cards.get(unitId);
     const editorOpen = card?.editor != null;
@@ -908,7 +1057,7 @@ export function renderTeacherUnitsPanel(
     if (card?.li.isConnected && !card.gone && card.unit === st.unit) return null;
     if (view.list.kind === "loading") return "The unit list is loading. These details are from the latest version LyfeLabz has loaded.";
     if (view.list.kind === "error") return "The unit list couldn't be refreshed. These details are from the latest version LyfeLabz has loaded.";
-    return isListed(unitId) ? null : "This unit isn't in your current list. Refresh to see its resources.";
+    return isListed(unitId) ? null : "This unit isn't in your current list. Choose Check for changes to see its resources.";
   };
   const contextOf = (unitId: string): NoticeContext => {
     const st = controller.getUnitState(unitId);
@@ -946,7 +1095,7 @@ export function renderTeacherUnitsPanel(
   const uncertainUnread = (base: number): NoticeText => contextualNotice(UNCERTAIN_HISTORY, (ctx) =>
     (ctx.unit !== null && ctx.unit.revision > base) || ctx.absent
       ? uncertainNext(ctx)
-      : sentences(["The unit couldn't be loaded after that request.", ctx.where, ctx.archived ? "Restore it before making further changes." : ctx.active ? "Refresh before trying again." : null]),
+      : sentences(["The unit couldn't be loaded after that request.", ctx.where, ctx.archived ? "Restore it before making further changes." : ctx.active ? "Choose Check for changes before trying again." : null]),
   );
   type Saved = Extract<UnitMutationResult, { kind: "saved" }>;
   const baseRevision = (result: Saved): number => result.committed?.revision ?? result.unit.revision;
@@ -995,7 +1144,7 @@ export function renderTeacherUnitsPanel(
           : action === "remove" ? `"${name}" isn't in "${cur.title}" now.`
           : action === "move" ? `${positionNow(cur)}.`
           : `"${cur.title}" has no unavailable resources now.`
-        : !newer ? "The latest loaded resources don't establish this request's effect. Refresh to check them."
+        : !newer ? "LyfeLabz can't tell yet whether this request took effect. Choose Check for changes to see."
           : action === "move" ? (cur.resourceIds.includes(targets[0]) ? `${positionNow(cur)}, after this unit changed.` : positionNow(cur))
           : action === "add" ? `"${cur.title}" changed since that request, so not every resource you ${write ? "added" : "chose"} is in it now.`
           : action === "remove" ? `"${name}" is in "${cur.title}"${write ? " again" : ""} after this unit changed.`
@@ -1066,8 +1215,8 @@ export function renderTeacherUnitsPanel(
     const min = latest !== null ? latest.revision : base + 1;
     const outcome =
       what === "edit"
-        ? "This unit changed somewhere else, so your change wasn't saved."
-        : `This unit changed somewhere else, so ${what === "add" ? "nothing was added" : what === "move" ? "nothing was moved" : "nothing was removed"}.`;
+        ? "This unit changed since it was loaded here, so your change wasn't saved."
+        : `This unit changed since it was loaded here, so ${what === "add" ? "nothing was added" : what === "move" ? "nothing was moved" : "nothing was removed"}.`;
     return contextualNotice(outcome, (ctx) => {
       const loaded = ctx.unit !== null && ctx.unit.revision >= min ? ctx.unit : null;
       const editing = what === "edit" && card.editor !== null;
@@ -1089,7 +1238,7 @@ export function renderTeacherUnitsPanel(
               : "Restore it to change its resources.",
         ];
       } else if (ctx.active && loaded === null) {
-        next = [ctx.where ?? "Refresh, then try again."];
+        next = [ctx.where ?? "Choose Check for changes, then try again."];
       } else if (ctx.active) {
         next = editing
           ? [ctx.where, "Your edits are still here. Review them, then save again."]
@@ -1122,7 +1271,41 @@ export function renderTeacherUnitsPanel(
     "Some resources in this unit were no longer available, so adding resources was closed.",
     ctx => sentences(retiredNext(ctx, "add resources again.")),
   );
-  const failureNotice = (error: TeacherUnitError): NoticeText => {
+  // U2.5: an unconfirmed edit, archive, or restore says what may not have
+  // happened, never anything about resources. What the unit holds now comes
+  // only from a record newer than the request's base.
+  type LifecycleOp = "edit" | "archive" | "restore";
+  const UNCONFIRMED_OP: Readonly<Record<LifecycleOp, string>> = Object.freeze({
+    edit: "LyfeLabz couldn't confirm whether your changes were saved.",
+    archive: "LyfeLabz couldn't confirm whether this unit was archived.",
+    restore: "LyfeLabz couldn't confirm whether this unit was restored.",
+  });
+  const uncertainLifecycle = (card: CardView, op: LifecycleOp, base: number): NoticeText =>
+    contextualNotice(UNCONFIRMED_OP[op], (ctx) => {
+      const newer = ctx.unit !== null && ctx.unit.revision > base;
+      const editing = op === "edit" && card.editor !== null ? "Your edits are still here." : null;
+      if (ctx.absent || ctx.unit === null) return sentences([editing, ctx.where]);
+      if (!newer) {
+        return sentences([
+          editing,
+          ctx.where,
+          op === "edit"
+            ? "Choose Check for changes to see whether they were saved before trying again."
+            : `Choose Check for changes to see whether it was ${op === "archive" ? "archived" : "restored"}.`,
+        ]);
+      }
+      const now = op === "edit"
+        ? `The latest version LyfeLabz has loaded is named "${ctx.unit.title}".`
+        : ctx.archived ? "It is archived now." : "It is active now.";
+      return sentences([now, editing, ctx.where]);
+    });
+  const failureNotice = (
+    error: TeacherUnitError,
+    lifecycle?: { readonly card: CardView; readonly op: LifecycleOp; readonly base: number },
+  ): NoticeText => {
+    if (lifecycle !== undefined && (error.category === "network" || error.category === "unexpected")) {
+      return uncertainLifecycle(lifecycle.card, lifecycle.op, lifecycle.base);
+    }
     switch (error.category) {
       case "unauthorized":
         return contextualNotice(
@@ -1162,12 +1345,34 @@ export function renderTeacherUnitsPanel(
     if (error.category === "limitExceeded") return error.message;
     return `${history}. ${error.category === "network" ? "Check your connection, then try again." : "Try again."}`;
   };
-  const createFailure = (error: TeacherUnitError): string => {
-    if (error.category === "unauthorized") {
-      return "An authorization check failed during this request, so LyfeLabz couldn't confirm whether this unit was created. If this keeps happening, sign in again, then check your units.";
+  // U2.5 create wording, owned here so it is one LyfeLabz voice with no
+  // request-mechanics language. Every unconfirmed reason says the unit may
+  // exist; none suggests creating it again before checking.
+  const UNCONFIRMED_CREATE = "LyfeLabz couldn't confirm whether this unit was created.";
+  const CHECK_BEFORE_CREATING = "Choose Check my units to see whether it already exists before creating a different unit.";
+  const createUnresolved = (reason: UnresolvedCreateReason): string => {
+    switch (reason) {
+      case "uncertain":
+      case "contention":
+      case "notFound":
+        return `${UNCONFIRMED_CREATE} Choose Check again. Checking again can't create a second copy of this unit.`;
+      case "unauthorized":
+        return `${UNCONFIRMED_CREATE} If this keeps happening, sign in again. Then choose Check again. Checking again can't create a second copy of this unit.`;
+      case "idempotencyKeyConflict":
+        return `${UNCONFIRMED_CREATE} ${CHECK_BEFORE_CREATING}`;
+      case "replayExpired":
+        return `${UNCONFIRMED_CREATE} This request is too old to check again safely. ${CHECK_BEFORE_CREATING}`;
+      case "replayRefused":
+        return `${UNCONFIRMED_CREATE} This request can't be checked again. ${CHECK_BEFORE_CREATING}`;
+      case "schoolContextChanged":
+        return `${UNCONFIRMED_CREATE} Your school changed after you asked for it, so LyfeLabz won't create it at your new school. If it was created, it belongs to your previous school. Reload the page to continue at your current school, and create the unit there only if you still need it.`;
     }
-    return error.message;
   };
+  // A confirmed pre-commit refusal: nothing was created.
+  const createRejected = (error: TeacherUnitError): string =>
+    error.category === "invalidField"
+      ? error.message
+      : "LyfeLabz couldn't create this unit, so nothing was saved. Check the unit name and description, then try again.";
 
   // Notices for a membership request that did not confirm a change.
   const membershipNotice = (
@@ -1210,10 +1415,14 @@ export function renderTeacherUnitsPanel(
   const closePicker = (card: CardView, focusAdd: boolean): void => {
     card.picker?.form.remove();
     card.picker = null;
+    card.pickerKey = null;
     if (card.li.isConnected) renderCardBody(card);
-    if (focusAdd) focus(addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button") ?? heading);
+    if (focusAdd) settleFocus(card, addButtonOf(card));
   };
 
+  // Rebuilt only when what the options show changes (the unit record or the
+  // search). Busy state is applied in place, so a focused checkbox is never
+  // replaced by an unrelated render.
   const renderPickerOptions = (card: CardView): void => {
     const picker = card.picker;
     if (picker === null) return;
@@ -1221,7 +1430,13 @@ export function renderTeacherUnitsPanel(
     const h = picker.form.querySelector("h5");
     const label = `Add resources to "${u.title}"`;
     if (h !== null && h.textContent !== label) h.textContent = label;
-    const busy = controller.getState().busyUnitIds.has(u.unitId);
+    const key = card.pickerKey;
+    if (key !== null && key.unit === u && key.search === picker.search.value) {
+      updatePickerSubmit(card);
+      applyBusy(card);
+      return;
+    }
+    card.pickerKey = { unit: u, search: picker.search.value };
     const present = new Set(u.resourceIds);
     // A resource that joined the unit (here or elsewhere) is no longer a choice.
     for (const id of Array.from(picker.selected)) if (present.has(id)) picker.selected.delete(id);
@@ -1249,7 +1464,8 @@ export function renderTeacherUnitsPanel(
           box.setAttribute("data-testid", `units-picker-option-${u.unitId}-${r.id}`);
           const inUnit = present.has(r.id);
           box.checked = inUnit || picker.selected.has(r.id);
-          box.disabled = inUnit || busy;
+          box.disabled = inUnit;
+          if (!inUnit) box.setAttribute("data-busy-gate", "");
           box.addEventListener("change", () => {
             if (box.checked) picker.selected.add(r.id);
             else picker.selected.delete(r.id);
@@ -1271,6 +1487,7 @@ export function renderTeacherUnitsPanel(
       () => picker.search,
     );
     updatePickerSubmit(card);
+    applyBusy(card);
   };
 
   const updatePickerSubmit = (card: CardView): void => {
@@ -1278,9 +1495,12 @@ export function renderTeacherUnitsPanel(
     if (picker === null) return;
     const busy = controller.getState().busyUnitIds.has(card.unit.unitId);
     const n = picker.selected.size;
-    picker.submit.disabled = n === 0 || busy || pickerBlocked(card) !== null;
+    // Nothing chosen, or a unit that can't take resources: disabled.
+    // Pending: aria-disabled (applyBusy), so a focused submit keeps focus.
+    picker.submit.disabled = n === 0 || pickerBlocked(card) !== null;
     picker.submit.setAttribute("aria-busy", busy ? "true" : "false");
-    picker.submit.textContent = busy ? "Adding..." : n === 0 ? "Add selected" : `Add selected (${n})`;
+    const text = busy ? "Adding..." : n === 0 ? "Add selected" : `Add selected (${n})`;
+    if (picker.submit.textContent !== text) picker.submit.textContent = text;
   };
 
   const openPicker = (card: CardView): void => {
@@ -1314,6 +1534,7 @@ export function renderTeacherUnitsPanel(
     const submit = button("Add selected", "primary");
     submit.type = "submit";
     submit.setAttribute("data-testid", `units-picker-submit-${u.unitId}`);
+    submit.setAttribute("data-busy-gate", "");
     const cancel = button("Cancel");
     cancel.setAttribute("data-testid", `units-picker-cancel-${u.unitId}`);
     actions.appendChild(submit);
@@ -1321,6 +1542,7 @@ export function renderTeacherUnitsPanel(
     form.appendChild(actions);
     const picker: PickerView = { form, search, options, submit, selected: new Set<string>() };
     card.picker = picker;
+    card.pickerKey = null;
 
     search.addEventListener("input", () => renderPickerOptions(card));
     cancel.addEventListener("click", () => closePicker(card, true));
@@ -1335,7 +1557,7 @@ export function renderTeacherUnitsPanel(
       // Eligibility is re-checked against the current unit, not the state
       // the picker was opened with.
       if (card.picker !== picker || pickerBlocked(card) !== null) return;
-      if (submit.disabled || picker.selected.size === 0) return;
+      if (isInert(submit) || picker.selected.size === 0) return;
       // Canonical registry order, not click order.
       const ids = getPlaceableResources()
         .map((r) => r.id)
@@ -1351,15 +1573,15 @@ export function renderTeacherUnitsPanel(
         if (result.kind === "stale" || result.kind === "busy") return;
         if (result.kind === "saved") {
           showOutcome(card, addOutcome(result, ids));
-          if (card.picker === picker) closePicker(card, true);
+          if (card.picker === picker) closePicker(card, owns(card));
           return;
         }
         membershipNotice(card, result, "add", base);
-        if (result.kind === "archived" && card.picker === picker) closePicker(card, true);
+        if (result.kind === "archived" && card.picker === picker) closePicker(card, owns(card));
         else if (card.picker === picker) {
           renderPickerOptions(card);
-          focus(picker.submit.disabled ? picker.search : picker.submit);
-        } else focus(addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
+          settleFocus(card, picker.submit.disabled ? picker.search : picker.submit);
+        } else settleFocus(card, addButtonOf(card));
       });
     });
     card.li.insertBefore(form, card.notice);
@@ -1376,23 +1598,18 @@ export function renderTeacherUnitsPanel(
       if (disposed) return;
       clearPending();
       if (result.kind === "stale" || result.kind === "busy") return;
+      const removeOf = (): HTMLElement | null =>
+        card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`);
       if (result.kind === "saved") {
         showOutcome(card, removeOutcome(result, resourceId, name));
         // Focus the resource's row if it is still shown, else the row that
         // took its place, else Add resources.
-        const still = card.li.querySelector<HTMLElement>(
-          `[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`,
-        );
         const removes = card.li.querySelectorAll<HTMLElement>("[data-action=remove-resource]");
-        focus(still ?? removes[Math.min(index, removes.length - 1)] ?? addButtonOf(card) ?? heading);
+        settleFocus(card, removeOf(), removes[Math.min(index, removes.length - 1)] ?? null, addButtonOf(card));
         return;
       }
       membershipNotice(card, result, "remove", base);
-      focus(
-        card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`) ??
-          addButtonOf(card) ??
-          card.li.querySelector<HTMLElement>("button"),
-      );
+      settleFocus(card, removeOf(), addButtonOf(card));
     });
   };
 
@@ -1407,11 +1624,11 @@ export function renderTeacherUnitsPanel(
     const other = card.li.querySelector<HTMLElement>(
       `[data-testid="${moveTestId(unitId, dir === "up" ? "down" : "up", resourceId)}"]`,
     );
-    if (same !== null && same.getAttribute("aria-disabled") !== "true") return same;
-    if (other !== null && other.getAttribute("aria-disabled") !== "true") return other;
+    if (same !== null && !same.hasAttribute("data-edge")) return same;
+    if (other !== null && !other.hasAttribute("data-edge")) return other;
     return same ?? other ??
       card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${unitId}-${resourceId}"]`) ??
-      addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button");
+      addButtonOf(card);
   };
   const moveResource = (card: CardView, resourceId: string, name: string, dir: ResourceMoveDirection): void => {
     const unitTitle = card.unit.title;
@@ -1426,7 +1643,7 @@ export function renderTeacherUnitsPanel(
       } else {
         membershipNotice(card, result, "move", base);
       }
-      focus(moveFocusTarget(card, resourceId, dir));
+      settleFocus(card, moveFocusTarget(card, resourceId, dir));
     });
   };
 
@@ -1448,21 +1665,23 @@ export function renderTeacherUnitsPanel(
       `Removing ${plural(shown, "unavailable resource", "unavailable resources")} from "${u.title}"...`,
     );
     renderCardBody(card);
+    // The confirmation's buttons are gone; keep focus in the repair box.
+    focusFirst(retiredButtonOf(card));
     void controller.removeRetiredResources(u.unitId).then((result) => {
       if (disposed) return;
       clearPending();
       if (result.kind === "stale" || result.kind === "busy") return;
       if (result.kind === "saved") {
         showOutcome(card, repairOutcome(result, before));
-        focus(retiredButtonOf(card) ?? addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
+        settleFocus(card, retiredButtonOf(card), addButtonOf(card));
         return;
       }
       membershipNotice(card, result, "remove", base);
-      focus(retiredButtonOf(card) ?? addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
+      settleFocus(card, retiredButtonOf(card), addButtonOf(card));
     });
   };
 
-  const renderRetiredRepair = (card: CardView, busy: boolean, count: number): HTMLElement => {
+  const renderRetiredRepair = (card: CardView, count: number): HTMLElement => {
     const u = card.unit;
     const box = el("div", "shell-units-notice shell-units-notice--conflict shell-units-retired");
     box.setAttribute("data-testid", `units-retired-${u.unitId}`);
@@ -1478,7 +1697,7 @@ export function renderTeacherUnitsPanel(
       );
       const start = button(`Remove ${plural(count, "unavailable resource", "unavailable resources")}`);
       start.setAttribute("data-testid", `units-retired-remove-${u.unitId}`);
-      start.disabled = busy;
+      start.setAttribute("data-busy-gate", "");
       start.addEventListener("click", () => {
         card.confirmRetired = count;
         renderCardBody(card);
@@ -1495,7 +1714,7 @@ export function renderTeacherUnitsPanel(
       );
       const confirm = button(`Remove ${count === 1 ? "it" : `all ${count}`}`, "danger");
       confirm.setAttribute("data-testid", `units-retired-confirm-${u.unitId}`);
-      confirm.disabled = busy;
+      confirm.setAttribute("data-busy-gate", "");
       confirm.addEventListener("click", () => removeRetired(card, count));
       const cancel = button("Cancel");
       cancel.setAttribute("data-testid", `units-retired-cancel-${u.unitId}`);
@@ -1511,7 +1730,7 @@ export function renderTeacherUnitsPanel(
     return box;
   };
 
-  const renderResources = (card: CardView, busy: boolean): HTMLElement => {
+  const renderResources = (card: CardView): HTMLElement => {
     const u = card.unit;
     const section = el("div", "shell-units-resources");
     section.setAttribute("data-testid", `units-resources-${u.unitId}`);
@@ -1544,7 +1763,7 @@ export function renderTeacherUnitsPanel(
           const meta: string[] = [];
           if (entry.resource.grade !== null) meta.push(`Grade ${entry.resource.grade}`);
           if (resourceEligibility(entry.resource) === "organizeOnly") meta.push("Not assignable");
-          if (meta.length > 0) text.appendChild(el("span", "shell-units-resource-meta", meta.join(" \u00b7 ")));
+          if (meta.length > 0) text.appendChild(el("span", "shell-units-resource-meta", meta.join(" · ")));
         } else {
           text.appendChild(el("span", "shell-lesson-resource-title", name));
         }
@@ -1561,10 +1780,11 @@ export function renderTeacherUnitsPanel(
             move.setAttribute("data-action", "move-resource");
             move.setAttribute("data-testid", moveTestId(u.unitId, dir, entry.id));
             move.setAttribute("aria-label", `Move ${name} ${dir} in ${u.title}`);
+            move.setAttribute("data-busy-gate", "");
             const edge = dir === "up" ? i === 0 : i === resolved.length - 1;
-            if (edge || busy) move.setAttribute("aria-disabled", "true");
+            if (edge) move.setAttribute("data-edge", "");
             move.addEventListener("click", (ev) => {
-              if (move.getAttribute("aria-disabled") === "true") {
+              if (isInert(move)) {
                 ev.preventDefault();
                 return;
               }
@@ -1581,7 +1801,8 @@ export function renderTeacherUnitsPanel(
           remove.setAttribute("data-action", "remove-resource");
           remove.setAttribute("data-testid", `units-resource-remove-${u.unitId}-${entry.id}`);
           remove.setAttribute("aria-label", `Remove ${name} from ${u.title}`);
-          remove.disabled = busy || retired > 0;
+          remove.disabled = retired > 0;
+          remove.setAttribute("data-busy-gate", "");
           remove.addEventListener("click", () => removeResource(card, entry.id, name, i));
           li.appendChild(remove);
         }
@@ -1595,14 +1816,37 @@ export function renderTeacherUnitsPanel(
         el("p", "shell-units-recovery-note", "Restore this unit to add or remove resources."),
       );
     } else if (retired > 0) {
-      section.appendChild(renderRetiredRepair(card, busy, retired));
+      section.appendChild(renderRetiredRepair(card, retired));
     }
     return section;
   };
 
+  // Busy state, applied in place to every pending-gated control of the card
+  // (its body, editor, and picker): focusable, aria-disabled, inactive.
+  const applyBusy = (card: CardView): void => {
+    const busy = controller.getState().busyUnitIds.has(card.unit.unitId);
+    const value = busy ? "true" : "false";
+    if (card.li.getAttribute("aria-busy") !== value) card.li.setAttribute("aria-busy", value);
+    for (const b of Array.from(card.li.querySelectorAll<HTMLElement>("[data-busy-gate]"))) {
+      setAriaDisabled(b, busy || b.hasAttribute("data-edge"));
+    }
+  };
+
+  // The archive and restore controls replace each other; focus follows.
+  const counterpartOf = (tid: string | null): string | null => {
+    if (tid === null) return null;
+    if (tid.startsWith("units-archive-")) return `units-restore-${tid.slice("units-archive-".length)}`;
+    if (tid.startsWith("units-restore-")) return `units-archive-${tid.slice("units-restore-".length)}`;
+    return null;
+  };
+
+  // A card body is rebuilt only when what it shows changes: the unit record
+  // (records are replaced, never mutated, so identity is the change), its
+  // presence, an editor or picker opening or closing, the unavailable-
+  // resource confirmation, or (for a unit no longer listed) where it is.
+  // Busy state is applied in place.
   const renderCardBody = (card: CardView): void => {
     const u = card.unit;
-    const busy = controller.getState().busyUnitIds.has(u.unitId);
     // An open picker follows the current unit: it closes when the unit is
     // archived or now holds unavailable resources (the repair comes first).
     let refocus = false;
@@ -1611,119 +1855,147 @@ export function renderTeacherUnitsPanel(
       refocus = card.picker.form.contains(doc.activeElement);
       card.picker.form.remove();
       card.picker = null;
+      card.pickerKey = null;
       if (blocked === "retired") {
         showNotice(card, PICKER_RETIRED, "conflict");
       }
     }
     card.li.classList.toggle("shell-units-card--archived", u.status === "archived");
-    card.li.setAttribute("aria-busy", busy ? "true" : "false");
-    rebuildKeepingFocus(
-      card.body,
-      () => {
-        if (card.gone && card.editor === null) {
-          card.body.appendChild(el("p", "shell-units-recovery-note", whereNow(u.unitId) ?? "This unit's current state hasn't been confirmed."));
-          return;
-        }
-        if (card.editor !== null) {
-          card.body.appendChild(
-            el("p", "shell-units-editing", `Editing "${u.title}" (${gradeLabel(u.grade)})`),
-          );
-          const blocked = card.gone || u.status !== "active";
-          card.editor.save.disabled = busy || blocked;
-          if (card.gone) {
+    const where = card.gone ? whereNow(u.unitId) : null;
+    const prev = card.rendered;
+    const unchanged =
+      prev !== null &&
+      prev.unit === u &&
+      prev.gone === card.gone &&
+      prev.editor === card.editor &&
+      prev.picker === card.picker &&
+      prev.confirmRetired === card.confirmRetired &&
+      prev.where === where;
+    if (!unchanged) {
+      rebuildKeepingFocus(
+        card.body,
+        () => {
+          if (card.gone && card.editor === null) {
+            card.body.appendChild(el("p", "shell-units-recovery-note", where ?? "This unit's current state hasn't been confirmed."));
+            return;
+          }
+          if (card.editor !== null) {
             card.body.appendChild(
-              el(
-                "p",
-                "shell-units-notice shell-units-notice--error",
-                `${whereNow(u.unitId)} Your changes can't be saved here. Copy anything you need, then cancel.`,
-              ),
+              el("p", "shell-units-editing", `Editing "${u.title}" (${gradeLabel(u.grade)})`),
             );
-          } else if (u.status === "archived") {
-            card.body.appendChild(
-              el(
-                "p",
-                "shell-units-notice shell-units-notice--conflict",
-                "This unit is archived, so your changes can't be saved yet. Restore it to keep editing, or cancel to discard your changes.",
-              ),
-            );
-            const actions = el("div", "shell-units-actions");
+            card.editor.save.disabled = card.gone || u.status !== "active";
+            if (card.gone) {
+              card.body.appendChild(
+                el(
+                  "p",
+                  "shell-units-notice shell-units-notice--error",
+                  `${where} Your changes can't be saved here. Copy anything you need, then cancel.`,
+                ),
+              );
+            } else if (u.status === "archived") {
+              card.body.appendChild(
+                el(
+                  "p",
+                  "shell-units-notice shell-units-notice--conflict",
+                  "This unit is archived, so your changes can't be saved yet. Restore it to keep editing, or cancel to discard your changes.",
+                ),
+              );
+              const actions = el("div", "shell-units-actions");
+              const restore = button("Restore");
+              restore.setAttribute("data-testid", `units-editor-restore-${u.unitId}`);
+              restore.setAttribute("data-busy-gate", "");
+              restore.addEventListener("click", () => {
+                const base = baseOf(card);
+                void controller.restoreUnit(u.unitId).then((r) => {
+                  handleResult(card, r, "restore", base);
+                  if (r.kind === "saved") {
+                    showNotice(card, null);
+                    settleFocus(card, card.editor?.title ?? null);
+                  }
+                });
+              });
+              actions.appendChild(restore);
+              card.body.appendChild(actions);
+            }
+            return;
+          }
+          const titleRow = el("div", "shell-units-card-title-row");
+          titleRow.appendChild(el("h4", "shell-units-card-title", u.title));
+          if (u.status === "archived") titleRow.appendChild(el("span", "shell-units-badge", "Archived"));
+          card.body.appendChild(titleRow);
+          if (u.description.length > 0) {
+            card.body.appendChild(el("p", "shell-units-card-description", u.description));
+          }
+          card.body.appendChild(renderResources(card));
+          const actions = el("div", "shell-units-actions");
+          if (u.status === "active") {
+            const add = button("Add resources");
+            add.setAttribute("data-action", "add-resources");
+            add.setAttribute("data-testid", `units-resources-add-${u.unitId}`);
+            add.setAttribute("aria-label", `Add resources to ${u.title}`);
+            add.setAttribute("aria-expanded", card.picker !== null ? "true" : "false");
+            add.disabled = retiredCount(u) > 0;
+            add.setAttribute("data-busy-gate", "");
+            add.addEventListener("click", () => openPicker(card));
+            actions.appendChild(add);
+            const edit = button("Edit");
+            edit.setAttribute("data-action", "edit");
+            edit.setAttribute("data-testid", `units-edit-${u.unitId}`);
+            edit.setAttribute("aria-label", `Edit ${u.title}`);
+            edit.setAttribute("data-busy-gate", "");
+            edit.addEventListener("click", () => openEditor(card));
+            actions.appendChild(edit);
+            const archive = button("Archive", "danger");
+            archive.setAttribute("data-testid", `units-archive-${u.unitId}`);
+            archive.setAttribute("aria-label", `Archive ${u.title}`);
+            archive.setAttribute("data-busy-gate", "");
+            archive.addEventListener("click", () => {
+              const base = baseOf(card);
+              void controller.archiveUnit(u.unitId).then((r) => {
+                handleResult(card, r, "archive", base);
+                if (r.kind === "saved") settleFocus(card, q(card, `units-restore-${u.unitId}`));
+              });
+            });
+            actions.appendChild(archive);
+          } else {
             const restore = button("Restore");
-            restore.setAttribute("data-testid", `units-editor-restore-${u.unitId}`);
-            restore.disabled = busy;
+            restore.setAttribute("data-testid", `units-restore-${u.unitId}`);
+            restore.setAttribute("aria-label", `Restore ${u.title}`);
+            restore.setAttribute("data-busy-gate", "");
             restore.addEventListener("click", () => {
               const base = baseOf(card);
               void controller.restoreUnit(u.unitId).then((r) => {
-                handleResult(card, r, "Restored", base);
-                if (r.kind === "saved") {
-                  showNotice(card, null);
-                  focus(card.editor?.title ?? null);
-                }
+                handleResult(card, r, "restore", base);
+                if (r.kind === "saved") settleFocus(card, q(card, `units-archive-${u.unitId}`));
               });
             });
             actions.appendChild(restore);
-            card.body.appendChild(actions);
           }
-          return;
-        }
-        const titleRow = el("div", "shell-units-card-title-row");
-        titleRow.appendChild(el("h4", "shell-units-card-title", u.title));
-        if (u.status === "archived") titleRow.appendChild(el("span", "shell-units-badge", "Archived"));
-        card.body.appendChild(titleRow);
-        if (u.description.length > 0) {
-          card.body.appendChild(el("p", "shell-units-card-description", u.description));
-        }
-        card.body.appendChild(renderResources(card, busy));
-        const actions = el("div", "shell-units-actions");
-        if (u.status === "active") {
-          const add = button("Add resources");
-          add.setAttribute("data-action", "add-resources");
-          add.setAttribute("data-testid", `units-resources-add-${u.unitId}`);
-          add.setAttribute("aria-label", `Add resources to ${u.title}`);
-          add.setAttribute("aria-expanded", card.picker !== null ? "true" : "false");
-          add.disabled = busy || retiredCount(u) > 0;
-          add.addEventListener("click", () => openPicker(card));
-          actions.appendChild(add);
-          const edit = button("Edit");
-          edit.setAttribute("data-action", "edit");
-          edit.setAttribute("data-testid", `units-edit-${u.unitId}`);
-          edit.setAttribute("aria-label", `Edit ${u.title}`);
-          edit.disabled = busy;
-          edit.addEventListener("click", () => openEditor(card));
-          actions.appendChild(edit);
-          const archive = button("Archive", "danger");
-          archive.setAttribute("data-testid", `units-archive-${u.unitId}`);
-          archive.setAttribute("aria-label", `Archive ${u.title}`);
-          archive.disabled = busy;
-          archive.addEventListener("click", () => {
-            const base = baseOf(card);
-            void controller.archiveUnit(u.unitId).then((r) => {
-              handleResult(card, r, "Archived", base);
-              if (r.kind === "saved" && !controller.getState().showArchived) focus(heading);
-            });
-          });
-          actions.appendChild(archive);
-        } else {
-          const restore = button("Restore");
-          restore.setAttribute("data-testid", `units-restore-${u.unitId}`);
-          restore.setAttribute("aria-label", `Restore ${u.title}`);
-          restore.disabled = busy;
-          restore.addEventListener("click", () => {
-            const base = baseOf(card);
-            void controller.restoreUnit(u.unitId).then((r) => handleResult(card, r, "Restored", base));
-          });
-          actions.appendChild(restore);
-        }
-        card.body.appendChild(actions);
-      },
-      () => (card.li.isConnected ? card.li.querySelector<HTMLElement>("button") : heading),
-    );
-    if (card.picker !== null) renderPickerOptions(card);
-    if (refocus) {
-      focus(
-        retiredButtonOf(card) ?? addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button") ?? heading,
+          card.body.appendChild(actions);
+        },
+        (tid) => {
+          const swap = counterpartOf(tid);
+          return (swap !== null ? q(card, swap) : null) ?? (card.li.isConnected ? cardAction(card) : heading);
+        },
       );
+      card.rendered = {
+        unit: u,
+        gone: card.gone,
+        editor: card.editor,
+        picker: card.picker,
+        confirmRetired: card.confirmRetired,
+        where,
+      };
+    }
+    if (card.picker !== null) renderPickerOptions(card);
+    applyBusy(card);
+    if (refocus) {
+      focusFirst(retiredButtonOf(card), addButtonOf(card), cardAction(card), heading);
     }
   };
+
+  const q = (card: CardView, testid: string): HTMLElement | null =>
+    card.li.querySelector<HTMLElement>(`[data-testid="${testid}"]`);
 
   const makeCard = (unit: TeacherUnit): CardView => {
     const li = el("li", "shell-units-card");
@@ -1735,7 +2007,10 @@ export function renderTeacherUnitsPanel(
     notice.setAttribute("role", "alert");
     notice.hidden = true;
     li.appendChild(notice);
-    return { li, unit, gone: false, editor: null, picker: null, confirmRetired: null, noticeText: null, notice, body };
+    return {
+      li, unit, gone: false, editor: null, picker: null, confirmRetired: null, noticeText: null, notice, body,
+      rendered: null, pickerKey: null,
+    };
   };
 
   let listMessage: string | null = null;
@@ -1751,11 +2026,9 @@ export function renderTeacherUnitsPanel(
         const st = controller.getUnitState(card.unit.unitId);
         const latest = st.kind === "active" || st.kind === "archived" ? st.unit : null;
         const gone = latest === null;
-        if ((latest !== null && latest !== card.unit) || gone !== card.gone) {
-          if (latest !== null) card.unit = latest;
-          card.gone = gone;
-          renderCardBody(card);
-        }
+        if (latest !== null) card.unit = latest;
+        card.gone = gone;
+        renderCardBody(card);
       }
     }
     if (s.list.kind === "loading") {
@@ -1782,6 +2055,7 @@ export function renderTeacherUnitsPanel(
     // those stay pinned (with the latest known server state) so unsaved
     // edits are never discarded by a refresh, an archive, or a grade change.
     const pinned: CardView[] = [];
+    let departed: { readonly unitId: string; readonly index: number } | null = null;
     for (const [id, c] of cards) {
       if (ids.has(id)) continue;
       if (c.editor !== null) {
@@ -1792,6 +2066,9 @@ export function renderTeacherUnitsPanel(
         renderCardBody(c);
         pinned.push(c);
       } else {
+        if (departed === null && c.li.contains(doc.activeElement)) {
+          departed = { unitId: id, index: Array.prototype.indexOf.call(list.children, c.li) };
+        }
         keepNotice(c);
         c.li.remove();
         cards.delete(id);
@@ -1820,9 +2097,26 @@ export function renderTeacherUnitsPanel(
     ordered.forEach((card, i) => {
       if (list.children[i] !== card.li) list.insertBefore(card.li, list.children[i] ?? null);
     });
+    if (departed !== null) departFocus(departed.unitId, departed.index);
   };
 
   let wasConnected = false;
+  // Focus that a render took away (its control was disabled, hidden, moved,
+  // or removed) is put back: on the same control when it is still usable,
+  // else on its card's main action, else the heading. Focus that a render
+  // deliberately moved, or that is outside the panel, is left alone.
+  const rescueFocus = (before: HTMLElement | null): void => {
+    if (before === null) return;
+    const a = doc.activeElement;
+    if (a !== null && a !== doc.body && a !== before) return;
+    if (canFocus(before)) {
+      if (a !== before) focus(before);
+      return;
+    }
+    const li = before.isConnected ? before.closest<HTMLElement>("li[data-unit-id]") : null;
+    const card = li !== null ? cards.get(li.getAttribute("data-unit-id") ?? "") : undefined;
+    focusFirst(card !== undefined ? cardAction(card) : null, heading);
+  };
   const render = (): void => {
     if (disposed) return;
     // The Curriculum outlet was torn down (surface switch, sign-out,
@@ -1832,6 +2126,8 @@ export function renderTeacherUnitsPanel(
       dispose();
       return;
     }
+    const active = doc.activeElement;
+    const before = active instanceof HTMLElement && active !== heading && root.contains(active) ? active : null;
     const s = controller.getState();
     for (const [g, b] of gradeButtons) {
       const active = g === s.grade;
@@ -1839,10 +2135,29 @@ export function renderTeacherUnitsPanel(
       b.classList.toggle("shell-filter-pill-active", active);
     }
     archivedBox.checked = s.showArchived;
+    setAriaDisabled(checkChanges, checking || s.list.kind === "loading");
     renderCreate(s);
     renderList(s);
     refreshNotices();
+    rescueFocus(before);
   };
+
+  checkChanges.addEventListener("click", () => {
+    if (isInert(checkChanges)) return;
+    checking = true;
+    const clearPending = announcePending("Checking for changes...");
+    render();
+    void controller.refresh().then(() => {
+      if (disposed) return;
+      checking = false;
+      clearPending();
+      // Superseded (a grade or archived-view change started a newer read) or
+      // the account changed: that read reports for itself. A failure shows
+      // in the list's own alert.
+      if (controller.getState().list.kind === "ready") announce("Your units were checked for changes.");
+      render();
+    });
+  });
 
   // Re-derives the current-state wording of every retained notice (card
   // notices and outcome entries) after each state or view change. Only the

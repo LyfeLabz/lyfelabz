@@ -252,7 +252,7 @@ describe("conflicts and uncertainty", () => {
     expect(c.setResources).toHaveBeenCalledTimes(1);
     expect(order(host, a.unitId)).toEqual([R1.id, R2.id, R3.id]);
     const notice = noticeOf(host, a.unitId)?.textContent ?? "";
-    expect(notice).toContain("This unit changed somewhere else, so nothing was moved.");
+    expect(notice).toContain("This unit changed since it was loaded here, so nothing was moved.");
     expect(notice).toContain("Its current resources are shown. Review them, then try again.");
     expect(document.activeElement).toBe(mv(host, a.unitId, "up", R2.id));
   });

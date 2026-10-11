@@ -277,7 +277,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
     const moved = notices(h, "nothing was removed");
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
-    expect(moved[0].textContent).toContain("This unit's current state hasn't been confirmed. Refresh to check it.");
+    expect(moved[0].textContent).toContain("This unit's current state hasn't been confirmed. Choose Check for changes to see it.");
   });
 
   test("conflict moved while another unit's operation is pending; that operation's outcome is separate", async () => {

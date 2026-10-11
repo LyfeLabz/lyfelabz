@@ -204,7 +204,7 @@ describe("notice context follows the current state and view", () => {
     expect(n.textContent).not.toContain(LOCATION_CLAIMS.archived);
     expect(n.textContent).not.toContain(LOCATION_CLAIMS.hidden);
     // The historical fact is unchanged throughout.
-    expect(n.textContent).toContain("This unit changed somewhere else, so nothing was removed.");
+    expect(n.textContent).toContain("This unit changed since it was loaded here, so nothing was removed.");
   });
 
   test("C: authoritative absence, then positive evidence", async () => {
