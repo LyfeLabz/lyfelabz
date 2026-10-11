@@ -190,3 +190,12 @@ All evidence is retained locally, not published:
 - `/private/tmp/u23-recovery-browser.cjs`, `u23-recovery-exports.ts`, `u23-recovery-bundle.js`, `u23-recovery-browser-final.log`: runnable synthetic browser harness and full checkpoint/AX evidence.
 
 **STOP. Independent Claude Opus 5.5 certification is next. Independently certified: NOT CERTIFIED.**
+
+## U2.4 extension (resource ordering)
+
+U2.4 adds one operation to the contract above without changing it. The U2.3 evidence and certification status recorded in this document are unchanged.
+
+- `membershipOutcome` accepts the action `move`. Historical text: `Moved "<resource>" to position <p> of <n>.`, from the committed list. No-op: `Nothing was changed.`.
+- Present wording follows the same rules as add and remove: agreement means the resource is at the committed position in a list of the committed length; otherwise, once a newer record is accepted, `Your change was saved.` plus the resource's current position (`"<resource>" is at position <q> of <m> in "<unit>" now, after this unit changed.`) or its absence. An older record leaves the existing "don't establish this request's effect" wording.
+- `conflictNotice` and `membershipNotice` accept `move` ("nothing was moved"). Uncertain, authorization, archived, and retired-resource notices are the shared ones.
+- Operation identity, durable entries, dismissal, pending ownership, and identical-text write suppression are reused unchanged. See TEACHER_UNITS.md section 9.6.

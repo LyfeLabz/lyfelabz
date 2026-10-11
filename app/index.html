@@ -1144,6 +1144,9 @@
   }
   .shell-units-resource-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; overflow-wrap: anywhere; }
   .shell-units-resource-meta { font-size: 0.85rem; color: var(--tw-ink-muted); }
+  /* U2.4 Move up / Move down. Boundary and pending controls keep focus (aria-disabled). */
+  .shell-units-resource-moves { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-left: auto; }
+  .shell-units-resource .shell-btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
   .shell-units-card .shell-units-picker { margin-top: 0.75rem; }
   .shell-units-picker-fieldset { margin: 0; padding: 0; border: none; min-width: 0; }
   .shell-units-picker-fieldset legend { margin-bottom: 0.4rem; padding: 0; }
@@ -1156,6 +1159,8 @@
     .shell-units-form { padding: 0.75rem; }
     .shell-units-actions .shell-btn { flex: 1 1 auto; }
     .shell-units-resource { flex-wrap: wrap; }
+    .shell-units-resource-text { flex: 1 1 100%; }
+    .shell-units-resource-moves { margin-left: 0; }
   }
   @media (pointer: coarse) {
     .shell-units-input,

@@ -14,6 +14,7 @@ import {
 } from "./saveCoordination";
 import { validateUnitDescription, validateUnitTitle } from "./fieldRules";
 import { getPlaceableResourceById } from "./placeableResources";
+import { moveIdByStep } from "./unitOrderMath";
 import {
   compareTeacherUnits,
   TEACHER_UNIT_RESOURCES_MAX,
@@ -135,6 +136,8 @@ const UNKNOWN_UNIT: UnitStateView = Object.freeze({ kind: "unknown" });
 const ABSENT_UNIT: UnitStateView = Object.freeze({ kind: "absent" });
 const NOT_ACTIVE_UNIT: UnitStateView = Object.freeze({ kind: "notActive" });
 
+export type ResourceMoveDirection = "up" | "down";
+
 export type UnitEdit = { readonly title?: string; readonly description?: string };
 
 // What a confirmed membership write committed, known from the request
@@ -226,6 +229,17 @@ export type TeacherUnitsController = {
   // The server refuses any list that still names a retired id, so a unit
   // holding retired ids can only be repaired this way.
   readonly removeRetiredResources: (unitId: string) => Promise<UnitMutationResult>;
+  // U2.4 ordering. Moves one resource a single position earlier ("up") or
+  // later ("down") and sends the complete permutation of the held list
+  // with its revision (teacherUnitsSetResources). Unknown ids, boundary
+  // moves, and units with fewer than two resources are no-ops without a
+  // call. Refused before sending while the unit holds retired ids (the
+  // server would refuse the list) or is archived.
+  readonly moveResource: (
+    unitId: string,
+    resourceId: string,
+    direction: ResourceMoveDirection,
+  ) => Promise<UnitMutationResult>;
   readonly dispose: () => void;
 };
 
@@ -966,6 +980,18 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       setMembership(unitId, (u) =>
         retiredIds(u).length === 0 ? null : u.resourceIds.filter((id) => !isRetired(id)),
       ),
+    moveResource: (unitId, resourceId, direction) => {
+      const blocked = retiredBlock(unitId, null);
+      if (blocked !== null) return Promise.resolve(blocked);
+      // Computed from the record held at dispatch, so the permutation and
+      // its expectedRevision come from the same snapshot: a resource added
+      // or removed elsewhere means a newer revision, and the server refuses
+      // the stale list instead of dropping it.
+      return setMembership(unitId, (u) => {
+        const next = moveIdByStep(u.resourceIds, resourceId, direction === "up" ? -1 : 1);
+        return next === u.resourceIds ? null : next;
+      });
+    },
     dispose: () => {
       disposed = true;
       listeners.clear();

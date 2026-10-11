@@ -123,7 +123,7 @@ describe("unit contents", () => {
     expect(rows.map((r) => r.getAttribute("data-resource-id"))).toEqual([R3.id, R1.id]);
     expect(rows[0].textContent).toContain(R3.title);
     expect(rows[0].textContent).toContain("Lesson");
-    expect(rows[0].querySelector("button")?.getAttribute("aria-label")).toBe(
+    expect(rows[0].querySelector("[data-action=remove-resource]")?.getAttribute("aria-label")).toBe(
       `Remove ${R3.title} from ${a.title}`,
     );
     expect(q(host, `units-resources-${a.unitId}`)?.textContent).toContain("Resources (2)");
