@@ -349,6 +349,13 @@ function orders(): Ev[][] {
   return out;
 }
 
+// U2.5: one test executes all 280 interleavings sequentially, each with a
+// fresh panel. Measured at about 7.6 s alone on an idle container against the
+// 20 s project default (jest.config.js), so a loaded full-suite run could
+// exceed it with no behavioral cause. 60 s keeps the same 280 scenarios and
+// assertions with roughly 8x headroom; a real hang still fails.
+const POSTCOMMIT_MATRIX_TIMEOUT_MS = 60_000;
+
 describe("post-commit read matrix (add vs another session's removal vs refresh)", () => {
   test("every interleaving: the announcement matches what the accepted state supports", async () => {
     const all = orders();
@@ -409,5 +416,5 @@ describe("post-commit read matrix (add vs another session's removal vs refresh)"
         expect([label, msg]).toEqual([label, ""]);
       }
     }
-  });
+  }, POSTCOMMIT_MATRIX_TIMEOUT_MS);
 });

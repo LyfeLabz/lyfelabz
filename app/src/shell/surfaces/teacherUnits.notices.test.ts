@@ -191,7 +191,7 @@ beforeEach(() => {
 // A. Edit-conflict snapshot fidelity
 // ---------------------------------------------------------------------------
 describe("A: an edit conflict never labels an older name or description current", () => {
-  const CONFLICT_TEXT = "changed somewhere else";
+  const CONFLICT_TEXT = "changed since it was loaded here";
 
   test("the reconciled values are shown while they are the latest accepted record", async () => {
     const a = unit({ revision: 2 });
@@ -362,7 +362,7 @@ describe("A: an edit conflict never labels an older name or description current"
     await refreshWith(h, [{ ...a, title: "Loaded later", revision: 4 }]);
     const n = one(h, CONFLICT_TEXT);
     expect(n.textContent).toContain('"Loaded later"');
-    expect(n.textContent).not.toMatch(/Refresh, then try again/);
+    expect(n.textContent).not.toMatch(/Refresh, then try again|Check for changes, then try again/);
   });
 
   test("an archive refused for a conflict (no editor) never mentions edits", async () => {
@@ -695,7 +695,7 @@ describe("audit: every retained notice derives its current-state wording", () =>
     await checkWith(h, []);
     const [n] = noticesFor(h, a);
     expect(n.textContent).toContain("no longer in your units");
-    expect(n.textContent).not.toMatch(/Check before trying again|Refresh before trying again/);
+    expect(n.textContent).not.toMatch(/Check before trying again|Refresh before trying again|Check for changes before trying again/);
   });
 
   test("not found, then found again by a positive read: no claim it may be gone", async () => {
