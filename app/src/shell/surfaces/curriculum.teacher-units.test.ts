@@ -7,6 +7,7 @@
  */
 import * as fs from "fs";
 import * as path from "path";
+import type * as AvailabilityBoundary from "../../teacherUnits/releaseAvailability";
 import type { Session } from "../../session/types";
 import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
@@ -127,12 +128,10 @@ beforeEach(() => {
 });
 
 describe("feature gate", () => {
-  test("the entry point keeps TEACHER_UNITS_GATE_OPEN false", () => {
-    const src = fs.readFileSync(path.join(__dirname, "../../index.ts"), "utf8");
-    expect(src).toMatch(/const TEACHER_UNITS_GATE_OPEN = false;/);
-    expect(src).not.toMatch(/TEACHER_UNITS_GATE_OPEN = true/);
-    // Every seam assignment goes through the gate.
-    expect(src).toMatch(/teacherUnits = TEACHER_UNITS_GATE_OPEN\s*\?/);
+  test("the production availability boundary has no enabled state", () => {
+    const boundary = jest.requireActual<typeof AvailabilityBoundary>("../../teacherUnits/releaseAvailability");
+    expect(boundary.teacherUnitsAvailable()).toBe(false);
+    expect(() => boundary.requireTeacherUnitsAvailable()).toThrow("unavailable");
   });
 
   test("without the seam Curriculum is unchanged: no switch, no My Units, no teacher-unit storage", () => {

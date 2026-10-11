@@ -1,3 +1,4 @@
+import { requireTeacherUnitsAvailable } from "./releaseAvailability";
 import { validateUnitDescription, validateUnitTitle } from "./fieldRules";
 import {
   type CreateAttemptPersistence,
@@ -221,6 +222,7 @@ export function createTeacherUnitCreateAttemptStore(
   scope: CreateAttemptScope,
   getStore: () => Storage | null = getStorage,
 ): CreateAttemptStore {
+  requireTeacherUnitsAvailable();
   const scoped = Object.freeze({ teacherId: scope.teacherId, schoolId: scope.schoolId });
   const scopeOk = isValidScope(scoped);
   const prefix = createAttemptScopePrefix(scoped);
