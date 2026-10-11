@@ -23,6 +23,7 @@ import {
 } from "../../teacherUnits/placeableResources";
 import type { FlatResource } from "../../curriculum/resourceProjection";
 import { FORMAL_RESOURCE_LABEL, type FormalResourceType } from "../../curriculum/curriculumManifest";
+import type { TeacherUnitError } from "../../teacherUnits/errors";
 
 // U2.2 - My Units panel inside Curriculum (docs/platform/TEACHER_UNITS.md
 // §9.4). DOM only: no Firebase, no browser storage. Everything it shows
@@ -89,7 +90,12 @@ type NoticeContext = {
   readonly archived: boolean;
   // The newest evidence says the unit exists and is active.
   readonly active: boolean;
+  // The newest evidence says the unit is not in the teacher's units.
+  readonly absent: boolean;
   readonly listed: boolean;
+  // The latest accepted record while the newest evidence says the unit
+  // exists (active or archived), else null. Never an older snapshot.
+  readonly unit: TeacherUnit | null;
 };
 // A notice's wording: fixed text, or a formatter that words the operation's
 // historical outcome for the unit's current context.
@@ -279,8 +285,13 @@ export function renderTeacherUnitsPanel(
   };
   // Which pending membership request owns the current message (0: none).
   let statusOwner = 0;
+  // The status region's confirmation when its wording says where the unit
+  // is: re-derived like retained notices (see `refreshNotices`) while it is
+  // still the message showing. Any other announcement replaces it.
+  let statusNotice: { readonly unitId: string; readonly text: NoticeText; shown: string } | null = null;
   const announce = (msg: string): void => {
     statusOwner = 0;
+    statusNotice = null;
     status.textContent = "";
     status.textContent = msg;
   };
@@ -519,7 +530,7 @@ export function renderTeacherUnitsPanel(
         if (s.recoveryCheck.kind === "checking") {
           recovery.appendChild(el("p", "shell-units-recovery-note", "Checking your units..."));
         } else if (s.recoveryCheck.kind === "error") {
-          recovery.appendChild(el("p", "shell-units-error", s.recoveryCheck.error.message));
+          recovery.appendChild(el("p", "shell-units-error", readFailure(s.recoveryCheck.error, "check")));
         }
       },
       () => (s.recoveries.length + s.unreadable.length > 0
@@ -727,7 +738,9 @@ export function renderTeacherUnitsPanel(
     card.noticeText = null;
   };
 
-  const handleResult = (card: CardView, result: UnitMutationResult, verb: string): void => {
+  // `base` is the revision the request was based on (the held record when it
+  // was made), so a conflict never presents that older record as current.
+  const handleResult = (card: CardView, result: UnitMutationResult, verb: string, base: number): void => {
     if (disposed) return;
     switch (result.kind) {
       case "saved":
@@ -742,17 +755,7 @@ export function renderTeacherUnitsPanel(
         }
         return;
       case "conflict":
-        showNotice(
-          card,
-          result.latest === null
-            ? "This unit changed somewhere else and the latest version couldn't be loaded. Refresh, then try again."
-            : `This unit changed somewhere else, so your change wasn't saved. Its current name is "${result.latest.title}"${
-                result.latest.description.length > 0
-                  ? ` and its current description is "${result.latest.description}"`
-                  : " with no description"
-              }. Your edits are still here. Review them, then save again.`,
-          "conflict",
-        );
+        showNotice(card, conflictNotice(card, "edit", result.latest, base), "conflict");
         return;
       case "archived":
         showNotice(
@@ -771,7 +774,7 @@ export function renderTeacherUnitsPanel(
         return;
       case "error":
       case "uncertain":
-        showNotice(card, result.error.message);
+        showNotice(card, failureNotice(result.error));
         return;
       case "busy":
       case "stale":
@@ -823,10 +826,11 @@ export function renderTeacherUnitsPanel(
       ev.preventDefault();
       if (save.disabled) return;
       error.hidden = true;
+      const base = baseOf(card);
       void controller
         .updateUnit(card.unit.unitId, { title: title.value, description: description.value })
         .then((result) => {
-          handleResult(card, result, "Saved");
+          handleResult(card, result, "Saved", base);
           if (result.kind === "saved" && card.editor === editor) closeEditor(card, true);
         });
     });
@@ -893,17 +897,24 @@ export function renderTeacherUnitsPanel(
     if (st.kind === "absent") return "This unit is no longer in your units.";
     return "This unit isn't in your current list. Refresh to see its resources.";
   };
-  const contextOf = (unitId: string): NoticeContext => ({
-    where: whereNow(unitId),
-    archived: controller.getUnitState(unitId).kind === "archived",
-    active: controller.getUnitState(unitId).kind === "active",
-    listed: isListed(unitId),
-  });
+  const contextOf = (unitId: string): NoticeContext => {
+    const st = controller.getUnitState(unitId);
+    return {
+      where: whereNow(unitId),
+      archived: st.kind === "archived",
+      active: st.kind === "active",
+      absent: st.kind === "absent",
+      listed: isListed(unitId),
+      unit: st.kind === "active" || st.kind === "archived" ? st.unit : null,
+    };
+  };
   const titleOf = (unitId: string): string => controller.getKnownUnit(unitId)?.title ?? "This unit";
   // Every notice is worded from the current context whenever it is shown,
   // moved, or re-rendered.
-  const wordNotice = (text: NoticeText, unitId: string): string =>
-    typeof text === "string" ? text : text(contextOf(unitId));
+  const wordNotice = (text: NoticeText, unitId: string, ctx?: NoticeContext): string =>
+    typeof text === "string" ? text : text(ctx ?? contextOf(unitId));
+  const sentences = (parts: ReadonlyArray<string | null>): string =>
+    parts.filter((x): x is string => x !== null && x !== "").join(" ");
   // After a refusal because the unit was archived (historical), the next
   // step follows where the unit stands now: restore it while it is still
   // archived; nothing to restore once it is active again.
@@ -918,10 +929,20 @@ export function renderTeacherUnitsPanel(
     const text = parts.filter((x): x is string => x !== null && x !== "").join(" ");
     return text === "" ? "" : ` ${text}`;
   };
-  const UNCERTAIN: NoticeText = ({ where }) =>
+  // An absent unit can't be checked or changed, so it gets no next step.
+  const UNCERTAIN: NoticeText = ({ where, absent }) =>
     where === null
       ? "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again."
-      : `LyfeLabz couldn't confirm whether your change was saved. ${where} Check before trying again.`;
+      : absent
+        ? `LyfeLabz couldn't confirm whether your change was saved. ${where}`
+        : `LyfeLabz couldn't confirm whether your change was saved. ${where} Check before trying again.`;
+  // An uncertain write whose unit couldn't be read afterwards: once a record
+  // newer than the request's base is accepted (or the unit is absent), it
+  // is worded like any other uncertain write.
+  const uncertainUnread = (base: number): NoticeText => (ctx) =>
+    (ctx.unit !== null && ctx.unit.revision > base) || ctx.absent
+      ? wordNotice(UNCERTAIN, "", ctx)
+      : "LyfeLabz couldn't confirm whether your change was saved, and the unit couldn't be loaded. Refresh before trying again.";
   // The full current record, or null when the unit is not current.
   const currentUnit = (unitId: string): TeacherUnit | null => {
     const st = controller.getUnitState(unitId);
@@ -1042,33 +1063,166 @@ export function renderTeacherUnitsPanel(
     }
     showNotice(card, null);
     announce(outcome.announce);
+    const unitId = card.unit.unitId;
+    const { base, mode } = outcome;
+    const text: NoticeText =
+      base !== undefined && mode !== undefined
+        ? (ctx) => base + locationSuffix(mode, ctx, titleOf(unitId))
+        : outcome.announce;
+    if (typeof text !== "string") statusNotice = { unitId, text, shown: status.textContent ?? "" };
     // A hidden unit's confirmation has no card to show it: keep it.
-    if (!card.li.isConnected || !isListed(card.unit.unitId)) {
-      const { base, mode } = outcome;
-      const text: NoticeText =
-        base !== undefined && mode !== undefined
-          ? (ctx) => base + locationSuffix(mode, ctx, titleOf(card.unit.unitId))
-          : outcome.announce;
-      recordOutcome(card.unit.unitId, card.unit.title, text, "confirmed");
+    if (!card.li.isConnected || !isListed(unitId)) {
+      recordOutcome(unitId, card.unit.title, text, "confirmed");
     }
     return true;
   };
 
+  // ---------- Retained notice wording (tenth certification) ----------
+  //
+  // A retained notice states what happened, fixed when its operation
+  // settled, and derives everything about the unit now (its name and
+  // description, whether it holds unavailable resources, where it is) from
+  // the latest accepted record on every render. Nothing fixed at settlement
+  // says what the unit holds now or whether this account can make changes
+  // now.
+
+  // The revision a request is based on: the record held when it was made.
+  const baseOf = (card: CardView): number => controller.getKnownUnit(card.unit.unitId)?.revision ?? -1;
+
+  // A revision conflict. The record the request was based on is known to be
+  // older than the server's, so values are named only from the latest
+  // accepted record, and only once it is the reconciliation read (`latest`)
+  // or newer, or (when that read failed) newer than the base. The next step
+  // follows where the unit stands now.
+  const conflictNotice = (
+    card: CardView,
+    what: "edit" | "add" | "remove",
+    latest: TeacherUnit | null,
+    base: number,
+  ): NoticeText => {
+    const min = latest !== null ? latest.revision : base + 1;
+    const outcome =
+      what === "edit"
+        ? "This unit changed somewhere else, so your change wasn't saved."
+        : `This unit changed somewhere else, so ${what === "add" ? "nothing was added" : "nothing was removed"}.`;
+    return (ctx) => {
+      const loaded = ctx.unit !== null && ctx.unit.revision >= min ? ctx.unit : null;
+      const editing = what === "edit" && card.editor !== null;
+      const values =
+        what === "edit" && loaded !== null
+          ? `The latest version LyfeLabz has loaded is named "${loaded.title}" and has ${
+              loaded.description.length > 0 ? `the description "${loaded.description}"` : "no description"
+            }.`
+          : null;
+      const unread = latest === null && loaded === null && !ctx.absent ? "Its latest version couldn't be loaded." : null;
+      let next: ReadonlyArray<string | null>;
+      if (ctx.archived) {
+        next = [
+          ctx.where ?? "It is archived now.",
+          editing
+            ? "Your edits are still here. Restore it to save them, or cancel to discard them."
+            : what === "edit"
+              ? "Restore it to make changes."
+              : "Restore it to change its resources.",
+        ];
+      } else if (ctx.active && loaded === null) {
+        next = [ctx.where ?? "Refresh, then try again."];
+      } else if (ctx.active) {
+        next = editing
+          ? [ctx.where, "Your edits are still here. Review them, then save again."]
+          : what === "edit"
+            ? [ctx.where, "Review it, then try again."]
+            : [ctx.where ?? "Its current resources are shown. Review them, then try again."];
+      } else {
+        next = [ctx.where];
+      }
+      return sentences([outcome, values, unread, ...next]);
+    };
+  };
+
+  // The next step after a notice about unavailable resources, from the
+  // latest accepted record: remove them only while it still holds some,
+  // restore first while it is archived, and no step at all for a unit that
+  // is not in the teacher's units (or not known now). Never claims that a
+  // repair happened, only what the record holds.
+  const retiredNext = (ctx: NoticeContext, again: string | null): Array<string | null> => {
+    if (ctx.archived) return [ctx.where ?? "It is archived now.", "Restore it to change its resources."];
+    if (ctx.active && ctx.unit !== null) {
+      return retiredCount(ctx.unit) > 0
+        ? [ctx.where, `Remove the unavailable resources first, then ${again ?? "try again."}`]
+        : [again !== null ? `It has no unavailable resources now, so you can ${again}` : "It has no unavailable resources now.", ctx.where];
+    }
+    return [ctx.where];
+  };
+  // The picker closed because unavailable resources arrived (historical).
+  const PICKER_RETIRED: NoticeText = (ctx) =>
+    sentences([
+      ctx.active && ctx.unit !== null && retiredCount(ctx.unit) > 0
+        ? "Some resources in this unit are no longer available, so adding resources was closed."
+        : "Some resources in this unit were no longer available, so adding resources was closed.",
+      ...retiredNext(ctx, "add resources again."),
+    ]);
+
+  // A refusal or failure other than a conflict or an archived unit.
+  const failureNotice = (error: TeacherUnitError): NoticeText => {
+    switch (error.category) {
+      case "unauthorized":
+        // Historical: this request was refused. Whether the account can make
+        // changes now is never stated: a later request may have succeeded,
+        // and one success (or a read) says nothing about the next request.
+        return (ctx) =>
+          sentences([
+            "Your account wasn't allowed to make this change when you tried, so LyfeLabz couldn't confirm whether it was saved.",
+            ctx.absent ? null : "If you still can't make changes, sign in again.",
+            ctx.where ?? "Check this unit before trying again.",
+          ]);
+      case "notFound":
+        return (ctx) =>
+          sentences([
+            "LyfeLabz couldn't find this unit when you tried.",
+            ctx.unit !== null ? "It was found in your units again." : null,
+            ctx.where,
+          ]);
+      case "resourceRejected":
+        if (error.code === "teacherUnits.duplicateResource") {
+          return "That resource was already in this unit, so nothing was changed.";
+        }
+        return (ctx) =>
+          sentences([
+            "Your change wasn't saved because it named resources that are no longer available.",
+            ...retiredNext(ctx, null),
+          ]);
+      default:
+        // Historical outcomes with a next step that stays valid ("couldn't
+        // confirm ... refresh to check", "could not be saved. Refresh and
+        // try again"); nothing about the unit or account now.
+        return error.message;
+    }
+  };
+
+  // A failed read, shown until the next attempt. An authorization refusal
+  // says what happened when it was tried, never the account's current
+  // state.
+  const readFailure = (error: TeacherUnitError, what: "list" | "check"): string => {
+    if (error.category === "unauthorized") {
+      return what === "list"
+        ? "Your units couldn't be loaded because your account wasn't allowed to load them when LyfeLabz tried. If this keeps happening, sign in again, then try again."
+        : "LyfeLabz couldn't check your units because your account wasn't allowed to load them when it tried. If this keeps happening, sign in again, then check again.";
+    }
+    return what === "list" ? error.message || "Your units couldn't be loaded." : error.message;
+  };
+
   // Notices for a membership request that did not confirm a change.
-  const membershipNotice = (card: CardView, result: UnitMutationResult, action: "add" | "remove"): void => {
+  const membershipNotice = (
+    card: CardView,
+    result: UnitMutationResult,
+    action: "add" | "remove",
+    base: number,
+  ): void => {
     const nothing = action === "add" ? "nothing was added" : "nothing was removed";
     switch (result.kind) {
       case "conflict":
-        showNotice(
-          card,
-          result.latest === null
-            ? `This unit changed somewhere else, so ${nothing}, and its latest version couldn't be loaded. Refresh, then try again.`
-            : ({ where }) =>
-                where === null
-                  ? `This unit changed somewhere else, so ${nothing}. Its current resources are shown. Review them, then try again.`
-                  : `This unit changed somewhere else, so ${nothing}. ${where}`,
-          "conflict",
-        );
+        showNotice(card, conflictNotice(card, action, result.latest, base), "conflict");
         return;
       case "archived":
         showNotice(
@@ -1080,16 +1234,10 @@ export function renderTeacherUnitsPanel(
         );
         return;
       case "uncertain":
-        showNotice(
-          card,
-          result.latest === null
-            ? "LyfeLabz couldn't confirm whether your change was saved, and the unit couldn't be loaded. Refresh before trying again."
-            : UNCERTAIN,
-          "conflict",
-        );
+        showNotice(card, result.latest === null ? uncertainUnread(base) : UNCERTAIN, "conflict");
         return;
       case "error":
-        showNotice(card, result.error.message);
+        showNotice(card, failureNotice(result.error));
         return;
       default:
         return;
@@ -1233,6 +1381,7 @@ export function renderTeacherUnitsPanel(
         .map((r) => r.id)
         .filter((id) => picker.selected.has(id));
       const unitTitle = card.unit.title;
+      const base = baseOf(card);
       const clearPending = announcePending(
         `Adding ${ids.length === 1 ? "1 resource" : `${ids.length} resources`} to "${unitTitle}"...`,
       );
@@ -1245,7 +1394,7 @@ export function renderTeacherUnitsPanel(
           if (card.picker === picker) closePicker(card, true);
           return;
         }
-        membershipNotice(card, result, "add");
+        membershipNotice(card, result, "add", base);
         if (result.kind === "archived" && card.picker === picker) closePicker(card, true);
         else if (card.picker === picker) {
           renderPickerOptions(card);
@@ -1261,6 +1410,7 @@ export function renderTeacherUnitsPanel(
 
   const removeResource = (card: CardView, resourceId: string, name: string, index: number): void => {
     const unitTitle = card.unit.title;
+    const base = baseOf(card);
     const clearPending = announcePending(`Removing "${name}" from "${unitTitle}"...`);
     void controller.removeResource(card.unit.unitId, resourceId).then((result) => {
       if (disposed) return;
@@ -1277,7 +1427,7 @@ export function renderTeacherUnitsPanel(
         focus(still ?? removes[Math.min(index, removes.length - 1)] ?? addButtonOf(card) ?? heading);
         return;
       }
-      membershipNotice(card, result, "remove");
+      membershipNotice(card, result, "remove", base);
       focus(
         card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${card.unit.unitId}-${resourceId}"]`) ??
           addButtonOf(card) ??
@@ -1298,6 +1448,7 @@ export function renderTeacherUnitsPanel(
   const removeRetired = (card: CardView, shown: number): void => {
     const u = card.unit;
     const before = new Set(u.resourceIds.filter(isUnavailable));
+    const base = baseOf(card);
     card.confirmRetired = null;
     const clearPending = announcePending(
       `Removing ${plural(shown, "unavailable resource", "unavailable resources")} from "${u.title}"...`,
@@ -1312,7 +1463,7 @@ export function renderTeacherUnitsPanel(
         focus(retiredButtonOf(card) ?? addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
         return;
       }
-      membershipNotice(card, result, "remove");
+      membershipNotice(card, result, "remove", base);
       focus(retiredButtonOf(card) ?? addButtonOf(card) ?? card.li.querySelector<HTMLElement>("button"));
     });
   };
@@ -1442,11 +1593,7 @@ export function renderTeacherUnitsPanel(
       card.picker.form.remove();
       card.picker = null;
       if (blocked === "retired") {
-        showNotice(
-          card,
-          "Some resources in this unit are no longer available, so adding resources was closed. Remove the unavailable resources first, then add resources again.",
-          "conflict",
-        );
+        showNotice(card, PICKER_RETIRED, "conflict");
       }
     }
     card.li.classList.toggle("shell-units-card--archived", u.status === "archived");
@@ -1481,8 +1628,9 @@ export function renderTeacherUnitsPanel(
             restore.setAttribute("data-testid", `units-editor-restore-${u.unitId}`);
             restore.disabled = busy;
             restore.addEventListener("click", () => {
+              const base = baseOf(card);
               void controller.restoreUnit(u.unitId).then((r) => {
-                handleResult(card, r, "Restored");
+                handleResult(card, r, "Restored", base);
                 if (r.kind === "saved") {
                   showNotice(card, null);
                   focus(card.editor?.title ?? null);
@@ -1524,8 +1672,9 @@ export function renderTeacherUnitsPanel(
           archive.setAttribute("aria-label", `Archive ${u.title}`);
           archive.disabled = busy;
           archive.addEventListener("click", () => {
+            const base = baseOf(card);
             void controller.archiveUnit(u.unitId).then((r) => {
-              handleResult(card, r, "Archived");
+              handleResult(card, r, "Archived", base);
               if (r.kind === "saved" && !controller.getState().showArchived) focus(heading);
             });
           });
@@ -1536,7 +1685,8 @@ export function renderTeacherUnitsPanel(
           restore.setAttribute("aria-label", `Restore ${u.title}`);
           restore.disabled = busy;
           restore.addEventListener("click", () => {
-            void controller.restoreUnit(u.unitId).then((r) => handleResult(card, r, "Restored"));
+            const base = baseOf(card);
+            void controller.restoreUnit(u.unitId).then((r) => handleResult(card, r, "Restored", base));
           });
           actions.appendChild(restore);
         }
@@ -1574,7 +1724,7 @@ export function renderTeacherUnitsPanel(
     if (s.list.kind === "error") {
       const box = el("div", "shell-units-error");
       box.setAttribute("role", "alert");
-      box.appendChild(el("p", "", s.list.error.message || "Your units couldn't be loaded."));
+      box.appendChild(el("p", "", readFailure(s.list.error, "list")));
       const retry = button("Try again");
       retry.setAttribute("data-testid", "units-retry");
       retry.addEventListener("click", () => void controller.refresh());
@@ -1665,6 +1815,16 @@ export function renderTeacherUnitsPanel(
       if (card.noticeText === null || card.notice.hidden) continue;
       const next = wordNotice(card.noticeText, card.unit.unitId);
       if (card.notice.textContent !== next) card.notice.textContent = next;
+    }
+    if (statusNotice !== null) {
+      if (status.textContent !== statusNotice.shown) statusNotice = null;
+      else {
+        const next = wordNotice(statusNotice.text, statusNotice.unitId);
+        if (next !== statusNotice.shown) {
+          status.textContent = next;
+          statusNotice.shown = next;
+        }
+      }
     }
     for (const e of entries.values()) {
       const next = entryText(e);
