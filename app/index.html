@@ -1009,7 +1009,8 @@
   .shell-units-recovery-intro { margin: 0 0 0.5rem 0; font-weight: 600; }
   .shell-units { display: block; max-width: 52rem; }
   .shell-units-heading { margin: 0 0 0.25rem 0; font-size: 1.25rem; color: var(--tw-ink); }
-  .shell-units-heading:focus { outline: none; }
+  /* U2.5: the heading receives focus when a card leaves the list; it shows it. */
+  .shell-units-heading:focus { outline: var(--tw-focus-outline); outline-offset: 2px; border-radius: 2px; }
   .shell-units-intro { margin: 0 0 1rem 0; color: var(--tw-ink-muted); }
   .shell-units-toolbar {
     display: flex;
@@ -1054,10 +1055,20 @@
   }
   .shell-units-textarea { resize: vertical; min-height: 4.5rem; }
   .shell-units-input:focus-visible { outline: var(--tw-focus-outline); outline-offset: 1px; }
-  .shell-units-input:disabled { background: var(--tw-surface-alt); color: var(--tw-ink-muted); }
+  .shell-units-input:disabled,
+  .shell-units-input[readonly] { background: var(--tw-surface-alt); color: var(--tw-ink-muted); }
   .shell-units-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
   /* A disabled primary keeps legible contrast instead of faded green. */
+  /* U2.5: a pending control stays focusable (aria-disabled) and reads as
+     unavailable, like a disabled one. */
+  .shell-units .shell-btn[aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: default;
+    border-color: var(--tw-hairline);
+    color: var(--tw-ink-muted);
+  }
   .shell-units .shell-btn-primary:disabled,
+  .shell-units .shell-btn-primary[aria-disabled="true"],
   .shell-units .shell-btn-primary[aria-busy="true"] {
     color: var(--tw-ink-muted);
     background: var(--tw-surface-alt);
@@ -1154,7 +1165,8 @@
   .shell-units-picker-label { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.35rem 0.25rem; cursor: pointer; }
   .shell-units-picker-label input { margin-top: 0.2rem; flex: none; }
   .shell-units-picker-label input:focus-visible { outline: var(--tw-focus-outline); outline-offset: 2px; }
-  .shell-units-picker-label input:disabled + .shell-units-resource-text { color: var(--tw-ink-muted); }
+  .shell-units-picker-label input:disabled + .shell-units-resource-text,
+  .shell-units-picker-label input[aria-disabled="true"] + .shell-units-resource-text { color: var(--tw-ink-muted); }
   @media (max-width: 480px) {
     .shell-units-form { padding: 0.75rem; }
     .shell-units-actions .shell-btn { flex: 1 1 auto; }
@@ -3452,6 +3464,20 @@
     outline: none;
     box-shadow: var(--tw-focus-ring);
     border-color: var(--tw-nav-edge);
+  }
+  /* U2.5: forced colors drop the shell's box-shadow focus ring; My Units
+     controls use a system-color outline instead (scoped to this panel and placed after
+     the shared ring it supplements). */
+  @media (forced-colors: active) {
+    .shell-units .shell-btn:focus-visible,
+    .shell-units .shell-filter-pill:focus-visible,
+    .shell-units-input:focus-visible,
+    .shell-units input[type="checkbox"]:focus-visible,
+    .shell-units-heading:focus {
+      outline: 2px solid CanvasText;
+      outline-offset: 2px;
+    }
+    .shell-units .shell-btn[aria-disabled="true"] { color: GrayText; border-color: GrayText; }
   }
 
   /* Shared quiet status pill, reused across the newer surfaces so the few

@@ -375,12 +375,14 @@ test.each(["add", "remove", "repair"] as const)("a confirmed %s remains historic
   // saved result still confirms what the revision-guarded request committed.
   last(h.calls.setResources).d.resolve({ unit: { ...a, revision: 2 }, noop: false }); await tick();
   expect(statusText(h)).toContain(action === "add" ? "Added 1 resource" : "Removed");
-  expect(statusText(h)).toContain("don't establish this request's effect");
+  expect(statusText(h)).toContain("Your change was saved, but the latest loaded resources don't show it yet.");
   expect(statusText(h)).not.toContain("couldn't confirm whether your change was saved");
+  expect(statusText(h)).not.toMatch(/can't tell|whether this request took effect/);
   expect(cardNotice(h, a)?.hidden).toBe(true);
   await refreshWith(h, [{ ...a, resourceIds: action === "add" ? [R2.id, R1.id] : [R2.id], revision: 3 }]);
   expect(statusText(h)).toContain(action === "add" ? "Added 1 resource" : "Removed");
   expect(statusText(h)).not.toContain("don't establish");
+  expect(statusText(h)).not.toContain("don't show it yet");
 });
 
 
