@@ -87,6 +87,8 @@ type NoticeContext = {
   // Where to check the unit's resources, or null while its card is listed.
   readonly where: string | null;
   readonly archived: boolean;
+  // The newest evidence says the unit exists and is active.
+  readonly active: boolean;
   readonly listed: boolean;
 };
 // A notice's wording: fixed text, or a formatter that words the operation's
@@ -756,8 +758,14 @@ export function renderTeacherUnitsPanel(
         showNotice(
           card,
           card.editor !== null
-            ? "This unit was archived somewhere else, so your changes weren't saved. They are still here. Restore the unit to save them, or cancel to discard them."
-            : "This unit was archived somewhere else.",
+            ? (ctx) =>
+                "This unit was archived somewhere else, so your changes weren't saved. They are still here." +
+                afterArchivedRefusal(
+                  ctx,
+                  "Restore the unit to save them, or cancel to discard them.",
+                  "It is active again, so you can save them again.",
+                )
+            : (ctx) => "This unit was archived somewhere else." + afterArchivedRefusal(ctx, "", "It is active again."),
           "conflict",
         );
         return;
@@ -888,6 +896,7 @@ export function renderTeacherUnitsPanel(
   const contextOf = (unitId: string): NoticeContext => ({
     where: whereNow(unitId),
     archived: controller.getUnitState(unitId).kind === "archived",
+    active: controller.getUnitState(unitId).kind === "active",
     listed: isListed(unitId),
   });
   const titleOf = (unitId: string): string => controller.getKnownUnit(unitId)?.title ?? "This unit";
@@ -895,6 +904,20 @@ export function renderTeacherUnitsPanel(
   // moved, or re-rendered.
   const wordNotice = (text: NoticeText, unitId: string): string =>
     typeof text === "string" ? text : text(contextOf(unitId));
+  // After a refusal because the unit was archived (historical), the next
+  // step follows where the unit stands now: restore it while it is still
+  // archived; nothing to restore once it is active again.
+  const afterArchivedRefusal = (ctx: NoticeContext, stillArchived: string, activeAgain: string): string => {
+    const parts = ctx.archived
+      ? [ctx.where, stillArchived]
+      : ctx.active
+        ? ctx.where === null
+          ? [activeAgain]
+          : ["It is active again.", ctx.where]
+        : [ctx.where];
+    const text = parts.filter((x): x is string => x !== null && x !== "").join(" ");
+    return text === "" ? "" : ` ${text}`;
+  };
   const UNCERTAIN: NoticeText = ({ where }) =>
     where === null
       ? "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again."
@@ -1050,7 +1073,9 @@ export function renderTeacherUnitsPanel(
       case "archived":
         showNotice(
           card,
-          `This unit is archived, so ${nothing}. Restore it to change its resources.`,
+          (ctx) =>
+            `This unit was archived, so ${nothing}.` +
+            afterArchivedRefusal(ctx, "Restore it to change its resources.", "It is active again, so you can try again."),
           "conflict",
         );
         return;

@@ -322,7 +322,7 @@ describe("B: every completion order of three hidden-unit outcomes", () => {
       const label = order.join(",");
       expect([label, notices(h, `Removed "${R1.title}" from "Plants"`).length]).toEqual([label, 1]);
       expect([label, notices(h, `"Water": LyfeLabz couldn't confirm`).length]).toEqual([label, 1]);
-      expect([label, notices(h, `"Rocks": This unit is archived, so nothing was removed`).length]).toEqual([label, 1]);
+      expect([label, notices(h, `"Rocks": This unit was archived, so nothing was removed`).length]).toEqual([label, 1]);
       expect([label, notices(h, "Its current resources are shown").length]).toEqual([label, 0]);
     }
   });
