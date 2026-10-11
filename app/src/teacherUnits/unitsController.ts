@@ -137,8 +137,25 @@ const NOT_ACTIVE_UNIT: UnitStateView = Object.freeze({ kind: "notActive" });
 
 export type UnitEdit = { readonly title?: string; readonly description?: string };
 
+// What a confirmed membership write committed, known from the request
+// itself: the server compares `expectedRevision` and writes exactly the sent
+// list at `expectedRevision + 1`. The response `unit` is a separate
+// post-commit read and may already show later changes made elsewhere, so it
+// is never used to infer what this write did.
+export type MembershipCommit = {
+  readonly revision: number;
+  readonly previous: ReadonlyArray<string>;
+  readonly resourceIds: ReadonlyArray<string>;
+};
+
 export type UnitMutationResult =
-  | { readonly kind: "saved"; readonly unit: TeacherUnit; readonly noop: boolean }
+  | {
+      readonly kind: "saved";
+      readonly unit: TeacherUnit;
+      readonly noop: boolean;
+      // Membership writes only, and only when the server wrote (not noop).
+      readonly committed?: MembershipCommit;
+    }
   // Field validation before sending; nothing was sent.
   | { readonly kind: "invalid"; readonly field: "title" | "description"; readonly message: string }
   // Revision conflict. `latest` is the freshly fetched server state (null
@@ -349,6 +366,9 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     busyUnitIds: new Set<string>(),
   });
 
+  // The units the last completed Check my units returned (its own result).
+  let checkedIds: ReadonlyArray<string> = [];
+
   const set = (patch: Partial<TeacherUnitsViewState>): void => {
     const recoveryCheck = patch.recoveryCheck ?? state.recoveryCheck;
     state = Object.freeze({
@@ -359,15 +379,13 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       recoveries: recoveries(),
       unreadable,
       formerSchool,
-      // A completed check reports the units the latest accepted state holds
-      // (every grade and status), not the response as it arrived: a rename,
-      // refresh, or out-of-order response since then is reflected.
+      // A completed check reports exactly the units ITS response returned
+      // (never a unit it omitted, even if a later or overlapping active-only
+      // load lists one), each shown with its latest accepted record so a
+      // rename since is reflected; a unit found absent since is dropped.
       recoveryCheck:
         recoveryCheck.kind === "checked"
-          ? Object.freeze({
-              kind: "checked",
-              units: Object.freeze(unitsWhere(["present", "notActive"]).sort(compareTeacherUnits)),
-            })
+          ? Object.freeze({ kind: "checked", units: checkedUnits() })
           : recoveryCheck,
     });
     for (const l of Array.from(listeners)) {
@@ -400,6 +418,9 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   // - `known`: the full authoritative record with the HIGHEST revision
   //   seen (status, title, and resources included, even when hidden).
   //   Revisions are server-monotonic, so content never moves backwards.
+  //   Records and presence are ordered independently: a record is kept
+  //   even while the newest evidence says the unit is absent (callers then
+  //   see no held unit), so a later read can never lower its revision.
   // - `presence`: the newest evidence of where the unit stands, with its
   //   stamp: "present" (returned by a read or write), "notActive" (omitted
   //   by an active-only list it was in scope for: archived, or gone; its
@@ -465,17 +486,33 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       p = omitted;
       presence.set(unit.unitId, omitted);
     }
+    // Content only moves forward, whatever the presence evidence: a record
+    // is kept even when newer evidence says the unit is absent, so a later
+    // read that finds it again can never lower its revision.
     const held = known.get(unit.unitId);
-    if (p !== undefined && p.at > at && p.kind === "absent") return null;
-    // Content only moves forward, whatever the presence evidence.
     if (held === undefined || unit.revision > held.revision) known.set(unit.unitId, unit);
     const now = known.get(unit.unitId) as TeacherUnit;
+    if (p !== undefined && p.at > at && p.kind === "absent") return null;
     if (p !== undefined && p.at > at && p.kind === "notActive") {
       return now.status === "archived" ? now : null;
     }
     if (p === undefined || p.at <= at) presence.set(unit.unitId, { at, kind: "present" });
     return now;
   };
+
+  // The record callers may act on: none while the newest evidence says the
+  // unit is absent (as if never held), the highest revision otherwise.
+  const heldUnit = (unitId: string): TeacherUnit | undefined =>
+    presence.get(unitId)?.kind === "absent" ? undefined : known.get(unitId);
+
+  const checkedUnits = (): ReadonlyArray<TeacherUnit> =>
+    Object.freeze(
+      checkedIds
+        .filter((id) => presence.get(id)?.kind !== "absent")
+        .map((id) => known.get(id))
+        .filter((u): u is TeacherUnit => u !== undefined)
+        .sort(compareTeacherUnits),
+    );
 
   const relist = (): void => {
     if (state.list.kind === "ready") set({ list: listedNow() });
@@ -487,11 +524,11 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     return held;
   };
 
-  // `notFound` observed by a request dispatched at `at`.
+  // `notFound` observed by a request dispatched at `at`. Presence only: the
+  // highest-revision record seen stays (see `accept`).
   const drop = (unitId: string, at: number): void => {
     const p = presence.get(unitId);
     if (p !== undefined && p.at > at) return;
-    known.delete(unitId);
     presence.set(unitId, { at, kind: "absent" });
     relist();
   };
@@ -559,7 +596,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     run: (current: TeacherUnit) => Promise<{ readonly unit: TeacherUnit; readonly noop: boolean }>,
   ): Promise<UnitMutationResult> => {
     if (!alive()) return { kind: "stale" };
-    const current = known.get(unitId);
+    const current = heldUnit(unitId);
     if (current === undefined) {
       return { kind: "error", error: normalizeTeacherUnitError({ details: { code: "teacherUnits.notFound" } }) };
     }
@@ -601,7 +638,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     next: (current: TeacherUnit) => ReadonlyArray<string> | null,
   ): Promise<UnitMutationResult> => {
     if (!alive()) return { kind: "stale" };
-    const held = known.get(unitId);
+    const held = heldUnit(unitId);
     if (held !== undefined && held.status !== "active") {
       return {
         kind: "archived",
@@ -610,10 +647,13 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       };
     }
     if (held !== undefined && next(held) === null) return { kind: "saved", unit: held, noop: true };
+    let sent: MembershipCommit | null = null;
     const result = await mutate(unitId, (u) => {
       const resourceIds = next(u) ?? u.resourceIds;
+      sent = Object.freeze({ revision: u.revision + 1, previous: u.resourceIds, resourceIds });
       return deps.callables.setResources({ unitId, expectedRevision: u.revision, resourceIds });
     });
+    if (result.kind === "saved" && !result.noop && sent !== null) return { ...result, committed: sent };
     if (
       result.kind !== "error" ||
       (result.error.category !== "network" &&
@@ -637,7 +677,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   // A list the server would refuse (it still names a retired id) is not
   // sent. `removing` is the one id the request drops, if any.
   const retiredBlock = (unitId: string, removing: string | null): UnitMutationResult | null => {
-    const held = known.get(unitId);
+    const held = heldUnit(unitId);
     if (held === undefined || held.status !== "active") return null;
     const remaining = retiredIds(held).filter((id) => id !== removing);
     if (remaining.length === 0) return null;
@@ -696,7 +736,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       void load();
     },
     refresh: () => load(),
-    getKnownUnit: (unitId: string) => known.get(unitId) ?? null,
+    getKnownUnit: (unitId: string) => heldUnit(unitId) ?? null,
     getUnitState: (unitId: string): UnitStateView => {
       const p = presence.get(unitId);
       const u = known.get(unitId);
@@ -771,6 +811,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       }
       // Every grade and status is in scope.
       acceptList(outcome.result.units, at, { grade: null, includeArchived: true });
+      checkedIds = Object.freeze(outcome.result.units.map((u) => u.unitId));
       // `units` is projected from the latest accepted state on every update
       // (see `set`), so recovery hints never show an older title.
       set({ recoveryCheck: { kind: "checked", units: Object.freeze([]) } });
@@ -821,7 +862,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       return ok;
     },
     updateUnit: async (unitId, edit) => {
-      const current = known.get(unitId);
+      const current = heldUnit(unitId);
       const request: { title?: string; description?: string } = {};
       if (edit.title !== undefined) {
         const msg = validateUnitTitle(edit.title);
@@ -871,7 +912,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
         }
         return added.length === 0 ? null : [...u.resourceIds, ...added];
       };
-      const held = known.get(unitId);
+      const held = heldUnit(unitId);
       const next = held === undefined ? null : appended(held);
       if (next !== null && next.length > TEACHER_UNIT_RESOURCES_MAX) {
         return Promise.resolve<UnitMutationResult>({

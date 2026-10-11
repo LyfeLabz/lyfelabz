@@ -11,6 +11,7 @@ import {
   type CreateBlockedReason,
   type CreateRecoveryEntry,
   type TeacherUnitsController,
+  type MembershipCommit,
   type TeacherUnitsViewState,
   type UnitMutationResult,
 } from "../../teacherUnits/unitsController";
@@ -189,6 +190,38 @@ export function renderTeacherUnitsPanel(
   status.setAttribute("aria-live", "polite");
   status.setAttribute("data-testid", "units-status");
   root.appendChild(status);
+  // Outcome notices for units whose card is not shown (archived and
+  // hidden, refreshed away, or no longer found). A card's own notice is used
+  // while the card is attached; an outcome is never written into a detached
+  // card. One notice per unit: a later outcome for the same unit replaces
+  // it, other units' notices are never touched, and each can be dismissed.
+  // The panel is torn down on any teacher or school change, so notices
+  // never carry across accounts or schools.
+  const outcomes = el("div", "shell-units-outcomes");
+  outcomes.setAttribute("data-testid", "units-outcomes");
+  root.appendChild(outcomes);
+  const outcomeNotices = new Map<string, HTMLElement>();
+  const clearOutcome = (unitId: string): void => {
+    outcomeNotices.get(unitId)?.remove();
+    outcomeNotices.delete(unitId);
+  };
+  const setOutcome = (unitId: string, title: string, msg: string, kind: "conflict" | "error"): void => {
+    clearOutcome(unitId);
+    const box = el("div", `shell-units-notice shell-units-notice--${kind}`);
+    box.setAttribute("role", "alert");
+    box.setAttribute("data-testid", `units-outcome-${unitId}`);
+    box.appendChild(el("p", "", `"${title}": ${msg}`));
+    const dismiss = button("Dismiss");
+    dismiss.setAttribute("data-testid", `units-outcome-dismiss-${unitId}`);
+    dismiss.setAttribute("aria-label", `Dismiss notice about ${title}`);
+    dismiss.addEventListener("click", () => {
+      clearOutcome(unitId);
+      focus(heading);
+    });
+    box.appendChild(dismiss);
+    outcomes.appendChild(box);
+    outcomeNotices.set(unitId, box);
+  };
   // Which pending membership request owns the current message (0: none).
   let statusOwner = 0;
   const announce = (msg: string): void => {
@@ -615,10 +648,24 @@ export function renderTeacherUnitsPanel(
     return s.list.kind === "ready" && s.list.units.some((u) => u.unitId === unitId);
   };
 
+  // A unit's outcome notice: in its card while the card is attached, else
+  // in the panel's outcome region, so it always stays visible and announced.
   const showNotice = (card: CardView, msg: string | null, kind: "conflict" | "error" = "error"): void => {
-    card.notice.hidden = msg === null;
-    card.notice.textContent = msg ?? "";
+    const unitId = card.unit.unitId;
+    clearOutcome(unitId);
+    const attached = msg !== null && card.li.isConnected;
+    card.notice.hidden = !attached;
+    card.notice.textContent = attached ? msg : "";
     card.notice.className = `shell-units-notice shell-units-notice--${kind}`;
+    if (msg !== null && !attached) {
+      setOutcome(unitId, controller.getKnownUnit(unitId)?.title ?? card.unit.title, msg, kind);
+    }
+  };
+  // A card leaving the list hands a visible notice to the outcome region.
+  const keepNotice = (card: CardView): void => {
+    if (card.notice.hidden || card.notice.textContent === "") return;
+    const kind = card.notice.className.includes("--conflict") ? "conflict" : "error";
+    setOutcome(card.unit.unitId, card.unit.title, card.notice.textContent ?? "", kind);
   };
 
   const handleResult = (card: CardView, result: UnitMutationResult, verb: string): void => {
@@ -763,8 +810,20 @@ export function renderTeacherUnitsPanel(
   // claim that a change "somewhere else" happened needs a newer revision
   // than the response; anything else is stated neutrally.
   const NOTHING_CHANGED_REFRESH = "Nothing was changed. Refresh to see this unit's current resources.";
-  const UNCERTAIN_NOW =
-    "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again.";
+  // Where the teacher can check a unit's resources now. "Shown" is claimed
+  // only while its card is in the list.
+  const whereNow = (unitId: string): string | null => {
+    if (isListed(unitId)) return null;
+    return controller.getUnitState(unitId).kind === "archived"
+      ? "This unit is archived, so it isn't shown. Turn on Show archived units to see its resources."
+      : "This unit isn't in your current list. Refresh to see its resources.";
+  };
+  const uncertainText = (unitId: string): string => {
+    const where = whereNow(unitId);
+    return where === null
+      ? "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again."
+      : `LyfeLabz couldn't confirm whether your change was saved. ${where} Check before trying again.`;
+  };
   // The full current record, or null when the unit is not current.
   const currentUnit = (unitId: string): TeacherUnit | null => {
     const st = controller.getUnitState(unitId);
@@ -778,8 +837,14 @@ export function renderTeacherUnitsPanel(
   const savedRefresh = (title: string): string =>
     `Your change to "${title}" was saved. Refresh to see this unit's current resources.`;
   type Outcome = { readonly announce: string } | { readonly uncertain: true };
+  type Saved = Extract<UnitMutationResult, { kind: "saved" }>;
+  // "Changed somewhere else" needs a record newer than what this request
+  // established: the committed revision for a write (the response record is
+  // a later read and may already include other sessions' changes), the
+  // response snapshot for a no-op.
+  const baseRevision = (result: Saved): number => result.committed?.revision ?? result.unit.revision;
 
-  const removeOutcome = (result: { unit: TeacherUnit; noop: boolean }, resourceId: string, name: string): Outcome => {
+  const removeOutcome = (result: Saved, resourceId: string, name: string): Outcome => {
     const cur = currentUnit(result.unit.unitId);
     const write = !result.noop;
     if (cur === null) return { announce: write ? savedRefresh(result.unit.title) : NOTHING_CHANGED_REFRESH };
@@ -790,7 +855,7 @@ export function renderTeacherUnitsPanel(
           archivedNote(cur),
       };
     }
-    if (cur.revision <= result.unit.revision) {
+    if (cur.revision <= baseRevision(result)) {
       return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
     }
     return {
@@ -801,17 +866,18 @@ export function renderTeacherUnitsPanel(
     };
   };
 
-  const addOutcome = (
-    result: { unit: TeacherUnit; noop: boolean },
-    ids: ReadonlyArray<string>,
-    before: ReadonlySet<string>,
-  ): Outcome => {
+  const addOutcome = (result: Saved, ids: ReadonlyArray<string>): Outcome => {
     const cur = currentUnit(result.unit.unitId);
     const write = !result.noop;
     if (cur === null) return { announce: write ? savedRefresh(result.unit.title) : NOTHING_CHANGED_REFRESH };
-    // A write proves the ids it newly holds; a no-op proves every chosen id
-    // was already there when the server read the unit.
-    const targets = write ? ids.filter((id) => !before.has(id) && result.unit.resourceIds.includes(id)) : ids;
+    // A write added exactly what it sent beyond the list it was based on; a
+    // no-op proves every chosen id was already there when the server read
+    // the unit. Neither is inferred from the post-commit record.
+    const targets = write
+      ? result.committed !== undefined
+        ? result.committed.resourceIds.filter((id) => !(result.committed as MembershipCommit).previous.includes(id))
+        : ids
+      : ids;
     const missing = targets.some((id) => !cur.resourceIds.includes(id));
     if (!missing) {
       const n = targets.length;
@@ -822,7 +888,7 @@ export function renderTeacherUnitsPanel(
             : `Those resources are already in "${cur.title}", so nothing was changed.`) + archivedNote(cur),
       };
     }
-    if (cur.revision <= result.unit.revision) {
+    if (cur.revision <= baseRevision(result)) {
       return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
     }
     return {
@@ -834,12 +900,18 @@ export function renderTeacherUnitsPanel(
     };
   };
 
-  const repairOutcome = (result: { unit: TeacherUnit; noop: boolean }, before: ReadonlySet<string>): Outcome => {
+  const repairOutcome = (result: Saved, before: ReadonlySet<string>): Outcome => {
     const cur = currentUnit(result.unit.unitId);
     const write = !result.noop;
     if (cur === null) return { announce: write ? savedRefresh(result.unit.title) : NOTHING_CHANGED_REFRESH };
     if (retiredCount(cur) === 0) {
-      const removed = Array.from(before).filter((id) => !result.unit.resourceIds.includes(id)).length;
+      // What this write removed: its base list minus the list it sent.
+      const removed =
+        result.committed !== undefined
+          ? result.committed.previous.filter(
+              (id) => isUnavailable(id) && !(result.committed as MembershipCommit).resourceIds.includes(id),
+            ).length
+          : before.size;
       return {
         announce:
           (write
@@ -847,7 +919,7 @@ export function renderTeacherUnitsPanel(
             : `"${cur.title}" has no unavailable resources, so nothing was changed.`) + archivedNote(cur),
       };
     }
-    if (cur.revision <= result.unit.revision) {
+    if (cur.revision <= baseRevision(result)) {
       return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
     }
     return {
@@ -862,7 +934,7 @@ export function renderTeacherUnitsPanel(
   // Shows a settled membership outcome; true when it was announced.
   const showOutcome = (card: CardView, outcome: Outcome): boolean => {
     if ("uncertain" in outcome) {
-      showNotice(card, UNCERTAIN_NOW, "conflict");
+      showNotice(card, uncertainText(card.unit.unitId), "conflict");
       return false;
     }
     showNotice(card, null);
@@ -873,13 +945,16 @@ export function renderTeacherUnitsPanel(
   // Notices for a membership request that did not confirm a change.
   const membershipNotice = (card: CardView, result: UnitMutationResult, action: "add" | "remove"): void => {
     const nothing = action === "add" ? "nothing was added" : "nothing was removed";
+    const where = whereNow(card.unit.unitId);
     switch (result.kind) {
       case "conflict":
         showNotice(
           card,
           result.latest === null
             ? `This unit changed somewhere else, so ${nothing}, and its latest version couldn't be loaded. Refresh, then try again.`
-            : `This unit changed somewhere else, so ${nothing}. Its current resources are shown. Review them, then try again.`,
+            : where === null
+              ? `This unit changed somewhere else, so ${nothing}. Its current resources are shown. Review them, then try again.`
+              : `This unit changed somewhere else, so ${nothing}. ${where}`,
           "conflict",
         );
         return;
@@ -895,7 +970,7 @@ export function renderTeacherUnitsPanel(
           card,
           result.latest === null
             ? "LyfeLabz couldn't confirm whether your change was saved, and the unit couldn't be loaded. Refresh before trying again."
-            : "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again.",
+            : uncertainText(card.unit.unitId),
           "conflict",
         );
         return;
@@ -1044,7 +1119,6 @@ export function renderTeacherUnitsPanel(
         .map((r) => r.id)
         .filter((id) => picker.selected.has(id));
       const unitTitle = card.unit.title;
-      const before = new Set(card.unit.resourceIds);
       const clearPending = announcePending(
         `Adding ${ids.length === 1 ? "1 resource" : `${ids.length} resources`} to "${unitTitle}"...`,
       );
@@ -1053,7 +1127,7 @@ export function renderTeacherUnitsPanel(
         clearPending();
         if (result.kind === "stale" || result.kind === "busy") return;
         if (result.kind === "saved") {
-          showOutcome(card, addOutcome(result, ids, before));
+          showOutcome(card, addOutcome(result, ids));
           if (card.picker === picker) closePicker(card, true);
           return;
         }
@@ -1098,6 +1172,7 @@ export function renderTeacherUnitsPanel(
     });
   };
 
+  const isUnavailable = (id: string): boolean => resolveUnitResources([id])[0].status === "unavailable";
   const retiredCount = (u: TeacherUnit): number =>
     resolveUnitResources(u.resourceIds).filter((r) => r.status === "unavailable").length;
   const plural = (n: number, one: string, many: string): string => (n === 1 ? `1 ${one}` : `${n} ${many}`);
@@ -1108,7 +1183,7 @@ export function renderTeacherUnitsPanel(
   // (the server refuses any list that still names one).
   const removeRetired = (card: CardView, shown: number): void => {
     const u = card.unit;
-    const before = new Set(u.resourceIds.filter((id) => resolveUnitResources([id])[0].status === "unavailable"));
+    const before = new Set(u.resourceIds.filter(isUnavailable));
     card.confirmRetired = null;
     const clearPending = announcePending(
       `Removing ${plural(shown, "unavailable resource", "unavailable resources")} from "${u.title}"...`,
@@ -1408,6 +1483,7 @@ export function renderTeacherUnitsPanel(
         renderCardBody(c);
         pinned.push(c);
       } else {
+        keepNotice(c);
         c.li.remove();
         cards.delete(id);
       }
