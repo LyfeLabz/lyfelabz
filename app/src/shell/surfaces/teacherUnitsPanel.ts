@@ -81,9 +81,17 @@ type CardView = {
   readonly body: HTMLDivElement;
 };
 
-// A notice's wording. A function receives where the unit's resources can be
-// checked now (null while its card is shown) and words the notice for it.
-type NoticeText = string | ((where: string | null) => string);
+// Where a unit stands for the teacher right now, derived from the current
+// accepted state and view on every render (never stored).
+type NoticeContext = {
+  // Where to check the unit's resources, or null while its card is listed.
+  readonly where: string | null;
+  readonly archived: boolean;
+  readonly listed: boolean;
+};
+// A notice's wording: fixed text, or a formatter that words the operation's
+// historical outcome for the unit's current context.
+type NoticeText = string | ((ctx: NoticeContext) => string);
 
 type EditorView = {
   readonly form: HTMLFormElement;
@@ -212,7 +220,38 @@ export function renderTeacherUnitsPanel(
   outcomes.setAttribute("data-testid", "units-outcomes");
   root.appendChild(outcomes);
   let outcomeSeq = 0;
-  const recordOutcome = (title: string, msg: string, kind: "conflict" | "error" | "confirmed"): void => {
+  // Each entry keeps its operation's facts (id, unit, kind, historical
+  // wording or formatter); only the wording derived from the current state
+  // is refreshed (see `refreshNotices`), in place, without a new entry.
+  type OutcomeEntry = {
+    readonly unitId: string;
+    readonly fallbackTitle: string;
+    readonly text: NoticeText;
+    readonly box: HTMLElement;
+    readonly message: HTMLParagraphElement;
+    readonly dismiss: HTMLButtonElement;
+  };
+  const entries = new Map<HTMLElement, OutcomeEntry>();
+  const entryText = (e: OutcomeEntry): string => {
+    const title = controller.getKnownUnit(e.unitId)?.title ?? e.fallbackTitle;
+    return `"${title}": ${wordNotice(e.text, e.unitId)}`;
+  };
+  // Removes one entry; when focus was inside it, focus moves to the next
+  // remaining entry's Dismiss (else the previous one's, else the heading).
+  const removeEntry = (box: HTMLElement, moveFocus: boolean): void => {
+    const sibling = (box.nextElementSibling ?? box.previousElementSibling) as HTMLElement | null;
+    const next = sibling !== null ? entries.get(sibling)?.dismiss ?? null : null;
+    const hadFocus = moveFocus || box.contains(doc.activeElement);
+    box.remove();
+    entries.delete(box);
+    if (hadFocus) focus(next ?? heading);
+  };
+  const recordOutcome = (
+    unitId: string,
+    fallbackTitle: string,
+    text: NoticeText,
+    kind: "conflict" | "error" | "confirmed",
+  ): void => {
     const id = ++outcomeSeq;
     const box = el(
       "div",
@@ -221,19 +260,20 @@ export function renderTeacherUnitsPanel(
     box.setAttribute("role", kind === "confirmed" ? "status" : "alert");
     box.setAttribute("data-testid", `units-outcome-${id}`);
     box.setAttribute("data-outcome-kind", kind);
-    box.appendChild(el("p", "", `"${title}": ${msg}`));
+    box.setAttribute("data-unit-id", unitId);
+    const message = el("p", "");
+    box.appendChild(message);
     const dismiss = button("Dismiss");
     dismiss.setAttribute("data-testid", `units-outcome-dismiss-${id}`);
-    dismiss.setAttribute("aria-label", `Dismiss notice about ${title}`);
-    dismiss.addEventListener("click", () => {
-      const next = (box.nextElementSibling ?? box.previousElementSibling)?.querySelector<HTMLElement>("button");
-      box.remove();
-      focus(next ?? heading);
-    });
+    dismiss.addEventListener("click", () => removeEntry(box, true));
     box.appendChild(dismiss);
+    const entry: OutcomeEntry = { unitId, fallbackTitle, text, box, message, dismiss };
+    entries.set(box, entry);
+    message.textContent = entryText(entry);
+    dismiss.setAttribute("aria-label", `Dismiss notice about ${controller.getKnownUnit(unitId)?.title ?? fallbackTitle}`);
     outcomes.appendChild(box);
     const confirmations = Array.from(outcomes.querySelectorAll<HTMLElement>('[data-outcome-kind="confirmed"]'));
-    if (outcomes.children.length > OUTCOMES_MAX && confirmations.length > 0) confirmations[0].remove();
+    if (outcomes.children.length > OUTCOMES_MAX && confirmations.length > 0) removeEntry(confirmations[0], false);
   };
   // Which pending membership request owns the current message (0: none).
   let statusOwner = 0;
@@ -673,7 +713,7 @@ export function renderTeacherUnitsPanel(
     card.notice.textContent = attached ? wordNotice(text as NoticeText, unitId) : "";
     card.notice.className = `shell-units-notice shell-units-notice--${kind}`;
     if (text !== null && !attached) {
-      recordOutcome(controller.getKnownUnit(unitId)?.title ?? card.unit.title, wordNotice(text, unitId), kind);
+      recordOutcome(unitId, card.unit.title, text, kind);
     }
   };
   // A card leaving the list hands its visible notice to the outcome
@@ -681,7 +721,7 @@ export function renderTeacherUnitsPanel(
   const keepNotice = (card: CardView): void => {
     if (card.notice.hidden || card.noticeText === null) return;
     const kind = card.notice.className.includes("--conflict") ? "conflict" : "error";
-    recordOutcome(card.unit.title, wordNotice(card.noticeText, card.unit.unitId), kind);
+    recordOutcome(card.unit.unitId, card.unit.title, card.noticeText, kind);
     card.noticeText = null;
   };
 
@@ -831,17 +871,31 @@ export function renderTeacherUnitsPanel(
   // only while its card is in the list.
   const whereNow = (unitId: string): string | null => {
     if (isListed(unitId)) return null;
-    const kind = controller.getUnitState(unitId).kind;
-    if (kind === "archived") {
-      return "This unit is archived, so it isn't shown. Turn on Show archived units to see its resources.";
+    const st = controller.getUnitState(unitId);
+    const view = controller.getState();
+    if (st.kind === "active" || st.kind === "archived") {
+      // It exists: say which filter hides it (never "gone").
+      if (st.unit.grade !== view.grade) {
+        return `This is a ${gradeLabel(st.unit.grade)} unit, so it isn't shown in ${gradeLabel(view.grade)}. Choose ${gradeLabel(st.unit.grade)} to see it.`;
+      }
+      if (st.kind === "archived" && !view.showArchived) {
+        return "This unit is archived, so it isn't shown. Turn on Show archived units to see its resources.";
+      }
     }
-    if (kind === "absent") return "This unit is no longer in your units.";
+    if (st.kind === "absent") return "This unit is no longer in your units.";
     return "This unit isn't in your current list. Refresh to see its resources.";
   };
-  // Every notice is worded at the moment it is shown or moved.
+  const contextOf = (unitId: string): NoticeContext => ({
+    where: whereNow(unitId),
+    archived: controller.getUnitState(unitId).kind === "archived",
+    listed: isListed(unitId),
+  });
+  const titleOf = (unitId: string): string => controller.getKnownUnit(unitId)?.title ?? "This unit";
+  // Every notice is worded from the current context whenever it is shown,
+  // moved, or re-rendered.
   const wordNotice = (text: NoticeText, unitId: string): string =>
-    typeof text === "string" ? text : text(whereNow(unitId));
-  const UNCERTAIN: NoticeText = (where) =>
+    typeof text === "string" ? text : text(contextOf(unitId));
+  const UNCERTAIN: NoticeText = ({ where }) =>
     where === null
       ? "LyfeLabz couldn't confirm whether your change was saved. The resources shown are what this unit holds now. Check them before trying again."
       : `LyfeLabz couldn't confirm whether your change was saved. ${where} Check before trying again.`;
@@ -850,14 +904,28 @@ export function renderTeacherUnitsPanel(
     const st = controller.getUnitState(unitId);
     return st.kind === "active" || st.kind === "archived" ? st.unit : null;
   };
-  // Appended to a statement about the current state.
-  const archivedNote = (u: TeacherUnit): string => (u.status === "archived" ? ` "${u.title}" is archived.` : "");
-  // Appended after a change made elsewhere: where the teacher can see it.
-  const whereShown = (u: TeacherUnit): string =>
-    u.status === "archived" ? archivedNote(u) : isListed(u.unitId) ? " Its current resources are shown." : "";
   const savedRefresh = (title: string): string =>
     `Your change to "${title}" was saved. Refresh to see this unit's current resources.`;
-  type Outcome = { readonly announce: string } | { readonly uncertain: true };
+  // A settled outcome: the historical sentence (`base`, fixed when the
+  // operation settled) and how its location suffix is derived. `announce`
+  // is the one-time live announcement; retained entries re-derive the
+  // suffix from the current state on every render.
+  type Located = { readonly unitId: string; readonly base: string; readonly mode: "archived" | "where" };
+  type Outcome =
+    | ({ readonly announce: string } & Partial<Located>)
+    | { readonly uncertain: true };
+  const locationSuffix = (mode: Located["mode"], ctx: NoticeContext, title: string): string =>
+    ctx.archived
+      ? ` "${title}" is archived.`
+      : mode === "where" && ctx.listed
+        ? " Its current resources are shown."
+        : "";
+  const located = (unitId: string, base: string, mode: Located["mode"]): Outcome => ({
+    announce: base + locationSuffix(mode, contextOf(unitId), titleOf(unitId)),
+    unitId,
+    base,
+    mode,
+  });
   type Saved = Extract<UnitMutationResult, { kind: "saved" }>;
   // "Changed somewhere else" needs a record newer than what this request
   // established: the committed revision for a write (the response record is
@@ -871,19 +939,16 @@ export function renderTeacherUnitsPanel(
     if (cur === null) return { announce: write ? savedRefresh(result.unit.title) : NOTHING_CHANGED_REFRESH };
     if (!cur.resourceIds.includes(resourceId)) {
       return {
-        announce:
-          (write ? `Removed "${name}" from "${cur.title}".` : `"${name}" isn't in "${cur.title}", so nothing was changed.`) +
-          archivedNote(cur),
+        ...located(cur.unitId, (write ? `Removed "${name}" from "${cur.title}".` : `"${name}" isn't in "${cur.title}", so nothing was changed.`), "archived"),
       };
     }
     if (cur.revision <= baseRevision(result)) {
       return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
     }
     return {
-      announce:
-        (write
+      ...located(cur.unitId, (write
           ? `Your removal was saved, but "${name}" is in "${cur.title}" again because this unit changed somewhere else.`
-          : `Nothing was changed. "${name}" is in "${cur.title}" because this unit changed somewhere else.`) + whereShown(cur),
+          : `Nothing was changed. "${name}" is in "${cur.title}" because this unit changed somewhere else.`), "where"),
     };
   };
 
@@ -903,21 +968,18 @@ export function renderTeacherUnitsPanel(
     if (!missing) {
       const n = targets.length;
       return {
-        announce:
-          (write
+        ...located(cur.unitId, (write
             ? `Added ${n === 1 ? "1 resource" : `${n} resources`} to "${cur.title}".`
-            : `Those resources are already in "${cur.title}", so nothing was changed.`) + archivedNote(cur),
+            : `Those resources are already in "${cur.title}", so nothing was changed.`), "archived"),
       };
     }
     if (cur.revision <= baseRevision(result)) {
       return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
     }
     return {
-      announce:
-        (write
+      ...located(cur.unitId, (write
           ? `Your addition was saved, but "${cur.title}" changed somewhere else since, so not every resource you added is in it now.`
-          : `Nothing was changed. "${cur.title}" changed somewhere else since, so not every resource you chose is in it now.`) +
-        whereShown(cur),
+          : `Nothing was changed. "${cur.title}" changed somewhere else since, so not every resource you chose is in it now.`), "where"),
     };
   };
 
@@ -934,21 +996,18 @@ export function renderTeacherUnitsPanel(
             ).length
           : before.size;
       return {
-        announce:
-          (write
+        ...located(cur.unitId, (write
             ? `Removed ${plural(removed, "unavailable resource", "unavailable resources")} from "${cur.title}".`
-            : `"${cur.title}" has no unavailable resources, so nothing was changed.`) + archivedNote(cur),
+            : `"${cur.title}" has no unavailable resources, so nothing was changed.`), "archived"),
       };
     }
     if (cur.revision <= baseRevision(result)) {
       return write ? { uncertain: true } : { announce: NOTHING_CHANGED_REFRESH };
     }
     return {
-      announce:
-        (write
+      ...located(cur.unitId, (write
           ? `Your change was saved, but "${cur.title}" has unavailable resources again because it changed somewhere else.`
-          : `Nothing was changed. "${cur.title}" has unavailable resources because it changed somewhere else.`) +
-        whereShown(cur),
+          : `Nothing was changed. "${cur.title}" has unavailable resources because it changed somewhere else.`), "where"),
     };
   };
 
@@ -962,7 +1021,12 @@ export function renderTeacherUnitsPanel(
     announce(outcome.announce);
     // A hidden unit's confirmation has no card to show it: keep it.
     if (!card.li.isConnected || !isListed(card.unit.unitId)) {
-      recordOutcome(controller.getKnownUnit(card.unit.unitId)?.title ?? card.unit.title, outcome.announce, "confirmed");
+      const { base, mode } = outcome;
+      const text: NoticeText =
+        base !== undefined && mode !== undefined
+          ? (ctx) => base + locationSuffix(mode, ctx, titleOf(card.unit.unitId))
+          : outcome.announce;
+      recordOutcome(card.unit.unitId, card.unit.title, text, "confirmed");
     }
     return true;
   };
@@ -976,7 +1040,7 @@ export function renderTeacherUnitsPanel(
           card,
           result.latest === null
             ? `This unit changed somewhere else, so ${nothing}, and its latest version couldn't be loaded. Refresh, then try again.`
-            : (where) =>
+            : ({ where }) =>
                 where === null
                   ? `This unit changed somewhere else, so ${nothing}. Its current resources are shown. Review them, then try again.`
                   : `This unit changed somewhere else, so ${nothing}. ${where}`,
@@ -1561,6 +1625,28 @@ export function renderTeacherUnitsPanel(
     archivedBox.checked = s.showArchived;
     renderCreate(s);
     renderList(s);
+    refreshNotices(s);
+  };
+
+  // Re-derives the current-state wording of every retained notice (card
+  // notices and outcome entries) after each state or view change. Only the
+  // contextual wording changes; identity, order, and the historical outcome
+  // stay. A notice is rewritten only when its text actually changes, so
+  // live regions are not re-announced needlessly. While the list is
+  // loading, visibility is unknown, so wording is left as it was.
+  const refreshNotices = (s: TeacherUnitsViewState): void => {
+    if (s.list.kind !== "ready") return;
+    for (const card of cards.values()) {
+      if (card.noticeText === null || card.notice.hidden) continue;
+      const next = wordNotice(card.noticeText, card.unit.unitId);
+      if (card.notice.textContent !== next) card.notice.textContent = next;
+    }
+    for (const e of entries.values()) {
+      const next = entryText(e);
+      if (e.message.textContent !== next) e.message.textContent = next;
+      const label = `Dismiss notice about ${controller.getKnownUnit(e.unitId)?.title ?? e.fallbackTitle}`;
+      if (e.dismiss.getAttribute("aria-label") !== label) e.dismiss.setAttribute("aria-label", label);
+    }
   };
 
   const unsubscribe = controller.subscribe(render);
