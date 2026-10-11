@@ -117,16 +117,16 @@ test('git state reports the SHA and every uncommitted change', () => {
 test('prepare preflight refuses unsafe release conditions before building anything', () => {
   const clean = () => ({ sha: SHA, dirty: false, changes: [] });
   const dirty = () => ({ sha: SHA, dirty: true, changes: [' M index.html'] });
-  assert.throws(() => preflight({ project: undefined }, { git: clean }), /explicit --project/);
-  assert.throws(() => preflight({ project: 'default' }, { git: clean }), /unsupported project/);
-  assert.throws(() => preflight({ project: 'lyfelabz-prod' }, { git: dirty }), /not clean/);
-  assert.throws(() => preflight({ project: 'lyfelabz-prod', allowDirty: true }, { git: dirty }), /not permitted for production/);
-  assert.throws(() => preflight({ project: 'lyfelabz-prod', offline: true }, { git: clean }), /must record live baselines/);
-  assert.throws(() => preflight({ project: 'lyfelabz-prod', expectSha: 'f'.repeat(40) }, { git: clean }), /expected f{40}/);
-  const ok = preflight({ project: 'lyfelabz-prod', expectSha: SHA }, { git: clean });
+  assert.throws(() => preflight({ intent:'general', project: undefined }, { git: clean }), /explicit --project/);
+  assert.throws(() => preflight({ intent:'general', project: 'default' }, { git: clean }), /unsupported project/);
+  assert.throws(() => preflight({ intent:'general', project: 'lyfelabz-prod' }, { git: dirty }), /not clean/);
+  assert.throws(() => preflight({ intent:'general', project: 'lyfelabz-prod', allowDirty: true }, { git: dirty }), /not permitted for production/);
+  assert.throws(() => preflight({ intent:'general', project: 'lyfelabz-prod', offline: true }, { git: clean }), /must record live baselines/);
+  assert.throws(() => preflight({ intent:'general', project: 'lyfelabz-prod', expectSha: 'f'.repeat(40) }, { git: clean }), /expected f{40}/);
+  const ok = preflight({ intent:'general', project: 'lyfelabz-prod', expectSha: SHA }, { git: clean });
   assert.deepEqual(ok.sites, { app: 'lyfelabz-prod', marketing: 'lyfelabz-marketing' });
   assert.equal(ok.message, `release ${SHA}`);
-  const stagingDirty = preflight({ project: 'lyfelabz-staging', allowDirty: true, offline: true }, { git: dirty });
+  const stagingDirty = preflight({ intent:'general', project: 'lyfelabz-staging', allowDirty: true, offline: true }, { git: dirty });
   assert.equal(stagingDirty.message, `release ${SHA} uncommitted`);
   assert.deepEqual(stagingDirty.sites, { app: 'lyfelabz-staging', marketing: 'lyfelabz-staging-marketing' });
 });
@@ -150,7 +150,7 @@ test('prepare builds the application bundle before app verify, then the Hosting 
     assert.equal(options.cwd, repositoryRoot);
     order.push(`${command === process.execPath ? 'node' : command} ${args.join(' ')}`);
   };
-  const built = checkAndBuild({ run, build: () => { order.push('pair build'); return 'built'; }, log: () => {} });
+  const built = checkAndBuild({ intent:'general', run, build: () => { order.push('pair build'); return 'built'; }, log: () => {} });
   assert.equal(built, 'built');
   assert.deepEqual(order.map((step) => step.split(' --test ')[0]), [
     'npm --prefix app run build',
@@ -166,7 +166,7 @@ test('a failing check stops prepare before the pair build', () => {
     order.push(args.join(' '));
     if (args.includes('verify')) throw new Error('verify failed');
   };
-  assert.throws(() => checkAndBuild({ run, build: () => order.push('pair build'), log: () => {} }), /verify failed/);
+  assert.throws(() => checkAndBuild({ intent:'general', run, build: () => order.push('pair build'), log: () => {} }), /verify failed/);
   assert.deepEqual(order, ['--prefix app run build', '--prefix app run verify']);
 });
 
@@ -174,6 +174,7 @@ test('the live release is read from hosting:channel:list, with its version, mess
   const calls = [];
   const run = (command, args) => {
     calls.push([command, ...args]);
+    if (args[0] === 'hosting:sites:list') return JSON.stringify({status:'success',result:{sites:[{name:'projects/lyfelabz-prod/sites/lyfelabz-marketing'}]}});
     return JSON.stringify({ status: 'success', result: { channels: [
       { name: 'projects/lyfelabz-prod/sites/lyfelabz-marketing/channels/preview', release: null },
       { name: 'projects/lyfelabz-prod/sites/lyfelabz-marketing/channels/live', release: {
@@ -182,7 +183,7 @@ test('the live release is read from hosting:channel:list, with its version, mess
     ] } });
   };
   const live = liveRelease({ project: 'lyfelabz-prod', site: 'lyfelabz-marketing', run });
-  assert.deepEqual(calls[0], ['firebase', 'hosting:channel:list', '--site', 'lyfelabz-marketing', '--project', 'lyfelabz-prod', '--json', '--non-interactive']);
+  assert.deepEqual(calls[1], ['firebase', 'hosting:channel:list', '--site', 'lyfelabz-marketing', '--project', 'lyfelabz-prod', '--json', '--non-interactive']);
   assert.equal(live.version, '809b39fe932e23ac');
   assert.equal(live.message, null);
   assert.deepEqual(live.config, LIVE_MARKETING_CONFIG);
@@ -268,4 +269,166 @@ test('certification refuses artifacts that changed after the recorded pair build
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+const { certify } = require('./certify.cjs');
+const { summarize, liveComparison } = require('./prepare.cjs');
+const { fingerprint, receipt, REQUIRED_FUNCTIONS, PROJECT_NUMBERS } = require('./backend-state.cjs');
+
+function certificationFixture(intent = 'teacher-units') {
+  const root = fs.mkdtempSync(path.join(repositoryRoot, 'dist', 'a1-certification-test-'));
+  const directories = { app:path.join(root,'app'), marketing:path.join(root,'marketing') };
+  for (const dir of Object.values(directories)) {fs.mkdirSync(dir);fs.writeFileSync(path.join(dir,'index.html'),'home');}
+  const pair = {kind:'lyfelabz.hostingPairBuild',schemaVersion:3,releaseIntent:intent,source:{sha:SHA,dirty:false},files:{app:{'index.html':sha256('home')},marketing:{'index.html':sha256('home')}}};
+  const runtimeFiles={'lib/index.js':sha256('runtime')};
+  const candidate={releaseIntent:intent,source:pair.source,hostingArtifactFingerprint:fingerprint(pair.files),functionsArtifactFingerprint:fingerprint(runtimeFiles),runtimeFiles,
+    placementFingerprint:sha256('placement'),rulesSourceHash:sha256('rules'),indexes:{indexes:[],fieldOverrides:[]}};
+  if(intent === 'general') {for(const key of ['functionsArtifactFingerprint','runtimeFiles','rulesSourceHash','indexes'])delete candidate[key];candidate.closedGateSourceHash=sha256('closed');}
+  pair.candidate=candidate;pair.backendCandidate=intent === 'teacher-units' ? candidate : undefined;
+  const now=new Date().toISOString();
+  const evidence={kind:'lyfelabz.backendObservation',schemaVersion:1,project:'lyfelabz-staging',projectNumber:PROJECT_NUMBERS['lyfelabz-staging'],environment:'staging',startedAt:now,observedAt:now,
+    functions:REQUIRED_FUNCTIONS.map(entryPoint=>({entryPoint,runtimeFiles,artifactFingerprint:fingerprint(runtimeFiles),placementFingerprint:candidate.placementFingerprint})),rules:{sourceHash:candidate.rulesSourceHash},indexes:{configuration:{indexes:[],fieldOverrides:[]},configurationHash:fingerprint({indexes:[],fieldOverrides:[]})}};
+  const backend={candidate,evidence,compatibility:{policy:'u26-a1-exact-backend-artifact-v1',compatible:true}};
+  const surfaces={app:{site:'lyfelabz-staging',baseline:{version:'aaa',releaseTime:now}},marketing:{site:'lyfelabz-staging-marketing',baseline:{version:'bbb',releaseTime:now}}};
+  const prepared={kind:'lyfelabz.hostingPreparedRelease',schemaVersion:3,releaseIntent:intent,project:'lyfelabz-staging',environment:'staging',source:pair.source,candidate,preparedAt:now,surfaces,
+    evidenceReceipt:receipt({phase:'prepared',intent,project:'lyfelabz-staging',candidate,evidence:intent === 'teacher-units' ? evidence : null,hosting:surfaces,recordedAt:now})};
+  const contract=loadContract();const routes={};
+  for(const sample of contract.redirectSamples)routes[`${staging.origins[sample.target]}${sample.path}`]={status:sample.status,location:sample.location.replace('{app}',staging.origins.app).replace('{marketing}',staging.origins.marketing)};
+  for(const sample of contract.routeSamples)routes[`${staging.origins[sample.target]}${sample.path}`]={status:sample.status,body:'home'};
+  const live={app:{version:'ccc',message:`release ${SHA}`},marketing:{version:'ddd',message:`release ${SHA}`}};
+  const calls=[];
+  const run=(command,args)=>{
+    calls.push([command,...args]);assert.equal(command,'firebase');
+    if(args[0]==='hosting:sites:list')return JSON.stringify({status:'success',result:{sites:[{name:'projects/lyfelabz-staging/sites/lyfelabz-staging'},{name:'projects/lyfelabz-staging/sites/lyfelabz-staging-marketing'}]}});
+    assert.equal(args[0],'hosting:channel:list');
+    const site=args[args.indexOf('--site')+1];const target=site==='lyfelabz-staging'?'app':'marketing';
+    return JSON.stringify({status:'success',result:{channels:[{name:`projects/lyfelabz-staging/sites/${site}/channels/live`,release:{message:live[target].message,releaseTime:now,version:{name:`projects/lyfelabz-staging/sites/${site}/versions/${live[target].version}`,config:toApiRouting(stagingTargets[target])}}}]}});
+  };
+  const writes=[];let backendReads=0;
+  const args={project:'lyfelabz-staging',intent,candidateFor:pair=>pair.candidate,directories,readJson:file=>file.endsWith('pair-build.json')?pair:prepared,run,fetchImpl:fakeFetch(routes),
+    backendVerify:async()=>{backendReads++;return backend;},certifyEntry:async()=>({checked:1}),log:()=>{},write:(name,record)=>{writes.push(record);return name;}};
+  return {args,root,pair,prepared,backend,live,calls,writes,backendReads:()=>backendReads};
+}
+test('paired certification independently rechecks backend, records Hosting versions and historical rollback baselines',async()=>{
+  const f=certificationFixture();try {
+    const result=await certify(f.args);
+    assert.equal(f.backendReads(),1);assert.equal(f.writes.length,1);
+    assert.equal(result.record.evidenceReceipt.phase,'certified');
+    assert.equal(result.record.app.version,'ccc');assert.equal(result.record.app.previous,'aaa');
+    assert.equal(result.record.marketing.previous,'bbb');
+    assert.ok(f.calls.every(call=>['hosting:channel:list','hosting:sites:list'].includes(call[1])));
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('partial Hosting release refuses certification without writing success and supplies paired rollback references',async()=>{
+  const f=certificationFixture();try {
+    f.live.marketing.version='bbb';f.live.marketing.message='release older';
+    await assert.rejects(certify(f.args),error=>{
+      assert.match(error.message,/still the pre-release baseline/);assert.match(error.message,/marketing.*release older/);
+      assert.match(error.message,/lyfelabz-staging@aaa/);assert.match(error.message,/lyfelabz-staging-marketing@bbb/);return true;
+    });
+    assert.equal(f.writes.length,0);
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('old schema, wrong project and different candidate receipts cannot supply rollback or readiness authority',async()=>{
+  for(const mutation of [p=>{p.schemaVersion=1;},p=>{p.preparedAt='2020-01-01T00:00:00Z';},p=>{p.project='lyfelabz-prod';},p=>{p.candidate={...p.candidate,hostingArtifactFingerprint:sha256('other')};},p=>{delete p.surfaces.app.baseline;}]) {
+    const f=certificationFixture();try{
+      mutation(f.prepared);await assert.rejects(certify(f.args),/prepare evidence|rollback evidence|rollback baseline|stale or future prepare/);
+      assert.equal(f.writes.length,0);assert.equal(f.calls.length,0);
+    }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+  }
+});
+test('unavailable backend refuses after Hosting checks without success or scope fallback',async()=>{
+  const f=certificationFixture();try{
+    await assert.rejects(certify({...f.args,backendVerify:async()=>{throw new Error('missing credentials');}}),/missing credentials/);
+    assert.ok(f.calls.length>0);assert.equal(f.writes.length,0);
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('offline preparation reports local-only status and never emits deploy/certify instructions',()=>{
+  const text=summarize({environment:staging,source:{sha:SHA,dirty:true},message:`release ${SHA} uncommitted`,built:{record:{pair:{identical:1,shared:1,app:1,marketing:1}}},surfaces:null,backend:null});
+  assert.match(text,/LOCAL BUILD ONLY/);assert.doesNotMatch(text,/firebase deploy|Then certify/);
+});
+test('staging no longer tolerates an unverifiable live rollback baseline',async()=>{
+  await assert.rejects(liveComparison({environment:staging,sites:{app:'lyfelabz-staging',marketing:'lyfelabz-staging-marketing'},built:{appDirectory:'unused',marketingDirectory:'unused'},run:()=>{throw new Error('missing credentials');}}),/missing credentials/);
+});
+test('Hosting identity is retrieved and verified, never inferred from requested CLI project',()=>{
+  for(const wrong of ['channel','version']){
+    const run=(command,args)=>args[0]==='hosting:sites:list'?JSON.stringify({status:'success',result:{sites:[{name:'projects/lyfelabz-staging/sites/lyfelabz-staging'}]}}):JSON.stringify({status:'success',result:{channels:[{name:`projects/${wrong==='channel'?'lyfelabz-prod':'lyfelabz-staging'}/sites/lyfelabz-staging/channels/live`,release:{releaseTime:new Date().toISOString(),version:{name:`projects/${wrong==='version'?'lyfelabz-prod':'lyfelabz-staging'}/sites/lyfelabz-staging/versions/abc`}}}]}});
+    assert.throws(()=>liveRelease({project:'lyfelabz-staging',site:'lyfelabz-staging',run}),/wrong-project|unverifiable/);
+  }
+});
+
+test('preparation refuses a source revision or cleanliness change during local checks/build',()=>{
+  const {verifyBuildSource}=require('./prepare.cjs');
+  const source={sha:SHA,dirty:false};
+  verifyBuildSource(source,{record:{source}});
+  assert.throws(()=>verifyBuildSource(source,{record:{source:{sha:'f'.repeat(40),dirty:false}}}),/changed during preparation/);
+  assert.throws(()=>verifyBuildSource(source,{record:{source:{sha:SHA,dirty:true}}}),/changed during preparation/);
+});
+
+test('general paired Hosting certification passes with undeployed Teacher Units and no backend credentials',async()=>{
+  const f=certificationFixture('general');try {
+    const result=await certify({...f.args,backendVerify:()=>assert.fail('must not request Functions/Rules evidence')});
+    assert.equal(f.backendReads(),0);assert.equal(result.record.releaseIntent,'general');
+    assert.equal(result.record.evidenceReceipt.teacherUnitsReadiness,'not-evaluated');assert.equal(result.record.evidenceReceipt.backend,null);
+    assert.equal(result.record.evidenceReceipt.compatibility,null);assert.equal(f.writes.length,1);
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('explicit intent is bound to pair/preparation, with missing, unknown and relabelled scopes refused',async()=>{
+  for(const intent of [undefined,'unknown','general']) {
+    const f=certificationFixture();try {
+      await assert.rejects(certify({...f.args,intent}),/release intent|pair release intent/);
+      assert.equal(f.calls.length,0);assert.equal(f.writes.length,0);
+    }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+  }
+  const f=certificationFixture('general');try{
+    f.prepared.releaseIntent='teacher-units';await assert.rejects(certify(f.args),/prepare evidence/);
+    assert.equal(f.writes.length,0);
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('strict Teacher Units certification refuses malformed, stale, incompatible or missing evidence',async()=>{
+  for(const mutate of [b=>{b.evidence=null;},b=>{b.evidence.observedAt='2020-01-01T00:00:00Z';},b=>{b.evidence.startedAt='2020-01-01T00:00:00Z';},b=>{b.evidence.functions=[];},b=>{b.evidence.rules.sourceHash='unknown';},b=>{b.evidence.indexes.configurationHash='unknown';},b=>{b.evidence.functions[0].placementFingerprint='unknown';},b=>{b.evidence.project='lyfelabz-prod';}]) {
+    const f=certificationFixture();try{
+      // Keep historical preparation valid; change the independent current read.
+      const backend=structuredClone(f.backend);mutate(backend);
+      await assert.rejects(certify({...f.args,backendVerify:async()=>backend}),/unsupported|stale|future|missing|uncertain|incompatible|wrong-project/);
+      assert.equal(f.writes.length,0);
+    }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+  }
+});
+test('documented short and legacy qualified Hosting resource names require independent project membership',()=>{
+  for(const project of ['lyfelabz-staging','lyfelabz-prod']) for(const format of ['short','id','number']) {
+    const site=project;const number=PROJECT_NUMBERS[project];
+    const prefix=format==='short'?`sites/${site}`:`projects/${format==='number'?number:project}/sites/${site}`;
+    const calls=[];
+    const run=(command,args)=>{
+      calls.push(args[0]);
+      return JSON.stringify({status:'success',result:args[0]==='hosting:sites:list'?{sites:[{name:`projects/${number}/sites/${site}`}]}:{channels:[{name:`${prefix}/channels/live`,release:{releaseTime:'2026-10-01T00:00:00Z',version:{name:`${prefix}/versions/abc`}}}]}});
+    };
+    assert.equal(liveRelease({project,site,run}).version,'abc');
+    assert.deepEqual(calls,['hosting:sites:list','hosting:channel:list']);
+  }
+});
+test('short Hosting identities refuse unproved membership, wildcard, cross-site, cross-project and duplicate live channels',()=>{
+  const project='lyfelabz-staging',site=project;
+  const base={sites:[{name:`projects/${project}/sites/${site}`}],channels:[{name:`sites/${site}/channels/live`,release:{releaseTime:'2026-10-01T00:00:00Z',version:{name:`sites/${site}/versions/abc`}}}]};
+  for(const mutate of [b=>{b.sites=[];},b=>{delete b.sites;},b=>{b.sites[0].name=b.sites[0].name.replace('staging','prod');},b=>{b.sites[0].name=`sites/${site}`;},b=>{b.channels[0].name='sites/other/channels/live';},b=>{b.channels[0].name=`projects/-/sites/${site}/channels/live`;},b=>{b.channels[0].release.version.name='sites/other/versions/abc';},b=>{b.channels[0].release.version.name=`projects/lyfelabz-prod/sites/${site}/versions/abc`;},b=>{b.channels.push(b.channels[0]);}]) {
+    const data=structuredClone(base);mutate(data);
+    const run=(command,args)=>JSON.stringify({status:'success',result:args[0]==='hosting:sites:list'?{sites:data.sites}:{channels:data.channels}});
+    assert.throws(()=>liveRelease({project,site,run}),/unverifiable|wrong-project|cross-site|unique/);
+  }
+});
+test('general online preparation emits the same paired command and explicitly unevaluated Teacher Units status',()=>{
+  const text=summarize({intent:'general',environment:staging,source:{sha:SHA,dirty:false},message:`release ${SHA}`,built:{record:{pair:{identical:1,shared:1,app:1,marketing:1}}},surfaces:{app:{site:'lyfelabz-staging',baseline:{version:'aaa'},bytes:{changed:[],new:[],unchanged:1,redirected:0}},marketing:{site:'lyfelabz-staging-marketing',baseline:{version:'bbb'},bytes:{changed:[],new:[],unchanged:1,redirected:0}}},backend:null});
+  assert.match(text,/hosting:app,hosting:marketing/);assert.match(text,/Teacher Units readiness NOT EVALUATED/);assert.match(text,/certify.*--intent general/);
+});
+
+test('certification retrieves fresh backend only after potentially long Hosting and catalog comparisons',async()=>{
+  const f=certificationFixture();try{
+    let catalogChecks=0;
+    await certify({...f.args,certifyEntry:async()=>{catalogChecks++;return {checked:1};},backendVerify:async()=>{
+      assert.equal(catalogChecks,1);assert.equal(f.args.fetchImpl.calls.length>0,true);assert.equal(f.calls.length,4);
+      const backend=structuredClone(f.backend);backend.evidence.startedAt=backend.evidence.observedAt=new Date().toISOString();return backend;
+    }});
+    assert.equal(f.writes.length,1);
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
 });
