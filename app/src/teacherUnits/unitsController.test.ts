@@ -353,6 +353,7 @@ describe("lifetime and account guards (late asynchronous responses)", () => {
     const seam = createTeacherUnitsSurfaceSeam({
       callables: c as unknown as TeacherUnitsCallables,
       readFirebaseUid: () => firebaseUid,
+      readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),
       createStore: (scope) => createTeacherUnitCreateAttemptStore(scope, () => fs.storage),
     });
     const ctl = seam.createController({ uid: "teacherA", schoolId: "schoolA", initialGrade: "6" });

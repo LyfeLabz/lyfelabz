@@ -168,6 +168,7 @@ describe("Browse | My Units switch", () => {
         return createTeacherUnitsSurfaceSeam({
           callables: c as unknown as TeacherUnitsCallables,
           readFirebaseUid: () => "teacherA",
+          readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),
           createStore: (scope) => createTeacherUnitCreateAttemptStore(scope, () => mem.storage),
         }).createController(input);
       },
@@ -406,7 +407,7 @@ describe("My Units panel", () => {
     await flush();
     await flush();
     const card = q(host, `units-card-${u.unitId}`) as HTMLElement;
-    expect(card.textContent).toContain('current name is "Their Title"');
+    expect(card.textContent).toContain('The latest version LyfeLabz has loaded is named "Their Title"');
     // The very same input element, still holding the draft.
     expect(q(host, `units-edit-title-${u.unitId}`)).toBe(title);
     expect(title.value).toBe("My Title");

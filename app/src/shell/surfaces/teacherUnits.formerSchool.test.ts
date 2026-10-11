@@ -287,6 +287,7 @@ describe("lifecycle", () => {
     createTeacherUnitsSurfaceSeam({
       callables: callables() as unknown as TeacherUnitsCallables,
       readFirebaseUid: () => current,
+      readActiveTeacher: () => (current === null ? null : { uid: current, schoolId: "schoolB" }),
       createStore: (scope) => createTeacherUnitCreateAttemptStore(scope),
     });
   let current: string | null = null;
