@@ -2,7 +2,7 @@
 
 // Certify a paired Hosting release after the deploy. Read-only.
 //
-//   node scripts/hosting-release/certify.cjs --project lyfelabz-prod
+//   node scripts/hosting-release/certify.cjs --project lyfelabz-prod --intent general|teacher-units
 //
 // Run from the same release checkout whose artifacts were deployed. Checks:
 //   - the local artifacts still match dist/hosting-release/pair-build.json;
@@ -21,6 +21,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { certifyPublicEntry } = require('../marketing-hosting/certify-delivery.cjs');
+const { verifyBackend, receipt, verifyPrepared, releaseIntent, releaseCandidate, canonical } = require('./backend-state.cjs');
 const { pairRecordPath } = require('./build-pair.cjs');
 const {
   TARGETS,
@@ -60,25 +61,30 @@ function verifyLocalPair(record, directories) {
   }
 }
 
-async function certify({ project, fetchImpl = fetch, run, certifyEntry = certifyPublicEntry, log = console.log }) {
+async function certify({ project, intent, candidateFor = releaseCandidate, fetchImpl = fetch, run, backendVerify = verifyBackend, certifyEntry = certifyPublicEntry, log = console.log, readJson = readJsonIfPresent, write = writeRecord, directories: suppliedDirectories }) {
   const contract = loadContract();
   const environment = environmentForProject(project, contract);
+  releaseIntent(intent);
   const config = readHostingTargets(readConfigFile(environment.config));
   const prodTargets = readHostingTargets(readConfigFile('firebase.json'));
-  const directories = { app: path.join(repositoryRoot, prodTargets.app.public), marketing: path.join(repositoryRoot, prodTargets.marketing.public) };
-  const pairRecord = readJsonIfPresent(pairRecordPath);
+  const directories = suppliedDirectories || { app: path.join(repositoryRoot, prodTargets.app.public), marketing: path.join(repositoryRoot, prodTargets.marketing.public) };
+  const pairRecord = readJson(pairRecordPath);
   verifyLocalPair(pairRecord, directories);
+  if (pairRecord.schemaVersion !== 3 || pairRecord.releaseIntent !== intent) throw new Error('[hosting-release] mismatched or historical pair release intent; prepare again');
+  const candidate = candidateFor(pairRecord);
+  if (canonical(pairRecord.candidate) !== canonical(candidate)) throw new Error('[hosting-release] local candidate changed since build');
   const { sha, dirty } = pairRecord.source;
   if (environment.name === 'production' && dirty !== false) throw new Error('[hosting-release] production certification requires artifacts built from a clean checkout');
   const message = releaseMessage(sha, dirty);
-  const prepared = readJsonIfPresent(path.join(repositoryRoot, 'dist', 'hosting-release', `prepare-${project}.json`));
+  const prepared = readJson(path.join(repositoryRoot, 'dist', 'hosting-release', `prepare-${project}.json`));
+  verifyPrepared(prepared, project, candidate);
   const sites = readTargetSites(project);
   const failures = [];
   const surfaces = {};
 
   for (const target of TARGETS) {
     const live = liveRelease({ project, site: sites[target], run });
-    const previous = prepared && prepared.source?.sha === sha ? prepared.surfaces?.[target]?.baseline?.version ?? null : null;
+    const previous = prepared.surfaces[target].baseline.version;
     surfaces[target] = { site: sites[target], version: live.version, releaseTime: live.releaseTime, previous };
     if (live.message !== message) failures.push(`${target}: live release message is ${JSON.stringify(live.message)}, expected ${JSON.stringify(message)}`);
     if (previous && previous === live.version) failures.push(`${target}: live version ${live.version} is still the pre-release baseline`);
@@ -124,23 +130,36 @@ async function certify({ project, fetchImpl = fetch, run, certifyEntry = certify
       (rollback.length ? `\n\nPaired rollback to the prepare baseline:\n${rollback.join('\n')}` : ''));
   }
 
-  const record = {
-    kind: 'lyfelabz.hostingCertifiedRelease',
-    schemaVersion: 1,
-    certifiedAt: new Date().toISOString(),
-    project,
-    source: { sha, dirty },
-    message,
-    app: surfaces.app,
-    marketing: surfaces.marketing
-  };
-  return { record, recordPath: writeRecord(`certified-${project}-${sha}.json`, record) };
+  // Fetch after potentially long byte/catalog checks, so their duration does
+  // not expire a valid backend observation. Failures never change scope.
+  try {
+    const backend = intent === 'teacher-units' ? await backendVerify({project,pair:pairRecord}) : null;
+    if (backend && canonical(backend.candidate) !== canonical(candidate)) throw new Error('[hosting-release] backend candidate changed during certification');
+    const record = {
+      kind: 'lyfelabz.hostingCertifiedRelease',
+      schemaVersion: 3,
+      releaseIntent: intent,
+      evidenceReceipt: receipt({ phase:'certified', project, intent, candidate, evidence:backend?.evidence, hosting:surfaces }),
+      certifiedAt: new Date().toISOString(),
+      project,
+      source: { sha, dirty },
+      message,
+      app: surfaces.app,
+      marketing: surfaces.marketing
+    };
+    return { record, recordPath: write(`certified-${project}-${sha}.json`, record) };
+  } catch (error) {
+    const rollback = TARGETS.filter(target => surfaces[target].previous)
+      .map(target => `  ${shellQuote(rollbackCommand(project, surfaces[target].site, surfaces[target].previous))}`);
+    throw new Error(`[hosting-release] certification FAILED for ${project}: ${error.message}` +
+      (rollback.length ? `\n\nPaired rollback to the prepare baseline:\n${rollback.join('\n')}` : '\nPaired rollback evidence unavailable; inspect both live sites before recovery.'));
+  }
 }
 
 async function main(argv = process.argv.slice(2)) {
-  const args = parseArgs(argv, { values: ['project'], flags: [] });
-  const { record, recordPath } = await certify({ project: args.project });
-  console.log(`\nCERTIFIED paired release for ${record.project}`);
+  const args = parseArgs(argv, { values: ['project', 'intent'], flags: [] });
+  const { record, recordPath } = await certify({ project: args.project, intent:args.intent });
+  console.log(`\nCERTIFIED ${record.releaseIntent} paired Hosting release for ${record.project}; Teacher Units: ${record.evidenceReceipt.teacherUnitsReadiness}`);
   console.log(JSON.stringify({ sha: record.source.sha, app: record.app, marketing: record.marketing }, null, 2));
   console.log(`Record: ${path.relative(repositoryRoot, recordPath)} (add the pair to the release ledger; do not commit the record file)`);
 }

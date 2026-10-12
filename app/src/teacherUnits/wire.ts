@@ -1,3 +1,4 @@
+import { requireTeacherUnitsAvailable } from "./releaseAvailability";
 import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 
@@ -212,6 +213,7 @@ function parseReorder(
 export function createFirebaseTeacherUnitsCallables(
   functions: Functions,
 ): TeacherUnitsCallables {
+  requireTeacherUnitsAvailable();
   const call = (name: string) => httpsCallable<Record<string, unknown>, unknown>(functions, name);
   const n = TEACHER_UNITS_CALLABLE_NAMES;
   const create = call(n.create);
