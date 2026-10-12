@@ -41,3 +41,5 @@ export {
   type TeacherUnitsUpdateResponse,
 } from "./teacher-units-update";
 export { type TeacherUnitView } from "./teacher-unit-access";
+
+export { teacherUnitsCapabilities } from "./teacher-units-capabilities";

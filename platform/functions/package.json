@@ -19,7 +19,8 @@
     "publish:variant": "node lib/scripts/publish-variant.js",
     "prepare:astra004-hosting": "npm run build && node lib/scripts/astra004-hosting-prepare.js",
     "test:astra004-hosting": "jest --runInBand --runTestsByPath src/scripts/astra004-hosting-prepare.test.ts",
-    "test:astra004-hosting:mutations": "node scripts/astra004-hosting-mutation-check.cjs"
+    "test:astra004-hosting:mutations": "node scripts/astra004-hosting-mutation-check.cjs",
+    "test:capabilities:transport": "npm run build && node scripts/test-capabilities-transport.cjs"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.6",

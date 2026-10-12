@@ -412,3 +412,130 @@ Recommended smallest future change (not applied; repository settings are owner-c
 - Optional, separately authorized: a TTL field override on `teacherUnitCreateReceipts.expiresAt` in `firestore.indexes.json`.
 - U1B changes no Firestore Rules or indexes (the Rules file gains tests only).
 - No composite index, Storage, Hosting, or Auth change.
+
+## U2.6 A2 authenticated compatibility safeguard
+
+A2 adds `teacherUnitsCapabilities`, an authenticated, read-only callable. It
+requires the existing canonical active-teacher authorization and rechecks the
+school/district context in a read-only transaction. It writes no unit, receipt,
+audit or other persistent record. It does not change the eight existing request
+contracts or their authorization. Production Teacher Units remains closed by
+`releaseAvailability.ts` and the controlled application compiler; A2 provides no
+activation switch or enabling server availability flag.
+
+### Capability contract
+
+The closed request is `{schemaVersion:1, nonce, clientContractVersion:"teacher-units-v1"}`.
+The nonce must be 16–64 URL-safe alphanumeric/underscore/hyphen characters. Unknown
+keys, unsupported versions and malformed requests use existing platform errors.
+
+The response has exactly these fields:
+
+- `schemaVersion:1`, and the echoed `nonce`.
+- `backend:{projectId,environment,region}`.
+- `teacherUnits:{apiContractVersion,supportedOperations,acceptedClientContractVersions,placementFingerprint}`.
+- `caller:{uid,role:"teacher",schoolId,districtId}`.
+
+The initial API/client contract is `teacher-units-v1`. Supported identifiers are
+`create`, `list`, `get`, `update`, `archive`, `restore`, `setResources`, `reorder`.
+They describe implementation, not availability or an authorization grant.
+The placement fingerprint is lowercase SHA-256 of UTF-8 `JSON.stringify` of the
+ordered canonical placeable IDs, matching A1's placement algorithm. The browser
+computes its expectation from the real RA-1 projection. Contract versions describe
+wire semantics; they are not source revisions or artifact attestations.
+
+Runtime identity cross-checks every supplied project ID from `GCLOUD_PROJECT`,
+`GOOGLE_CLOUD_PROJECT`, JSON `FIREBASE_CONFIG`, the Admin app and resolved Firestore
+project. The resolved Firestore getter is checked at runtime because Firestore 7
+omits it from public typings; unknown SDK shapes refuse. Missing, malformed or conflicting identity refuses. The explicit mapping
+is production `lyfelabz-prod`, staging `lyfelabz-staging`; emulator mode additionally
+permits `demo-bootstrap` for synthetic transport tests. Emulator classification
+requires `FUNCTIONS_EMULATOR=true`. The callable explicitly deploys to
+`us-central1`; a contradictory supplied `FUNCTION_REGION` refuses.
+
+### Client identity, dispatch and lifetime
+
+The trusted expectation comes from exact independent origin pins:
+`https://app.lyfelabz.com` → production; `https://lyfelabz-staging.web.app` → staging.
+HTTP localhost/127.0.0.1 permits the existing local `lyfelabz-prod` emulator
+configuration, Auth at 127.0.0.1:9099 and Functions at 127.0.0.1:5001. Unknown
+preview origins, HTTPS local origins and 0.0.0.0 refuse Teacher Units verification.
+Injected Firebase configuration is checked against these expectations; it cannot
+supply the trusted expectation. The transport harness's demo project is not an
+approved browser project.
+
+Teacher bootstrap obtains Functions explicitly from `auth.app` in `us-central1`.
+The verifier checks actual Auth/Functions app object identity, project ID, region,
+absence of a custom Functions domain and exact emulator configuration. It also
+checks Firebase 10's internal `FunctionsService.emulatorOrigin` field; a missing
+or changed SDK shape refuses rather than assuming production transport. An SDK
+upgrade must review this check. An unexpected reused default app is refused for
+Teacher Units; A2 does not redesign global bootstrap behavior.
+
+All six mutations and explicit retries capture their existing payload before
+awaiting verification. Each obtains a fresh authenticated response, validates
+nonce/schema/versions/all eight operations/project/environment/region/canonical
+caller/placement, then rechecks bootstrap generation, current user, school, app
+and transport immediately before dispatch. District expectation comes from the
+current signed token: the endpoint independently verifies it against canonical
+records. Token values are compared before and after the handshake, and a temporary
+ID-token observer invalidates account/token transitions, including same-UID
+reauthentication. The observer stays active through final permit consumption.
+
+Verification has a ten-second deadline covering token reads, hashing and the
+capability request. A delayed result cannot cause later mutation dispatch. There
+is no positive cache, shared verification or automatic replay. Each mutation adds
+one capability network call; token SDK reads may refresh a token. `list` and `get`
+retain existing authenticated read behavior, allowing recovery checks without a
+capability dependency. All eight operation identifiers are still required for a
+mutation to pass compatibility verification.
+
+A local `TeacherUnitsCompatibilityError` denotes failure before dispatch. A first
+create blocked there is a confirmed rejection, not an uncertain save. A blocked
+resend preserves the earlier key, school, uncertainty reason and reconciliation
+restrictions. A server-supplied matching code cannot impersonate this local error.
+Once dispatched, existing response validation, idempotency, revisions, no-ops and
+uncertain-outcome handling remain authoritative. Durable create-attempt storage
+continues to precede dispatch: a browser crash during verification can restore an
+in-flight record as uncertain, conservatively, until recovery checks resolve it.
+
+### Evidence limits and A3 boundary
+
+A compatible capability response describes its own endpoint; it does not prove
+that the other eight independently deployed functions share its revision. A
+mixed deployment may pass the handshake, and a deployment can change after the
+check. Older cached clients can bypass A2 entirely. Modified JavaScript, malicious
+extensions, XSS or interception can forge or bypass a client check. Nonces provide
+correlation, not cryptographic backend attestation. A wrongly configured backend
+can self-report a false contract; project strings are not independent attestation.
+
+A1's release receipts, placement parity and exact backend-artifact observations
+remain unchanged. They are timestamped release evidence, not live authenticated
+compatibility. A2 does not replace A1 Management API checks or claim a deployed git
+SHA/whole-package runtime fingerprint. The new endpoint is not added to A1's
+certified eight-endpoint inventory in this change; extending that evidence scope
+requires separate review. A3 owns server availability, authorization posture and
+any mutation-side contract enforcement that closes bypass/version races. A2 does
+not secure callable endpoints, change Rules, enable Teacher Units or certify a
+live environment.
+
+### Validation
+
+Hermetic tests cover strict parsing, identity/transport refusal, session/token
+changes, deadline failures, all six mutation/retry dispatch paths, unchanged reads,
+immutable payloads, local-versus-server errors and create uncertainty preservation.
+Closed-constructor tests include the verifier, so closed releases perform no
+Teacher Units capability construction or traffic.
+
+`npm --prefix platform/functions run test:capabilities:transport` builds the real
+endpoint and runs Auth + Functions + Firestore emulators under `demo-bootstrap`.
+Disposable configuration lives in ignored `platform/functions/dist`; no production
+configuration is edited. The harness exports only the real capability endpoint,
+loads its compiled dependencies and uses real emulator-issued tokens. It tests
+success, missing/invalid tokens, student/suspended refusals, request validation,
+canonical school/district changes and absence of persistent writes. An explicit
+negative-control test records that the Functions emulator accepts an unsigned
+local token with an altered audience/issuer; it decodes emulator tokens rather
+than providing production token verification. Wrong-project response/config
+refusals are covered by client tests, not claimed from this emulator control. It is not staging
+certification, production token verification, or fleet attestation.

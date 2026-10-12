@@ -1,3 +1,4 @@
+import { createTeacherUnitsMutationVerifier } from "./teacherUnits/backendCompatibility";
 import { teacherUnitsReleaseBoundary } from "./teacherUnits/releaseBoundary";
 import { configureGoogleSignInProvider } from "./session/googleSignInProvider";
 import { createFirestoreListClasses } from "./classes/listClasses";
@@ -707,7 +708,7 @@ async function run(): Promise<void> {
       const { getFunctions, connectFunctionsEmulator } = await import(
         "firebase/functions"
       );
-      const functions = getFunctions();
+      const functions = getFunctions(auth.app, "us-central1");
       if (
         typeof window !== "undefined" &&
         (window.location.hostname === "localhost" ||
@@ -743,7 +744,11 @@ async function run(): Promise<void> {
       lessonSummary = createLessonSummaryCallable(functions);
       teacherUnits = teacherUnitsReleaseBoundary(() =>
         createTeacherUnitsSurfaceSeam({
-          callables: createFirebaseTeacherUnitsCallables(functions),
+          callables: createFirebaseTeacherUnitsCallables(functions, createTeacherUnitsMutationVerifier(functions, auth, () =>
+            runToken === currentRunToken && lastActiveTeacher === session
+              ? { uid: session.uid, schoolId: session.schoolId, generation: runToken }
+              : null,
+          )),
           readFirebaseUid: () => auth.currentUser?.uid ?? null,
           // Only this run's own session, while this run is current and
           // has installed it: a new run (sign-out, account switch,

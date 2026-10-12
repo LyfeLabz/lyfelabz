@@ -1,3 +1,5 @@
+import { TeacherUnitsCompatibilityError } from "./compatibilityError";
+import type { TeacherUnitsMutationVerifier } from "./backendCompatibility";
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
 import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
@@ -212,6 +214,7 @@ function parseReorder(
 
 export function createFirebaseTeacherUnitsCallables(
   functions: Functions,
+  verifyMutation: TeacherUnitsMutationVerifier,
 ): TeacherUnitsCallables {
   requireTeacherUnitsAvailable();
   const call = (name: string) => httpsCallable<Record<string, unknown>, unknown>(functions, name);
@@ -224,6 +227,18 @@ export function createFirebaseTeacherUnitsCallables(
   const restore = call(n.restore);
   const setResources = call(n.setResources);
   const reorder = call(n.reorder);
+
+  const mutate = async (fn: ReturnType<typeof call>, payload: Record<string, unknown>) => {
+    try {
+      requireTeacherUnitsAvailable();
+      const assertCurrent = await verifyMutation();
+      assertCurrent();
+    } catch {
+      throw new TeacherUnitsCompatibilityError();
+    }
+    // Keep dispatched failures separate: they may follow a committed write.
+    return fn(payload);
+  };
 
   // Request correlation is immutable: every adapter builds the exact
   // outgoing payload synchronously (copying nested arrays, so later caller
@@ -244,7 +259,7 @@ export function createFirebaseTeacherUnitsCallables(
       // caller-owned accessor on another field could change `req.grade`
       // while the payload is being built.
       const grade = payload.grade;
-      const { data } = await create(payload);
+      const { data } = await mutate(create, payload);
       const d = readData(data, n.create);
       const createdUnit = parseTeacherUnit(d.unit, n.create);
       // The server stamps the requested grade at creation and never changes
@@ -282,7 +297,7 @@ export function createFirebaseTeacherUnitsCallables(
     },
     update: async (req) => {
       const unitId = req.unitId;
-      const { data } = await update({
+      const { data } = await mutate(update, {
         unitId,
         expectedRevision: req.expectedRevision,
         ...(req.title !== undefined ? { title: req.title } : {}),
@@ -292,17 +307,17 @@ export function createFirebaseTeacherUnitsCallables(
     },
     archive: async (req) => {
       const unitId = req.unitId;
-      const { data } = await archive({ unitId, expectedRevision: req.expectedRevision });
+      const { data } = await mutate(archive, { unitId, expectedRevision: req.expectedRevision });
       return parseMutation(data, n.archive, unitId);
     },
     restore: async (req) => {
       const unitId = req.unitId;
-      const { data } = await restore({ unitId, expectedRevision: req.expectedRevision });
+      const { data } = await mutate(restore, { unitId, expectedRevision: req.expectedRevision });
       return parseMutation(data, n.restore, unitId);
     },
     setResources: async (req) => {
       const unitId = req.unitId;
-      const { data } = await setResources({
+      const { data } = await mutate(setResources, {
         unitId,
         expectedRevision: req.expectedRevision,
         resourceIds: req.resourceIds.slice(),
@@ -311,7 +326,7 @@ export function createFirebaseTeacherUnitsCallables(
     },
     reorder: async (req) => {
       const grade = req.grade;
-      const { data } = await reorder({
+      const { data } = await mutate(reorder, {
         grade,
         units: req.units.map((u) => ({ unitId: u.unitId, expectedRevision: u.expectedRevision })),
       });

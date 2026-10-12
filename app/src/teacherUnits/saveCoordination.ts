@@ -281,6 +281,7 @@ const PRE_COMMIT_REJECTION_CODES: ReadonlySet<string> = new Set([
 export function classifyCreateFailure(
   error: TeacherUnitError,
 ): { readonly kind: "rejected" } | { readonly kind: "unresolved"; readonly reason: UnresolvedCreateReason } {
+  if (error.category === "compatibilityBlocked") return { kind: "rejected" };
   if (PRE_COMMIT_REJECTION_CODES.has(error.code)) return { kind: "rejected" };
   switch (error.category) {
     case "unauthorized":
@@ -544,6 +545,7 @@ export function createUnitCreateCoordinator(deps: {
   // `isResend`: a same-key reconcile of an attempt that was already
   // dispatched once (or restored), whose first outcome is unknown.
   const send = async (attempt: PinnedAttempt, isResend = false): Promise<CreateAttemptResult> => {
+    const previousUnresolved = state.kind === "unresolved" ? state : null;
     state = Object.freeze({ kind: "inFlight", ...attempt });
     const outcome = await runTeacherUnitMutation(() =>
       deps.create({
@@ -569,7 +571,13 @@ export function createUnitCreateCoordinator(deps: {
       // commit; the original dispatch may have. Keep it unresolved.
       const c: ReturnType<typeof classifyCreateFailure> =
         isResend && classified.kind === "rejected"
-          ? { kind: "unresolved", reason: "replayRefused" }
+          ? {
+              kind: "unresolved",
+              // A blocked resend establishes nothing about the earlier dispatch.
+              reason: outcome.error.category === "compatibilityBlocked"
+                ? previousUnresolved?.reason ?? "uncertain"
+                : "replayRefused",
+            }
           : classified;
       state =
         c.kind === "rejected"
