@@ -1,3 +1,4 @@
+import { teacherUnitsReleaseBoundary } from "./teacherUnits/releaseBoundary";
 import { configureGoogleSignInProvider } from "./session/googleSignInProvider";
 import { createFirestoreListClasses } from "./classes/listClasses";
 import {
@@ -213,7 +214,7 @@ async function run(): Promise<void> {
   // switch renders, no teacherUnits* callable is invoked, and the
   // create-recovery store is never read or written. The U1A/U1B Functions
   // and Rules must be deployed before this can be opened.
-  const TEACHER_UNITS_GATE_OPEN = false;
+  // Teacher Units availability is enforced by the shared release boundary.
   let teacherUnits: TeacherUnitsSurfaceSeam | null = null;
   // Sprint 17 Slice 4: certified `assignmentsListForStudent` callable
   // seam consumed by the activeStudent surface. Rebound per
@@ -740,24 +741,24 @@ async function run(): Promise<void> {
       updateClassColor = createFirebaseUpdateClassColor(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
       lessonSummary = createLessonSummaryCallable(functions);
-      teacherUnits = TEACHER_UNITS_GATE_OPEN
-        ? createTeacherUnitsSurfaceSeam({
-            callables: createFirebaseTeacherUnitsCallables(functions),
-            readFirebaseUid: () => auth.currentUser?.uid ?? null,
-            // Only this run's own session, while this run is current and
-            // has installed it: a new run (sign-out, account switch,
-            // re-bootstrap after a school change) makes this teacher's
-            // controllers stale immediately, and the previous run's cached
-            // teacher never counts as current.
-            readActiveTeacher: bootstrapActiveTeacherReader({
-              runToken,
-              session,
-              readCurrentRunToken: () => currentRunToken,
-              readActiveSession: () => lastActiveTeacher,
-            }),
-            createStore: (scope) => createTeacherUnitCreateAttemptStore(scope),
-          })
-        : null;
+      teacherUnits = teacherUnitsReleaseBoundary(() =>
+        createTeacherUnitsSurfaceSeam({
+          callables: createFirebaseTeacherUnitsCallables(functions),
+          readFirebaseUid: () => auth.currentUser?.uid ?? null,
+          // Only this run's own session, while this run is current and
+          // has installed it: a new run (sign-out, account switch,
+          // re-bootstrap after a school change) makes this teacher's
+          // controllers stale immediately, and the previous run's cached
+          // teacher never counts as current.
+          readActiveTeacher: bootstrapActiveTeacherReader({
+            runToken,
+            session,
+            readCurrentRunToken: () => currentRunToken,
+            readActiveSession: () => lastActiveTeacher,
+          }),
+          createStore: (scope) => createTeacherUnitCreateAttemptStore(scope),
+        }),
+      );
       assignmentReopen = createAssignmentsReopenCallable(functions);
       assignmentUpdateDraft = createAssignmentsUpdateDraftCallable(functions);
       assignmentPublish = createAssignmentsPublishCallable(functions);

@@ -1,3 +1,4 @@
+import { requireTeacherUnitsAvailable } from "./releaseAvailability";
 import { normalizeTeacherUnitError, type TeacherUnitError } from "./errors";
 import type { CreateAttemptStore, FormerSchoolAttempt } from "./createAttemptStore";
 import {
@@ -280,6 +281,7 @@ function requiresCheck(s: RecoveryAttemptState): boolean {
 }
 
 export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): TeacherUnitsController {
+  requireTeacherUnitsAvailable();
   const session = Object.freeze({ ...deps.session });
   const listeners = new Set<() => void>();
   const gate = createMutationGate();
@@ -1047,6 +1049,7 @@ export function createTeacherUnitsSurfaceSeam(deps: {
   readonly readActiveTeacher: () => { readonly uid: string; readonly schoolId: string } | null;
   readonly createStore: (scope: TeacherUnitCreateContext) => CreateAttemptStore;
 }): TeacherUnitsSurfaceSeam {
+  requireTeacherUnitsAvailable();
   return Object.freeze({
     createController: ({ uid, schoolId, initialGrade }) => {
       const session = Object.freeze({ teacherId: uid, schoolId });
