@@ -1,3 +1,4 @@
+import { TeacherUnitsCompatibilityError } from "./compatibilityError";
 import {
   classifyCreateFailure,
   createUnitCreateCoordinator,
@@ -436,4 +437,26 @@ describe("classifyCreateFailure", () => {
     const err = code.startsWith("functions/") ? httpsError(code) : httpsError("functions/x", code);
     expect(classifyCreateFailure(normalizeTeacherUnitError(err))).toEqual(expected);
   });
+});
+
+
+test("A2 pre-dispatch block rejects first create without uncertain save", async () => {
+  session = CTX;
+  const transport = scripted([new TeacherUnitsCompatibilityError()]);
+  const c = coordinator(transport.create);
+  await c.submit(PAYLOAD);
+  expect(c.state()).toMatchObject({ kind: "rejected", error: { category: "compatibilityBlocked" } });
+});
+test("A2 blocked reconcile preserves uncertain prior create and permits explicit same-key retry", async () => {
+  session = CTX;
+  const transport = scripted([new Error("lost response"), new TeacherUnitsCompatibilityError(), { unit: unit(), replayed: true }]);
+  const c = coordinator(transport.create);
+  await c.submit(PAYLOAD); await c.reconcile();
+  expect(c.state()).toMatchObject({ kind: "unresolved", reason: "uncertain" });
+  await c.reconcile(); expect(transport.calls[2]).toEqual(transport.calls[0]);
+  expect(c.state().kind).toBe("created");
+});
+test("server-supplied compatibility code cannot prove first create non-execution", () => {
+  const error = normalizeTeacherUnitError(httpsError("failed-precondition", "teacherUnits.compatibilityBlocked"));
+  expect(classifyCreateFailure(error).kind).toBe("unresolved");
 });

@@ -1,3 +1,4 @@
+import { TeacherUnitsCompatibilityError } from "./compatibilityError";
 // U2.1 - normalization of `teacherUnits*` callable failures into safe,
 // typed categories for future U2 surfaces. Firebase-free.
 //
@@ -12,6 +13,7 @@
 // failure category.
 
 export type TeacherUnitErrorCategory =
+  | "compatibilityBlocked"
   // Stale revision or exhausted contention. Refresh; never auto-replay.
   | "conflict"
   // The unit is archived (or was just archived). Refresh to show it.
@@ -164,6 +166,9 @@ function make(
 
 export function normalizeTeacherUnitError(err: unknown): TeacherUnitError {
   const code = extractTeacherUnitErrorCode(err);
+  if (err instanceof TeacherUnitsCompatibilityError) {
+    return make("compatibilityBlocked", "retry", code, "We couldn't verify Teacher Units compatibility. This request was not sent. Try again after refreshing.");
+  }
   const details = readDetails(err);
 
   switch (code) {

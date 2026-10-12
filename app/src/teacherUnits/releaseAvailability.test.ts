@@ -1,3 +1,4 @@
+import { createTeacherUnitsMutationVerifier } from "./backendCompatibility";
 jest.unmock("./releaseAvailability");
 jest.mock("firebase/functions", () => ({ httpsCallable: jest.fn() }));
 import { teacherUnitsAvailable, requireTeacherUnitsAvailable } from "./releaseAvailability";
@@ -25,9 +26,10 @@ test("inverted caller condition cannot open the shared boundary", () => {
 test("all alternate exported constructors refuse before dependency, DOM or storage access", () => {
   // A proxy makes any dependency access fail: refusal must precede every effect.
   const dependency = new Proxy({}, { get() { throw new Error("dependency touched"); } });
+  expect(() => createTeacherUnitsMutationVerifier(dependency as never, dependency as never, dependency as never)).toThrow("unavailable");
   expect(() => createTeacherUnitsController(dependency as never)).toThrow("unavailable");
   expect(() => createTeacherUnitsSurfaceSeam(dependency as never)).toThrow("unavailable");
-  expect(() => createFirebaseTeacherUnitsCallables(dependency as never)).toThrow("unavailable");
+  expect(() => createFirebaseTeacherUnitsCallables(dependency as never, dependency as never)).toThrow("unavailable");
   expect(() => createTeacherUnitCreateAttemptStore(dependency as never)).toThrow("unavailable");
   expect(() => renderTeacherUnitsPanel(dependency as never, dependency as never)).toThrow("unavailable");
 });
