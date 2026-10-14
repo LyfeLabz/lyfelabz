@@ -1,0 +1,2888 @@
+{
+  "description": "Synthetic records only. Policy updatedAt uses a test codec; hydrate to SDK Timestamp. All approval signatures are untrusted zero bytes, not authorization. No live configuration or credentials.",
+  "expectedEmulator": {
+    "environment": "emulator",
+    "projectId": "demo-a3-test",
+    "projectNumber": "0",
+    "localProfile": {
+      "fingerprint": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "authOrigin": "http://127.0.0.1:9099",
+      "firestoreHost": "127.0.0.1:8080",
+      "functionsOrigin": "http://127.0.0.1:5001"
+    }
+  },
+  "valid": {
+    "closedPolicy": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "schemaVersion": 1,
+      "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "mode": "closed",
+      "generation": 1,
+      "backendReleaseEligibility": null,
+      "acceptedClientContractVersions": [
+        "teacher-units-v2"
+      ],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "activationEvidenceRef": null,
+      "updatedAt": {
+        "seconds": 1767323046,
+        "nanoseconds": 0
+      }
+    },
+    "enabledPolicy": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "schemaVersion": 1,
+      "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "mode": "enabled",
+      "generation": 3,
+      "backendReleaseEligibility": {
+        "releaseId": "372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128"
+      },
+      "acceptedClientContractVersions": [
+        "teacher-units-v2"
+      ],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "activationEvidenceRef": "teacherUnitsReleaseEvidence/e352f2ee20586a8d7b5579aae26c83c015dc618b40f1b9aabde83a76d2f5dde9",
+      "updatedAt": {
+        "seconds": 1767323046,
+        "nanoseconds": 0
+      }
+    },
+    "compatibility": {
+      "schemaVersion": 1,
+      "clientContractVersion": "teacher-units-v2",
+      "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+      "policyGeneration": 3,
+      "backendReleaseId": "372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128",
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "capabilityRequest": {
+      "schemaVersion": 2,
+      "nonce": "fixed_test_nonce_0001",
+      "clientContractVersion": "teacher-units-v2"
+    },
+    "capabilityResponse": {
+      "schemaVersion": 2,
+      "nonce": "fixed_test_nonce_0001",
+      "backend": {
+        "projectId": "lyfelabz-staging",
+        "environment": "staging",
+        "region": "us-central1",
+        "enforcementVersion": "teacher-units-a3-v1"
+      },
+      "teacherUnits": {
+        "apiContractVersion": "teacher-units-v2",
+        "supportedOperations": [
+          "create",
+          "list",
+          "get",
+          "update",
+          "archive",
+          "restore",
+          "setResources",
+          "reorder"
+        ],
+        "supportedClientContractVersions": [
+          "teacher-units-v2"
+        ],
+        "acceptedClientContractVersions": [
+          "teacher-units-v2"
+        ],
+        "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "availability": {
+          "state": "enabled",
+          "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+          "policyGeneration": 3,
+          "backendReleaseId": "372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128",
+          "deploymentEligible": true
+        }
+      },
+      "caller": {
+        "uid": "test-teacher",
+        "role": "teacher",
+        "schoolId": "test-school",
+        "districtId": "test-district"
+      }
+    },
+    "closedCapabilityResponse": {
+      "schemaVersion": 2,
+      "nonce": "fixed_test_nonce_0001",
+      "backend": {
+        "projectId": "lyfelabz-staging",
+        "environment": "staging",
+        "region": "us-central1",
+        "enforcementVersion": "teacher-units-a3-v1"
+      },
+      "teacherUnits": {
+        "apiContractVersion": "teacher-units-v2",
+        "supportedOperations": [
+          "create",
+          "list",
+          "get",
+          "update",
+          "archive",
+          "restore",
+          "setResources",
+          "reorder"
+        ],
+        "supportedClientContractVersions": [
+          "teacher-units-v2"
+        ],
+        "acceptedClientContractVersions": [],
+        "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "availability": {
+          "state": "closed",
+          "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+          "policyGeneration": 3,
+          "backendReleaseId": "372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128",
+          "deploymentEligible": true
+        }
+      },
+      "caller": {
+        "uid": "test-teacher",
+        "role": "teacher",
+        "schoolId": "test-school",
+        "districtId": "test-district"
+      }
+    },
+    "unverifiedCapabilityResponse": {
+      "schemaVersion": 2,
+      "nonce": "fixed_test_nonce_0001",
+      "backend": {
+        "projectId": "lyfelabz-staging",
+        "environment": "staging",
+        "region": "us-central1",
+        "enforcementVersion": "teacher-units-a3-v1"
+      },
+      "teacherUnits": {
+        "apiContractVersion": "teacher-units-v2",
+        "supportedOperations": [
+          "create",
+          "list",
+          "get",
+          "update",
+          "archive",
+          "restore",
+          "setResources",
+          "reorder"
+        ],
+        "supportedClientContractVersions": [
+          "teacher-units-v2"
+        ],
+        "acceptedClientContractVersions": [],
+        "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "availability": {
+          "state": "unverified",
+          "policyInstanceId": null,
+          "policyGeneration": null,
+          "backendReleaseId": null,
+          "deploymentEligible": false
+        }
+      },
+      "caller": {
+        "uid": "test-teacher",
+        "role": "teacher",
+        "schoolId": "test-school",
+        "districtId": "test-district"
+      }
+    },
+    "cloudEndpoint": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "schemaVersion": 1,
+      "kind": "google-cloud",
+      "endpointName": "teacherUnitsArchive",
+      "region": "us-central1",
+      "functionGeneration": "GEN_2",
+      "runtime": "nodejs22",
+      "entryPoint": "teacherUnitsArchive",
+      "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsArchive",
+      "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+      "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive",
+      "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive/revisions/teacherunitsarchive-00001-test",
+      "traffic": [
+        {
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive/revisions/teacherunitsarchive-00001-test",
+          "percent": 100,
+          "tag": null
+        }
+      ],
+      "invocation": {
+        "invokerIamDisabled": false,
+        "defaultUriDisabled": false,
+        "iapEnabled": false,
+        "customAudiences": [],
+        "functionAllowPolicy": {
+          "version": 1,
+          "bindings": []
+        },
+        "serviceAllowPolicy": {
+          "version": 1,
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "allUsers"
+              ],
+              "condition": null
+            }
+          ]
+        },
+        "accessReviewReceipt": {
+          "bucket": "a3-test-evidence",
+          "object": "access-review.json",
+          "generation": "1",
+          "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+        }
+      },
+      "execution": {
+        "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+        "timeoutNanoseconds": "60000000000",
+        "concurrency": 80,
+        "memoryBytes": "268435456",
+        "cpuMilli": 1000,
+        "minimumInstances": 0,
+        "maximumInstances": null,
+        "command": [],
+        "args": [],
+        "workingDirectory": null,
+        "environmentVariables": [
+          {
+            "name": "FIREBASE_CONFIG",
+            "value": "{\"projectId\":\"lyfelabz-staging\"}"
+          },
+          {
+            "name": "TEST_MODE",
+            "value": "synthetic"
+          }
+        ],
+        "secretEnvironmentBindings": [
+          {
+            "name": "TEST_SECRET",
+            "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+            "version": "1"
+          }
+        ],
+        "secretVolumeBindings": [
+          {
+            "volumeName": "test-volume",
+            "mountPath": "/test-secrets",
+            "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+            "defaultMode": 292,
+            "items": [
+              {
+                "path": "value",
+                "version": "1",
+                "mode": null
+              }
+            ]
+          }
+        ],
+        "ingress": "all",
+        "network": {
+          "kind": "none"
+        }
+      },
+      "build": {
+        "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+        "environmentVariables": [],
+        "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+        "source": {
+          "bucket": "a3-test-evidence",
+          "object": "source.zip",
+          "generation": "1",
+          "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+        },
+        "runtimeUpdatePolicy": {
+          "kind": "automatic",
+          "baseImageUri": null
+        }
+      },
+      "observedImage": {
+        "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+        "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+      }
+    },
+    "emulatorEndpoint": {
+      "schemaVersion": 1,
+      "kind": "emulator",
+      "endpointName": "teacherUnitsArchive",
+      "entryPoint": "teacherUnitsArchive",
+      "projectId": "demo-a3-test",
+      "projectNumber": "0",
+      "environment": "emulator",
+      "region": "us-central1",
+      "runtime": "nodejs22",
+      "localProfileFingerprint": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "authOrigin": "http://127.0.0.1:9099",
+      "firestoreHost": "127.0.0.1:8080",
+      "functionsOrigin": "http://127.0.0.1:5001"
+    },
+    "backendRelease": {
+      "schemaVersion": 1,
+      "manifest": {
+        "environment": "staging",
+        "projectId": "lyfelabz-staging",
+        "projectNumber": "293337283840",
+        "schemaVersion": 1,
+        "enforcementVersion": "teacher-units-a3-v1",
+        "region": "us-central1",
+        "databaseId": "(default)",
+        "deploymentMode": "policy-controlled",
+        "sourceSha": "1111111111111111111111111111111111111111",
+        "sourceTree": "2222222222222222222222222222222222222222",
+        "runtimePayloadFingerprint": "3333333333333333333333333333333333333333333333333333333333333333",
+        "functionsArtifactFingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+        "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "supportedClientContractVersions": [
+          "teacher-units-v2"
+        ],
+        "endpoints": [
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsArchive",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsArchive",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsArchive",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive/revisions/teacherunitsarchive-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive/revisions/teacherunitsarchive-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          },
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsCapabilities",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsCapabilities",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsCapabilities",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscapabilities",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscapabilities/revisions/teacherunitscapabilities-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscapabilities/revisions/teacherunitscapabilities-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          },
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsCreate",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsCreate",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsCreate",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscreate",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscreate/revisions/teacherunitscreate-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscreate/revisions/teacherunitscreate-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          },
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsGet",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsGet",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsGet",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsget",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsget/revisions/teacherunitsget-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsget/revisions/teacherunitsget-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          },
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsList",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsList",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsList",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitslist",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitslist/revisions/teacherunitslist-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitslist/revisions/teacherunitslist-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          },
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsReorder",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsReorder",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsReorder",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsreorder",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsreorder/revisions/teacherunitsreorder-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsreorder/revisions/teacherunitsreorder-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          },
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsRestore",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsRestore",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsRestore",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsrestore",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsrestore/revisions/teacherunitsrestore-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsrestore/revisions/teacherunitsrestore-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          },
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsSetResources",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsSetResources",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsSetResources",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitssetresources",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitssetresources/revisions/teacherunitssetresources-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitssetresources/revisions/teacherunitssetresources-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          },
+          {
+            "environment": "staging",
+            "projectId": "lyfelabz-staging",
+            "projectNumber": "293337283840",
+            "schemaVersion": 1,
+            "kind": "google-cloud",
+            "endpointName": "teacherUnitsUpdate",
+            "region": "us-central1",
+            "functionGeneration": "GEN_2",
+            "runtime": "nodejs22",
+            "entryPoint": "teacherUnitsUpdate",
+            "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsUpdate",
+            "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+            "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsupdate",
+            "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsupdate/revisions/teacherunitsupdate-00001-test",
+            "traffic": [
+              {
+                "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsupdate/revisions/teacherunitsupdate-00001-test",
+                "percent": 100,
+                "tag": null
+              }
+            ],
+            "invocation": {
+              "invokerIamDisabled": false,
+              "defaultUriDisabled": false,
+              "iapEnabled": false,
+              "customAudiences": [],
+              "functionAllowPolicy": {
+                "version": 1,
+                "bindings": []
+              },
+              "serviceAllowPolicy": {
+                "version": 1,
+                "bindings": [
+                  {
+                    "role": "roles/run.invoker",
+                    "members": [
+                      "allUsers"
+                    ],
+                    "condition": null
+                  }
+                ]
+              },
+              "accessReviewReceipt": {
+                "bucket": "a3-test-evidence",
+                "object": "access-review.json",
+                "generation": "1",
+                "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+              }
+            },
+            "execution": {
+              "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+              "timeoutNanoseconds": "60000000000",
+              "concurrency": 80,
+              "memoryBytes": "268435456",
+              "cpuMilli": 1000,
+              "minimumInstances": 0,
+              "maximumInstances": null,
+              "command": [],
+              "args": [],
+              "workingDirectory": null,
+              "environmentVariables": [
+                {
+                  "name": "FIREBASE_CONFIG",
+                  "value": "{\"projectId\":\"lyfelabz-staging\"}"
+                },
+                {
+                  "name": "TEST_MODE",
+                  "value": "synthetic"
+                }
+              ],
+              "secretEnvironmentBindings": [
+                {
+                  "name": "TEST_SECRET",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                  "version": "1"
+                }
+              ],
+              "secretVolumeBindings": [
+                {
+                  "volumeName": "test-volume",
+                  "mountPath": "/test-secrets",
+                  "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "path": "value",
+                      "version": "1",
+                      "mode": null
+                    }
+                  ]
+                }
+              ],
+              "ingress": "all",
+              "network": {
+                "kind": "none"
+              }
+            },
+            "build": {
+              "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+              "environmentVariables": [],
+              "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+              "source": {
+                "bucket": "a3-test-evidence",
+                "object": "source.zip",
+                "generation": "1",
+                "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+              },
+              "runtimeUpdatePolicy": {
+                "kind": "automatic",
+                "baseImageUri": null
+              }
+            },
+            "observedImage": {
+              "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+              "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+            }
+          }
+        ],
+        "rules": {
+          "rulesetResource": "projects/lyfelabz-staging/rulesets/test-rules-001",
+          "sourceHash": "9999999999999999999999999999999999999999999999999999999999999999"
+        },
+        "readyIndexesConfigurationHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "deploymentApprovalEvidenceRef": "teacherUnitsReleaseEvidence/e31751eea3e3d832fbede05cbfe4397e52457bee0e0b4c15735c3df98c8cdd13"
+      }
+    },
+    "deploymentApproval": {
+      "schemaVersion": 1,
+      "payload": {
+        "schemaVersion": 1,
+        "kind": "teacher-units-deployment-approval",
+        "statement": {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "teacher-units-deployment-approval",
+          "action": "deploy-backend",
+          "region": "us-central1",
+          "databaseId": "(default)",
+          "candidate": {
+            "sourceSha": "1111111111111111111111111111111111111111",
+            "sourceTree": "2222222222222222222222222222222222222222",
+            "runtimePayloadFingerprint": "3333333333333333333333333333333333333333333333333333333333333333",
+            "functionsArtifactFingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+            "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "enforcementVersion": "teacher-units-a3-v1",
+            "clientContractVersion": "teacher-units-v2",
+            "deploymentMode": "policy-controlled",
+            "deploymentPlan": {
+              "bucket": "a3-test-evidence",
+              "object": "plan.json",
+              "generation": "1",
+              "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+            }
+          },
+          "authority": {
+            "authorityId": "test-authority",
+            "approverSubject": "test-human",
+            "approvalSystemId": "test-system",
+            "workflowId": "test-workflow",
+            "workflowRunId": "fixed-run-001",
+            "decisionId": "fixed-decision-001"
+          },
+          "issuedAt": "2026-01-02T03:04:05.000000000Z"
+        },
+        "source": {
+          "statementObject": {
+            "bucket": "a3-test-evidence",
+            "object": "teacher-units-deployment-approval.json",
+            "generation": "1",
+            "sha256": "22709d176137dd086c7ae903750b95a983120bd9b304bf292de00f4594f51ca9"
+          },
+          "signerKeyId": "untrusted-test-key",
+          "signatureAlgorithm": "ed25519",
+          "signatureBase64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        }
+      }
+    },
+    "activationApproval": {
+      "schemaVersion": 1,
+      "payload": {
+        "schemaVersion": 1,
+        "kind": "teacher-units-activation-approval",
+        "statement": {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+          "enabledGeneration": 3,
+          "backendReleaseId": "372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128",
+          "clientContractVersion": "teacher-units-v2",
+          "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "hostingCandidateFingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "certificationEvidenceRef": "teacherUnitsReleaseEvidence/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "schemaVersion": 1,
+          "kind": "teacher-units-activation-approval",
+          "action": "activate-teacher-units",
+          "authority": {
+            "authorityId": "test-authority",
+            "approverSubject": "test-human",
+            "approvalSystemId": "test-system",
+            "workflowId": "test-workflow",
+            "workflowRunId": "fixed-run-001",
+            "decisionId": "fixed-decision-001"
+          },
+          "issuedAt": "2026-01-02T03:04:06.000000000Z"
+        },
+        "source": {
+          "statementObject": {
+            "bucket": "a3-test-evidence",
+            "object": "teacher-units-activation-approval.json",
+            "generation": "1",
+            "sha256": "057d1808a1e60e9865e015bdee3b6b7cfc4eacb05d5cfdf5c0b77f2194e8b90a"
+          },
+          "signerKeyId": "untrusted-test-key",
+          "signatureAlgorithm": "ed25519",
+          "signatureBase64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        }
+      }
+    },
+    "activationEvidence": {
+      "schemaVersion": 1,
+      "payload": {
+        "environment": "staging",
+        "projectId": "lyfelabz-staging",
+        "projectNumber": "293337283840",
+        "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+        "enabledGeneration": 3,
+        "backendReleaseId": "372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128",
+        "clientContractVersion": "teacher-units-v2",
+        "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "hostingCandidateFingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "certificationEvidenceRef": "teacherUnitsReleaseEvidence/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "schemaVersion": 1,
+        "kind": "teacher-units-activation",
+        "authorizationEvidenceRef": "teacherUnitsReleaseEvidence/e8becd5ad402662b684fd85c08c7a462995a98cba384fb15f13bb29d5d6288e3"
+      }
+    },
+    "approvalDisposition": {
+      "schemaVersion": 1,
+      "payload": {
+        "schemaVersion": 1,
+        "kind": "teacher-units-approval-disposition",
+        "statement": {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "teacher-units-approval-disposition",
+          "action": "revoke",
+          "targetApprovalRef": "teacherUnitsReleaseEvidence/e31751eea3e3d832fbede05cbfe4397e52457bee0e0b4c15735c3df98c8cdd13",
+          "replacementApprovalRef": null,
+          "authority": {
+            "authorityId": "test-authority",
+            "approverSubject": "test-human",
+            "approvalSystemId": "test-system",
+            "workflowId": "test-workflow",
+            "workflowRunId": "fixed-run-001",
+            "decisionId": "fixed-decision-001"
+          },
+          "issuedAt": "2026-01-02T03:04:07.000000000Z"
+        },
+        "source": {
+          "statementObject": {
+            "bucket": "a3-test-evidence",
+            "object": "teacher-units-approval-disposition.json",
+            "generation": "1",
+            "sha256": "db7b7d80d0cd88eca1e402a743a25ed49ef43739c93d6be61c2124480a998ac6"
+          },
+          "signerKeyId": "untrusted-test-key",
+          "signatureAlgorithm": "ed25519",
+          "signatureBase64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        }
+      }
+    }
+  },
+  "invalid": [
+    {
+      "target": "compatibility",
+      "path": [
+        "schemaVersion"
+      ],
+      "operation": "set",
+      "value": 2,
+      "reason": "envelope schema remains 1; client contract is v2"
+    },
+    {
+      "target": "compatibility",
+      "path": [
+        "clientContractVersion"
+      ],
+      "operation": "set",
+      "value": "teacher-units-v1",
+      "reason": "no legacy fallback"
+    },
+    {
+      "target": "compatibility",
+      "path": [
+        "policyGeneration"
+      ],
+      "operation": "set",
+      "value": 9007199254740992,
+      "reason": "integer overflow"
+    },
+    {
+      "target": "compatibility",
+      "path": [
+        "policyInstanceId"
+      ],
+      "operation": "set",
+      "value": "123e4567-e89b-12d3-a456-426614174000",
+      "reason": "not UUID v4"
+    },
+    {
+      "target": "compatibility",
+      "path": [
+        "placementFingerprint"
+      ],
+      "operation": "set",
+      "value": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "reason": "noncanonical digest"
+    },
+    {
+      "target": "capabilityRequest",
+      "path": [
+        "nonce"
+      ],
+      "operation": "set",
+      "value": "short",
+      "reason": "nonce grammar"
+    },
+    {
+      "target": "capabilityResponse",
+      "path": [
+        "teacherUnits",
+        "availability",
+        "deploymentEligible"
+      ],
+      "operation": "set",
+      "value": false,
+      "reason": "enabled contradictory"
+    },
+    {
+      "target": "closedCapabilityResponse",
+      "path": [
+        "teacherUnits",
+        "acceptedClientContractVersions"
+      ],
+      "operation": "set",
+      "value": [
+        "teacher-units-v2"
+      ],
+      "reason": "closed cannot accept"
+    },
+    {
+      "target": "capabilityResponse",
+      "path": [
+        "backend",
+        "projectId"
+      ],
+      "operation": "set",
+      "value": "lyfelabz-prod",
+      "reason": "cross environment"
+    },
+    {
+      "target": "enabledPolicy",
+      "path": [
+        "backendReleaseEligibility"
+      ],
+      "operation": "set",
+      "value": null,
+      "reason": "enabled missing release"
+    },
+    {
+      "target": "closedPolicy",
+      "path": [
+        "activationEvidenceRef"
+      ],
+      "operation": "set",
+      "value": "teacherUnitsReleaseEvidence/e352f2ee20586a8d7b5579aae26c83c015dc618b40f1b9aabde83a76d2f5dde9",
+      "reason": "closed evidence contradiction"
+    },
+    {
+      "target": "enabledPolicy",
+      "path": [
+        "updatedAt"
+      ],
+      "operation": "set",
+      "value": "2026-01-02T03:04:06Z",
+      "reason": "requires SDK timestamp"
+    },
+    {
+      "target": "cloudEndpoint",
+      "path": [
+        "traffic",
+        "0",
+        "tag"
+      ],
+      "operation": "set",
+      "value": "old",
+      "reason": "tag routes forbidden"
+    },
+    {
+      "target": "cloudEndpoint",
+      "path": [
+        "execution",
+        "secretEnvironmentBindings",
+        "0",
+        "version"
+      ],
+      "operation": "set",
+      "value": "latest",
+      "reason": "mutable secret alias"
+    },
+    {
+      "target": "cloudEndpoint",
+      "path": [
+        "execution",
+        "secretVolumeBindings",
+        "0",
+        "items",
+        "0",
+        "extra"
+      ],
+      "operation": "set",
+      "value": true,
+      "reason": "nested unknown"
+    },
+    {
+      "target": "cloudEndpoint",
+      "path": [
+        "execution",
+        "environmentVariables",
+        "0",
+        "value"
+      ],
+      "operation": "set",
+      "value": "{\"projectId\":\"lyfelabz-prod\"}",
+      "reason": "config cross project"
+    },
+    {
+      "target": "cloudEndpoint",
+      "path": [
+        "execution",
+        "environmentVariables"
+      ],
+      "operation": "set",
+      "value": [
+        {
+          "name": "Z",
+          "value": "z"
+        },
+        {
+          "name": "A",
+          "value": "a"
+        }
+      ],
+      "reason": "canonical ordering"
+    },
+    {
+      "target": "cloudEndpoint",
+      "path": [
+        "execution",
+        "network"
+      ],
+      "operation": "set",
+      "value": {
+        "kind": "none",
+        "connectorResource": "unexpected"
+      },
+      "reason": "closed union"
+    },
+    {
+      "target": "cloudEndpoint",
+      "path": [
+        "build",
+        "source",
+        "generation"
+      ],
+      "operation": "set",
+      "value": 1,
+      "reason": "must be decimal string"
+    },
+    {
+      "target": "cloudEndpoint",
+      "path": [
+        "entryPoint"
+      ],
+      "operation": "set",
+      "value": "teacherUnitsCreate",
+      "reason": "wrong entry point"
+    },
+    {
+      "target": "emulatorEndpoint",
+      "path": [
+        "functionsOrigin"
+      ],
+      "operation": "set",
+      "value": "http://example.test:5001",
+      "reason": "not selected loopback"
+    },
+    {
+      "target": "backendRelease",
+      "path": [
+        "manifest",
+        "endpoints"
+      ],
+      "operation": "set",
+      "value": [
+        {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "google-cloud",
+          "endpointName": "teacherUnitsArchive",
+          "region": "us-central1",
+          "functionGeneration": "GEN_2",
+          "runtime": "nodejs22",
+          "entryPoint": "teacherUnitsArchive",
+          "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsArchive",
+          "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+          "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive",
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive/revisions/teacherunitsarchive-00001-test",
+          "traffic": [
+            {
+              "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsarchive/revisions/teacherunitsarchive-00001-test",
+              "percent": 100,
+              "tag": null
+            }
+          ],
+          "invocation": {
+            "invokerIamDisabled": false,
+            "defaultUriDisabled": false,
+            "iapEnabled": false,
+            "customAudiences": [],
+            "functionAllowPolicy": {
+              "version": 1,
+              "bindings": []
+            },
+            "serviceAllowPolicy": {
+              "version": 1,
+              "bindings": [
+                {
+                  "role": "roles/run.invoker",
+                  "members": [
+                    "allUsers"
+                  ],
+                  "condition": null
+                }
+              ]
+            },
+            "accessReviewReceipt": {
+              "bucket": "a3-test-evidence",
+              "object": "access-review.json",
+              "generation": "1",
+              "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+            }
+          },
+          "execution": {
+            "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+            "timeoutNanoseconds": "60000000000",
+            "concurrency": 80,
+            "memoryBytes": "268435456",
+            "cpuMilli": 1000,
+            "minimumInstances": 0,
+            "maximumInstances": null,
+            "command": [],
+            "args": [],
+            "workingDirectory": null,
+            "environmentVariables": [
+              {
+                "name": "FIREBASE_CONFIG",
+                "value": "{\"projectId\":\"lyfelabz-staging\"}"
+              },
+              {
+                "name": "TEST_MODE",
+                "value": "synthetic"
+              }
+            ],
+            "secretEnvironmentBindings": [
+              {
+                "name": "TEST_SECRET",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                "version": "1"
+              }
+            ],
+            "secretVolumeBindings": [
+              {
+                "volumeName": "test-volume",
+                "mountPath": "/test-secrets",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                "defaultMode": 292,
+                "items": [
+                  {
+                    "path": "value",
+                    "version": "1",
+                    "mode": null
+                  }
+                ]
+              }
+            ],
+            "ingress": "all",
+            "network": {
+              "kind": "none"
+            }
+          },
+          "build": {
+            "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+            "environmentVariables": [],
+            "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+            "source": {
+              "bucket": "a3-test-evidence",
+              "object": "source.zip",
+              "generation": "1",
+              "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+            },
+            "runtimeUpdatePolicy": {
+              "kind": "automatic",
+              "baseImageUri": null
+            }
+          },
+          "observedImage": {
+            "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+            "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+          }
+        },
+        {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "google-cloud",
+          "endpointName": "teacherUnitsCapabilities",
+          "region": "us-central1",
+          "functionGeneration": "GEN_2",
+          "runtime": "nodejs22",
+          "entryPoint": "teacherUnitsCapabilities",
+          "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsCapabilities",
+          "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+          "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscapabilities",
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscapabilities/revisions/teacherunitscapabilities-00001-test",
+          "traffic": [
+            {
+              "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscapabilities/revisions/teacherunitscapabilities-00001-test",
+              "percent": 100,
+              "tag": null
+            }
+          ],
+          "invocation": {
+            "invokerIamDisabled": false,
+            "defaultUriDisabled": false,
+            "iapEnabled": false,
+            "customAudiences": [],
+            "functionAllowPolicy": {
+              "version": 1,
+              "bindings": []
+            },
+            "serviceAllowPolicy": {
+              "version": 1,
+              "bindings": [
+                {
+                  "role": "roles/run.invoker",
+                  "members": [
+                    "allUsers"
+                  ],
+                  "condition": null
+                }
+              ]
+            },
+            "accessReviewReceipt": {
+              "bucket": "a3-test-evidence",
+              "object": "access-review.json",
+              "generation": "1",
+              "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+            }
+          },
+          "execution": {
+            "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+            "timeoutNanoseconds": "60000000000",
+            "concurrency": 80,
+            "memoryBytes": "268435456",
+            "cpuMilli": 1000,
+            "minimumInstances": 0,
+            "maximumInstances": null,
+            "command": [],
+            "args": [],
+            "workingDirectory": null,
+            "environmentVariables": [
+              {
+                "name": "FIREBASE_CONFIG",
+                "value": "{\"projectId\":\"lyfelabz-staging\"}"
+              },
+              {
+                "name": "TEST_MODE",
+                "value": "synthetic"
+              }
+            ],
+            "secretEnvironmentBindings": [
+              {
+                "name": "TEST_SECRET",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                "version": "1"
+              }
+            ],
+            "secretVolumeBindings": [
+              {
+                "volumeName": "test-volume",
+                "mountPath": "/test-secrets",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                "defaultMode": 292,
+                "items": [
+                  {
+                    "path": "value",
+                    "version": "1",
+                    "mode": null
+                  }
+                ]
+              }
+            ],
+            "ingress": "all",
+            "network": {
+              "kind": "none"
+            }
+          },
+          "build": {
+            "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+            "environmentVariables": [],
+            "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+            "source": {
+              "bucket": "a3-test-evidence",
+              "object": "source.zip",
+              "generation": "1",
+              "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+            },
+            "runtimeUpdatePolicy": {
+              "kind": "automatic",
+              "baseImageUri": null
+            }
+          },
+          "observedImage": {
+            "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+            "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+          }
+        },
+        {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "google-cloud",
+          "endpointName": "teacherUnitsCreate",
+          "region": "us-central1",
+          "functionGeneration": "GEN_2",
+          "runtime": "nodejs22",
+          "entryPoint": "teacherUnitsCreate",
+          "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsCreate",
+          "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+          "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscreate",
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscreate/revisions/teacherunitscreate-00001-test",
+          "traffic": [
+            {
+              "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitscreate/revisions/teacherunitscreate-00001-test",
+              "percent": 100,
+              "tag": null
+            }
+          ],
+          "invocation": {
+            "invokerIamDisabled": false,
+            "defaultUriDisabled": false,
+            "iapEnabled": false,
+            "customAudiences": [],
+            "functionAllowPolicy": {
+              "version": 1,
+              "bindings": []
+            },
+            "serviceAllowPolicy": {
+              "version": 1,
+              "bindings": [
+                {
+                  "role": "roles/run.invoker",
+                  "members": [
+                    "allUsers"
+                  ],
+                  "condition": null
+                }
+              ]
+            },
+            "accessReviewReceipt": {
+              "bucket": "a3-test-evidence",
+              "object": "access-review.json",
+              "generation": "1",
+              "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+            }
+          },
+          "execution": {
+            "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+            "timeoutNanoseconds": "60000000000",
+            "concurrency": 80,
+            "memoryBytes": "268435456",
+            "cpuMilli": 1000,
+            "minimumInstances": 0,
+            "maximumInstances": null,
+            "command": [],
+            "args": [],
+            "workingDirectory": null,
+            "environmentVariables": [
+              {
+                "name": "FIREBASE_CONFIG",
+                "value": "{\"projectId\":\"lyfelabz-staging\"}"
+              },
+              {
+                "name": "TEST_MODE",
+                "value": "synthetic"
+              }
+            ],
+            "secretEnvironmentBindings": [
+              {
+                "name": "TEST_SECRET",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                "version": "1"
+              }
+            ],
+            "secretVolumeBindings": [
+              {
+                "volumeName": "test-volume",
+                "mountPath": "/test-secrets",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                "defaultMode": 292,
+                "items": [
+                  {
+                    "path": "value",
+                    "version": "1",
+                    "mode": null
+                  }
+                ]
+              }
+            ],
+            "ingress": "all",
+            "network": {
+              "kind": "none"
+            }
+          },
+          "build": {
+            "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+            "environmentVariables": [],
+            "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+            "source": {
+              "bucket": "a3-test-evidence",
+              "object": "source.zip",
+              "generation": "1",
+              "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+            },
+            "runtimeUpdatePolicy": {
+              "kind": "automatic",
+              "baseImageUri": null
+            }
+          },
+          "observedImage": {
+            "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+            "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+          }
+        },
+        {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "google-cloud",
+          "endpointName": "teacherUnitsGet",
+          "region": "us-central1",
+          "functionGeneration": "GEN_2",
+          "runtime": "nodejs22",
+          "entryPoint": "teacherUnitsGet",
+          "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsGet",
+          "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+          "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsget",
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsget/revisions/teacherunitsget-00001-test",
+          "traffic": [
+            {
+              "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsget/revisions/teacherunitsget-00001-test",
+              "percent": 100,
+              "tag": null
+            }
+          ],
+          "invocation": {
+            "invokerIamDisabled": false,
+            "defaultUriDisabled": false,
+            "iapEnabled": false,
+            "customAudiences": [],
+            "functionAllowPolicy": {
+              "version": 1,
+              "bindings": []
+            },
+            "serviceAllowPolicy": {
+              "version": 1,
+              "bindings": [
+                {
+                  "role": "roles/run.invoker",
+                  "members": [
+                    "allUsers"
+                  ],
+                  "condition": null
+                }
+              ]
+            },
+            "accessReviewReceipt": {
+              "bucket": "a3-test-evidence",
+              "object": "access-review.json",
+              "generation": "1",
+              "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+            }
+          },
+          "execution": {
+            "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+            "timeoutNanoseconds": "60000000000",
+            "concurrency": 80,
+            "memoryBytes": "268435456",
+            "cpuMilli": 1000,
+            "minimumInstances": 0,
+            "maximumInstances": null,
+            "command": [],
+            "args": [],
+            "workingDirectory": null,
+            "environmentVariables": [
+              {
+                "name": "FIREBASE_CONFIG",
+                "value": "{\"projectId\":\"lyfelabz-staging\"}"
+              },
+              {
+                "name": "TEST_MODE",
+                "value": "synthetic"
+              }
+            ],
+            "secretEnvironmentBindings": [
+              {
+                "name": "TEST_SECRET",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                "version": "1"
+              }
+            ],
+            "secretVolumeBindings": [
+              {
+                "volumeName": "test-volume",
+                "mountPath": "/test-secrets",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                "defaultMode": 292,
+                "items": [
+                  {
+                    "path": "value",
+                    "version": "1",
+                    "mode": null
+                  }
+                ]
+              }
+            ],
+            "ingress": "all",
+            "network": {
+              "kind": "none"
+            }
+          },
+          "build": {
+            "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+            "environmentVariables": [],
+            "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+            "source": {
+              "bucket": "a3-test-evidence",
+              "object": "source.zip",
+              "generation": "1",
+              "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+            },
+            "runtimeUpdatePolicy": {
+              "kind": "automatic",
+              "baseImageUri": null
+            }
+          },
+          "observedImage": {
+            "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+            "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+          }
+        },
+        {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "google-cloud",
+          "endpointName": "teacherUnitsList",
+          "region": "us-central1",
+          "functionGeneration": "GEN_2",
+          "runtime": "nodejs22",
+          "entryPoint": "teacherUnitsList",
+          "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsList",
+          "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+          "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitslist",
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitslist/revisions/teacherunitslist-00001-test",
+          "traffic": [
+            {
+              "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitslist/revisions/teacherunitslist-00001-test",
+              "percent": 100,
+              "tag": null
+            }
+          ],
+          "invocation": {
+            "invokerIamDisabled": false,
+            "defaultUriDisabled": false,
+            "iapEnabled": false,
+            "customAudiences": [],
+            "functionAllowPolicy": {
+              "version": 1,
+              "bindings": []
+            },
+            "serviceAllowPolicy": {
+              "version": 1,
+              "bindings": [
+                {
+                  "role": "roles/run.invoker",
+                  "members": [
+                    "allUsers"
+                  ],
+                  "condition": null
+                }
+              ]
+            },
+            "accessReviewReceipt": {
+              "bucket": "a3-test-evidence",
+              "object": "access-review.json",
+              "generation": "1",
+              "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+            }
+          },
+          "execution": {
+            "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+            "timeoutNanoseconds": "60000000000",
+            "concurrency": 80,
+            "memoryBytes": "268435456",
+            "cpuMilli": 1000,
+            "minimumInstances": 0,
+            "maximumInstances": null,
+            "command": [],
+            "args": [],
+            "workingDirectory": null,
+            "environmentVariables": [
+              {
+                "name": "FIREBASE_CONFIG",
+                "value": "{\"projectId\":\"lyfelabz-staging\"}"
+              },
+              {
+                "name": "TEST_MODE",
+                "value": "synthetic"
+              }
+            ],
+            "secretEnvironmentBindings": [
+              {
+                "name": "TEST_SECRET",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                "version": "1"
+              }
+            ],
+            "secretVolumeBindings": [
+              {
+                "volumeName": "test-volume",
+                "mountPath": "/test-secrets",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                "defaultMode": 292,
+                "items": [
+                  {
+                    "path": "value",
+                    "version": "1",
+                    "mode": null
+                  }
+                ]
+              }
+            ],
+            "ingress": "all",
+            "network": {
+              "kind": "none"
+            }
+          },
+          "build": {
+            "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+            "environmentVariables": [],
+            "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+            "source": {
+              "bucket": "a3-test-evidence",
+              "object": "source.zip",
+              "generation": "1",
+              "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+            },
+            "runtimeUpdatePolicy": {
+              "kind": "automatic",
+              "baseImageUri": null
+            }
+          },
+          "observedImage": {
+            "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+            "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+          }
+        },
+        {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "google-cloud",
+          "endpointName": "teacherUnitsReorder",
+          "region": "us-central1",
+          "functionGeneration": "GEN_2",
+          "runtime": "nodejs22",
+          "entryPoint": "teacherUnitsReorder",
+          "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsReorder",
+          "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+          "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsreorder",
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsreorder/revisions/teacherunitsreorder-00001-test",
+          "traffic": [
+            {
+              "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsreorder/revisions/teacherunitsreorder-00001-test",
+              "percent": 100,
+              "tag": null
+            }
+          ],
+          "invocation": {
+            "invokerIamDisabled": false,
+            "defaultUriDisabled": false,
+            "iapEnabled": false,
+            "customAudiences": [],
+            "functionAllowPolicy": {
+              "version": 1,
+              "bindings": []
+            },
+            "serviceAllowPolicy": {
+              "version": 1,
+              "bindings": [
+                {
+                  "role": "roles/run.invoker",
+                  "members": [
+                    "allUsers"
+                  ],
+                  "condition": null
+                }
+              ]
+            },
+            "accessReviewReceipt": {
+              "bucket": "a3-test-evidence",
+              "object": "access-review.json",
+              "generation": "1",
+              "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+            }
+          },
+          "execution": {
+            "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+            "timeoutNanoseconds": "60000000000",
+            "concurrency": 80,
+            "memoryBytes": "268435456",
+            "cpuMilli": 1000,
+            "minimumInstances": 0,
+            "maximumInstances": null,
+            "command": [],
+            "args": [],
+            "workingDirectory": null,
+            "environmentVariables": [
+              {
+                "name": "FIREBASE_CONFIG",
+                "value": "{\"projectId\":\"lyfelabz-staging\"}"
+              },
+              {
+                "name": "TEST_MODE",
+                "value": "synthetic"
+              }
+            ],
+            "secretEnvironmentBindings": [
+              {
+                "name": "TEST_SECRET",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                "version": "1"
+              }
+            ],
+            "secretVolumeBindings": [
+              {
+                "volumeName": "test-volume",
+                "mountPath": "/test-secrets",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                "defaultMode": 292,
+                "items": [
+                  {
+                    "path": "value",
+                    "version": "1",
+                    "mode": null
+                  }
+                ]
+              }
+            ],
+            "ingress": "all",
+            "network": {
+              "kind": "none"
+            }
+          },
+          "build": {
+            "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+            "environmentVariables": [],
+            "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+            "source": {
+              "bucket": "a3-test-evidence",
+              "object": "source.zip",
+              "generation": "1",
+              "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+            },
+            "runtimeUpdatePolicy": {
+              "kind": "automatic",
+              "baseImageUri": null
+            }
+          },
+          "observedImage": {
+            "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+            "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+          }
+        },
+        {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "google-cloud",
+          "endpointName": "teacherUnitsRestore",
+          "region": "us-central1",
+          "functionGeneration": "GEN_2",
+          "runtime": "nodejs22",
+          "entryPoint": "teacherUnitsRestore",
+          "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsRestore",
+          "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+          "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsrestore",
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsrestore/revisions/teacherunitsrestore-00001-test",
+          "traffic": [
+            {
+              "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitsrestore/revisions/teacherunitsrestore-00001-test",
+              "percent": 100,
+              "tag": null
+            }
+          ],
+          "invocation": {
+            "invokerIamDisabled": false,
+            "defaultUriDisabled": false,
+            "iapEnabled": false,
+            "customAudiences": [],
+            "functionAllowPolicy": {
+              "version": 1,
+              "bindings": []
+            },
+            "serviceAllowPolicy": {
+              "version": 1,
+              "bindings": [
+                {
+                  "role": "roles/run.invoker",
+                  "members": [
+                    "allUsers"
+                  ],
+                  "condition": null
+                }
+              ]
+            },
+            "accessReviewReceipt": {
+              "bucket": "a3-test-evidence",
+              "object": "access-review.json",
+              "generation": "1",
+              "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+            }
+          },
+          "execution": {
+            "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+            "timeoutNanoseconds": "60000000000",
+            "concurrency": 80,
+            "memoryBytes": "268435456",
+            "cpuMilli": 1000,
+            "minimumInstances": 0,
+            "maximumInstances": null,
+            "command": [],
+            "args": [],
+            "workingDirectory": null,
+            "environmentVariables": [
+              {
+                "name": "FIREBASE_CONFIG",
+                "value": "{\"projectId\":\"lyfelabz-staging\"}"
+              },
+              {
+                "name": "TEST_MODE",
+                "value": "synthetic"
+              }
+            ],
+            "secretEnvironmentBindings": [
+              {
+                "name": "TEST_SECRET",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                "version": "1"
+              }
+            ],
+            "secretVolumeBindings": [
+              {
+                "volumeName": "test-volume",
+                "mountPath": "/test-secrets",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                "defaultMode": 292,
+                "items": [
+                  {
+                    "path": "value",
+                    "version": "1",
+                    "mode": null
+                  }
+                ]
+              }
+            ],
+            "ingress": "all",
+            "network": {
+              "kind": "none"
+            }
+          },
+          "build": {
+            "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+            "environmentVariables": [],
+            "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+            "source": {
+              "bucket": "a3-test-evidence",
+              "object": "source.zip",
+              "generation": "1",
+              "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+            },
+            "runtimeUpdatePolicy": {
+              "kind": "automatic",
+              "baseImageUri": null
+            }
+          },
+          "observedImage": {
+            "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+            "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+          }
+        },
+        {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "google-cloud",
+          "endpointName": "teacherUnitsSetResources",
+          "region": "us-central1",
+          "functionGeneration": "GEN_2",
+          "runtime": "nodejs22",
+          "entryPoint": "teacherUnitsSetResources",
+          "functionResource": "projects/lyfelabz-staging/locations/us-central1/functions/teacherUnitsSetResources",
+          "buildResource": "projects/lyfelabz-staging/locations/global/builds/test-build-001",
+          "serviceResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitssetresources",
+          "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitssetresources/revisions/teacherunitssetresources-00001-test",
+          "traffic": [
+            {
+              "revisionResource": "projects/lyfelabz-staging/locations/us-central1/services/teacherunitssetresources/revisions/teacherunitssetresources-00001-test",
+              "percent": 100,
+              "tag": null
+            }
+          ],
+          "invocation": {
+            "invokerIamDisabled": false,
+            "defaultUriDisabled": false,
+            "iapEnabled": false,
+            "customAudiences": [],
+            "functionAllowPolicy": {
+              "version": 1,
+              "bindings": []
+            },
+            "serviceAllowPolicy": {
+              "version": 1,
+              "bindings": [
+                {
+                  "role": "roles/run.invoker",
+                  "members": [
+                    "allUsers"
+                  ],
+                  "condition": null
+                }
+              ]
+            },
+            "accessReviewReceipt": {
+              "bucket": "a3-test-evidence",
+              "object": "access-review.json",
+              "generation": "1",
+              "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+            }
+          },
+          "execution": {
+            "serviceAccountEmail": "test-runtime@lyfelabz-staging.iam.gserviceaccount.com",
+            "timeoutNanoseconds": "60000000000",
+            "concurrency": 80,
+            "memoryBytes": "268435456",
+            "cpuMilli": 1000,
+            "minimumInstances": 0,
+            "maximumInstances": null,
+            "command": [],
+            "args": [],
+            "workingDirectory": null,
+            "environmentVariables": [
+              {
+                "name": "FIREBASE_CONFIG",
+                "value": "{\"projectId\":\"lyfelabz-staging\"}"
+              },
+              {
+                "name": "TEST_MODE",
+                "value": "synthetic"
+              }
+            ],
+            "secretEnvironmentBindings": [
+              {
+                "name": "TEST_SECRET",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-only",
+                "version": "1"
+              }
+            ],
+            "secretVolumeBindings": [
+              {
+                "volumeName": "test-volume",
+                "mountPath": "/test-secrets",
+                "secretResource": "projects/lyfelabz-staging/secrets/test-volume-only",
+                "defaultMode": 292,
+                "items": [
+                  {
+                    "path": "value",
+                    "version": "1",
+                    "mode": null
+                  }
+                ]
+              }
+            ],
+            "ingress": "all",
+            "network": {
+              "kind": "none"
+            }
+          },
+          "build": {
+            "serviceAccountResource": "projects/lyfelabz-staging/serviceAccounts/test-build@lyfelabz-staging.iam.gserviceaccount.com",
+            "environmentVariables": [],
+            "dockerRepositoryResource": "projects/lyfelabz-staging/locations/us-central1/repositories/test-only",
+            "source": {
+              "bucket": "a3-test-evidence",
+              "object": "source.zip",
+              "generation": "1",
+              "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+            },
+            "runtimeUpdatePolicy": {
+              "kind": "automatic",
+              "baseImageUri": null
+            }
+          },
+          "observedImage": {
+            "repository": "us-central1-docker.pkg.dev/lyfelabz-staging/test-only/test-image",
+            "digest": "8888888888888888888888888888888888888888888888888888888888888888"
+          }
+        }
+      ],
+      "reason": "nine required"
+    },
+    {
+      "target": "deploymentApproval",
+      "path": [
+        "payload",
+        "source",
+        "signatureBase64"
+      ],
+      "operation": "set",
+      "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "reason": "signature length"
+    },
+    {
+      "target": "deploymentApproval",
+      "path": [
+        "payload",
+        "source",
+        "signatureBase64"
+      ],
+      "operation": "set",
+      "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB",
+      "reason": "base64 encoding"
+    },
+    {
+      "target": "deploymentApproval",
+      "path": [
+        "payload",
+        "source",
+        "signerKeyId"
+      ],
+      "operation": "set",
+      "value": null,
+      "reason": "incorrect type"
+    },
+    {
+      "target": "deploymentApproval",
+      "path": [
+        "payload",
+        "statement",
+        "issuedAt"
+      ],
+      "operation": "set",
+      "value": "2026-02-30T00:00:00.000000000Z",
+      "reason": "calendar invalid"
+    },
+    {
+      "target": "deploymentApproval",
+      "path": [
+        "payload",
+        "statement",
+        "candidate",
+        "sourceSha"
+      ],
+      "operation": "delete",
+      "value": null,
+      "reason": "required missing"
+    },
+    {
+      "target": "activationEvidence",
+      "path": [
+        "payload",
+        "authorizationEvidenceRef"
+      ],
+      "operation": "set",
+      "value": "teacherUnitsReleaseEvidence/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee/child",
+      "reason": "reference grammar"
+    },
+    {
+      "target": "activationEvidence",
+      "path": [
+        "payload",
+        "updatedAt"
+      ],
+      "operation": "set",
+      "value": "unexpected",
+      "reason": "payload unknown timestamp"
+    },
+    {
+      "target": "approvalDisposition",
+      "path": [
+        "payload",
+        "statement",
+        "replacementApprovalRef"
+      ],
+      "operation": "set",
+      "value": "teacherUnitsReleaseEvidence/e8becd5ad402662b684fd85c08c7a462995a98cba384fb15f13bb29d5d6288e3",
+      "reason": "revoke cannot supersede"
+    }
+  ],
+  "vectors": [
+    {
+      "value": {},
+      "canonical": "{}",
+      "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "value": {
+        "b": 2,
+        "a": 1
+      },
+      "canonical": "{\"a\":1,\"b\":2}",
+      "digest": "43258cff783fe7036d8a43033f830adfc60ec037382473548ac742b888292777"
+    },
+    {
+      "value": {
+        "z": {
+          "b": null,
+          "a": false
+        },
+        "a": [
+          2,
+          1
+        ]
+      },
+      "canonical": "{\"a\":[2,1],\"z\":{\"a\":false,\"b\":null}}",
+      "digest": "a64aef6aa08ed641425787ecf8dbb2f1be979f13c950d190f28a49fb6fca08da"
+    },
+    {
+      "value": {
+        "environment": "staging",
+        "projectId": "lyfelabz-staging",
+        "projectNumber": "293337283840",
+        "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+        "enabledGeneration": 3,
+        "backendReleaseId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "clientContractVersion": "teacher-units-v2",
+        "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "hostingCandidateFingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "certificationEvidenceRef": "teacherUnitsReleaseEvidence/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "schemaVersion": 1,
+        "kind": "teacher-units-activation",
+        "authorizationEvidenceRef": "teacherUnitsReleaseEvidence/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      },
+      "canonical": "{\"authorizationEvidenceRef\":\"teacherUnitsReleaseEvidence/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"backendReleaseId\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"certificationEvidenceRef\":\"teacherUnitsReleaseEvidence/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"clientContractVersion\":\"teacher-units-v2\",\"enabledGeneration\":3,\"environment\":\"staging\",\"hostingCandidateFingerprint\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"kind\":\"teacher-units-activation\",\"placementFingerprint\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"policyInstanceId\":\"123e4567-e89b-42d3-a456-426614174000\",\"projectId\":\"lyfelabz-staging\",\"projectNumber\":\"293337283840\",\"schemaVersion\":1}",
+      "digest": "9e1e6fa22a53093fd4ea3107a98f5d0f6affe11aad6ae8b786d73e70c05aec04"
+    }
+  ]
+}
