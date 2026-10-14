@@ -10,6 +10,7 @@
   "scripts": {
     "prebuild": "node ../../scripts/unit-placement/check-parity.cjs",
     "build": "tsc -p tsconfig.build.json",
+    "postbuild": "node scripts/write-a3-runtime-build.cjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --ext .ts src",
     "test": "jest",
