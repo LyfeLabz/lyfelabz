@@ -33,9 +33,17 @@ const mockCompleteOAuth = jest.fn();
 // widening (PDR-030d, blueprint §7). The adapter mock exposes revokeGrant
 // so the regression tests can assert it is not invoked.
 const mockAdapterRevokeGrant = jest.fn(() => Promise.resolve());
+// Unified onboarding authorization: the adapter reports provider-neutral
+// capabilities from recorded scopes (publication = coursework + topics).
+const mockDescribeGrantedCapabilities = (scopes: readonly string[]) => ({
+  publication:
+    scopes.includes("https://www.googleapis.com/auth/classroom.coursework.students") &&
+    scopes.includes("https://www.googleapis.com/auth/classroom.topics.readonly"),
+});
 const mockGetAdapter = jest.fn(() => ({
   completeOAuth: mockCompleteOAuth,
   revokeGrant: mockAdapterRevokeGrant,
+  describeGrantedCapabilities: mockDescribeGrantedCapabilities,
 }));
 const mockEnsureBindings = jest.fn();
 
@@ -165,6 +173,7 @@ describe("lmsConnectionsComplete - server-side OAuth state pre-check", () => {
     mockGetAdapter.mockImplementation(() => ({
       completeOAuth: mockCompleteOAuth,
       revokeGrant: mockAdapterRevokeGrant,
+      describeGrantedCapabilities: mockDescribeGrantedCapabilities,
     }));
     mockConnectionGet.mockResolvedValue({ exists: false });
     mockConnectionSet.mockResolvedValue(undefined);

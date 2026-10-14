@@ -76,10 +76,14 @@ describe("googleClassroomAdapter Sprint 23B activation", () => {
       expect(url.searchParams.get("access_type")).toBe("offline");
       expect(url.searchParams.get("prompt")).toBe("consent");
       expect(url.searchParams.get("include_granted_scopes")).toBe("true");
+      // Unified onboarding authorization: the complete required scope set,
+      // exactly, in this order. Nothing broader is ever requested.
       expect(url.searchParams.get("scope")).toBe(
         [
           "https://www.googleapis.com/auth/classroom.courses.readonly",
           "https://www.googleapis.com/auth/classroom.rosters.readonly",
+          "https://www.googleapis.com/auth/classroom.coursework.students",
+          "https://www.googleapis.com/auth/classroom.topics.readonly",
         ].join(" "),
       );
       expect(authorization.state).toMatch(/^[0-9a-f]{64}$/);

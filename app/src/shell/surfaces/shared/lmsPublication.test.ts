@@ -15,6 +15,9 @@ import type {
   OAuthHandoff,
 } from "../../../settings/integrations/types";
 import {
+  CLASSROOM_AUTHORIZATION_MESSAGE,
+  classifyTopicLoadError,
+  requestPublicationAuthorization,
   clearConnectionReconnectNeeded,
   createConsentCoordinator,
   createDetailLmsRetrySeam,
@@ -643,5 +646,379 @@ describe("session-scoped connection-recovery signal", () => {
     // Identity mismatch recovery lives in the publication surface (same-account
     // retry), so Settings must not be armed as a required destination.
     expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Unified onboarding authorization
+// -----------------------------------------------------------------------------
+
+const handoffError = (code: string): Error => {
+  const err = new Error(code);
+  (err as { code?: string }).code = code;
+  return err;
+};
+
+describe("requestPublicationAuthorization", () => {
+  test("requests the publication intent and reports granted", async () => {
+    const consent = makeConsent({
+      completeConnection: async () => ({
+        connectionId: "conn-1",
+        alreadyConnected: true,
+        consentOutcome: "widened" as const,
+        publicationAuthorized: true,
+      }),
+    });
+    const begin = consent.seam.beginConnection;
+    const beginInputs: unknown[] = [];
+    const seam = {
+      ...consent.seam,
+      beginConnection: async (input: Parameters<typeof begin>[0]) => {
+        beginInputs.push(input);
+        return begin(input);
+      },
+    };
+    await expect(requestPublicationAuthorization(seam)).resolves.toBe("granted");
+    expect(beginInputs).toEqual([
+      expect.objectContaining({ capability: "publication" }),
+    ]);
+    expect(consent.openCalls).toBe(1);
+    expect(consent.completeCalls).toBe(1);
+  });
+
+  test("a completion that grants only some permissions is reported as declined", async () => {
+    const consent = makeConsent({
+      completeConnection: async () => ({
+        connectionId: "conn-1",
+        alreadyConnected: true,
+        consentOutcome: "alreadyAuthorized" as const,
+        publicationAuthorized: false,
+      }),
+    });
+    await expect(requestPublicationAuthorization(consent.seam)).resolves.toBe("declined");
+  });
+
+  test("an absent flag (older server) keeps the earlier granted semantics", async () => {
+    const consent = makeConsent();
+    await expect(requestPublicationAuthorization(consent.seam)).resolves.toBe("granted");
+  });
+
+  test.each([
+    ["popup-blocked", "popupBlocked"],
+    ["cancelled", "cancelled"],
+    ["access_denied", "declined"],
+    ["state-mismatch", "failed"],
+  ] as const)("handoff error %s maps to %s and never completes", async (code, expected) => {
+    const consent = makeConsent({
+      openOAuth: async () => {
+        throw handoffError(code);
+      },
+    });
+    await expect(requestPublicationAuthorization(consent.seam)).resolves.toBe(expected);
+    expect(consent.completeCalls).toBe(0);
+  });
+
+  test("identity mismatch at completion is distinct", async () => {
+    const consent = makeConsent({
+      completeConnection: async () => {
+        const err = new Error("failed-precondition");
+        (err as { details?: unknown }).details = { code: "lms.identityMismatch" };
+        throw err;
+      },
+    });
+    await expect(requestPublicationAuthorization(consent.seam)).resolves.toBe(
+      "identityMismatch",
+    );
+  });
+
+  test("a begin failure (network) is failed and opens no window", async () => {
+    const consent = makeConsent();
+    const seam = {
+      ...consent.seam,
+      beginConnection: async () => {
+        throw handoffError("functions/unavailable");
+      },
+    };
+    await expect(requestPublicationAuthorization(seam)).resolves.toBe("failed");
+    expect(consent.openCalls).toBe(0);
+  });
+
+  test("every result has plain-language guidance with no technical vocabulary", () => {
+    for (const text of Object.values(CLASSROOM_AUTHORIZATION_MESSAGE)) {
+      expect(text.length).toBeGreaterThan(0);
+      expect(text).not.toMatch(/scope|oauth|token|403|lms\./i);
+      expect(text).not.toContain("\u2014");
+    }
+  });
+
+  test("runPublicationAction treats a partial grant as permission not granted without re-publishing", async () => {
+    const consent = makeConsent({
+      completeConnection: async () => ({
+        connectionId: "conn-1",
+        alreadyConnected: true,
+        consentOutcome: "alreadyAuthorized" as const,
+        publicationAuthorized: false,
+      }),
+    });
+    let publishes = 0;
+    const result = await runPublicationAction({
+      nonce: "n1",
+      publish: async () => {
+        publishes += 1;
+        return insufficient();
+      },
+      consent: consent.seam,
+      coordinator: createConsentCoordinator(),
+    });
+    expect(result.kind).toBe("permissionNotGranted");
+    expect(publishes).toBe(1);
+  });
+});
+
+describe("classifyTopicLoadError", () => {
+  const withDetails = (code: string): Error => {
+    const err = new Error("x");
+    (err as { details?: unknown }).details = { code };
+    return err;
+  };
+  test("missing permission, reconnect, and network failures are distinct", () => {
+    expect(classifyTopicLoadError(withDetails("lms.insufficientScope"))).toBe("permission");
+    expect(classifyTopicLoadError(withDetails("lms.reconnectRequired"))).toBe("reconnect");
+    expect(classifyTopicLoadError(withDetails("lms.connectionNotActive"))).toBe("reconnect");
+    expect(classifyTopicLoadError(withDetails("lms.upstreamAuthorizationFailed"))).toBe(
+      "reconnect",
+    );
+    expect(classifyTopicLoadError(handoffError("functions/unavailable"))).toBe("unavailable");
+    expect(classifyTopicLoadError(withDetails("lms.upstreamTemporarilyUnavailable"))).toBe(
+      "unavailable",
+    );
+    expect(classifyTopicLoadError(undefined)).toBe("unavailable");
+  });
+});
+
+describe("detail retry after a permission refusal", () => {
+  beforeEach(() => {
+    _resetLmsPublicationStateForTest();
+  });
+
+  const makeRetryIntegrations = (opts: {
+    grants: boolean;
+    publish?: () => Promise<IntegrationsPublicationOutcome>;
+  }) => {
+    const order: string[] = [];
+    const integrations = {
+      redirectUri: "r",
+      openOAuth: async () => {
+        order.push("open");
+        return { code: "c", state: "s" };
+      },
+      callables: {
+        beginConnection: async () => {
+          order.push("begin");
+          return { authorizationUrl: "u", state: "s" };
+        },
+        completeConnection: async () => {
+          order.push("complete");
+          return {
+            connectionId: "conn",
+            alreadyConnected: true,
+            publicationAuthorized: opts.grants,
+          };
+        },
+        publishAssignment: async () => {
+          order.push("publish");
+          return opts.publish ? opts.publish() : succeeded();
+        },
+      },
+    } as unknown as IntegrationsDeps;
+    return { integrations, order };
+  };
+
+  const recordPermissionStop = (): void =>
+    recordLmsPublicationRetryContext("u1", {
+      assignmentId: "a1",
+      linkId: "l1",
+      providerId: "googleClassroom",
+      title: "Carbon Cycle",
+      state: "permissionNotGranted",
+    });
+
+  test("asks for access first, from the click, then publishes exactly once", async () => {
+    const { integrations, order } = makeRetryIntegrations({ grants: true });
+    recordPermissionStop();
+    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    await expect(seam.retry()).resolves.toBe("succeeded");
+    expect(order).toEqual(["begin", "open", "complete", "publish"]);
+  });
+
+  test("a refusal publishes nothing", async () => {
+    const { integrations, order } = makeRetryIntegrations({ grants: false });
+    recordPermissionStop();
+    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    await expect(seam.retry()).resolves.toBe("permissionNotGranted");
+    expect(order).not.toContain("publish");
+    expect(readLmsPublicationRetryContext("u1", "a1")?.state).toBe("permissionNotGranted");
+  });
+
+  test("never opens a second Google window if Classroom still reports missing permission", async () => {
+    const { integrations, order } = makeRetryIntegrations({
+      grants: true,
+      publish: async () => insufficient(),
+    });
+    recordPermissionStop();
+    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    await expect(seam.retry()).resolves.toBe("permissionNotGranted");
+    expect(order.filter((o) => o === "open")).toHaveLength(1);
+    expect(order.filter((o) => o === "publish")).toHaveLength(1);
+  });
+});
+
+// PDR-030i popup reliability: the Google window is reserved synchronously,
+// before the first server request, and released on every path.
+describe("authorization window reservation", () => {
+  beforeEach(() => {
+    _resetLmsPublicationStateForTest();
+  });
+
+  const makeReserving = (opts: {
+    beginFails?: boolean;
+    openFails?: string;
+    reservationAvailable?: boolean;
+  } = {}) => {
+    const order: string[] = [];
+    const reservation = { popup: {} as Window, close: jest.fn(() => order.push("close")) };
+    const passed: unknown[] = [];
+    const seam: PublicationConsentSeam = {
+      providerId: "googleClassroom",
+      redirectUri: "r",
+      reserveOAuthWindow: () => {
+        order.push("reserve");
+        return opts.reservationAvailable === false ? null : reservation;
+      },
+      beginConnection: async () => {
+        order.push("begin");
+        if (opts.beginFails) throw handoffError("functions/unavailable");
+        return { authorizationUrl: "https://accounts.example/auth", state: "st" };
+      },
+      openOAuth: async (input) => {
+        order.push("open");
+        passed.push(input.reservation);
+        if (opts.openFails) throw handoffError(opts.openFails);
+        return { code: "c", state: "st" };
+      },
+      completeConnection: async () => {
+        order.push("complete");
+        return { connectionId: "conn", alreadyConnected: true, publicationAuthorized: true };
+      },
+    };
+    return { seam, order, reservation, passed };
+  };
+
+  test("reserves before the first asynchronous operation and hands the window to the handoff", async () => {
+    const r = makeReserving();
+    const pending = requestPublicationAuthorization(r.seam);
+    // Synchronously, before anything resolves: reserved, and begin started after.
+    expect(r.order).toEqual(["reserve", "begin"]);
+    await expect(pending).resolves.toBe("granted");
+    expect(r.order.slice(0, 4)).toEqual(["reserve", "begin", "open", "complete"]);
+    expect(r.passed[0]).toBe(r.reservation);
+  });
+
+  test("a server failure after reservation closes the window and reports failed", async () => {
+    const r = makeReserving({ beginFails: true });
+    await expect(requestPublicationAuthorization(r.seam)).resolves.toBe("failed");
+    expect(r.order).toEqual(["reserve", "begin", "close"]);
+  });
+
+  test("blocked or closed windows release the reservation and report specifically", async () => {
+    for (const [code, expected] of [
+      ["popup-blocked", "popupBlocked"],
+      ["cancelled", "cancelled"],
+      ["access_denied", "declined"],
+    ] as const) {
+      const r = makeReserving({ openFails: code });
+      await expect(requestPublicationAuthorization(r.seam)).resolves.toBe(expected);
+      expect(r.reservation.close).toHaveBeenCalled();
+      expect(r.order).not.toContain("complete");
+    }
+  });
+
+  test("no reservation available keeps the original fallback", async () => {
+    const r = makeReserving({ reservationAvailable: false });
+    await expect(requestPublicationAuthorization(r.seam)).resolves.toBe("granted");
+    expect(r.passed[0]).toBeNull();
+  });
+
+  test("the automatic after-publish consent never reserves a window", async () => {
+    let reserves = 0;
+    const integrations = {
+      redirectUri: "r",
+      reserveOAuthWindow: () => {
+        reserves += 1;
+        return null;
+      },
+      openOAuth: async () => ({ code: "c", state: "s" }),
+      callables: {
+        beginConnection: async () => ({ authorizationUrl: "u", state: "s" }),
+        completeConnection: async () => ({ connectionId: "conn", alreadyConnected: true }),
+        publishAssignment: (() => {
+          let call = 0;
+          return async () => (++call === 1 ? insufficient() : succeeded());
+        })(),
+      },
+    } as unknown as IntegrationsDeps;
+    recordLmsPublicationRetryContext("u1", {
+      assignmentId: "a1",
+      linkId: "l1",
+      providerId: "googleClassroom",
+      title: "T",
+      state: "failed",
+    });
+    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    await expect(seam.retry()).resolves.toBe("succeeded");
+    expect(reserves).toBe(0);
+  });
+
+  test("Try again after a permission stop reserves synchronously from the click", async () => {
+    const order: string[] = [];
+    const integrations = {
+      redirectUri: "r",
+      reserveOAuthWindow: () => {
+        order.push("reserve");
+        return { popup: {} as Window, close: () => order.push("close") };
+      },
+      openOAuth: async () => {
+        order.push("open");
+        return { code: "c", state: "s" };
+      },
+      callables: {
+        beginConnection: async () => {
+          order.push("begin");
+          return { authorizationUrl: "u", state: "s" };
+        },
+        completeConnection: async () => ({
+          connectionId: "conn",
+          alreadyConnected: true,
+          publicationAuthorized: true,
+        }),
+        publishAssignment: async () => {
+          order.push("publish");
+          return succeeded();
+        },
+      },
+    } as unknown as IntegrationsDeps;
+    recordLmsPublicationRetryContext("u1", {
+      assignmentId: "a1",
+      linkId: "l1",
+      providerId: "googleClassroom",
+      title: "T",
+      state: "permissionNotGranted",
+    });
+    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const pending = seam.retry();
+    expect(order).toEqual(["reserve", "begin"]);
+    await expect(pending).resolves.toBe("succeeded");
+    expect(order.filter((o) => o === "reserve")).toHaveLength(1);
+    expect(order.filter((o) => o === "publish")).toHaveLength(1);
   });
 });

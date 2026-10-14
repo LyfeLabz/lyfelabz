@@ -790,6 +790,9 @@ async function run(): Promise<void> {
       importFromClassroom = Object.freeze({
         callables: integrations.callables,
         openOAuth: integrations.openOAuth,
+        ...(integrations.reserveOAuthWindow !== undefined
+          ? { reserveOAuthWindow: integrations.reserveOAuthWindow }
+          : {}),
         redirectUri: integrations.redirectUri,
         lmsCreateClass,
         listTeacherClasses: integrations.listTeacherClasses,

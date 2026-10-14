@@ -21,6 +21,12 @@ export type IntegrationsConnection = {
   readonly providerId: string;
   readonly status: IntegrationsConnectionStatus;
   readonly scopes: readonly string[];
+  // Unified onboarding authorization. Whether the connection's recorded
+  // grant covers topics, publishing, scheduling, and grade passback,
+  // derived server-side so the client never interprets provider scope
+  // strings. Absent when the server predates the field: the client then
+  // treats authorization as unknown and never blocks on it.
+  readonly publicationAuthorized?: boolean;
 };
 
 export type IntegrationsLmsClass = {
@@ -105,15 +111,16 @@ export type IntegrationsCallables = {
   readonly beginConnection: (input: {
     readonly providerId: string;
     readonly redirectUri: string;
-    // Provider-neutral capability selector. "publication" triggers
-    // incremental consent for the coursework scope set (PDR-030c).
-    // Absent values use the initial scope set.
+    // Provider-neutral capability selector. "publication" binds the
+    // publication-upgrade intent so completion widens an existing
+    // connection (PDR-030c). Every begin requests the complete required
+    // permission set (unified onboarding authorization).
     readonly capability?: "publication";
     // Sprint 26 certification follow-up. When true, this begin carries the
     // explicit "reconnect" intent so completion replaces the unusable
     // credential on the existing active connection instead of taking the
-    // idempotent duplicate-connect early return. Base scope set, never
-    // combined with `capability: "publication"`.
+    // idempotent duplicate-connect early return. Never combined with
+    // `capability: "publication"`.
     readonly reconnect?: boolean;
   }) => Promise<{ readonly authorizationUrl: string; readonly state: string }>;
   readonly completeConnection: (input: {
@@ -132,6 +139,11 @@ export type IntegrationsCallables = {
       | "widened"
       | "alreadyAuthorized"
       | "recovered";
+    // Unified onboarding authorization. Whether the complete permission set
+    // is now granted. Google lets a teacher uncheck individual permissions,
+    // so a completed authorization alone is not proof. Absent when the
+    // server predates the field.
+    readonly publicationAuthorized?: boolean;
   }>;
   readonly disconnect: (input: {
     readonly connectionId: string;
@@ -436,7 +448,24 @@ export type OAuthHandoff = (input: {
   readonly authorizationUrl: string;
   readonly redirectUri: string;
   readonly expectedState: string;
+  // PDR-030i popup reliability. A window reserved synchronously from the
+  // teacher's click (see `IntegrationsDeps.reserveOAuthWindow`). When
+  // present and still open, the handoff navigates it to the authorization
+  // URL instead of opening a new window after the server round trip, which
+  // browsers may block. Absent keeps the original open-on-handoff behavior.
+  readonly reservation?: OAuthWindowReservation | null;
 }) => Promise<{ readonly code: string; readonly state: string }>;
+
+// A blank (about:blank) authorization window opened synchronously from a
+// teacher's click, before any server request, so the browser treats it as
+// user-initiated. It carries no LyfeLabz content and no credential. It is
+// navigated only to a validated authorization URL by the handoff, and must
+// be closed (`close`, idempotent) by the caller on any path that does not
+// reach the handoff.
+export type OAuthWindowReservation = {
+  readonly popup: Window;
+  readonly close: () => void;
+};
 
 // Injected reader for the teacher's LyfeLabz classes. A callable-free
 // seam so the settings tree does not import firebase/firestore. Tests
@@ -482,4 +511,10 @@ export type IntegrationsDeps = {
   readonly listClassLinks?: ListClassLinks;
   // Sprint 26 Phase 4: session-local reconnect signal reader/clearer.
   readonly connectionRecovery?: IntegrationsConnectionRecovery;
+  // PDR-030i popup reliability: open a blank authorization window NOW,
+  // synchronously, from a direct teacher click. Returns null when the
+  // browser refuses (the handoff then falls back to opening its own
+  // window). Call it only on paths that will start an authorization, so an
+  // already-authorized teacher never sees a window flash.
+  readonly reserveOAuthWindow?: () => OAuthWindowReservation | null;
 };

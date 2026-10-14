@@ -125,7 +125,7 @@ External integrations (learning management systems, student information systems,
 
 **External integrations are never in the critical path of Present Mode.** Present Mode remains a structurally separate surface with no Firebase SDK on the canonical instructional origin. No LMS token, OAuth flow, LMS bundle, or LMS-scoped payload reaches the canonical origin. This preserves PDR-018b, PDR-018c, and PDR-019l.
 
-**Incremental authorization.** External-integration OAuth scopes are requested incrementally. The first scope requested is the minimum required for the teacher's immediate opt-in workflow. Additional scopes are requested only when the teacher initiates a workflow that requires them.
+**Incremental authorization.** External-integration OAuth scopes are requested incrementally. The first scope requested is the minimum required for the teacher's immediate opt-in workflow. Additional scopes are requested only when the teacher initiates a workflow that requires them. *(For Google Classroom, superseded by PDR-030i (2026-10-14): every authorization requests the complete set of scopes the supported teacher workflows need, at connection time, and nothing broader; granted scopes remain authoritative and incomplete grants are upgraded only by explicit teacher consent.)*
 
 **Revocation is honored immediately.** If the upstream returns an authorization error, the server marks the connection revoked, marks affected mirror records stale, and surfaces a plain-language message to the teacher on next visit. No silent retries against a revoked token.
 

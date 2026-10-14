@@ -387,7 +387,7 @@ describe("lmsConnectionsBegin - Sprint 26 Phase 2 account continuity", () => {
   // teacher lands back on the connected account) but requests only the base
   // scope set, never the publication scope. Completion still hard-validates
   // the returned identity, so the hint is steering, not enforcement.
-  it("reconnect intent supplies login_hint from the connection identity but requests only base scopes", async () => {
+  it("reconnect intent supplies login_hint from the connection identity and requests the complete scope set", async () => {
     mockConnectionGet.mockResolvedValue(activeConnectionSnapshot());
 
     const response = await __lmsConnectionsBeginHandler(
@@ -408,17 +408,17 @@ describe("lmsConnectionsBegin - Sprint 26 Phase 2 account continuity", () => {
     const url = new URL(response.authorizationUrl);
     expect(url.searchParams.get("login_hint")).toBe(FIXTURE_UPSTREAM_ACCOUNT_ID);
 
-    // Base scope set only: reconnect restores the base connection. The
-    // coursework publication scope is NOT requested.
+    // Unified onboarding authorization: reconnect requests the complete
+    // required scope set (exactly these four), so recovering a connection
+    // also restores topics and publishing in the same single approval.
     const scope = url.searchParams.get("scope") ?? "";
-    expect(scope).toContain(
-      "https://www.googleapis.com/auth/classroom.courses.readonly",
-    );
-    expect(scope).toContain(
-      "https://www.googleapis.com/auth/classroom.rosters.readonly",
-    );
-    expect(scope).not.toContain(
-      "https://www.googleapis.com/auth/classroom.coursework.students",
+    expect(scope.split(" ").sort()).toEqual(
+      [
+        "https://www.googleapis.com/auth/classroom.courses.readonly",
+        "https://www.googleapis.com/auth/classroom.coursework.students",
+        "https://www.googleapis.com/auth/classroom.rosters.readonly",
+        "https://www.googleapis.com/auth/classroom.topics.readonly",
+      ],
     );
 
     // Still a pure read: no token write/rotation/refresh, no connection
@@ -436,7 +436,7 @@ describe("lmsConnectionsBegin - Sprint 26 Phase 2 account continuity", () => {
     expect(logged).not.toContain(FIXTURE_UPSTREAM_ACCOUNT_ID);
   });
 
-  it("reconnect intent with no durable connection omits login_hint and still requests base scopes", async () => {
+  it("reconnect intent with no durable connection omits login_hint and still requests the complete scope set", async () => {
     mockConnectionGet.mockResolvedValue({ exists: false });
 
     const response = await __lmsConnectionsBeginHandler(
@@ -451,7 +451,8 @@ describe("lmsConnectionsBegin - Sprint 26 Phase 2 account continuity", () => {
     expect(mockTokenStore.resolve).not.toHaveBeenCalled();
     const url = new URL(response.authorizationUrl);
     expect(url.searchParams.has("login_hint")).toBe(false);
-    expect(url.searchParams.get("scope")).not.toContain(
+    expect((url.searchParams.get("scope") ?? "").split(" ")).toHaveLength(4);
+    expect(url.searchParams.get("scope")).toContain(
       "https://www.googleapis.com/auth/classroom.coursework.students",
     );
   });

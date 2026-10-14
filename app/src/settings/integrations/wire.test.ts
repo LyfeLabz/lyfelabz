@@ -720,3 +720,263 @@ describe("createLmsCallables refreshRoster: manual reconciliation passthrough an
     expect(out.withdrawnEnrollments).toBe(1);
   });
 });
+
+// Unified onboarding authorization: the provider-neutral
+// `publicationAuthorized` flag is parsed only when it is a real boolean, so
+// an older server (no field) reads as unknown and never blocks a teacher.
+describe("createLmsCallables publicationAuthorized parsing", () => {
+  afterEach(() => callableResponses.clear());
+
+  it("describeConnections carries a boolean flag and omits a missing or malformed one", async () => {
+    callableResponses.set("lmsConnectionsDescribe", async () => ({
+      data: {
+        connections: [
+          { connectionId: "a", providerId: "googleClassroom", status: "active", scopes: [], publicationAuthorized: false },
+          { connectionId: "b", providerId: "googleClassroom", status: "active", scopes: [], publicationAuthorized: true },
+          { connectionId: "c", providerId: "googleClassroom", status: "active", scopes: [] },
+          { connectionId: "d", providerId: "googleClassroom", status: "active", scopes: [], publicationAuthorized: "yes" },
+        ],
+      },
+    }));
+    const rows = await createLmsCallables({} as Functions).describeConnections();
+    expect(rows.map((r) => r.publicationAuthorized)).toEqual([false, true, undefined, undefined]);
+    expect(rows[2]).not.toHaveProperty("publicationAuthorized");
+  });
+
+  it("completeConnection carries the flag when present", async () => {
+    callableResponses.set("lmsConnectionsComplete", async () => ({
+      data: { connectionId: "conn", alreadyConnected: true, consentOutcome: "alreadyAuthorized", publicationAuthorized: false },
+    }));
+    const res = await createLmsCallables({} as Functions).completeConnection({
+      providerId: "googleClassroom",
+      code: "c",
+      state: "s",
+      redirectUri: "r",
+    });
+    expect(res.publicationAuthorized).toBe(false);
+    callableResponses.set("lmsConnectionsComplete", async () => ({
+      data: { connectionId: "conn", alreadyConnected: false },
+    }));
+    const legacy = await createLmsCallables({} as Functions).completeConnection({
+      providerId: "googleClassroom",
+      code: "c",
+      state: "s",
+      redirectUri: "r",
+    });
+    expect(legacy).not.toHaveProperty("publicationAuthorized");
+  });
+});
+
+// PDR-030i popup reliability: a blank window reserved synchronously from the
+// teacher's click is navigated to the server-issued authorization URL; the
+// OAuth callback contract (same-origin postMessage, exact state match) is
+// unchanged.
+describe("browser OAuth window reservation and handoff", () => {
+  type FakePopup = {
+    closed: boolean;
+    close: jest.Mock;
+    location: { replace: jest.Mock };
+  };
+  const ORIGIN = "https://app.lyfelabz.com";
+  const GOOGLE = "https://accounts.google.com/o/oauth2/v2/auth?state=st-1";
+
+  const makePopup = (): FakePopup => {
+    const popup: FakePopup = {
+      closed: false,
+      close: jest.fn(() => {
+        popup.closed = true;
+      }),
+      location: { replace: jest.fn() },
+    };
+    return popup;
+  };
+
+  const makeBrowser = (opts: { openReturns?: FakePopup | null } = {}) => {
+    const listeners: Array<(ev: MessageEvent) => void> = [];
+    const intervals: Array<() => void> = [];
+    const open = jest.fn(() => (opts.openReturns === undefined ? makePopup() : opts.openReturns));
+    const win = {
+      location: { origin: ORIGIN },
+      open,
+      addEventListener: (_t: string, fn: (ev: MessageEvent) => void) => listeners.push(fn),
+      removeEventListener: (_t: string, fn: (ev: MessageEvent) => void) => {
+        const i = listeners.indexOf(fn);
+        if (i >= 0) listeners.splice(i, 1);
+      },
+      setInterval: (fn: () => void) => {
+        intervals.push(fn);
+        return intervals.length;
+      },
+      clearInterval: () => undefined,
+    } as unknown as Window;
+    const post = (data: unknown, origin = ORIGIN): void => {
+      for (const fn of [...listeners]) fn({ origin, data } as MessageEvent);
+    };
+    const tick = (): void => {
+      for (const fn of intervals) fn();
+    };
+    return { win, open, post, tick, listeners };
+  };
+
+  it("reserves an about:blank window synchronously, never the callback page", async () => {
+    const { createBrowserOAuthWindowReserver } = await import("./wire");
+    const b = makeBrowser();
+    const reservation = createBrowserOAuthWindowReserver(b.win)();
+    expect(reservation).not.toBeNull();
+    expect(b.open).toHaveBeenCalledTimes(1);
+    const firstCall = b.open.mock.calls[0] as unknown as [string, string, string];
+    expect(firstCall[0]).toBe("about:blank");
+    expect(firstCall[0]).not.toContain("lms-callback");
+    expect(firstCall[2]).toContain("noopener=no");
+    reservation!.close();
+    reservation!.close();
+    expect((reservation!.popup as unknown as FakePopup).close).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns null when the browser blocks the reservation", async () => {
+    const { createBrowserOAuthWindowReserver } = await import("./wire");
+    const b = makeBrowser({ openReturns: null });
+    expect(createBrowserOAuthWindowReserver(b.win)()).toBeNull();
+  });
+
+  it("navigates the reserved window to the authorization URL and resolves on the matching callback", async () => {
+    const { createBrowserOAuthHandoff, createBrowserOAuthWindowReserver } = await import("./wire");
+    const b = makeBrowser();
+    const reservation = createBrowserOAuthWindowReserver(b.win)()!;
+    const pending = createBrowserOAuthHandoff(b.win)({
+      authorizationUrl: GOOGLE,
+      redirectUri: `${ORIGIN}/app/lms-callback.html`,
+      expectedState: "st-1",
+      reservation,
+    });
+    const popup = reservation.popup as unknown as FakePopup;
+    expect(popup.location.replace).toHaveBeenCalledWith(GOOGLE);
+    // No second window is opened.
+    expect(b.open).toHaveBeenCalledTimes(1);
+    // A message from another origin, or with another type, is ignored.
+    b.post({ type: "lyfelabz-lms-oauth", code: "evil", state: "st-1" }, "https://evil.example");
+    b.post({ type: "other", code: "x", state: "st-1" });
+    b.post({ type: "lyfelabz-lms-oauth", code: "auth-code", state: "st-1" });
+    await expect(pending).resolves.toEqual({ code: "auth-code", state: "st-1" });
+    expect(popup.close).toHaveBeenCalled();
+    expect(b.listeners).toHaveLength(0);
+  });
+
+  it("still rejects a state mismatch when using a reserved window", async () => {
+    const { createBrowserOAuthHandoff, createBrowserOAuthWindowReserver } = await import("./wire");
+    const b = makeBrowser();
+    const reservation = createBrowserOAuthWindowReserver(b.win)()!;
+    const pending = createBrowserOAuthHandoff(b.win)({
+      authorizationUrl: GOOGLE,
+      redirectUri: "r",
+      expectedState: "st-1",
+      reservation,
+    });
+    b.post({ type: "lyfelabz-lms-oauth", code: "c", state: "forged" });
+    await expect(pending).rejects.toMatchObject({ code: "state-mismatch" });
+  });
+
+  it("surfaces a provider refusal (access_denied) as-is", async () => {
+    const { createBrowserOAuthHandoff, createBrowserOAuthWindowReserver } = await import("./wire");
+    const b = makeBrowser();
+    const reservation = createBrowserOAuthWindowReserver(b.win)()!;
+    const pending = createBrowserOAuthHandoff(b.win)({
+      authorizationUrl: GOOGLE,
+      redirectUri: "r",
+      expectedState: "st-1",
+      reservation,
+    });
+    b.post({ type: "lyfelabz-lms-oauth", error: "access_denied" });
+    await expect(pending).rejects.toMatchObject({ code: "access_denied" });
+  });
+
+  it.each([
+    ["javascript:", "javascript:alert(1)"],
+    ["plain http", "http://accounts.google.com/o/oauth2/v2/auth"],
+    ["same-origin callback page", `${ORIGIN}/app/lms-callback.html?code=x&state=st-1`],
+    ["unparseable", "not a url"],
+    ["embedded credentials", "https://user:pass@accounts.google.com/auth"],
+  ])("refuses to navigate to a %s URL and releases the reserved window", async (_l, url) => {
+    const { createBrowserOAuthHandoff, createBrowserOAuthWindowReserver } = await import("./wire");
+    const b = makeBrowser();
+    const reservation = createBrowserOAuthWindowReserver(b.win)()!;
+    await expect(
+      createBrowserOAuthHandoff(b.win)({
+        authorizationUrl: url,
+        redirectUri: "r",
+        expectedState: "st-1",
+        reservation,
+      }),
+    ).rejects.toMatchObject({ code: "invalid-authorization-url" });
+    const popup = reservation.popup as unknown as FakePopup;
+    expect(popup.location.replace).not.toHaveBeenCalled();
+    expect(popup.close).toHaveBeenCalled();
+    expect(b.open).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports cancelled when the teacher closed the blank window before Google loaded", async () => {
+    const { createBrowserOAuthHandoff, createBrowserOAuthWindowReserver } = await import("./wire");
+    const b = makeBrowser();
+    const reservation = createBrowserOAuthWindowReserver(b.win)()!;
+    (reservation.popup as unknown as FakePopup).closed = true;
+    await expect(
+      createBrowserOAuthHandoff(b.win)({
+        authorizationUrl: GOOGLE,
+        redirectUri: "r",
+        expectedState: "st-1",
+        reservation,
+      }),
+    ).rejects.toMatchObject({ code: "cancelled" });
+    expect(b.open).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports cancelled when the Google window is closed mid-flow", async () => {
+    const { createBrowserOAuthHandoff, createBrowserOAuthWindowReserver } = await import("./wire");
+    const b = makeBrowser();
+    const reservation = createBrowserOAuthWindowReserver(b.win)()!;
+    const pending = createBrowserOAuthHandoff(b.win)({
+      authorizationUrl: GOOGLE,
+      redirectUri: "r",
+      expectedState: "st-1",
+      reservation,
+    });
+    (reservation.popup as unknown as FakePopup).closed = true;
+    b.tick();
+    await expect(pending).rejects.toMatchObject({ code: "cancelled" });
+  });
+
+  it("falls back to opening the authorization URL when nothing was reserved", async () => {
+    const { createBrowserOAuthHandoff } = await import("./wire");
+    const b = makeBrowser();
+    const pending = createBrowserOAuthHandoff(b.win)({
+      authorizationUrl: GOOGLE,
+      redirectUri: "r",
+      expectedState: "st-1",
+    });
+    expect((b.open.mock.calls[0] as unknown as [string])[0]).toBe(GOOGLE);
+    b.post({ type: "lyfelabz-lms-oauth", code: "c", state: "st-1" });
+    await expect(pending).resolves.toEqual({ code: "c", state: "st-1" });
+  });
+
+  it("reports popup-blocked when there is no reservation and the browser blocks the window", async () => {
+    const { createBrowserOAuthHandoff } = await import("./wire");
+    const b = makeBrowser({ openReturns: null });
+    await expect(
+      createBrowserOAuthHandoff(b.win)({
+        authorizationUrl: GOOGLE,
+        redirectUri: "r",
+        expectedState: "st-1",
+      }),
+    ).rejects.toMatchObject({ code: "popup-blocked" });
+  });
+
+  it("createIntegrationsDeps wires the reserver", () => {
+    const deps = createIntegrationsDeps({
+      functions: {} as Functions,
+      listClasses: listClassesStub,
+      teacherUid: "teacher-1",
+      win: makeWin(ORIGIN),
+    });
+    expect(typeof deps.reserveOAuthWindow).toBe("function");
+  });
+});

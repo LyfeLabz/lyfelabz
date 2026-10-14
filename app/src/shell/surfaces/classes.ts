@@ -1920,6 +1920,16 @@ export function renderClassesSurface(
       .catch(() => undefined);
   }
 
+  // PDR-030i popup reliability: prefetch, in parallel with the class list,
+  // whether this teacher already has a Google Classroom connection. The
+  // Import click can then reserve the Google window synchronously (before
+  // any server request) only when authorization is actually needed, and an
+  // already-connected teacher never sees a window flash. Best-effort and
+  // read-only; a failure leaves the original Import behavior unchanged.
+  if (importDeps !== null && createClass !== null) {
+    void ensureImportController()?.prepare();
+  }
+
   void deps
     .listClasses(session.uid)
     .then((classes) => {

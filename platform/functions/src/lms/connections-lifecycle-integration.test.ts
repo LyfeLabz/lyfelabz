@@ -416,7 +416,9 @@ describe("lmsConnectionsBegin -> lmsConnectionsComplete cross-callable integrati
     expect(scope).not.toContain("classroom.coursework.me");
   });
 
-  it("omitted capability requests only the initial (readonly) scope set", async () => {
+  it("omitted capability (initial connect) requests the complete required scope set", async () => {
+    // Unified onboarding authorization: a new teacher approves topics,
+    // publication, scheduling, and grade passback at connection time.
     const beginResponse = await __lmsConnectionsBeginHandler(
       makeRequest({
         providerId: PROVIDER,
@@ -427,9 +429,10 @@ describe("lmsConnectionsBegin -> lmsConnectionsComplete cross-callable integrati
     const scope = url.searchParams.get("scope") ?? "";
     expect(scope).toContain("classroom.courses.readonly");
     expect(scope).toContain("classroom.rosters.readonly");
+    expect(scope).toContain("classroom.coursework.students");
+    expect(scope).toContain("classroom.topics.readonly");
     expect(scope).not.toContain("classroom.coursework.me");
-    expect(scope).not.toContain("classroom.coursework.students");
-    expect(scope).not.toContain("classroom.topics.readonly");
+    expect(scope.split(" ")).toHaveLength(4);
   });
 
   it("rejects an unrecognized capability value with lms.invalidCapability and issues no state", async () => {

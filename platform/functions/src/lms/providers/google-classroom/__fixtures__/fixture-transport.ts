@@ -236,6 +236,12 @@ export type GoogleClassroomFixtureOptions = {
   // exercise "publish succeeds, grade passback fails" without also
   // failing every other transport operation.
   readonly gradePassbackFailureMode?: FixtureFailureMode;
+  // Unified onboarding authorization - the scope set Google reports as
+  // granted by the authorization-code exchange. Google's consent screen
+  // lets a teacher leave individual permissions unchecked, so the granted
+  // set can be smaller than the requested set. Defaults to
+  // FIXTURE_TOKEN_SCOPES (the read-only initial set).
+  readonly grantedScopes?: readonly string[];
 };
 
 // Snapshot of the fixture's mutable state so tests can inspect what
@@ -274,6 +280,7 @@ export function createFixtureGoogleClassroomTransport(
 } {
   const acceptedAuthorizationCode =
     options.authorizationCode ?? FIXTURE_AUTHORIZATION_CODE;
+  const grantedScopes = options.grantedScopes ?? FIXTURE_TOKEN_SCOPES;
   const acceptedRefreshToken =
     options.refreshToken ?? FIXTURE_REFRESH_TOKEN;
   const failureMode = options.failureMode ?? "none";
@@ -422,7 +429,7 @@ export function createFixtureGoogleClassroomTransport(
         access_token: FIXTURE_ACCESS_TOKEN,
         refresh_token: FIXTURE_REFRESH_TOKEN,
         expires_in: FIXTURE_TOKEN_EXPIRES_IN,
-        scope: FIXTURE_TOKEN_SCOPES.join(" "),
+        scope: grantedScopes.join(" "),
         token_type: "Bearer",
       });
     },

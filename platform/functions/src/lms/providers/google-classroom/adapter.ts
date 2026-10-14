@@ -90,6 +90,20 @@ export const GOOGLE_CLASSROOM_PUBLICATION_SCOPES: readonly string[] = [
   "https://www.googleapis.com/auth/classroom.topics.readonly",
 ];
 
+// Unified onboarding authorization. The complete set of scopes every
+// currently supported teacher-facing Classroom workflow needs: class
+// discovery and roster reads (initial set), plus topics, coursework
+// publication and scheduling, coursework health reads, and grade passback
+// (publication set; `classroom.coursework.students` authorizes teacher-side
+// courseWork create/get and studentSubmissions list/patch). No scope beyond
+// the two documented sets is requested. Every authorization request asks
+// for this set so a teacher approves Classroom access once, at connection
+// time, instead of meeting a second consent prompt mid-publication.
+export const GOOGLE_CLASSROOM_REQUIRED_SCOPES: readonly string[] = [
+  ...GOOGLE_CLASSROOM_INITIAL_SCOPES,
+  ...GOOGLE_CLASSROOM_PUBLICATION_SCOPES,
+];
+
 // Extract the (status, upstreamCode) pair from any Google-shaped
 // upstream error. Recognises both the production HTTPS error
 // (`GoogleClassroomHttpsError`) and the in-memory fixture's upstream
@@ -374,6 +388,15 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
   providerId: GOOGLE_CLASSROOM_PROVIDER_ID,
   displayName: GOOGLE_CLASSROOM_DISPLAY_NAME,
 
+  describeGrantedCapabilities(scopes) {
+    const granted = new Set(scopes);
+    return {
+      publication: GOOGLE_CLASSROOM_PUBLICATION_SCOPES.every((s) =>
+        granted.has(s),
+      ),
+    };
+  },
+
   async beginOAuth(input): Promise<LmsOAuthAuthorizationRequest> {
     // Build the authorization URL locally. Google's OAuth 2.0
     // authorization endpoint is idempotent and stateless from our
@@ -413,14 +436,11 @@ export const googleClassroomAdapter: LmsProviderAdapter = {
       );
     }
 
+    // Every intent requests the complete required scope set (unified
+    // onboarding authorization). The intent is still bound into the OAuth
+    // state so completion applies create / reconnect / widen semantics.
     const intent = input.intent ?? "initialConnect";
-    const scopeSet =
-      intent === "publication"
-        ? [
-            ...GOOGLE_CLASSROOM_INITIAL_SCOPES,
-            ...GOOGLE_CLASSROOM_PUBLICATION_SCOPES,
-          ]
-        : GOOGLE_CLASSROOM_INITIAL_SCOPES;
+    const scopeSet = GOOGLE_CLASSROOM_REQUIRED_SCOPES;
     const { state, codeChallenge } = await getLmsOAuthStateStore().issue({
       teacherId: input.teacherId,
       providerId: GOOGLE_CLASSROOM_PROVIDER_ID,

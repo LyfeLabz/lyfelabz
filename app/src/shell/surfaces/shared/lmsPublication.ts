@@ -7,6 +7,7 @@ import type {
   IntegrationsDeps,
   IntegrationsPublicationOutcome,
   OAuthHandoff,
+  OAuthWindowReservation,
 } from "../../../settings/integrations/types";
 
 // Sprint 25 Phase 3 shared publication wiring. This module is the single
@@ -91,6 +92,11 @@ export type PublicationConsentSeam = {
   readonly completeConnection: IntegrationsCallables["completeConnection"];
   readonly openOAuth: OAuthHandoff;
   readonly redirectUri: string;
+  // PDR-030i popup reliability. Present only on seams invoked directly from
+  // a teacher click (the Assign dialog notice and confirm, Assignment Detail
+  // Try again). The automatic after-publish fallback omits it: a window
+  // reserved outside a click would be blocked anyway.
+  readonly reserveOAuthWindow?: () => OAuthWindowReservation | null;
 };
 
 // Consent coordinator. Bounds every incremental-consent handoff for one
@@ -114,33 +120,95 @@ export type ConsentCoordinator = {
   ) => Promise<ConsentResult>;
 };
 
-async function runConsentHandoff(
+// -----------------------------------------------------------------------------
+// Unified onboarding authorization (teacher-initiated upgrade)
+// -----------------------------------------------------------------------------
+//
+// October 2026 incident: a teacher whose connection carried only the
+// read-only roster permissions saw an empty topic list and four assignments
+// that never reached Classroom. The automatic consent handoff below runs only
+// after the create/publish round trips, outside the click that started them,
+// so a browser popup blocker can stop it. The surfaces therefore ask for the
+// one missing authorization up front, from a direct teacher click, using the
+// detailed result here so each outcome gets specific, non-technical guidance.
+export type ClassroomAuthorizationResult =
+  | "granted"
+  // The teacher declined, or approved only some of the Classroom
+  // permissions (Google lets individual permissions be unchecked).
+  | "declined"
+  | "popupBlocked"
+  // The Google window was closed before a decision.
+  | "cancelled"
+  | "identityMismatch"
+  | "failed";
+
+function readHandoffErrorCode(err: unknown): string | undefined {
+  if (err && typeof err === "object") {
+    const code = (err as { code?: unknown }).code;
+    if (typeof code === "string") return code;
+  }
+  return undefined;
+}
+
+// Run one publication authorization: begin (complete permission set), the
+// browser handoff, and completion. Call it directly from a teacher click so
+// the Google window opens inside the user gesture. Never retries itself and
+// never publishes anything.
+export async function requestPublicationAuthorization(
   seam: PublicationConsentSeam,
-): Promise<ConsentResult> {
+): Promise<ClassroomAuthorizationResult> {
+  // Reserve the Google window BEFORE the first await, while this call is
+  // still inside the teacher's click. Released in `finally` on every path
+  // (idempotent; a window the handoff used is already closed).
+  const reservation = seam.reserveOAuthWindow?.() ?? null;
   try {
-    const begun = await seam.beginConnection({
+    return await runPublicationAuthorization(seam, reservation);
+  } finally {
+    reservation?.close();
+  }
+}
+
+async function runPublicationAuthorization(
+  seam: PublicationConsentSeam,
+  reservation: OAuthWindowReservation | null,
+): Promise<ClassroomAuthorizationResult> {
+  let begun: { readonly authorizationUrl: string; readonly state: string };
+  try {
+    begun = await seam.beginConnection({
       providerId: seam.providerId,
       redirectUri: seam.redirectUri,
       capability: "publication",
     });
-    const handed = await seam.openOAuth({
+  } catch {
+    return "failed";
+  }
+  let handed: { readonly code: string; readonly state: string };
+  try {
+    handed = await seam.openOAuth({
       authorizationUrl: begun.authorizationUrl,
       redirectUri: seam.redirectUri,
       expectedState: begun.state,
+      reservation,
     });
-    // The consent outcome discriminator is intentionally not inspected
-    // here. Phase 2 may resolve `alreadyAuthorized` even when the teacher
-    // declined the coursework scopes (the neutral completion callable can
-    // only observe that Google added no new scopes). The re-issue after a
-    // completed consent is the authoritative test of whether the scope was
-    // actually granted; a still-insufficient re-issue stops without a loop.
-    await seam.completeConnection({
+  } catch (err) {
+    const code = readHandoffErrorCode(err);
+    if (code === "popup-blocked") return "popupBlocked";
+    if (code === "cancelled") return "cancelled";
+    // Google's callback reports a refused consent as `access_denied`.
+    if (code === "access_denied") return "declined";
+    return "failed";
+  }
+  try {
+    const completed = await seam.completeConnection({
       providerId: seam.providerId,
       code: handed.code,
       state: handed.state,
       redirectUri: seam.redirectUri,
     });
-    return "granted";
+    // An absent flag (server predating unified authorization) keeps the
+    // earlier behavior: a completed consent counts as granted and the
+    // publish re-issue remains the authoritative test.
+    return completed.publicationAuthorized === false ? "declined" : "granted";
   } catch (err) {
     // A completion-time identity mismatch is a distinct recovery outcome:
     // the teacher authorized with a different Google account than the one
@@ -151,11 +219,63 @@ async function runConsentHandoff(
     if (extractThrownErrorCode(err) === IDENTITY_MISMATCH_CODE) {
       return "identityMismatch";
     }
-    // Popup blocked, cancelled, denied, state mismatch, or a completion
-    // failure. No second automatic OAuth attempt is made; the caller stops
-    // and offers manual retry.
-    return "notGranted";
+    return "failed";
   }
+}
+
+// Teacher-facing guidance for each authorization result. Plain language:
+// no OAuth term, scope string, error code, or account identifier.
+export const CLASSROOM_AUTHORIZATION_MESSAGE: Readonly<
+  Record<ClassroomAuthorizationResult, string>
+> = Object.freeze({
+  granted:
+    "Google Classroom access is ready. Topics and posting to Classroom will work from now on.",
+  declined:
+    "Google Classroom access was not fully approved. Choose Allow Google Classroom access again and leave every Classroom permission checked.",
+  popupBlocked:
+    "Your browser blocked the Google window. Allow pop-ups for LyfeLabz, then choose Allow Google Classroom access again.",
+  cancelled:
+    "The Google window closed before access was approved. Choose Allow Google Classroom access to try again.",
+  identityMismatch:
+    "Choose the same Google account you first connected to Google Classroom, then try again.",
+  failed:
+    "Google Classroom access could not be set up just now. Check your connection and try again in a moment.",
+});
+
+// Why a Classroom topic list could not be loaded. Kept distinct from a class
+// that genuinely has no topics, which loads successfully as an empty list.
+export type TopicLoadFailure = "permission" | "reconnect" | "unavailable";
+
+const TOPIC_RECONNECT_CODES: ReadonlySet<string> = new Set([
+  ...RECONNECT_ERROR_CODES,
+  "lms.reconnectRequired",
+  "lms.upstreamAuthorizationFailed",
+]);
+
+export function classifyTopicLoadError(err: unknown): TopicLoadFailure {
+  const code = extractThrownErrorCode(err);
+  if (code === INSUFFICIENT_SCOPE_CODE) return "permission";
+  if (code !== undefined && TOPIC_RECONNECT_CODES.has(code)) return "reconnect";
+  // Network, deadline, provider outage, or anything unrecognized.
+  return "unavailable";
+}
+
+async function runConsentHandoff(
+  seam: PublicationConsentSeam,
+): Promise<ConsentResult> {
+  // Popup blocked, cancelled, denied, partially approved, state mismatch, or
+  // a completion failure all stop here as `notGranted`. No second automatic
+  // OAuth attempt is made; the caller stops and offers manual retry.
+  const result = await requestPublicationAuthorization(seam);
+  if (result === "granted") return "granted";
+  if (result === "identityMismatch") return "identityMismatch";
+  return "notGranted";
+}
+
+// A coordinator whose single consent for the action has already been
+// decided, so `runPublicationAction` never opens another Google window.
+function settledConsentCoordinator(result: ConsentResult): ConsentCoordinator {
+  return { ensureConsent: () => Promise.resolve(result) };
 }
 
 export function createConsentCoordinator(): ConsentCoordinator {
@@ -423,6 +543,9 @@ export function createDetailLmsRetrySeam(input: {
   if (context === null) return null;
   if (context.state === "succeeded") return null;
 
+  // The after-publish fallback consent runs outside the click, so it never
+  // reserves a window; only the up-front request below (still inside the
+  // Try again click) does.
   const consent: PublicationConsentSeam = {
     providerId: context.providerId,
     beginConnection: integrations.callables.beginConnection,
@@ -430,12 +553,34 @@ export function createDetailLmsRetrySeam(input: {
     openOAuth: integrations.openOAuth,
     redirectUri: integrations.redirectUri,
   };
+  const clickConsent: PublicationConsentSeam =
+    integrations.reserveOAuthWindow !== undefined
+      ? { ...consent, reserveOAuthWindow: integrations.reserveOAuthWindow }
+      : consent;
 
   return Object.freeze({
     initialState: context.state,
     retry: async (): Promise<AssignmentLmsPublicationState> => {
       const nonce = mintNonce();
-      const coordinator = createConsentCoordinator();
+      let coordinator = createConsentCoordinator();
+      // Unified onboarding authorization: when the last attempt stopped for
+      // missing Classroom permission, ask for it FIRST, directly from this
+      // Try again click, so the Google window is not opened after a
+      // publish round trip (where popup blockers stop it). A refusal
+      // publishes nothing.
+      if (context.state === "permissionNotGranted") {
+        const authorization = await requestPublicationAuthorization(clickConsent);
+        if (authorization !== "granted") {
+          const stopped: AssignmentLmsPublicationState =
+            authorization === "identityMismatch"
+              ? "identityMismatch"
+              : "permissionNotGranted";
+          recordLmsPublicationRetryContext(uid, { ...context, state: stopped });
+          return stopped;
+        }
+        // Already authorized for this action: never open a second window.
+        coordinator = settledConsentCoordinator("notGranted");
+      }
       const result = await runPublicationAction({
         nonce,
         publish: (attemptNonce) =>

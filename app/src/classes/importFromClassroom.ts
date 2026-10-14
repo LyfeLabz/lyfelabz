@@ -10,6 +10,7 @@ import type {
   ListClassLinks,
   ListTeacherClasses,
   OAuthHandoff,
+  OAuthWindowReservation,
 } from "../settings/integrations/types";
 
 // Sprint 24B Phase 2B.4: client orchestration for the primary Import
@@ -56,6 +57,9 @@ export type ImportFromClassroomDeps = {
   >;
   readonly openOAuth: OAuthHandoff;
   readonly redirectUri: string;
+  // PDR-030i popup reliability: synchronous blank-window reservation from
+  // the Import click. Absent keeps the original open-on-handoff behavior.
+  readonly reserveOAuthWindow?: () => OAuthWindowReservation | null;
   // Phase 2B.4: the LMS-specific creation seam. This is the sole
   // `needsSetup` writer available to the client. The Manual Create seam
   // (`classesCreate`) is intentionally not accepted here; a mistaken
@@ -148,6 +152,13 @@ const GOOGLE_CLASSROOM_PROVIDER_ID = "googleClassroom";
 
 export type ImportController = {
   readonly getState: () => ImportState;
+  // PDR-030i popup reliability. Best-effort, side-effect-free prefetch of
+  // the provider and whether an active connection already exists, so a
+  // later `start()` can reserve the Google window synchronously from the
+  // Import click ONLY when authorization will actually be needed (no window
+  // flash for an already-connected teacher). Never throws; a failure leaves
+  // the status unknown and `start()` keeps the original behavior.
+  readonly prepare: () => Promise<void>;
   readonly start: () => Promise<void>;
   readonly selectCourse: (course: IntegrationsLmsClass) => Promise<void>;
   readonly retry: () => Promise<void>;
@@ -164,6 +175,11 @@ export function createImportFromClassroom(
     readonly providerDisplayName: string;
   } | null = null;
   let connectionCache: string | null = null;
+  // PDR-030i: last prefetched connection status. `null` = unknown (never
+  // prefetched, or the prefetch failed). Only a known `false` reserves a
+  // window; `start()` still re-checks the connection authoritatively.
+  let knownHasActiveConnection: boolean | null = null;
+  let prepareInFlight: Promise<void> | null = null;
   // Reentrancy guards. Preserved verbatim from Phase 2. A rapid
   // double-click on the primary Import button or on a course tile can
   // dispatch two async invocations before the first has advanced the
@@ -211,7 +227,10 @@ export function createImportFromClassroom(
     return match ? match.connectionId : null;
   };
 
-  const runOAuth = async (providerId: string): Promise<string> => {
+  const runOAuth = async (
+    providerId: string,
+    reservation: OAuthWindowReservation | null,
+  ): Promise<string> => {
     const begin = await deps.callables.beginConnection({
       providerId,
       redirectUri: deps.redirectUri,
@@ -220,6 +239,7 @@ export function createImportFromClassroom(
       authorizationUrl: begin.authorizationUrl,
       redirectUri: deps.redirectUri,
       expectedState: begin.state,
+      reservation,
     });
     const complete = await deps.callables.completeConnection({
       providerId,
@@ -260,13 +280,21 @@ export function createImportFromClassroom(
     }
     if (startInFlight) return;
     startInFlight = true;
+    // PDR-030i: reserve the Google window synchronously, before the first
+    // await, but only when the prefetched status says this teacher has no
+    // active connection (authorization will certainly be needed).
+    let reservation: OAuthWindowReservation | null =
+      knownHasActiveConnection === false
+        ? (deps.reserveOAuthWindow?.() ?? null)
+        : null;
     try {
       const provider = await resolveProvider();
       const existingConnection = await findActiveConnection(provider.providerId);
       if (existingConnection === null) {
         set({ kind: "connecting" });
         try {
-          connectionCache = await runOAuth(provider.providerId);
+          connectionCache = await runOAuth(provider.providerId, reservation);
+          knownHasActiveConnection = true;
         } catch (err) {
           throw wrapStageError(err, "connecting", provider.providerDisplayName);
         }
@@ -277,14 +305,37 @@ export function createImportFromClassroom(
         );
         return;
       }
+      // Connected after all (stale prefetch): release any reserved window
+      // before continuing, so it does not linger over discovery.
+      reservation?.close();
+      reservation = null;
+      knownHasActiveConnection = true;
       connectionCache = existingConnection;
       await loadCourses(provider, connectionCache, freeze<ImportStage>([]));
     } catch (err) {
       const provider = providerCache;
       handleStageError(err, provider?.providerDisplayName ?? null);
     } finally {
+      // Idempotent; a window the handoff used is already closed.
+      reservation?.close();
       startInFlight = false;
     }
+  };
+
+  const prepare = (): Promise<void> => {
+    if (prepareInFlight !== null) return prepareInFlight;
+    prepareInFlight = (async () => {
+      try {
+        const provider = await resolveProvider();
+        const existing = await findActiveConnection(provider.providerId);
+        knownHasActiveConnection = existing !== null;
+      } catch {
+        knownHasActiveConnection = null;
+      } finally {
+        prepareInFlight = null;
+      }
+    })();
+    return prepareInFlight;
   };
 
   const runLink = async (
@@ -540,6 +591,7 @@ export function createImportFromClassroom(
 
   return Object.freeze({
     getState: () => state,
+    prepare,
     start,
     selectCourse,
     retry,

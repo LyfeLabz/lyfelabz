@@ -1836,6 +1836,59 @@
     color: #555;
     margin: 0.25rem 0 0.5rem 0;
   }
+  /* Unified onboarding authorization: one-time Google Classroom access
+     request inside the Assign dialog. Reuses the attention palette of
+     `.shell-integrations-pill-attention` and the dialog's confirm button
+     treatment; no new visual language. */
+  .shell-assign-classroom-access {
+    background: rgba(214, 158, 46, 0.10);
+    border: 1px solid rgba(138, 90, 18, 0.28);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin: 0 0 0.75rem 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.9rem;
+  }
+  .shell-assign-classroom-access[hidden] {
+    display: none;
+  }
+  .shell-assign-classroom-access[data-access-state="granted"] {
+    background: rgba(61, 140, 89, 0.10);
+    border-color: rgba(31, 107, 61, 0.28);
+  }
+  .shell-assign-classroom-access-message {
+    margin: 0;
+    flex: 1 1 16rem;
+    color: #5c3d0c;
+    font-size: 0.9rem;
+  }
+  .shell-assign-classroom-access[data-access-state="granted"] .shell-assign-classroom-access-message {
+    color: #1f6b3d;
+  }
+  .shell-assign-classroom-access-allow {
+    padding: 0.4rem 0.85rem;
+    font: inherit;
+    background: #1f6b3d;
+    color: #fff;
+    border: 1px solid #1f6b3d;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 36px;
+  }
+  .shell-assign-classroom-access-allow:hover:not(:disabled),
+  .shell-assign-classroom-access-allow:focus-visible:not(:disabled) {
+    background: #175a31;
+    border-color: #175a31;
+  }
+  .shell-assign-classroom-access-allow:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+  .shell-assign-classroom-access-allow[hidden] {
+    display: none;
+  }
 
   /* Sprint 30A.1 FINAL UI POLISH (human review): the shared, dialog-level
      grading settings strip. Rendered once, above the class rows - never

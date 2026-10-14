@@ -8,6 +8,7 @@ import {
   type LmsProviderId,
 } from "../shared";
 
+import { getProviderAdapter, isRegisteredProvider } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms } from "./shared/actor";
 
 // lmsConnectionsDescribe
@@ -27,6 +28,12 @@ export type LmsConnectionSummary = {
   readonly providerId: LmsProviderId;
   readonly status: LmsConnectionStatus;
   readonly scopes: readonly string[];
+  // Unified onboarding authorization: whether the recorded grant already
+  // covers topics, publication, scheduling, and grade passback. Derived by
+  // the owning adapter from the recorded scopes, so the client never
+  // interprets provider scope strings. A connection missing it needs one
+  // teacher-initiated authorization upgrade before Classroom publishing.
+  readonly publicationAuthorized: boolean;
 };
 
 export type LmsConnectionsDescribeResponse = {
@@ -43,11 +50,19 @@ async function handler(
       .get();
     const connections = snapshot.docs.map((doc) => {
       const data = doc.data();
+      const scopes: readonly string[] = Array.isArray(data.scopes)
+        ? data.scopes
+        : [];
       return {
         connectionId: doc.id,
         providerId: data.providerId,
         status: data.status,
         scopes: data.scopes,
+        publicationAuthorized: isRegisteredProvider(data.providerId)
+          ? getProviderAdapter(data.providerId).describeGrantedCapabilities(
+              scopes,
+            ).publication
+          : false,
       };
     });
     return { connections };

@@ -24,6 +24,7 @@ import type {
   IntegrationsPublicationOutcome,
   ListClassLinks,
   OAuthHandoff,
+  OAuthWindowReservation,
 } from "./types";
 
 // Client entry-point wiring for the Teacher Integrations surface. This
@@ -103,7 +104,15 @@ function parseConnection(
         raw.scopes.filter((s): s is string => typeof s === "string"),
       )
     : Object.freeze([]);
-  return Object.freeze({ connectionId, providerId, status, scopes });
+  return Object.freeze({
+    connectionId,
+    providerId,
+    status,
+    scopes,
+    ...(typeof raw.publicationAuthorized === "boolean"
+      ? { publicationAuthorized: raw.publicationAuthorized }
+      : {}),
+  });
 }
 
 function parseLmsClass(
@@ -183,6 +192,9 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
         connectionId,
         alreadyConnected: data.alreadyConnected === true,
         ...(consentOutcome !== undefined ? { consentOutcome } : {}),
+        ...(typeof data.publicationAuthorized === "boolean"
+          ? { publicationAuthorized: data.publicationAuthorized }
+          : {}),
       };
     },
     disconnect: async (input) => {
@@ -594,20 +606,119 @@ export function createListClassLinks(
 // page (app/lms-callback.html, served at /app/lms-callback.html),
 // verifies the state, and resolves with { code, state }. Rejects on
 // popup block, cancellation, state mismatch, or upstream error.
+//
+// PDR-030i popup reliability. Browsers only allow a script-opened window
+// shortly after a user gesture, and every authorization path awaits at
+// least one server request (lmsConnectionsBegin) before it has a URL. A
+// caller may therefore reserve a blank window synchronously from the click
+// (`createBrowserOAuthWindowReserver`) and pass it here; the handoff then
+// navigates that window instead of opening a new one. The OAuth contract is
+// unchanged: the same server-issued URL (state + PKCE challenge), the same
+// callback page, the same origin + state checks on the postMessage.
+const OAUTH_WINDOW_NAME = "lyfelabz-lms-oauth";
+const OAUTH_WINDOW_FEATURES = "width=520,height=640,noopener=no";
+
+// The reserved window shares this page's origin while it shows
+// about:blank, so it must only ever be navigated to an absolute https URL
+// on a DIFFERENT origin (the provider's authorization endpoint). This
+// refuses `javascript:`/`data:` and same-origin targets (including the
+// callback page) before any navigation.
+function isNavigableAuthorizationUrl(
+  authorizationUrl: string,
+  ownOrigin: string,
+): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(authorizationUrl);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== "https:") return false;
+  if (parsed.username !== "" || parsed.password !== "") return false;
+  return parsed.origin !== ownOrigin;
+}
+
+function oauthError(code: string, message: string): Error {
+  const err = new Error(message);
+  (err as { code?: string }).code = code;
+  return err;
+}
+
+export function createBrowserOAuthWindowReserver(
+  win: Window,
+): () => OAuthWindowReservation | null {
+  return () => {
+    let popup: Window | null = null;
+    try {
+      // about:blank only: never the callback page, which would immediately
+      // post a "missing-code-or-state" error to this window.
+      popup = win.open("about:blank", OAUTH_WINDOW_NAME, OAUTH_WINDOW_FEATURES);
+    } catch {
+      popup = null;
+    }
+    if (!popup) return null;
+    const reserved = popup;
+    let closed = false;
+    return Object.freeze({
+      popup: reserved,
+      close: () => {
+        if (closed) return;
+        closed = true;
+        try {
+          if (!reserved.closed) reserved.close();
+        } catch {
+          // ignored
+        }
+      },
+    });
+  };
+}
+
 export function createBrowserOAuthHandoff(win: Window): OAuthHandoff {
-  return ({ authorizationUrl, expectedState }) =>
+  return ({ authorizationUrl, expectedState, reservation }) =>
     new Promise((resolve, reject) => {
-      const popup = win.open(
-        authorizationUrl,
-        "lyfelabz-lms-oauth",
-        "width=520,height=640,noopener=no",
-      );
-      if (!popup) {
-        const err = new Error("popup blocked");
-        (err as { code?: string }).code = "popup-blocked";
-        reject(err);
+      if (!isNavigableAuthorizationUrl(authorizationUrl, win.location.origin)) {
+        reservation?.close();
+        reject(
+          oauthError(
+            "invalid-authorization-url",
+            "authorization URL rejected",
+          ),
+        );
         return;
       }
+      let popup: Window | null = null;
+      if (reservation) {
+        let reservedClosed = true;
+        try {
+          reservedClosed = reservation.popup.closed;
+        } catch {
+          reservedClosed = true;
+        }
+        if (reservedClosed) {
+          // The teacher closed the blank window before Google loaded.
+          reservation.close();
+          reject(oauthError("cancelled", "cancelled"));
+          return;
+        }
+        try {
+          reservation.popup.location.replace(authorizationUrl);
+          popup = reservation.popup;
+        } catch {
+          // Navigation refused: release the blank window and fall back to
+          // opening a fresh one below.
+          reservation.close();
+          popup = null;
+        }
+      }
+      if (!popup) {
+        popup = win.open(authorizationUrl, OAUTH_WINDOW_NAME, OAUTH_WINDOW_FEATURES);
+      }
+      if (!popup) {
+        reject(oauthError("popup-blocked", "popup blocked"));
+        return;
+      }
+      const opened = popup;
 
       let settled = false;
       const cleanup = (): void => {
@@ -615,7 +726,7 @@ export function createBrowserOAuthHandoff(win: Window): OAuthHandoff {
         win.removeEventListener("message", onMessage);
         win.clearInterval(pollId);
         try {
-          if (!popup.closed) popup.close();
+          if (!opened.closed) opened.close();
         } catch {
           // ignored
         }
@@ -634,8 +745,7 @@ export function createBrowserOAuthHandoff(win: Window): OAuthHandoff {
           error?: unknown;
         };
         if (typeof payload.error === "string") {
-          const err = new Error(payload.error);
-          (err as { code?: string }).code = payload.error;
+          const err = oauthError(payload.error, payload.error);
           cleanup();
           reject(err);
           return;
@@ -644,10 +754,8 @@ export function createBrowserOAuthHandoff(win: Window): OAuthHandoff {
         const state = payload.state;
         if (typeof code !== "string" || typeof state !== "string") return;
         if (state !== expectedState) {
-          const err = new Error("state mismatch");
-          (err as { code?: string }).code = "state-mismatch";
           cleanup();
-          reject(err);
+          reject(oauthError("state-mismatch", "state mismatch"));
           return;
         }
         cleanup();
@@ -657,11 +765,9 @@ export function createBrowserOAuthHandoff(win: Window): OAuthHandoff {
       const pollId = win.setInterval(() => {
         if (settled) return;
         try {
-          if (popup.closed) {
-            const err = new Error("cancelled");
-            (err as { code?: string }).code = "cancelled";
+          if (opened.closed) {
             cleanup();
-            reject(err);
+            reject(oauthError("cancelled", "cancelled"));
           }
         } catch {
           // Cross-origin popup access is expected; the postMessage path
@@ -714,6 +820,7 @@ export function createIntegrationsDeps(input: {
   return Object.freeze({
     callables: createLmsCallables(input.functions),
     openOAuth: createBrowserOAuthHandoff(input.win),
+    reserveOAuthWindow: createBrowserOAuthWindowReserver(input.win),
     listTeacherClasses: createListTeacherClasses(
       input.listClasses,
       input.teacherUid,

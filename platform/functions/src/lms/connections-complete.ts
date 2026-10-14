@@ -104,7 +104,24 @@ export type LmsConnectionsCompleteResponse = {
     | "widened"
     | "alreadyAuthorized"
     | "recovered";
+  // Unified onboarding authorization: whether the connection's recorded
+  // grant now covers topics, publication, scheduling, and grade passback.
+  // Google's consent screen lets a teacher leave individual permissions
+  // unchecked, so a completed authorization is not proof the complete set
+  // was granted; the client reads this to give truthful guidance instead of
+  // assuming success.
+  readonly publicationAuthorized: boolean;
 };
+
+function publicationAuthorizedFor(
+  providerId: string,
+  scopes: unknown,
+): boolean {
+  if (!Array.isArray(scopes) || !isRegisteredProvider(providerId)) return false;
+  return getProviderAdapter(providerId).describeGrantedCapabilities(
+    scopes.filter((s): s is string => typeof s === "string"),
+  ).publication;
+}
 
 function safeLog(fn: () => void): void {
   try {
@@ -209,7 +226,15 @@ async function handler(
         connectionId,
       }),
     );
-    return { connectionId, providerId, alreadyConnected: true };
+    return {
+      connectionId,
+      providerId,
+      alreadyConnected: true,
+      publicationAuthorized: publicationAuthorizedFor(
+        providerId,
+        existingData?.scopes,
+      ),
+    };
   }
 
   // Server-side OAuth state validation. The binding was peeked above;
@@ -312,6 +337,10 @@ async function handler(
         providerId,
         alreadyConnected: true,
         consentOutcome: "alreadyAuthorized",
+        publicationAuthorized: publicationAuthorizedFor(
+          providerId,
+          mergedScopes,
+        ),
       };
     }
 
@@ -385,6 +414,7 @@ async function handler(
       providerId,
       alreadyConnected: true,
       consentOutcome: "widened",
+      publicationAuthorized: publicationAuthorizedFor(providerId, mergedScopes),
     };
   }
 
@@ -450,10 +480,11 @@ async function handler(
       );
     }
 
-    // Restore the base connection: record exactly the scope set Google
-    // returned for this initial-scope authorization (sorted for stability).
-    // Reconnect never requests publication scope, so a connection that had
-    // been widened returns to base scope until publication re-widens it.
+    // Restore the connection: record exactly the scope set Google returned
+    // for this authorization (sorted for stability). Reconnect requests the
+    // complete required scope set (unified onboarding authorization), so a
+    // reconnect also restores publication access when the teacher approves
+    // every requested permission.
     const restoredScopes = Array.from(new Set([...grant.scopes])).sort();
 
     // Compose the fresh credential bundle. Google returns a new refresh
@@ -519,6 +550,10 @@ async function handler(
       providerId,
       alreadyConnected: true,
       consentOutcome: "recovered",
+      publicationAuthorized: publicationAuthorizedFor(
+        providerId,
+        restoredScopes,
+      ),
     };
   }
 
@@ -566,7 +601,13 @@ async function handler(
     }),
   );
 
-  return { connectionId, providerId, alreadyConnected: false, consentOutcome: "created" };
+  return {
+    connectionId,
+    providerId,
+    alreadyConnected: false,
+    consentOutcome: "created",
+    publicationAuthorized: publicationAuthorizedFor(providerId, grant.scopes),
+  };
 }
 
 export const lmsConnectionsComplete = platformCallable(

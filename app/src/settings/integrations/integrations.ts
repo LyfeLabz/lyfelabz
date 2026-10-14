@@ -210,6 +210,14 @@ export function renderIntegrationsSurface(
     const needsReconnect =
       active !== null &&
       (deps.connectionRecovery?.needsReconnect(provider.providerId) ?? false);
+    // Unified onboarding authorization. A connection made before LyfeLabz
+    // requested the complete permission set (or one where the teacher left
+    // a permission unchecked) is known server-side to lack topics and
+    // posting. Only an explicit `false` counts; an absent flag is unknown.
+    const needsAccess =
+      active !== null &&
+      !needsReconnect &&
+      active.publicationAuthorized === false;
 
     const li = doc.createElement("li");
     li.className = "shell-card shell-integrations-row";
@@ -229,7 +237,7 @@ export function renderIntegrationsSurface(
     const status = doc.createElement("span");
     status.className = !active
       ? "shell-pill shell-integrations-pill-inactive"
-      : needsReconnect
+      : needsReconnect || needsAccess
         ? "shell-pill shell-integrations-pill-attention"
         : "shell-pill shell-pill-verified";
     status.setAttribute(
@@ -238,7 +246,7 @@ export function renderIntegrationsSurface(
     );
     status.textContent = !active
       ? "Not connected"
-      : needsReconnect
+      : needsReconnect || needsAccess
         ? "Connected, action needed"
         : "Connected";
     header.appendChild(status);
@@ -263,6 +271,17 @@ export function renderIntegrationsSurface(
       recovery.textContent =
         "Reconnect to keep assigning to your Google Classroom classes. Your LyfeLabz assignments are safe.";
       li.appendChild(recovery);
+    } else if (needsAccess) {
+      const access = doc.createElement("p");
+      access.className = "shell-status shell-integrations-recovery";
+      access.setAttribute(
+        "data-testid",
+        `integrations-access-needed-${provider.providerId}`,
+      );
+      access.setAttribute("role", "status");
+      access.textContent =
+        "Allow access once so LyfeLabz can show your Classroom topics, post assignments, and send grades you choose. Your classes and assignments are safe.";
+      li.appendChild(access);
     }
 
     const actions = doc.createElement("div");
@@ -304,6 +323,19 @@ export function renderIntegrationsSurface(
           void onReconnect(provider);
         });
         actions.appendChild(reconnectBtn);
+      } else if (needsAccess) {
+        const allowBtn = doc.createElement("button");
+        allowBtn.type = "button";
+        allowBtn.className = "shell-lesson-toggle shell-lesson-toggle-active";
+        allowBtn.setAttribute(
+          "data-testid",
+          `integrations-allow-access-${provider.providerId}`,
+        );
+        allowBtn.textContent = `Allow ${provider.displayName} access`;
+        allowBtn.addEventListener("click", () => {
+          void onAllowAccess(provider);
+        });
+        actions.appendChild(allowBtn);
       }
 
       const disconnectBtn = doc.createElement("button");
@@ -349,6 +381,9 @@ export function renderIntegrationsSurface(
   };
 
   const onConnect = async (provider: IntegrationsProvider): Promise<void> => {
+    // PDR-030i: reserve the authorization window synchronously from this
+    // click, before the first server request, so popup blockers allow it.
+    const reservation = deps.reserveOAuthWindow?.() ?? null;
     notice = { kind: "info", message: `Opening ${provider.displayName}...` };
     render();
     try {
@@ -360,6 +395,7 @@ export function renderIntegrationsSurface(
         authorizationUrl: begin.authorizationUrl,
         redirectUri: deps.redirectUri,
         expectedState: begin.state,
+        reservation,
       });
       await deps.callables.completeConnection({
         providerId: provider.providerId,
@@ -375,6 +411,10 @@ export function renderIntegrationsSurface(
     } catch (err) {
       notice = { kind: "error", message: describeConnectError(err, provider) };
       render();
+    } finally {
+      // Idempotent: a window the handoff already used is already closed; a
+      // window reserved before a failed server request is released here.
+      reservation?.close();
     }
   };
 
@@ -393,6 +433,9 @@ export function renderIntegrationsSurface(
   const onReconnect = async (
     provider: IntegrationsProvider,
   ): Promise<void> => {
+    // PDR-030i: reserve the authorization window synchronously from this
+    // click, before the first server request.
+    const reservation = deps.reserveOAuthWindow?.() ?? null;
     notice = { kind: "info", message: `Reconnecting ${provider.displayName}...` };
     render();
     try {
@@ -405,6 +448,7 @@ export function renderIntegrationsSurface(
         authorizationUrl: begin.authorizationUrl,
         redirectUri: deps.redirectUri,
         expectedState: begin.state,
+        reservation,
       });
       await deps.callables.completeConnection({
         providerId: provider.providerId,
@@ -421,6 +465,62 @@ export function renderIntegrationsSurface(
     } catch (err) {
       notice = { kind: "error", message: describeConnectError(err, provider) };
       render();
+    } finally {
+      // Idempotent: a window the handoff already used is already closed; a
+      // window reserved before a failed server request is released here.
+      reservation?.close();
+    }
+  };
+
+  // Unified onboarding authorization. One teacher-initiated upgrade for a
+  // connection that lacks the topics/posting permissions. It binds the
+  // publication intent, so completion widens the SAME durable connection
+  // (identity revalidated server-side) and never disconnects first; an
+  // abandoned or refused request leaves the connection exactly as it was.
+  const onAllowAccess = async (
+    provider: IntegrationsProvider,
+  ): Promise<void> => {
+    // PDR-030i: reserve the authorization window synchronously from this
+    // click, before the first server request.
+    const reservation = deps.reserveOAuthWindow?.() ?? null;
+    notice = { kind: "info", message: `Opening ${provider.displayName}...` };
+    render();
+    try {
+      const begin = await deps.callables.beginConnection({
+        providerId: provider.providerId,
+        redirectUri: deps.redirectUri,
+        capability: "publication",
+      });
+      const handoff = await deps.openOAuth({
+        authorizationUrl: begin.authorizationUrl,
+        redirectUri: deps.redirectUri,
+        expectedState: begin.state,
+        reservation,
+      });
+      const completed = await deps.callables.completeConnection({
+        providerId: provider.providerId,
+        code: handoff.code,
+        state: handoff.state,
+        redirectUri: deps.redirectUri,
+      });
+      notice =
+        completed.publicationAuthorized === false
+          ? {
+              kind: "error",
+              message: `${provider.displayName} access was not fully approved. Choose Allow ${provider.displayName} access again and leave every Classroom permission checked.`,
+            }
+          : {
+              kind: "info",
+              message: `${provider.displayName} access is ready.`,
+            };
+      await refreshAfterMutation();
+    } catch (err) {
+      notice = { kind: "error", message: describeConnectError(err, provider) };
+      render();
+    } finally {
+      // Idempotent: a window the handoff already used is already closed; a
+      // window reserved before a failed server request is released here.
+      reservation?.close();
     }
   };
 
@@ -538,7 +638,7 @@ export function renderIntegrationsSurface(
 function describeProvider(providerId: string): string {
   switch (providerId) {
     case "googleClassroom":
-      return "Keep your Google Classroom account connected so you can import classes from Google Classroom. Your rosters, streams, and comments in Google Classroom are never modified.";
+      return "Connect Google Classroom once so LyfeLabz can import your classes and rosters, show your Classroom topics, post the assignments you choose, and send grades you approve. Google asks you to approve these permissions one time. LyfeLabz never changes your rosters, stream, or comments.";
     default:
       return "Connect this integration so it stays available to the workflows that use it.";
   }
@@ -571,6 +671,13 @@ function describeConnectError(
   provider: IntegrationsProvider,
 ): string {
   const code = extractCode(err);
+  if (code === "access_denied") {
+    return `${provider.displayName} access was not approved. Try again and choose Allow in the Google window.`;
+  }
+  const details = (err as { details?: { code?: unknown } } | null)?.details;
+  if (details && details.code === "lms.identityMismatch") {
+    return `Choose the same Google account you first connected to ${provider.displayName}, then try again.`;
+  }
   if (code.includes("cancelled") || code.includes("cancel")) {
     return "Connection was cancelled. Try again whenever you are ready.";
   }

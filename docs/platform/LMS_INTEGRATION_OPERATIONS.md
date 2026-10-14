@@ -126,7 +126,7 @@ The consent screen is configured in Testing mode until the initial scope is exer
 
 ### 5.2 Scope declaration
 
-The consent screen declares the exact set of scopes named in §6. Additional scopes are not pre-declared "for future use"; incremental authorization per `LMS_INTEGRATION_ARCHITECTURE.md` §5.2 is preserved by declaring only what the initial scope requires.
+The consent screen declares the exact set of scopes named in §6. Additional scopes are not pre-declared "for future use". *(Updated 2026-10-14 for PDR-030i: §6 now names the complete current set of four scopes every Google Classroom authorization requests; the earlier sentence "incremental authorization per `LMS_INTEGRATION_ARCHITECTURE.md` §5.2 is preserved by declaring only what the initial scope requires" is superseded. All four scopes were already requested in production by the publication flow, so the consent screen must already declare them; confirm this before any release.)*
 
 Verification is required for the sensitive Classroom scopes named in §6. The operational owner initiates verification with Google before the consent screen is promoted to Production. Verification correspondence is retained in the operational runbook.
 
@@ -144,21 +144,26 @@ Test users are removed on promotion to Production. Membership in the test-user l
 
 ## 6. Required Google Classroom Scopes
 
-The initial scope authorized by PDR-020c requests only the minimum required to list a teacher's classes and inspect a class's roster. The exact scopes are:
+**Current (PDR-030i, 2026-10-14).** Every Google Classroom authorization - initial connect, reconnect, and the publication upgrade - requests exactly these scopes, at connection time:
 
-- `https://www.googleapis.com/auth/classroom.courses.readonly`
-- `https://www.googleapis.com/auth/classroom.rosters.readonly`
+- `https://www.googleapis.com/auth/classroom.courses.readonly` - class discovery and import.
+- `https://www.googleapis.com/auth/classroom.rosters.readonly` - roster import, refresh, and first-sign-in identity bridging.
+- `https://www.googleapis.com/auth/classroom.topics.readonly` - topic selection in the Assign dialog.
+- `https://www.googleapis.com/auth/classroom.coursework.students` - teacher-side coursework creation (immediate and scheduled), coursework health reads, and grade passback.
 
-These are the scopes exported by the adapter as `GOOGLE_CLASSROOM_INITIAL_SCOPES`. The scope set is a code-level constant; the operational owner does not tune it at runtime. Any change to this constant is a code change with its own sprint specification.
+These are exported by the adapter as `GOOGLE_CLASSROOM_REQUIRED_SCOPES` (the union of `GOOGLE_CLASSROOM_INITIAL_SCOPES` and `GOOGLE_CLASSROOM_PUBLICATION_SCOPES`). The scope set is a code-level constant; the operational owner does not tune it at runtime. Any change to this constant is a code change with its own decision record.
 
-Scopes explicitly not requested by the initial scope:
+The scopes Google grants are authoritative and recorded on the connection; a teacher may uncheck individual permissions on Google's consent screen. A connection that lacks the topics or coursework scope is reported to the client as not publication-authorized and is upgraded only by the teacher's own explicit authorization (Assign dialog, Assignment Detail, or Settings > Integrations). Operators never grant or edit scopes on a teacher's behalf.
 
-- `classroom.courses` (write). Required by class refresh and unlink workflows; deferred to LMS Sprint E per Amendment §8.
-- `classroom.coursework.*` in any form. Required by assignment publication; deferred to LMS Sprint D per Amendment §8.
-- `classroom.rosters` (write), `classroom.profile.*`, `classroom.announcements.*`, `classroom.push-notifications`. Not required by any capability in the internal Phase 9 sequence and not requested.
+Scopes explicitly not requested:
+
+- `classroom.coursework.me`. Caller-scoped (student-facing); disproved for teacher coursework creation (PDR-030g).
+- `classroom.courses` (write), `classroom.rosters` (write), `classroom.profile.*`, `classroom.announcements.*`, `classroom.push-notifications`. Not required by any supported capability and not requested.
 - Every Drive, Gmail, and Calendar scope. Excluded by PDR-020c and by `LMS_INTEGRATION_ARCHITECTURE.md` §11.3.
 
-Scopes required by excluded capabilities are added by the sprint that owns the workflow requiring them. The operational owner refuses any request to add a scope outside a sprint specification.
+The operational owner refuses any request to add a scope outside a decision record.
+
+**History.** The initial scope authorized by PDR-020c requested only `classroom.courses.readonly` and `classroom.rosters.readonly`, and PDR-030c (as corrected by PDR-030g) added `classroom.coursework.students` and `classroom.topics.readonly` incrementally at the teacher's first publication. PDR-030i superseded that timing after the 2026-10-14 production incident. The original text of this section is preserved in the repository history.
 
 ---
 
@@ -532,7 +537,7 @@ The following items from `LMS_INTEGRATION_ARCHITECTURE.md` §10.3 are addressed 
 - §10.3.4 (Disaster Recovery Additions). Addressed by §10.
 - §10.3.5 and §10.3.6 (Provider Testing Strategy, API Emulator Strategy). Addressed by §11.
 - §10.3.7 (Ownership Verification Strategy). Addressed at the code layer by the discovery and import callables. Operationally, ownership drift is surfaced through the `lms.ownershipDrift` audit event; the operational owner reads for it during triage.
-- §10.3.8 (Incremental Authorization Strategy). Addressed by §6. The scope list is a code constant and is not tuned at runtime.
+- §10.3.8 (Incremental Authorization Strategy). Addressed by §6. The scope list is a code constant and is not tuned at runtime. *(Since PDR-030i the §6 list is the complete current scope set requested at connection time.)*
 - §10.3.9 (Readiness Gate). Addressed by §13.
 
 The runbook does not close §10.3.7 in code (ownership drift handling in refresh is future architecture) and does not close the token store production binding in code (§7.3). Both are scoped as remaining work in §17.

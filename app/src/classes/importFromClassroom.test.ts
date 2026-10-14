@@ -676,3 +676,133 @@ describe("createImportFromClassroom", () => {
     expect(final.providerDisplayName).toBe("Google Classroom (Beta)");
   });
 });
+
+// PDR-030i popup reliability for new-teacher onboarding. The Import click
+// reserves the Google window synchronously ONLY when a prefetch has shown
+// the teacher has no connection; an already-connected teacher never sees a
+// window flash, and an unknown status keeps the original behavior.
+describe("createImportFromClassroom: authorization window reservation", () => {
+  const withReserver = (connections: readonly IntegrationsConnection[], extra: Overrides = {}) => {
+    const built = makeDeps({ connections, ...extra });
+    const order = built.calls;
+    const reservation = { popup: {} as Window, close: jest.fn(() => order.push("close")) };
+    const handed: unknown[] = [];
+    const deps: ImportFromClassroomDeps = {
+      ...built.deps,
+      reserveOAuthWindow: () => {
+        order.push("reserve");
+        return reservation;
+      },
+      openOAuth: async (input) => {
+        order.push("openOAuth");
+        handed.push(input.reservation);
+        return { code: "c", state: "s" };
+      },
+    };
+    return { deps, order, reservation, handed };
+  };
+
+  test("new teacher: after prepare, Import reserves before any server request and completes", async () => {
+    const h = withReserver([]);
+    const controller = createImportFromClassroom(h.deps, () => undefined);
+    await controller.prepare();
+    h.order.length = 0;
+    const pending = controller.start();
+    // Synchronously, before the first await resolves.
+    expect(h.order[0]).toBe("reserve");
+    await pending;
+    await flush();
+    // The provider was cached by prepare, so start re-checks only the
+    // connection (authoritatively) before beginning authorization.
+    expect(h.order.slice(0, 6)).toEqual([
+      "reserve",
+      "describeConnections",
+      "beginConnection",
+      "openOAuth",
+      "completeConnection",
+      "discoverClasses",
+    ]);
+    expect(h.handed[0]).toBe(h.reservation);
+    expect(controller.getState().kind).toBe("courses");
+  });
+
+  test("connected teacher: no window is ever reserved (no flash)", async () => {
+    const h = withReserver([activeConnection]);
+    const controller = createImportFromClassroom(h.deps, () => undefined);
+    await controller.prepare();
+    await controller.start();
+    await flush();
+    expect(h.order).not.toContain("reserve");
+    expect(h.order).not.toContain("openOAuth");
+    expect(controller.getState().kind).toBe("courses");
+  });
+
+  test("unknown status (no prepare, or a failed prepare) keeps the original behavior", async () => {
+    const h = withReserver([]);
+    const controller = createImportFromClassroom(h.deps, () => undefined);
+    await controller.start();
+    await flush();
+    expect(h.order).not.toContain("reserve");
+    expect(h.handed[0]).toBeNull();
+
+    const failing = withReserver([], {
+      providers: [],
+    });
+    const c2 = createImportFromClassroom(failing.deps, () => undefined);
+    await expect(c2.prepare()).resolves.toBeUndefined();
+    await c2.start();
+    expect(failing.order).not.toContain("reserve");
+  });
+
+  test("stale prefetch: a connection that now exists releases the reserved window", async () => {
+    let connections: readonly IntegrationsConnection[] = [];
+    const h = withReserver([]);
+    const deps: ImportFromClassroomDeps = {
+      ...h.deps,
+      callables: {
+        ...h.deps.callables,
+        describeConnections: async () => connections,
+      },
+    };
+    const controller = createImportFromClassroom(deps, () => undefined);
+    await controller.prepare();
+    connections = [activeConnection];
+    await controller.start();
+    await flush();
+    expect(h.order).toContain("reserve");
+    expect(h.reservation.close).toHaveBeenCalled();
+    expect(h.order).not.toContain("openOAuth");
+  });
+
+  test("a server failure after reservation closes the window and surfaces the error", async () => {
+    const h = withReserver([], {
+      beginConnection: async () => {
+        throw Object.assign(new Error("unavailable"), { code: "functions/unavailable" });
+      },
+    });
+    const controller = createImportFromClassroom(h.deps, () => undefined);
+    await controller.prepare();
+    await controller.start();
+    await flush();
+    expect(h.reservation.close).toHaveBeenCalled();
+    expect(controller.getState().kind).toBe("error");
+  });
+
+  test("a blocked window still reports the existing pop-up guidance", async () => {
+    const built = makeDeps({
+      connections: [],
+      openOAuth: async () => {
+        throw Object.assign(new Error("popup blocked"), { code: "popup-blocked" });
+      },
+    });
+    const controller = createImportFromClassroom(
+      { ...built.deps, reserveOAuthWindow: () => null },
+      () => undefined,
+    );
+    await controller.prepare();
+    await controller.start();
+    const state = controller.getState();
+    expect(state.kind).toBe("error");
+    expect(state.kind === "error" ? state.message : "").toMatch(/blocked/);
+  });
+});

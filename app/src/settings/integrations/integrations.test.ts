@@ -647,3 +647,270 @@ describe("Sprint 24B Phase 1: Settings > Integrations account-level scope", () =
     ).not.toBeNull();
   });
 });
+
+// Unified onboarding authorization (October 2026 incident follow-up). A
+// connection made before LyfeLabz requested the complete Classroom
+// permission set is reported server-side as missing publication access.
+// Settings gives that teacher one clear, durable upgrade action.
+describe("Settings > Integrations: Classroom access upgrade", () => {
+  const rosterOnly: IntegrationsConnection = Object.freeze({
+    ...activeConnection,
+    publicationAuthorized: false,
+  });
+  const complete: IntegrationsConnection = Object.freeze({
+    ...activeConnection,
+    publicationAuthorized: true,
+  });
+  const settle = async (): Promise<void> => {
+    for (let i = 0; i < 6; i += 1) await flush();
+  };
+  const q = (mount: HTMLElement, id: string): HTMLElement | null =>
+    mount.querySelector<HTMLElement>(`[data-testid=${id}]`);
+
+  test("a roster-only connection shows action needed with an Allow access button", async () => {
+    const mount = mkMount();
+    renderIntegrationsSurface(
+      mount,
+      makeDeps({ describeConnections: async () => Object.freeze([rosterOnly]) }),
+      { onExit: () => undefined },
+    );
+    await settle();
+    expect(q(mount, "integrations-status-googleClassroom")!.textContent).toBe(
+      "Connected, action needed",
+    );
+    expect(q(mount, "integrations-access-needed-googleClassroom")).not.toBeNull();
+    expect(q(mount, "integrations-allow-access-googleClassroom")!.textContent).toBe(
+      "Allow Google Classroom access",
+    );
+  });
+
+  test("a complete connection, or one whose server predates the flag, shows plain Connected", async () => {
+    for (const conn of [complete, activeConnection]) {
+      const mount = mkMount();
+      renderIntegrationsSurface(
+        mount,
+        makeDeps({ describeConnections: async () => Object.freeze([conn]) }),
+        { onExit: () => undefined },
+      );
+      await settle();
+      expect(q(mount, "integrations-status-googleClassroom")!.textContent).toBe("Connected");
+      expect(q(mount, "integrations-allow-access-googleClassroom")).toBeNull();
+    }
+  });
+
+  test("Allow access widens the same connection and never disconnects", async () => {
+    const calls: string[] = [];
+    const beginInputs: Array<Record<string, unknown>> = [];
+    let authorized = false;
+    const mount = mkMount();
+    const deps: IntegrationsDeps = {
+      ...makeDeps({
+        describeConnections: async () =>
+          Object.freeze([authorized ? complete : rosterOnly]),
+        beginConnection: async (input) => {
+          calls.push("begin");
+          beginInputs.push(input as Record<string, unknown>);
+          return { authorizationUrl: "https://consent.test/a", state: "st" };
+        },
+        completeConnection: async () => {
+          calls.push("complete");
+          authorized = true;
+          return {
+            connectionId: "conn-1",
+            alreadyConnected: true,
+            consentOutcome: "widened" as const,
+            publicationAuthorized: true,
+          };
+        },
+        disconnect: async () => {
+          calls.push("disconnect");
+          return { alreadyRevoked: false };
+        },
+      }),
+      openOAuth: async () => {
+        calls.push("oauth");
+        return { code: "c", state: "st" };
+      },
+    };
+    renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
+    await settle();
+    q(mount, "integrations-allow-access-googleClassroom")!.click();
+    await settle();
+    expect(calls).toEqual(["begin", "oauth", "complete"]);
+    expect(beginInputs[0]).toEqual(
+      expect.objectContaining({ capability: "publication" }),
+    );
+    expect(beginInputs[0]).not.toHaveProperty("reconnect");
+    expect(q(mount, "integrations-status-googleClassroom")!.textContent).toBe("Connected");
+    expect(mount.textContent).toMatch(/Google Classroom access is ready\./);
+  });
+
+  test("a partial approval is reported truthfully", async () => {
+    const mount = mkMount();
+    renderIntegrationsSurface(
+      mount,
+      makeDeps({
+        describeConnections: async () => Object.freeze([rosterOnly]),
+        beginConnection: async () => ({ authorizationUrl: "https://c/a", state: "st" }),
+        completeConnection: async () => ({
+          connectionId: "conn-1",
+          alreadyConnected: true,
+          consentOutcome: "alreadyAuthorized" as const,
+          publicationAuthorized: false,
+        }),
+      }),
+      { onExit: () => undefined },
+    );
+    await settle();
+    q(mount, "integrations-allow-access-googleClassroom")!.click();
+    await settle();
+    expect(mount.textContent).toMatch(/not fully approved/);
+    expect(q(mount, "integrations-allow-access-googleClassroom")).not.toBeNull();
+  });
+
+  test("a refusal on Google's screen and a wrong account get specific guidance", async () => {
+    const run = async (
+      openOAuth: IntegrationsDeps["openOAuth"],
+      completeConnection?: IntegrationsCallables["completeConnection"],
+    ): Promise<string> => {
+      const mount = mkMount();
+      const deps: IntegrationsDeps = {
+        ...makeDeps({
+          describeConnections: async () => Object.freeze([rosterOnly]),
+          beginConnection: async () => ({ authorizationUrl: "https://c/a", state: "st" }),
+          ...(completeConnection ? { completeConnection } : {}),
+        }),
+        openOAuth,
+      };
+      renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
+      await settle();
+      q(mount, "integrations-allow-access-googleClassroom")!.click();
+      await settle();
+      return mount.textContent ?? "";
+    };
+    const denied = await run(async () => {
+      const err = new Error("access_denied");
+      (err as { code?: string }).code = "access_denied";
+      throw err;
+    });
+    expect(denied).toMatch(/access was not approved/);
+    const mismatch = await run(
+      async () => ({ code: "c", state: "st" }),
+      async () => {
+        const err = new Error("failed-precondition");
+        (err as { details?: unknown }).details = { code: "lms.identityMismatch" };
+        throw err;
+      },
+    );
+    expect(mismatch).toMatch(/same Google account/);
+  });
+});
+
+// PDR-030i popup reliability: every Settings authorization action reserves
+// the Google window synchronously from the click, hands it to the handoff,
+// and releases it on failure.
+describe("Settings > Integrations: authorization window reservation", () => {
+  const rosterOnly: IntegrationsConnection = Object.freeze({
+    ...activeConnection,
+    publicationAuthorized: false,
+  });
+  const settle = async (): Promise<void> => {
+    for (let i = 0; i < 6; i += 1) await flush();
+  };
+
+  const harness = (opts: {
+    connections: readonly IntegrationsConnection[];
+    beginFails?: boolean;
+    needsReconnect?: boolean;
+  }) => {
+    const order: string[] = [];
+    const reservation = { popup: {} as Window, close: jest.fn(() => order.push("close")) };
+    const handedReservations: unknown[] = [];
+    const beginInputs: Array<Record<string, unknown>> = [];
+    const deps: IntegrationsDeps = {
+      ...makeDeps({
+        describeConnections: async () => Object.freeze([...opts.connections]),
+        beginConnection: async (input) => {
+          order.push("begin");
+          beginInputs.push(input as Record<string, unknown>);
+          if (opts.beginFails) {
+            const err = new Error("unavailable");
+            (err as { code?: string }).code = "functions/unavailable";
+            throw err;
+          }
+          return { authorizationUrl: "https://accounts.example/a", state: "st" };
+        },
+        completeConnection: async () => {
+          order.push("complete");
+          return {
+            connectionId: "conn-1",
+            alreadyConnected: false,
+            publicationAuthorized: true,
+          };
+        },
+      }),
+      openOAuth: async (input) => {
+        order.push("open");
+        handedReservations.push(input.reservation);
+        return { code: "c", state: "st" };
+      },
+      reserveOAuthWindow: () => {
+        order.push("reserve");
+        return reservation;
+      },
+      ...(opts.needsReconnect
+        ? { connectionRecovery: { needsReconnect: () => true, clear: () => undefined } }
+        : {}),
+    };
+    return { deps, order, reservation, handedReservations, beginInputs };
+  };
+
+  test.each([
+    ["Connect", "integrations-connect-googleClassroom", [] as IntegrationsConnection[], false],
+    ["Reconnect", "integrations-reconnect-googleClassroom", [activeConnection], true],
+    ["Allow access", "integrations-allow-access-googleClassroom", [rosterOnly], false],
+  ] as const)(
+    "%s reserves before the first server request and hands the window to the handoff",
+    async (_label, testid, connections, needsReconnect) => {
+      const h = harness({ connections, needsReconnect });
+      const mount = mkMount();
+      renderIntegrationsSurface(mount, h.deps, { onExit: () => undefined });
+      await settle();
+      mount.querySelector<HTMLElement>(`[data-testid=${testid}]`)!.click();
+      // Synchronously after the click: reserved first, then begin started.
+      expect(h.order).toEqual(["reserve", "begin"]);
+      await settle();
+      expect(h.order.slice(0, 4)).toEqual(["reserve", "begin", "open", "complete"]);
+      expect(h.handedReservations[0]).toBe(h.reservation);
+    },
+  );
+
+  test("Reconnect keeps the reconnect intent and Allow access the publication intent", async () => {
+    const reconnect = harness({ connections: [activeConnection], needsReconnect: true });
+    let mount = mkMount();
+    renderIntegrationsSurface(mount, reconnect.deps, { onExit: () => undefined });
+    await settle();
+    mount.querySelector<HTMLElement>("[data-testid=integrations-reconnect-googleClassroom]")!.click();
+    await settle();
+    expect(reconnect.beginInputs[0]).toEqual(expect.objectContaining({ reconnect: true }));
+
+    const allow = harness({ connections: [rosterOnly] });
+    mount = mkMount();
+    renderIntegrationsSurface(mount, allow.deps, { onExit: () => undefined });
+    await settle();
+    mount.querySelector<HTMLElement>("[data-testid=integrations-allow-access-googleClassroom]")!.click();
+    await settle();
+    expect(allow.beginInputs[0]).toEqual(expect.objectContaining({ capability: "publication" }));
+  });
+
+  test("a server failure after reservation closes the window and reports the failure", async () => {
+    const h = harness({ connections: [], beginFails: true });
+    const mount = mkMount();
+    renderIntegrationsSurface(mount, h.deps, { onExit: () => undefined });
+    await settle();
+    mount.querySelector<HTMLElement>("[data-testid=integrations-connect-googleClassroom]")!.click();
+    await settle();
+    expect(h.order).toEqual(["reserve", "begin", "close"]);
+    expect(mount.textContent).toMatch(/could not reach Google Classroom/i);
+  });
+});

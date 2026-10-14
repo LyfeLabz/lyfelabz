@@ -201,6 +201,8 @@ A teacher signs into LyfeLabz once. Later, she opts into a specific LMS by grant
 
 ### 5.2 Incremental Authorization
 
+> **Superseded for Google Classroom by PDR-030i (2026-10-14), unified onboarding authorization.** Every Google Classroom authorization (initial connect, reconnect, and the publication upgrade) now requests, at connection time, the complete set of scopes the currently supported teacher workflows need and nothing broader: `classroom.courses.readonly`, `classroom.rosters.readonly`, `classroom.topics.readonly`, and `classroom.coursework.students`. The scopes Google actually grants remain authoritative (a teacher may uncheck individual permissions); a connection lacking the publication capability is upgraded only through one explicit, teacher-initiated authorization that widens the same connection (PDR-030d). Sign-in and LMS authorization remain separate grants (§5.1). Adding any scope still requires its own decision record. The original text below is retained for historical traceability and no longer governs Google Classroom.
+
 LMS OAuth scopes are requested incrementally. LyfeLabz never asks for the union of every scope it might ever need. The first scope requested is the minimum required to list the teacher's classes and inspect a class's roster. Additional scopes are requested only when the teacher initiates a workflow that requires them (for example, publishing an assignment).
 
 Incremental authorization is preserved for Google Classroom by aligning with Google's incremental scope model. Where a second LMS supports incremental authorization, LyfeLabz uses it. Where a second LMS does not, the scope request is a documented, teacher-visible decision at connection time.
@@ -362,7 +364,7 @@ The initial LMS scope authorized by PDR-020c depends on the following operationa
 - A Google Cloud project OAuth client is provisioned under LyfeLabz operational ownership. The client is dedicated to LMS integration and is separate from any client used by Firebase Authentication under PDR-002.
 - The client's authorized redirect URIs are limited to the server-side callback endpoint owned by the Cloud Function Charter. No client-side redirect URI is registered.
 - The client's default consent screen is configured in Testing mode until the integration is exercised end-to-end under the Emulator Suite, and is promoted to Production only after the first implementation sprint certifies.
-- The client's requested scopes reflect the incremental authorization posture in §5.2. The initial scope requests the minimum required to list a teacher's classes and inspect a class's roster. Additional scopes are added by the sprint that owns the workflow requiring them.
+- *(Superseded for Google Classroom by PDR-030i: the requested scopes are the complete current set named in the §5.2 note.)* The client's requested scopes reflect the incremental authorization posture in §5.2. The initial scope requests the minimum required to list a teacher's classes and inspect a class's roster. Additional scopes are added by the sprint that owns the workflow requiring them.
 - Client credentials (client ID and client secret) are recorded in the operational secret manager under access controls consistent with PDR-012. Neither credential is committed to the repository, exposed to the client bundle, or written to a Firestore document readable by any role.
 
 ### 10.3.2 Google Cloud Project Ownership
@@ -403,6 +405,8 @@ The initial LMS scope authorized by PDR-020c depends on the following operationa
 - The initial scope does not implement re-verification on refresh (refresh is out of the initial scope). Re-verification lands with the sprint that owns the refresh workflow.
 
 ### 10.3.8 Incremental Authorization Strategy
+
+> **Superseded for Google Classroom by PDR-030i (2026-10-14).** See the §5.2 note: the complete current scope set is requested at connection time, granted scopes remain authoritative, and existing teachers upgrade through one explicit authorization. The commitments below are retained for historical traceability; they were satisfied for the initial scope and no longer govern Google Classroom scope requests.
 
 - OAuth scopes are requested incrementally per §5.2. The initial scope requests the minimum required to list a teacher's classes and inspect a class's roster.
 - Scopes required by excluded capabilities (roster synchronization, publication, refresh) are not requested by the initial scope. They are added by the sprint that owns the workflow requiring them.
@@ -470,7 +474,7 @@ The following architectural questions are answered by this document.
 - **How should deleted classes behave?** The link is marked broken. Historical LyfeLabz data is preserved.
 - **How should teacher ownership be validated?** The importing teacher must be the teacher of record for the LMS class. Ownership is verified server-side against the LMS at import time and re-verified on refresh.
 - **How should multiple LMS providers coexist?** A teacher may hold at most one active connection per provider. A class may be linked to at most one LMS provider at a time.
-- **How should OAuth scopes evolve over time?** Incrementally, requested only when the teacher initiates a workflow that requires them.
+- **How should OAuth scopes evolve over time?** Incrementally, requested only when the teacher initiates a workflow that requires them. *(Superseded for Google Classroom by PDR-030i: the complete set of scopes the supported workflows need is requested at connection time; a new scope still requires its own decision record.)*
 - **What information should never be copied into LyfeLabz?** The list in §9.4.
 
 ---

@@ -52,13 +52,18 @@ import { attachDeliveryNewTabPreparation } from "../../assignments/studentList/d
 import { mintAssignmentId } from "./shared/assignmentId";
 import { formatLocalDate, formatLocalTime } from "./shared/activeAssignments";
 import {
+  CLASSROOM_AUTHORIZATION_MESSAGE,
+  classifyTopicLoadError,
   clearConnectionReconnectNeeded,
   createConsentCoordinator,
   mintNonce,
   recordConnectionReconnectNeeded,
   recordLmsPublicationRetryContext,
+  requestPublicationAuthorization,
   runPublicationAction,
   _resetLmsPublicationStateForTest,
+  type ClassroomAuthorizationResult,
+  type TopicLoadFailure,
 } from "./shared/lmsPublication";
 import type { AssignmentLmsPublicationState } from "../../assignments/detail/types";
 import type { AssignmentDetailClassSwitcher } from "../../assignments/detail/class-switcher";
@@ -388,6 +393,44 @@ let classLinksInFlight: Promise<void> | null = null;
 const cachedTopicsByLinkId: Map<string, ReadonlyArray<IntegrationsLmsTopic>> =
   new Map();
 const topicsInFlightByLinkId: Map<string, Promise<void>> = new Map();
+// Why the most recent topic load for a link failed. Present only while the
+// link has no successful load, so a failure (missing Classroom permission,
+// a connection that needs reconnecting, or a network/provider problem) is
+// never shown as a class that simply has no topics.
+const topicLoadFailureByLinkId: Map<string, TopicLoadFailure> = new Map();
+
+// Teacher-facing selector text for a topic list that could not load. The
+// "No topic" choice stays available beside it.
+const TOPIC_LOAD_FAILURE_LABEL: Readonly<Record<TopicLoadFailure, string>> =
+  Object.freeze({
+    permission: "Needs Classroom access",
+    reconnect: "Reconnect to see topics",
+    unavailable: "Topics did not load",
+  });
+
+// Unified onboarding authorization. Whether each provider's connection
+// already covers topics and publishing, read once per Assign dialog from
+// `describeConnections`. `undefined` (no answer, or a server predating the
+// field) means unknown: the dialog then never blocks on it and keeps the
+// earlier publish-time consent fallback.
+type PublicationAuthorizationByProvider = ReadonlyMap<string, boolean>;
+
+async function loadPublicationAuthorization(
+  integrations: IntegrationsDeps,
+): Promise<PublicationAuthorizationByProvider> {
+  try {
+    const connections = await integrations.callables.describeConnections();
+    const byProvider = new Map<string, boolean>();
+    for (const c of connections) {
+      if (c.status !== "active") continue;
+      if (typeof c.publicationAuthorized !== "boolean") continue;
+      byProvider.set(c.providerId, c.publicationAuthorized);
+    }
+    return byProvider;
+  } catch {
+    return new Map();
+  }
+}
 
 type LifecycleStateEntry = {
   readonly state: AssignmentsLifecycleState;
@@ -878,15 +921,13 @@ function ensureTopics(
   if (integrations === null) return Promise.resolve();
   // A successful load (including a course that legitimately has no topics) is
   // cached as authoritative for the session. A failed load is intentionally
-  // NOT cached. Before the teacher grants the publication scopes, the topics
-  // scope (classroom.topics.readonly) is absent, so the list call fails and
-  // the selector degrades to "No topic" - the accepted pre-consent state.
-  // Caching that failure as an empty list would be indistinguishable from
-  // "this course has no topics", so the real topics would never appear after
-  // publication incremental consent widens the connection. Leaving a failed
-  // load uncached lets the next Assign-dialog open re-attempt against the
-  // possibly-widened connection. Topic loading never triggers consent;
-  // publication remains the sole trigger for incremental consent.
+  // NOT cached as a topic list: it records WHY it failed instead, so the
+  // selector can say so rather than degrade to "No topic" (October 2026
+  // incident: a connection missing the topics permission looked like a
+  // class with no topics). Leaving a failed load uncached lets a later
+  // attempt - including the reload after the teacher allows Classroom access
+  // in the dialog - re-fetch against the widened connection. Topic loading
+  // never opens a Google window itself.
   if (cachedTopicsByLinkId.has(linkId)) return Promise.resolve();
   const inFlight = topicsInFlightByLinkId.get(linkId);
   if (inFlight) return inFlight;
@@ -894,10 +935,12 @@ function ensureTopics(
     .listClassTopics({ linkId })
     .then((rows) => {
       cachedTopicsByLinkId.set(linkId, rows);
+      topicLoadFailureByLinkId.delete(linkId);
     })
-    .catch(() => {
-      // Transient failure: do not cache. The call site reads an absent cache
-      // entry as an empty selector for this render, and a later open re-fetches.
+    .catch((err: unknown) => {
+      // Do not cache a topic list. The call site reads the recorded reason
+      // and shows it; a later attempt re-fetches.
+      topicLoadFailureByLinkId.set(linkId, classifyTopicLoadError(err));
     })
     .finally(() => {
       topicsInFlightByLinkId.delete(linkId);
@@ -1936,6 +1979,22 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       c.status === "active",
   );
 
+  // Unified onboarding authorization: learn, alongside the lifecycle load,
+  // whether each linked provider's connection already covers topics and
+  // publishing, so a missing permission is requested before anything is
+  // created rather than discovered when Classroom rejects the post.
+  const linkedProviderIds = new Set<string>();
+  if (cachedClassLinks && cachedClassLinks.uid === session.uid) {
+    for (const c of classes) {
+      const l = cachedClassLinks.linksByClassId.get(c.id);
+      if (l) linkedProviderIds.add(l.providerId);
+    }
+  }
+  const authorizationPromise: Promise<PublicationAuthorizationByProvider> =
+    integrations !== null && linkedProviderIds.size > 0
+      ? loadPublicationAuthorization(integrations)
+      : Promise.resolve(new Map());
+
   let lifecycleByClass: Map<string, LifecycleStateEntry> = new Map();
   if (assignments !== null && classes.length > 0) {
     loading.textContent = "Checking assignment status";
@@ -1952,6 +2011,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       // failures; individual class rows render their own error state.
     }
   }
+  const publicationAuthorization = new Map(await authorizationPromise);
   if (!overlay.isConnected) return;
   body.removeChild(loading);
 
@@ -2020,6 +2080,138 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     cachedClassLinks && cachedClassLinks.uid === session.uid
       ? cachedClassLinks.linksByClassId
       : new Map<string, IntegrationsClassLink>();
+
+  // Unified onboarding authorization notice. Shown only when a linked
+  // class's connection is known to lack the Classroom permissions topics
+  // and posting need. The button opens Google's consent window directly
+  // from the teacher's click (no popup-blocker race); confirming the
+  // dialog without it runs the same request first and creates nothing
+  // unless access is granted.
+  let authorizationInFlight = false;
+  const topicReloaders: Array<() => void> = [];
+  const providerNeedingAuthorization = (
+    classIds: Iterable<string>,
+  ): string | null => {
+    if (integrations === null) return null;
+    for (const id of classIds) {
+      const l = linksByClassId.get(id);
+      if (l && publicationAuthorization.get(l.providerId) === false) {
+        return l.providerId;
+      }
+    }
+    return null;
+  };
+  const accessNotice = doc.createElement("div");
+  accessNotice.className = "shell-assign-classroom-access";
+  accessNotice.setAttribute("data-testid", "assign-classroom-access");
+  accessNotice.hidden = true;
+  const accessMessage = doc.createElement("p");
+  accessMessage.className = "shell-assign-classroom-access-message";
+  accessMessage.setAttribute("data-testid", "assign-classroom-access-message");
+  accessMessage.setAttribute("role", "status");
+  accessMessage.setAttribute("aria-live", "polite");
+  accessNotice.appendChild(accessMessage);
+  const accessButton = doc.createElement("button");
+  accessButton.type = "button";
+  accessButton.className = "shell-assign-classroom-access-allow";
+  accessButton.setAttribute("data-testid", "assign-classroom-access-allow");
+  accessButton.textContent = "Allow Google Classroom access";
+  accessNotice.appendChild(accessButton);
+  // PDR-030i explicit alternative: the teacher may knowingly assign in
+  // LyfeLabz only. Never chosen automatically; offered only while access is
+  // missing or was not granted.
+  const lyfelabzOnlyNote = doc.createElement("p");
+  lyfelabzOnlyNote.className = "shell-assign-classroom-access-message";
+  lyfelabzOnlyNote.setAttribute(
+    "data-testid",
+    "assign-classroom-access-lyfelabz-only-note",
+  );
+  lyfelabzOnlyNote.textContent =
+    "Or assign in LyfeLabz only: students get it in LyfeLabz, but it will not appear in Google Classroom for any of your Google Classroom classes in this assignment.";
+  accessNotice.appendChild(lyfelabzOnlyNote);
+  const lyfelabzOnlyButton = doc.createElement("button");
+  lyfelabzOnlyButton.type = "button";
+  lyfelabzOnlyButton.className = "shell-assign-cancel";
+  lyfelabzOnlyButton.setAttribute(
+    "data-testid",
+    "assign-classroom-access-lyfelabz-only",
+  );
+  lyfelabzOnlyButton.textContent = "Assign in LyfeLabz only";
+  accessNotice.appendChild(lyfelabzOnlyButton);
+  const accessCancelButton = doc.createElement("button");
+  accessCancelButton.type = "button";
+  accessCancelButton.className = "shell-assign-cancel";
+  accessCancelButton.setAttribute("data-testid", "assign-classroom-access-cancel");
+  accessCancelButton.textContent = "Cancel";
+  accessNotice.appendChild(accessCancelButton);
+  body.appendChild(accessNotice);
+
+  const ACCESS_NEEDED_MESSAGE =
+    "Google Classroom needs your permission before LyfeLabz can show your Classroom topics and post assignments there. You approve it once, in a Google window.";
+  const showAccessNotice = (
+    state: "needed" | "pending" | ClassroomAuthorizationResult,
+  ): void => {
+    accessNotice.hidden = false;
+    accessNotice.setAttribute("data-access-state", state);
+    accessMessage.textContent =
+      state === "needed"
+        ? ACCESS_NEEDED_MESSAGE
+        : state === "pending"
+          ? "Waiting for Google. Approve access in the Google window."
+          : CLASSROOM_AUTHORIZATION_MESSAGE[state];
+    accessButton.hidden = state === "granted";
+    accessButton.disabled = state === "pending";
+    const offerAlternative = state !== "granted";
+    lyfelabzOnlyNote.hidden = !offerAlternative;
+    lyfelabzOnlyButton.hidden = !offerAlternative;
+    accessCancelButton.hidden = !offerAlternative;
+    lyfelabzOnlyButton.disabled = state === "pending";
+    accessCancelButton.disabled = state === "pending";
+  };
+  if (providerNeedingAuthorization(classes.map((c) => c.id)) !== null) {
+    showAccessNotice("needed");
+  }
+
+  // Runs one authorization for the first provider still needing it. Must be
+  // called directly from a click handler. Resolves true when nothing is
+  // missing any more.
+  const authorizeClassroom = async (): Promise<boolean> => {
+    const providerId = providerNeedingAuthorization(
+      classes.map((c) => c.id),
+    );
+    if (providerId === null || integrations === null) return true;
+    authorizationInFlight = true;
+    showAccessNotice("pending");
+    const result = await requestPublicationAuthorization({
+      providerId,
+      beginConnection: integrations.callables.beginConnection,
+      completeConnection: integrations.callables.completeConnection,
+      openOAuth: integrations.openOAuth,
+      redirectUri: integrations.redirectUri,
+      ...(integrations.reserveOAuthWindow !== undefined
+        ? { reserveOAuthWindow: integrations.reserveOAuthWindow }
+        : {}),
+    });
+    authorizationInFlight = false;
+    if (!overlay.isConnected) return false;
+    showAccessNotice(result);
+    if (result !== "granted") return false;
+    publicationAuthorization.set(providerId, true);
+    for (const reload of topicReloaders) reload();
+    return true;
+  };
+  accessButton.addEventListener("click", () => {
+    if (authorizationInFlight || submissionInFlight) return;
+    void authorizeClassroom();
+  });
+  lyfelabzOnlyButton.addEventListener("click", () => {
+    if (authorizationInFlight || submissionInFlight) return;
+    submit("lyfelabzOnly");
+  });
+  accessCancelButton.addEventListener("click", () => {
+    if (authorizationInFlight) return;
+    close();
+  });
 
   const sharedSettings = doc.createElement("div");
   sharedSettings.className = "shell-assign-shared-settings";
@@ -2300,6 +2492,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       lc,
       retryCtx,
       scheduleContext,
+      (reload) => topicReloaders.push(reload),
     );
     rowsHost.appendChild(row);
   }
@@ -2311,7 +2504,42 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   // any callable replay is idempotent server-side, but preventing a
   // second dispatch keeps the client-side outcome accounting honest.
   let submissionInFlight = false;
+  // Linked creation rows are the ones that will post to Classroom; a row
+  // that only saves changes to an existing assignment does not.
+  const enabledClassroomCreationClassIds = (): string[] => {
+    const ids: string[] = [];
+    for (const [cid, cfg] of rowState) {
+      if (!cfg.enabled || !linksByClassId.has(cid)) continue;
+      const lc = rowLifecycleState.get(cid);
+      if (lc?.error) continue;
+      const state = lc?.state ?? "neverAssigned";
+      if (
+        lc?.currentAssignmentResolution === "inactive" ||
+        state === "neverAssigned" ||
+        state === "historicalOnly"
+      ) {
+        ids.push(cid);
+      }
+    }
+    return ids;
+  };
   confirm.addEventListener("click", () => {
+    if (submissionInFlight || authorizationInFlight) return;
+    if (providerNeedingAuthorization(enabledClassroomCreationClassIds()) === null) {
+      submit();
+      return;
+    }
+    // Ask for the missing Classroom permission first, from this click, and
+    // create nothing unless it is granted. The notice explains any refusal;
+    // the teacher can allow access and confirm again, or deselect the
+    // Classroom-linked classes.
+    void authorizeClassroom().then((granted) => {
+      if (granted && overlay.isConnected) submit();
+    });
+  });
+  const submit = (
+    delivery: "classroom" | "lyfelabzOnly" = "classroom",
+  ): void => {
     if (submissionInFlight) return;
     // Sprint 30A.1 UX correction: defense in depth mirroring the
     // `updateConfirmState` gate above - a Graded action with an invalid
@@ -2508,6 +2736,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         assignmentDetail,
         onConfirm,
         onLifecycleComplete,
+        delivery,
       });
     }
 
@@ -2525,7 +2754,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
           : undefined,
       });
     }
-  });
+  };
 
   try {
     confirm.focus({ preventScroll: true });
@@ -3139,6 +3368,9 @@ function renderRow(
   lifecycle?: LifecycleStateEntry,
   retryContext?: RowRetryContext,
   schedule?: RowScheduleContext,
+  // Receives this row's topic reloader, so the dialog can refresh topics
+  // after the teacher allows Classroom access without reopening.
+  onTopicSelect?: (reload: () => void) => void,
 ): HTMLElement {
   const cfg = rowState.get(cls.id);
   if (!cfg) throw new Error(`missing row state for class ${cls.id}`);
@@ -3528,25 +3760,55 @@ function renderRow(
       });
       row.appendChild(select);
       lmsTopicSelect = select;
-      void ensureTopics(link.linkId, integrations).then(() => {
-        const topics = cachedTopicsByLinkId.get(link.linkId) ?? [];
-        loadingOption.remove();
-        for (const t of topics) {
-          const opt = doc.createElement("option");
-          opt.value = t.lmsTopicId;
-          opt.textContent = t.name;
-          select.appendChild(opt);
+      const loadTopics = (): void => {
+        // Reset to the loading shape: "No topic" plus the disabled status
+        // option, dropping any topics or failure text from a prior load.
+        while (select.lastChild !== null && select.lastChild !== noneOption) {
+          select.removeChild(select.lastChild);
         }
-        if (
-          cfg.lmsTopicId &&
-          topics.some((t) => t.lmsTopicId === cfg.lmsTopicId)
-        ) {
-          select.value = cfg.lmsTopicId;
-        } else {
-          select.value = "";
-          cfg.lmsTopicId = "";
-        }
-      });
+        loadingOption.textContent = "Loading topics";
+        select.appendChild(loadingOption);
+        loadingOption.selected = true;
+        select.setAttribute("data-topic-state", "loading");
+        void ensureTopics(link.linkId, integrations).then(() => {
+          const topics = cachedTopicsByLinkId.get(link.linkId);
+          if (topics === undefined) {
+            // The list could not be loaded. Say why in the selector itself
+            // (the status option stays selected and disabled) rather than
+            // presenting an apparently empty list; "No topic" stays
+            // available so the teacher can still continue without one.
+            const failure =
+              topicLoadFailureByLinkId.get(link.linkId) ?? "unavailable";
+            loadingOption.textContent = TOPIC_LOAD_FAILURE_LABEL[failure];
+            loadingOption.selected = true;
+            select.setAttribute("data-topic-state", failure);
+            cfg.lmsTopicId = "";
+            return;
+          }
+          loadingOption.remove();
+          for (const t of topics) {
+            const opt = doc.createElement("option");
+            opt.value = t.lmsTopicId;
+            opt.textContent = t.name;
+            select.appendChild(opt);
+          }
+          select.setAttribute(
+            "data-topic-state",
+            topics.length > 0 ? "loaded" : "empty",
+          );
+          if (
+            cfg.lmsTopicId &&
+            topics.some((t) => t.lmsTopicId === cfg.lmsTopicId)
+          ) {
+            select.value = cfg.lmsTopicId;
+          } else {
+            select.value = "";
+            cfg.lmsTopicId = "";
+          }
+        });
+      };
+      loadTopics();
+      onTopicSelect?.(loadTopics);
     } else if (integrations !== null) {
       const placeholder = doc.createElement("span");
       placeholder.className =
@@ -3914,6 +4176,10 @@ type LyfelabzAssignmentState =
 
 type PerClassOutcome = {
   readonly classId: string;
+  // PDR-030i: a Classroom-linked class the teacher explicitly chose to
+  // assign in LyfeLabz only. Never posted to Classroom, never reported as
+  // published there.
+  readonly lyfelabzOnly?: boolean;
   readonly assignmentId: string;
   readonly lyfelabzState: LyfelabzAssignmentState;
   readonly lmsRequested: boolean;
@@ -3965,6 +4231,11 @@ async function runAssignmentLifecycle(input: {
   readonly onLifecycleComplete?: (
     assignmentIds: ReadonlyArray<string>,
   ) => void;
+  // PDR-030i: "classroom" (default) posts every linked class to Classroom;
+  // "lyfelabzOnly" is the teacher's explicit choice to assign every class in
+  // this action in LyfeLabz only. One choice per action, so a mixed
+  // selection never posts some linked classes and silently skips others.
+  readonly delivery?: "classroom" | "lyfelabzOnly";
 }): Promise<void> {
   const {
     lesson,
@@ -4007,7 +4278,10 @@ async function runAssignmentLifecycle(input: {
       // anymore. A selected class with no link, or with LMS deps absent,
       // never attempts publication (a non-existent link can never be
       // invented client-side).
-      const wantsLms = row.link !== null && integrations !== null;
+      const lyfelabzOnly =
+        input.delivery === "lyfelabzOnly" && row.link !== null;
+      const wantsLms =
+        !lyfelabzOnly && row.link !== null && integrations !== null;
 
       // The ONE teacher-selected instant for this class, written durably as
       // the draft's `availableAt`. It governs LyfeLabz student availability
@@ -4107,6 +4381,7 @@ async function runAssignmentLifecycle(input: {
           lyfelabzState: "published",
           lmsRequested: false,
           lmsState: "notRequested",
+          ...(lyfelabzOnly ? { lyfelabzOnly: true } : {}),
         };
       }
       const lmsTopicId = row.cfg.lmsTopicId;
@@ -4270,6 +4545,18 @@ function summarizeOutcomes(
     base = `${lesson.title}: ${savedClause(savedNotPublished)}, and ${notSavedClause(draftFailed)}. You can try again from any assignment that was saved.`;
   }
 
+  // PDR-030i: say plainly which classes were assigned in LyfeLabz only, so a
+  // LyfeLabz-only assignment is never mistaken for a Classroom post.
+  const lyfelabzOnlyPublished = outcomes.filter(
+    (o) => o.lyfelabzOnly === true && o.lyfelabzState === "published",
+  ).length;
+  if (lyfelabzOnlyPublished > 0) {
+    const onlyLine =
+      lyfelabzOnlyPublished === 1
+        ? "Assigned in LyfeLabz only for 1 Google Classroom class. It will not appear in Google Classroom."
+        : `Assigned in LyfeLabz only for ${lyfelabzOnlyPublished} Google Classroom classes. They will not appear in Google Classroom.`;
+    return `${base} ${onlyLine}`;
+  }
   if (lmsRequested === 0) return base;
   // No class reached `published`, so no Google Classroom publication was
   // attempted. The base line already carries the truthful LyfeLabz outcome.
@@ -4371,6 +4658,7 @@ export function _resetCurriculumSessionStateForTest(): void {
   classLinksInFlight = null;
   cachedTopicsByLinkId.clear();
   topicsInFlightByLinkId.clear();
+  topicLoadFailureByLinkId.clear();
   cachedLifecycleState.clear();
   sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
   sessionPreferences.topic = "";

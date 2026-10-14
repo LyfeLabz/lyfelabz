@@ -12,7 +12,11 @@ import {
   resetLmsOAuthStateStoreForTests,
 } from "../../oauth-state/state-store";
 
-import { googleClassroomAdapter, GOOGLE_CLASSROOM_PUBLICATION_SCOPES } from "./adapter";
+import {
+  googleClassroomAdapter,
+  GOOGLE_CLASSROOM_PUBLICATION_SCOPES,
+  GOOGLE_CLASSROOM_REQUIRED_SCOPES,
+} from "./adapter";
 import {
   resetGoogleClassroomConfigForTests,
   setGoogleClassroomConfig,
@@ -185,20 +189,71 @@ describe("Google Classroom adapter - PKCE + server-side state", () => {
     expect(capture.last).toBeUndefined();
   });
 
-  it("beginOAuth without intent requests only the initial scope set", async () => {
-    setGoogleClassroomConfig(FIXTURE_CONFIG);
-    setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
-    const authorization = await googleClassroomAdapter.beginOAuth({
-      teacherId: FIXTURE_TEACHER_ID,
-      redirectUri: FIXTURE_CONFIG.redirectUri,
+  // Unified onboarding authorization: an initial connect (no intent) and a
+  // reconnect request the complete required scope set, so a new teacher
+  // approves topics, publication, scheduling, and grade passback once at
+  // connection time instead of meeting a second consent prompt mid-publish.
+  it.each([undefined, "initialConnect", "reconnect"] as const)(
+    "beginOAuth with intent %s requests the complete required scope set",
+    async (intent) => {
+      setGoogleClassroomConfig(FIXTURE_CONFIG);
+      setGoogleClassroomTransport(createFixtureGoogleClassroomTransport());
+      const authorization = await googleClassroomAdapter.beginOAuth({
+        teacherId: FIXTURE_TEACHER_ID,
+        redirectUri: FIXTURE_CONFIG.redirectUri,
+        ...(intent !== undefined ? { intent } : {}),
+      });
+      const url = new URL(authorization.authorizationUrl);
+      const requested = (url.searchParams.get("scope") ?? "")
+        .split(" ")
+        .sort();
+      expect(requested).toEqual([...GOOGLE_CLASSROOM_REQUIRED_SCOPES].sort());
+      for (const pubScope of GOOGLE_CLASSROOM_PUBLICATION_SCOPES) {
+        expect(requested).toContain(pubScope);
+      }
+      expect(requested).toContain(
+        "https://www.googleapis.com/auth/classroom.courses.readonly",
+      );
+      expect(requested).toContain(
+        "https://www.googleapis.com/auth/classroom.rosters.readonly",
+      );
+      // Never broader than the documented sets.
+      expect(requested).toHaveLength(4);
+      expect(requested.join(" ")).not.toContain("classroom.coursework.me");
+      expect(url.searchParams.get("access_type")).toBe("offline");
+      expect(url.searchParams.get("include_granted_scopes")).toBe("true");
+    },
+  );
+
+  it("describeGrantedCapabilities requires every publication scope", () => {
+    expect(
+      googleClassroomAdapter.describeGrantedCapabilities(
+        GOOGLE_CLASSROOM_REQUIRED_SCOPES,
+      ),
+    ).toEqual({ publication: true });
+    // Roster-only legacy grant (the October 2026 incident shape).
+    expect(
+      googleClassroomAdapter.describeGrantedCapabilities([
+        "https://www.googleapis.com/auth/classroom.courses.readonly",
+        "https://www.googleapis.com/auth/classroom.rosters.readonly",
+      ]),
+    ).toEqual({ publication: false });
+    // Coursework without topics, and topics without coursework, are both
+    // incomplete.
+    expect(
+      googleClassroomAdapter.describeGrantedCapabilities([
+        "https://www.googleapis.com/auth/classroom.courses.readonly",
+        "https://www.googleapis.com/auth/classroom.coursework.students",
+      ]),
+    ).toEqual({ publication: false });
+    expect(
+      googleClassroomAdapter.describeGrantedCapabilities([
+        "https://www.googleapis.com/auth/classroom.topics.readonly",
+      ]),
+    ).toEqual({ publication: false });
+    expect(googleClassroomAdapter.describeGrantedCapabilities([])).toEqual({
+      publication: false,
     });
-    const url = new URL(authorization.authorizationUrl);
-    const scope = url.searchParams.get("scope") ?? "";
-    for (const pubScope of GOOGLE_CLASSROOM_PUBLICATION_SCOPES) {
-      expect(scope).not.toContain(pubScope);
-    }
-    expect(scope).toContain("classroom.courses.readonly");
-    expect(scope).toContain("classroom.rosters.readonly");
   });
 
   it("beginOAuth with publication intent requests both scope sets", async () => {

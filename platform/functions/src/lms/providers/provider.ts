@@ -293,6 +293,16 @@ export type LmsPatchStudentSubmissionGradeInput = {
   readonly earnedPoints: number;
 };
 
+// Provider-neutral view of what a stored grant lets LyfeLabz do. Derived
+// from the recorded granted scopes by the owning adapter so the
+// vendor-neutral core and the client never interpret provider scope
+// strings. `publication` covers every teacher-side workflow beyond class
+// discovery and roster reads: Classroom topics, coursework publication
+// (immediate and scheduled), and grade passback.
+export type LmsGrantedCapabilities = {
+  readonly publication: boolean;
+};
+
 // -------------------- Provider adapter interface --------------------
 
 export interface LmsProviderAdapter {
@@ -303,9 +313,13 @@ export interface LmsProviderAdapter {
   // returned state token is verified by the completion callable. The
   // scope set requested is the minimum required to list a teacher's
   // classes and inspect a class's roster per §5.2 of the architecture and
-  // §10.3.8 of the operational readiness section. When `intent` is
-  // "publication", the adapter additionally requests the publication
-  // capability scope set via incremental consent (PDR-030c).
+  // §10.3.8 of the operational readiness section, plus the publication
+  // capability scope set (PDR-030c). Unified onboarding authorization:
+  // every intent (initial connect, reconnect, publication upgrade)
+  // requests the complete set of scopes the supported teacher workflows
+  // need, so a teacher approves once instead of meeting a second consent
+  // prompt mid-publication. The intent still selects the completion
+  // semantics (create, replace, or widen).
   // `accountHint` (Sprint 26 Phase 1 contract) is an optional,
   // provider-neutral account-continuity hint: the opaque identity of the
   // account the durable connection already owns, which the adapter may
@@ -336,6 +350,12 @@ export interface LmsProviderAdapter {
     readonly state: string;
     readonly redirectUri: string;
   }): Promise<LmsOAuthGrant>;
+
+  // Report which provider-neutral capabilities a recorded scope set
+  // grants. Pure and synchronous; performs no upstream call.
+  describeGrantedCapabilities(
+    scopes: readonly string[],
+  ): LmsGrantedCapabilities;
 
   // Exchange stored refresh material for a fresh access token. Called by
   // the vendor-neutral credential resolver (`resolveLiveCredential`) when a

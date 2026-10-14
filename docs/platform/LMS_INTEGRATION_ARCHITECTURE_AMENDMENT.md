@@ -237,7 +237,7 @@ A teacher who imports a class through the LMS may not use join codes for that cl
 ### 6.2 Security Risks
 
 - **Token leakage.** Mitigation: tokens are server-only, never sent to the client, never written to a client-readable Firestore field. Rotation is server-mediated.
-- **Overbroad scope grants.** Mitigation: incremental authorization; the initial scope is minimum-required.
+- **Overbroad scope grants.** Mitigation: incremental authorization; the initial scope is minimum-required. *(For Google Classroom, superseded by PDR-030i: the mitigation is now that only the four scopes required by shipped teacher workflows are requested, at connection time, and any additional scope requires its own decision record.)*
 - **Session token reuse.** Mitigation: every LMS callable revalidates the Canonical Session Object.
 
 ### 6.3 Privacy Risks

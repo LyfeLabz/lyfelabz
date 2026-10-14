@@ -29,6 +29,10 @@ opt-in consent at the moment the teacher first publishes, and are added
 to the teacher's existing connection rather than to a second connection.
 Publication is never a standalone workflow.
 
+> **Consent timing superseded (2026-10-14) - see PDR-030i in
+> `LYFELABZ_PLATFORM_DECISIONS.md`.** The complete current scope set is
+> now requested at connection time. The rest of this decision stands.
+
 ## Status
 
 Proposed for acceptance as the authorizing decision for Sprint 25 (LMS
@@ -88,6 +92,10 @@ Two decisions require a record:
   teacher who only imports and synchronizes roster would be asked to
   grant a write scope she may never use. Incremental consent at first
   publish is the minimum-friction, minimum-privilege path.
+  *(2026-10-14: adopted by PDR-030i. Production evidence showed that
+  publish-time consent was neither minimum-friction nor reliable: the
+  prompt opened outside the teacher's click and could be blocked, and a
+  partial grant left topics and publishing silently failing.)*
 - **Create a second connection for the coursework scopes.** Rejected. It
   duplicates account custody, complicates disconnect and rotation, and
   confuses the account-level Settings surface. Widening the existing
@@ -155,6 +163,14 @@ workflow.**
   record. A broader scope requires a superseding record.
 
 **PDR-030c. Incremental, opt-in consent.**
+
+> **TIMING SUPERSEDED (2026-10-14) - see PDR-030i below and in
+> `LYFELABZ_PLATFORM_DECISIONS.md`.** The requirement that coursework
+> scopes be requested "at the moment the teacher first publishes, and
+> only then" is superseded. The original wording is retained below. Its
+> other provisions (certified lifecycle callables, provider-neutral
+> capability selector, preservation of previously granted scopes, no
+> silent escalation) remain in force.
 
 - The coursework scopes are requested through incremental OAuth consent
   at the moment the teacher first publishes, and only then.
@@ -255,6 +271,37 @@ implementation blocker.**
   reconnect: the resolver surfaces the normalized `lms.reconnectRequired`
   error and never falsely marks publication success.
 
+**PDR-030i. Unified onboarding authorization.**
+
+> Recorded canonically in `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-030i,
+> RATIFIED, 2026-10-14). Summarized here because it supersedes the consent timing
+> of PDR-030c.
+
+- Production evidence (2026-10-14): a roster-only connection made topics
+  fail (shown as "No topic") and left four assignments unpublished with
+  `ACCESS_TOKEN_SCOPE_INSUFFICIENT`. The publish-time prompt opened after
+  several server round trips, outside the teacher's click, where
+  browsers block pop-ups, and Google's granular consent let individual
+  permissions be unchecked.
+- Every authorization now requests the complete current set at
+  connection time: `classroom.courses.readonly`,
+  `classroom.rosters.readonly`, `classroom.topics.readonly`,
+  `classroom.coursework.students`. No scope is added; each maps to a
+  shipped workflow; any new scope still needs its own record.
+- Granted scopes remain authoritative through a provider-neutral
+  `publicationAuthorized` capability. Partial consent is reported
+  truthfully. Nothing is created merely because authorization failed;
+  the teacher explicitly chooses Allow access, Assign in LyfeLabz only
+  (every linked class in the action, no Classroom call, reported as not
+  appearing in Classroom), or Cancel.
+- Status: RATIFIED, 2026-10-14.
+- Existing teachers upgrade through one explicit, teacher-initiated
+  authorization that widens the same connection with identity
+  revalidation (PDR-030d unchanged).
+- The authorization window is reserved synchronously from the click
+  (`about:blank`) and navigated only to the validated server-issued
+  URL; state, PKCE, and callback checks are unchanged.
+
 ## Rationale
 
 Incremental, opt-in consent at first publish is the minimum-privilege,
@@ -293,6 +340,9 @@ Limitations:
   separately from the sprint.
 - A teacher who declines the incremental consent cannot publish; she can
   still assign. Activation without publication is a supported state.
+  *(2026-10-14: preserved by PDR-030i, ratified 2026-10-14 - after a
+  refusal she assigns in LyfeLabz only by explicitly choosing "Assign in
+  LyfeLabz only"; it is never substituted silently.)*
 - Multi-account teachers hold multiple LyfeLabz identities and multiple
   connections; this is a pre-existing PDR-004 concern unchanged by this
   record.
@@ -308,7 +358,11 @@ Limitations:
   authored as a superseding record with its own verification assessment.
 - **PDR-030c** and **PDR-030d** reconsidered only if the certified OAuth
   connection lifecycle or the server-only token boundary is itself
-  redefined.
+  redefined. (PDR-030c's consent timing was superseded by PDR-030i on
+  2026-10-14.)
+- **PDR-030i** reconsidered only when the set of supported teacher-facing
+  Classroom workflows changes, or if Google's consent model no longer
+  reports granted scopes reliably.
 - **PDR-030e** reconsidered only through the formal-review path required
   for the parent PDR-019 sub-decisions it inherits.
 - **PDR-030f** reconsidered only if the platform adopts a policy that

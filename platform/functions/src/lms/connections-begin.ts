@@ -35,16 +35,18 @@ import { getLmsTokenStore } from "./tokens/token-store";
 export type LmsConnectionsBeginRequest = {
   readonly providerId: string;
   readonly redirectUri: string;
-  // Provider-neutral capability selector. "publication" triggers
-  // incremental consent for the coursework scope set (PDR-030c). When
-  // absent, the flow requests the initial (readonly) scope set. Any other
-  // value is refused at runtime rather than silently downgraded.
+  // Provider-neutral capability selector. "publication" binds the
+  // publication-upgrade intent, so completion widens an existing connection
+  // (PDR-030c). Every intent requests the complete required scope set
+  // (unified onboarding authorization); the selector chooses completion
+  // semantics, not a smaller scope set. Any other value is refused at
+  // runtime rather than silently downgraded.
   readonly capability?: "publication";
   // Sprint 26 certification follow-up - explicit reconnect/recovery signal.
   // When true, the teacher has explicitly requested credential recovery for
   // an existing active connection LyfeLabz observed to be unusable (the
-  // Settings Reconnect action). It carries the base (initial) scope set,
-  // exactly like an initial connect, but binds the "reconnect" OAuth-state
+  // Settings Reconnect action). It requests the same complete scope set as
+  // an initial connect, but binds the "reconnect" OAuth-state
   // intent so completion replaces the unusable credential on the same
   // logical connection instead of taking the idempotent duplicate-connect
   // early return. It is never combined with `capability: "publication"`;
