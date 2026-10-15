@@ -72,7 +72,9 @@ export type CloudSaveResult = {
 export type LabReportCloudTransport = {
   readonly version: string;
   onAuthChange(callback: (user: CloudUser | null) => void): () => void;
-  signIn(): Promise<void>;
+  // Resolves with the signed-in account after a popup sign-in, or null when
+  // the browser navigates away for a redirect sign-in.
+  signIn(): Promise<CloudUser | null>;
   signOut(): Promise<void>;
   get(): Promise<CloudGetResult>;
   save(input: CloudSaveInput): Promise<CloudSaveResult>;
@@ -111,6 +113,26 @@ export function classifyCallableError(err: unknown): CloudError {
   return { kind, code: platformCode || code || "unknown" };
 }
 
+// Errors from fetching the ID token that mean the session itself is no longer
+// valid. Firebase signs the user out on these, so they are sign-in problems.
+const TOKEN_SESSION_INVALID = new Set([
+  "auth/user-token-expired",
+  "auth/invalid-user-token",
+  "auth/user-disabled",
+  "auth/user-not-found",
+]);
+
+// Maps a failure to obtain the caller's ID token. Anything other than an
+// invalidated session (a refresh that could not reach Google, a timeout, a
+// school network or a Chromebook waking from sleep) is retryable.
+export function classifyTokenError(err: unknown): CloudError {
+  const code = err && typeof err === "object" && typeof (err as { code?: unknown }).code === "string"
+    ? (err as { code: string }).code
+    : "";
+  if (TOKEN_SESSION_INVALID.has(code)) return { kind: "auth", code };
+  return { kind: "network", code: code || "token-unavailable" };
+}
+
 function userLabel(user: User): string {
   if (typeof user.displayName === "string" && user.displayName.trim().length > 0) return user.displayName.trim();
   if (typeof user.email === "string" && user.email.length > 0) return user.email;
@@ -127,8 +149,20 @@ export function createLabReportCloudTransport(deps: Deps): LabReportCloudTranspo
   const getCallable = httpsCallable<{ reportId: string }, CloudGetResult>(deps.functions, "labReportsGet");
   const saveCallable = httpsCallable<CloudSaveInput & { reportId: string }, CloudSaveResult>(deps.functions, "labReportsSave");
 
-  const requireUser = (): void => {
-    if (deps.auth.currentUser === null) throw { kind: "auth", code: "signed-out" } satisfies CloudError;
+  // The Firebase Functions SDK silently sends a callable without credentials
+  // when it cannot get the ID token, and the server then answers
+  // "unauthenticated", which looks like an expired sign-in. Fetching the
+  // token first turns a refresh that failed in transit into a retryable
+  // network error, and a callable is never sent without a token. The SDK
+  // reuses this cached token for the call that follows.
+  const requireToken = async (): Promise<void> => {
+    const user = deps.auth.currentUser;
+    if (user === null) throw { kind: "auth", code: "signed-out" } satisfies CloudError;
+    try {
+      await user.getIdToken();
+    } catch (err) {
+      throw classifyTokenError(err);
+    }
   };
 
   return {
@@ -144,12 +178,13 @@ export function createLabReportCloudTransport(deps: Deps): LabReportCloudTranspo
       const provider = new GoogleAuthProvider();
       configureGoogleSignInProvider(provider);
       try {
-        await signInWithPopup(deps.auth, provider);
+        const credential = await signInWithPopup(deps.auth, provider);
+        return { uid: credential.user.uid, label: userLabel(credential.user) };
       } catch (err) {
         const code = err && typeof err === "object" && "code" in err ? String((err as { code?: unknown }).code) : "";
         if (code.includes("popup-blocked") || code.includes("operation-not-supported")) {
           await signInWithRedirect(deps.auth, provider);
-          return;
+          return null;
         }
         throw err;
       }
@@ -158,7 +193,7 @@ export function createLabReportCloudTransport(deps: Deps): LabReportCloudTranspo
       await signOut(deps.auth);
     },
     async get() {
-      requireUser();
+      await requireToken();
       try {
         const result = await getCallable({ reportId: "active" });
         return result.data;
@@ -167,7 +202,7 @@ export function createLabReportCloudTransport(deps: Deps): LabReportCloudTranspo
       }
     },
     async save(input) {
-      requireUser();
+      await requireToken();
       try {
         const result = await saveCallable({
           reportId: "active",

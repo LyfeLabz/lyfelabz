@@ -42,7 +42,7 @@
     offline: 'We could not reach your LyfeLabz account. Your work is saved in this browser and will be saved to your account when you reconnect.',
     retrying: 'Your newest changes have not reached your account yet. Your work is saved in this browser. Trying again...',
     retryLimit: 'Your newest changes could not be saved to your account. Your work is saved in this browser. Check your internet connection, then choose Try again.',
-    auth: 'Your sign-in expired. Sign in again to keep saving to your account. Your work is saved in this browser.',
+    auth: 'Your sign-in expired. Sign in again or choose Try again to keep saving to your account. Your work is saved in this browser.',
     account: 'Your LyfeLabz account cannot save reports right now. Your work is saved in this browser. Ask your teacher for help, then choose Try again.',
     tooLarge: 'Your report is too long to save to your account. Shorten a section, or download a backup file so you do not lose it.',
     invalid: 'Your report could not be saved to your account. Download a backup file, then reload the page.',
@@ -148,7 +148,7 @@
     }
     function actions() {
       if (mode !== 'cloud') return [];
-      if (halt === 'auth') return ['signIn'];
+      if (halt === 'auth') return ['signIn', 'retry'];
       if (halt === 'retryLimit' || halt === 'account' || halt === 'conflictLoad') return ['retry'];
       if (halt === 'offline' && failures >= cfg.maxAutoRetries) return ['retry'];
       if (halt === 'otherTab') return ['takeOver'];
@@ -649,6 +649,7 @@
       if (mode !== 'cloud') return;
       if (halt === 'offline') { failures = 0; retryTimer = clear(retryTimer); confirmCloud(); return; }
       if (halt === 'retryLimit') { flush(true); return; }
+      if (halt === 'auth') { retryAuth(); return; }
       if (halt || inFlight) return;
       if (dirty || inDoubt) { flush(false); return; }
       if (!force && now() - lastCheck < cfg.refreshAfterMs) return;
@@ -665,20 +666,58 @@
       }, function () { /* A failed freshness check changes nothing. */ });
     }
 
+    // ---------- Sign-in recovery ----------
+    // Retries after the server refused this tab's sign-in. Bounded by its
+    // triggers: Try again, returning to the tab, reconnecting, and at most
+    // once a minute while typing. A session that never read the cloud
+    // report reads it first; otherwise the held save is resent.
+    function retryAuth() {
+      if (mode !== 'cloud' || halt !== 'auth' || inFlight) return;
+      failures = 0;
+      retryTimer = clear(retryTimer);
+      if (!cloudConfirmed) {
+        halt = 'offline';
+        lastAttemptAt = now();
+        syncLock();
+        emit();
+        confirmCloud();
+        return;
+      }
+      halt = null;
+      syncLock();
+      flush(true);
+      emit();
+    }
+    // The same student signed in again. Firebase reports a repeat sign-in by
+    // the same account as no auth change, so the page's sign-in result also
+    // arrives here. Saving resumes; a page that fell back to this browser
+    // because the sign-in had expired opens the account report again.
+    function resumeSignedIn(nextUser) {
+      if (!nextUser || !user || nextUser.uid !== user.uid) return;
+      if (mode === 'cloud') {
+        user = nextUser;
+        ui.account({ signedIn: true, user: nextUser });
+        if (halt === 'auth') { retryAuth(); return; }
+        if (halt === 'account') { halt = null; failures = 0; syncLock(); flush(true); emit(); }
+        return;
+      }
+      if (mode === 'device' && deviceReason === 'authExpired') {
+        generation += 1;
+        clearTimers();
+        resetSession();
+        enterCloud(nextUser);
+      }
+    }
+
     // ---------- Auth ----------
     function onAuth(nextUser) {
       var uid = nextUser && nextUser.uid ? nextUser.uid : null;
       var first = !authResolved;
       authResolved = true;
       authTimer = clear(authTimer);
-      if (mode === 'cloud' && user && uid === user.uid) {
-        user = nextUser;
-        ui.account({ signedIn: true, user: nextUser });
-        if (halt === 'auth' || halt === 'account') { halt = null; failures = 0; syncLock(); flush(true); emit(); }
-        return;
-      }
+      if (mode === 'cloud' && user && uid === user.uid) { resumeSignedIn(nextUser); return; }
       if (!first && mode === 'device' && !uid && !user) return;
-      if (!first && mode === 'device' && uid && user && uid === user.uid) return;
+      if (!first && mode === 'device' && uid && user && uid === user.uid) { resumeSignedIn(nextUser); return; }
       if (!first && mode === 'device' && deviceReason === 'authTimeout' && o.deviceEdited()) {
         ui.notice('signedInReload');
         return;
@@ -735,6 +774,7 @@
         writeBackup();
         if (halt === 'retryLimit' || halt === 'auth' || halt === 'account') {
           if (halt === 'retryLimit' && now() - lastAttemptAt >= cfg.retryMaxMs) flush(true);
+          else if (halt === 'auth' && now() - lastAttemptAt >= cfg.retryMaxMs) retryAuth();
         } else if (dirty) {
           schedule(cfg.debounceMs);
         }
@@ -771,7 +811,8 @@
       retry: function () {
         if (mode !== 'cloud') return;
         if (halt === 'conflictLoad') { resolveConflict(); return; }
-        if (halt === 'account' || halt === 'auth') { flush(true); return; }
+        if (halt === 'auth') { retryAuth(); return; }
+        if (halt === 'account') { flush(true); return; }
         failures = 0;
         retryTimer = clear(retryTimer);
         if (halt === 'offline') { confirmCloud(); return; }
@@ -783,7 +824,12 @@
       hasUnsavedWork: function () { return mode === 'cloud' && (dirty || inFlight || inDoubt !== null); },
       onStorage: onStorage,
       onOnline: function () { failures = 0; refresh(true); },
-      signIn: function () { return transport ? transport.signIn() : Promise.resolve(); },
+      signIn: function () {
+        if (!transport) return Promise.resolve();
+        return Promise.resolve(transport.signIn()).then(function (signedIn) {
+          if (signedIn && signedIn.uid) resumeSignedIn(signedIn);
+        });
+      },
       // Waits briefly for unsaved work to reach the account, then asks the
       // page to confirm before signing out with work still unsaved.
       signOut: function (confirmLoss) {

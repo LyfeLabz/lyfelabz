@@ -201,6 +201,53 @@ describe('signed-in student', () => {
     expect(el('report-alert').hidden).toBe(true);
   });
 
+  // Real Firebase fires no auth change when the same student signs in again,
+  // so the fake sign-in below resolves with the account and changes nothing
+  // else. Before the fix these buttons left the page where it was.
+  test('Sign in again after an expired sign-in on opening brings back the account report', async () => {
+    const cloud = fakeCloud();
+    cloud.seed('student-a', savedReport({ investigationQuestion: 'Account question' }), 3);
+    const get = cloud.transport.get;
+    cloud.transport.get = jest.fn().mockRejectedValueOnce({ kind: 'auth' }).mockImplementation(get);
+    mount({ cloud, user: STUDENT_A });
+    await settle();
+    expect(el('cloud-panel').textContent).toContain('Your sign-in expired');
+    expect(el('cloud-status').textContent).toBe('Saved on this device only');
+    expect(el('field-investigationQuestion').value).toBe('');
+    cloud.transport.signIn.mockResolvedValueOnce(STUDENT_A);
+    [...el('cloud-panel').querySelectorAll('button')].find(item => item.textContent === 'Sign in again').click();
+    await settle();
+    expect(el('field-investigationQuestion').value).toBe('Account question');
+    expect(el('cloud-status').textContent).toBe('Saved to cloud');
+    expect(el('cloud-panel').textContent).toContain('Saving to the LyfeLabz account for Student A');
+  });
+
+  test('a save refused for sign-in offers Sign in again and Try again, and both resume saving', async () => {
+    const cloud = fakeCloud();
+    mount({ cloud, user: STUDENT_A });
+    await settle();
+    cloud.failures.push('auth');
+    input('investigationQuestion', 'First question');
+    await advance(2500);
+    expect(el('cloud-status').textContent).toBe('Unable to save - action needed');
+    const labels = () => [...el('report-alert').querySelectorAll('button')].map(item => item.textContent);
+    expect(labels()).toEqual(['Sign in again', 'Try again']);
+    [...el('report-alert').querySelectorAll('button')].find(item => item.textContent === 'Try again').click();
+    await settle();
+    expect(cloud.docs['student-a'].report.responses.investigationQuestion).toBe('First question');
+    expect(el('cloud-status').textContent).toBe('Saved to cloud');
+    cloud.failures.push('auth');
+    input('investigationQuestion', 'Second question');
+    await advance(2500);
+    expect(labels()).toEqual(['Sign in again', 'Try again']);
+    cloud.transport.signIn.mockResolvedValueOnce(STUDENT_A);
+    [...el('report-alert').querySelectorAll('button')].find(item => item.textContent === 'Sign in again').click();
+    await settle();
+    expect(cloud.docs['student-a'].report.responses.investigationQuestion).toBe('Second question');
+    expect(el('cloud-status').textContent).toBe('Saved to cloud');
+    expect(el('report-alert').hidden).toBe(true);
+  });
+
   test('a conflict shows both versions side by side and saves only the chosen one', async () => {
     const cloud = fakeCloud();
     cloud.seed('student-a', savedReport({ claim: 'Version A' }), 1);

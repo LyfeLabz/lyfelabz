@@ -134,6 +134,22 @@ with "Unable to save - action needed" and a Try again button (also retried on
 `online`, on returning to the tab, and at most once a minute while typing).
 Leaving with unsaved cloud changes triggers the browser's leave prompt.
 
+**Sign-in problems** (hotfix after the October 2026 classroom incident).
+The transport fetches the ID token before every callable. The Firebase
+Functions SDK otherwise sends a callable with no credentials when the token
+cannot be fetched, and the server's `unauthenticated` reply looked like an
+expired sign-in. A token that cannot be fetched (for example a refresh that
+fails on a school network or while a Chromebook wakes) is now a retryable
+network error, so the account backup stays open and saving retries. Only an
+invalidated session (`auth/user-token-expired`, `auth/invalid-user-token`,
+`auth/user-disabled`, `auth/user-not-found`) or a server refusal is a
+sign-in problem. Firebase reports no auth change when the same student signs
+in again, so the page's sign-in result resumes the session directly: a save
+held for sign-in is sent, and a page that fell back to this browser at
+opening reopens the account report (offering any browser work first). A
+save refused for sign-in also offers Try again, and retries on returning to
+the tab, on reconnecting, and at most once a minute while typing.
+
 **Statuses** (sticky bar, text plus a colored dot, not color alone):
 `Opening your report...`, `Saving...`, `Saved to cloud`,
 `Saved on this device only`, `Unable to save - action needed`. Problems and

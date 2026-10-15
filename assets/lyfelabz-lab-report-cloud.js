@@ -7935,6 +7935,17 @@
     })();
     return { kind, code: platformCode || code || "unknown" };
   }
+  var TOKEN_SESSION_INVALID = /* @__PURE__ */ new Set([
+    "auth/user-token-expired",
+    "auth/invalid-user-token",
+    "auth/user-disabled",
+    "auth/user-not-found"
+  ]);
+  function classifyTokenError(err) {
+    const code = err && typeof err === "object" && typeof err.code === "string" ? err.code : "";
+    if (TOKEN_SESSION_INVALID.has(code)) return { kind: "auth", code };
+    return { kind: "network", code: code || "token-unavailable" };
+  }
   function userLabel(user) {
     if (typeof user.displayName === "string" && user.displayName.trim().length > 0) return user.displayName.trim();
     if (typeof user.email === "string" && user.email.length > 0) return user.email;
@@ -7943,8 +7954,14 @@
   function createLabReportCloudTransport(deps) {
     const getCallable = httpsCallable(deps.functions, "labReportsGet");
     const saveCallable = httpsCallable(deps.functions, "labReportsSave");
-    const requireUser = () => {
-      if (deps.auth.currentUser === null) throw { kind: "auth", code: "signed-out" };
+    const requireToken = async () => {
+      const user = deps.auth.currentUser;
+      if (user === null) throw { kind: "auth", code: "signed-out" };
+      try {
+        await user.getIdToken();
+      } catch (err) {
+        throw classifyTokenError(err);
+      }
     };
     return {
       version: LAB_REPORT_CLOUD_VERSION,
@@ -7959,12 +7976,13 @@
         const provider = new GoogleAuthProvider();
         configureGoogleSignInProvider(provider);
         try {
-          await signInWithPopup(deps.auth, provider);
+          const credential = await signInWithPopup(deps.auth, provider);
+          return { uid: credential.user.uid, label: userLabel(credential.user) };
         } catch (err) {
           const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
           if (code.includes("popup-blocked") || code.includes("operation-not-supported")) {
             await signInWithRedirect(deps.auth, provider);
-            return;
+            return null;
           }
           throw err;
         }
@@ -7973,7 +7991,7 @@
         await signOut(deps.auth);
       },
       async get() {
-        requireUser();
+        await requireToken();
         try {
           const result = await getCallable({ reportId: "active" });
           return result.data;
@@ -7982,7 +8000,7 @@
         }
       },
       async save(input) {
-        requireUser();
+        await requireToken();
         try {
           const result = await saveCallable({
             reportId: "active",

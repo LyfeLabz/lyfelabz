@@ -259,20 +259,125 @@ describe('fallbacks and identity', () => {
     expect(h.ui.devices).toEqual(['authTimeout']);
   });
 
-  test('expired sign-in during editing keeps work in the browser and resumes after signing in again', async () => {
+  // Real Firebase does not report a repeat sign-in by the same account as an
+  // auth change (onAuthStateChanged compares uids), so these tests sign in
+  // again through the page's sign-in result and never fire a same-uid event.
+  test('expired sign-in during editing keeps work in the browser and Sign in again resumes saving', async () => {
     const server = fakeServer();
     const h = await engine({ server }).start();
     server.failures.push('auth');
     await h.edit(report('Work during expiry'));
     await advance(2500);
-    expect(h.status()).toEqual(expect.objectContaining({ state: 'action', text: 'Unable to save - action needed', actions: ['signIn'] }));
+    expect(h.status()).toEqual(expect.objectContaining({ state: 'action', text: 'Unable to save - action needed', actions: ['signIn', 'retry'] }));
     expect(h.status().detail).toContain('sign-in expired');
     const backup = JSON.parse(h.storage.getItem(Sync.BACKUP_PREFIX + STUDENT_A.uid));
     expect(backup).toEqual(expect.objectContaining({ dirty: true }));
     expect(backup.report.responses.hypothesis).toBe('Work during expiry');
-    h.transport.setUser(STUDENT_A); await settle();
+    h.transport.signIn.mockResolvedValueOnce(STUDENT_A);
+    await h.sync.signIn(); await settle();
     expect(server.current().responses.hypothesis).toBe('Work during expiry');
     expect(h.status().text).toBe('Saved to cloud');
+  });
+
+  test('an expired sign-in when opening falls back to this browser, and Sign in again opens the account report', async () => {
+    const server = fakeServer();
+    server.seed(report('Saved in my account'), 4);
+    server.failures.push('auth');
+    const h = await engine({ server, device: report('Older browser report') }).start();
+    expect(h.ui.devices).toEqual(['authExpired']);
+    expect(h.sync.mode()).toBe('device');
+    h.transport.signIn.mockResolvedValueOnce(STUDENT_A);
+    await h.sync.signIn(); await settle();
+    expect(h.sync.mode()).toBe('cloud');
+    expect(h.ui.renders).toContainEqual(expect.objectContaining({ responses: { hypothesis: 'Saved in my account' } }));
+    // Work typed in this browser while signed out of the account is offered,
+    // never uploaded or discarded silently.
+    expect(h.ui.choices.at(-1).kind).toBe('migrate-both');
+    expect(h.saves()).toHaveLength(0);
+    expect(server.doc.revision).toBe(4);
+  });
+
+  test('signing in as a different student from the expired fallback is left to the auth change', async () => {
+    const server = fakeServer();
+    server.failures.push('auth');
+    const h = await engine({ server }).start();
+    h.transport.signIn.mockResolvedValueOnce(STUDENT_B);
+    await h.sync.signIn(); await settle();
+    expect(h.sync.mode()).toBe('device');
+    expect(h.gets()).toHaveLength(1);
+    h.transport.setUser(STUDENT_B); await settle();
+    expect(h.sync.mode()).toBe('cloud');
+    expect(h.ui.accounts.at(-1)).toEqual({ signedIn: true, user: STUDENT_B });
+  });
+
+  test('Try again resends a save the server refused for sign-in', async () => {
+    const server = fakeServer();
+    const h = await engine({ server }).start();
+    server.failures.push('auth');
+    await h.edit(report('Retry me'));
+    await advance(2500);
+    expect(h.status().actions).toContain('retry');
+    h.sync.retry(); await settle();
+    expect(server.current().responses.hypothesis).toBe('Retry me');
+    expect(h.status().text).toBe('Saved to cloud');
+  });
+
+  test('returning to the tab or reconnecting retries a save refused for sign-in', async () => {
+    const server = fakeServer();
+    const h = await engine({ server }).start();
+    server.failures.push('auth', 'auth');
+    await h.edit(report('Back in the tab'));
+    await advance(2500);
+    expect(h.saves()).toHaveLength(1);
+    h.sync.refresh(false); await settle();
+    expect(h.saves()).toHaveLength(2);
+    expect(h.status().state).toBe('action');
+    h.sync.onOnline(); await settle();
+    expect(h.saves()).toHaveLength(3);
+    expect(server.current().responses.hypothesis).toBe('Back in the tab');
+    expect(h.status().text).toBe('Saved to cloud');
+  });
+
+  test('typing retries a save refused for sign-in at most once a minute', async () => {
+    const server = fakeServer();
+    const h = await engine({ server }).start();
+    server.failures.push('auth');
+    await h.edit(report('One'));
+    await advance(2500);
+    expect(h.saves()).toHaveLength(1);
+    await h.edit(report('One two'));
+    await advance(30000);
+    await h.edit(report('One two three'));
+    expect(h.saves()).toHaveLength(1);
+    await advance(31000);
+    await h.edit(report('One two three four'));
+    // The refused save is resent verbatim (same id), then the newest work.
+    expect(h.saves()[1].saveId).toBe(h.saves()[0].saveId);
+    await advance(2500);
+    expect(server.current().responses.hypothesis).toBe('One two three four');
+    expect(h.status().text).toBe('Saved to cloud');
+  });
+
+  test('a sign-in refused while reconnecting reads the cloud report again before saving', async () => {
+    const server = fakeServer();
+    server.seed(report('Cloud copy'), 3);
+    const storage = memoryStorage();
+    storage.setItem(Sync.BACKUP_PREFIX + STUDENT_A.uid, JSON.stringify({
+      schema: 1, ownerUid: STUDENT_A.uid, baseRevision: 3, dirty: true, tabId: 'old', savedAt: 1, report: report('Cloud copy plus offline work')
+    }));
+    server.down = true;
+    const h = await engine({ server, storage }).start();
+    expect(h.status().text).toBe('Saved on this device only');
+    server.down = false;
+    server.failures.push('auth');
+    await advance(2500);
+    expect(h.status().actions).toEqual(['signIn', 'retry']);
+    expect(h.saves()).toHaveLength(0);
+    const getsBefore = h.gets().length;
+    h.sync.retry(); await advance(250);
+    expect(h.gets()).toHaveLength(getsBefore + 1);
+    expect(h.saves()).toEqual([expect.objectContaining({ expectedRevision: 3 })]);
+    expect(server.current().responses.hypothesis).toBe('Cloud copy plus offline work');
   });
 });
 
