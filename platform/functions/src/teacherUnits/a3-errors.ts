@@ -1,4 +1,6 @@
-/** Stable definitions only; not connected to existing error mappings. */
+/** Stable A3 error definitions. Since A3-3, the shared HTTPS translator
+ * (`shared/errors/https-callable.ts`) maps each code exactly as declared here;
+ * a parity test in `https-callable.test.ts` guards drift. */
 export const A3_ERRORS = Object.freeze({
   "teacherUnits.availabilityClosed": "failed-precondition",
   "teacherUnits.policyMissing": "failed-precondition",

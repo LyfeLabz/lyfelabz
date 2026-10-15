@@ -21,16 +21,25 @@ import {
   type TeacherUnitGrade,
 } from "../shared";
 import {
+  PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
+  type A3Scope,
+  type TeacherUnitsEnforcement,
+  readCompatibility,
+  requireRuntimeIdentity,
+  respondAfterCommit,
+} from "./a3-enforcement";
+import type { MutationCompatibilityV1 } from "./a3-protocol";
+import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
   assertOwnedUnit,
+  authorizeTeacherUnitsTransaction,
   readDescription,
   readExpectedSchoolId,
   readGrade,
   readIdempotencyKey,
   readOwnedTeacherUnit,
   readTitle,
-  reassertTeacherContextInTransaction,
   requestObject,
   safeLog,
   toTeacherUnitView,
@@ -48,8 +57,10 @@ import {
 // U1A `sortOrder` placeholder.
 //
 // Retry safety. Every request carries a client `idempotencyKey`. Inside ONE
-// transaction the handler re-verifies the caller's canonical authorization
-// (user, school, district), then reads the receipt
+// transaction the handler runs the A3-3 authoritative prefix (runtime
+// identity, the caller's canonical authorization, uncached availability and
+// the compatibility envelope; `authorizeTeacherUnitsTransaction`), then reads
+// the receipt
 // `teacherUnitCreateReceipts/{sha256(teacherId, schoolId, key)}`:
 //   - absent: create the unit, the receipt, and the `teacherUnits.created`
 //     audit event atomically;
@@ -63,29 +74,39 @@ import {
 // exactly like a first request (refusals are evaluated before the receipt
 // is read). See docs/platform/TEACHER_UNITS.md.
 //
-// School binding (U2.2, additive). Because the receipt is scoped to the
-// verified school, a same-key retry after a school transfer finds no receipt
-// in the new school and would create a second unit there. A client that
-// sends the optional `expectedSchoolId` (the school its create intent was
-// made in) closes that gap: inside the same transaction, right after the
-// authorization snapshot and BEFORE the receipt is read or anything is
-// written, `expectedSchoolId` must equal the verified school, or the request
-// is refused with `teacherUnits.schoolContextChanged`. This applies to first
-// creates and same-key replays alike. The field is only compared; the
-// school written to the unit, receipt, and audit event is always the
-// server-verified one. Omitting it keeps the U1A behavior exactly, and it is
-// not part of the request hash (an accepted value always equals the
-// receipt's own school), so legacy and school-bound requests with one key
-// replay each other.
+// School binding (U2.2; required by the A3 v2 contract). Because the receipt
+// is scoped to the verified school, a same-key retry after a school transfer
+// finds no receipt in the new school and would create a second unit there.
+// Every request therefore carries `expectedSchoolId` (the school its create
+// intent was made in); a missing or malformed value is refused before any
+// transaction. Inside the transaction, right after the authorization
+// snapshot and BEFORE the receipt is read or anything is written,
+// `expectedSchoolId` must equal the verified school, or the request is
+// refused with `teacherUnits.schoolContextChanged`. This applies to first
+// creates and same-key replays alike. The field is only compared; the school
+// written to the unit, receipt, and audit event is always the
+// server-verified one. Neither it nor the compatibility envelope is part of
+// the request hash or the receipt identity.
+//
+// Firestore SDK reruns (approved A3-3 Option A): a rerun after an earlier
+// attempt actually committed finds this key's receipt and replays the
+// original unit, with no second unit, receipt or audit. A refusal raised
+// inside the transaction is not proof that nothing was written by this
+// request. The bounded ALREADY_EXISTS loop below is not a resubmission after
+// an uncertain outcome: ALREADY_EXISTS is a definite precondition failure of
+// a transaction that did not commit. After a confirmed commit, a failed
+// response read becomes `teacherUnits.responseUnavailable` (outcome
+// unconfirmed); the unit, receipt and audit stand.
 
 export type TeacherUnitsCreateRequest = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description?: string;
   readonly idempotencyKey: string;
-  // U2.2, optional: the school the create intent was made in. Compared with
-  // the verified school; never used as the write's school.
-  readonly expectedSchoolId?: string;
+  // Required: the school the create intent was made in. Compared with the
+  // verified school; never used as the write's school.
+  readonly expectedSchoolId: string;
+  readonly compatibility: MutationCompatibilityV1;
 };
 
 export type TeacherUnitsCreateResponse = {
@@ -100,6 +121,7 @@ const ALLOWED_KEYS: readonly string[] = [
   "description",
   "idempotencyKey",
   "expectedSchoolId",
+  "compatibility",
 ];
 
 type ValidatedCreate = {
@@ -107,26 +129,21 @@ type ValidatedCreate = {
   readonly title: string;
   readonly description: string;
   readonly idempotencyKey: string;
-  // Absent for legacy requests.
-  readonly expectedSchoolId?: string;
+  readonly expectedSchoolId: string;
+  readonly compatibility: MutationCompatibilityV1;
 };
 
 function validateRequest(data: unknown): ValidatedCreate {
   const payload = requestObject(data);
   assertOnlyAllowedKeys(payload, ALLOWED_KEYS);
+  const compatibility = readCompatibility(payload);
   const grade = readGrade(payload.grade);
   const title = readTitle(payload.title);
   const description =
     payload.description === undefined ? "" : readDescription(payload.description);
   const idempotencyKey = readIdempotencyKey(payload);
   const expectedSchoolId = readExpectedSchoolId(payload);
-  return {
-    grade,
-    title,
-    description,
-    idempotencyKey,
-    ...(expectedSchoolId !== undefined ? { expectedSchoolId } : {}),
-  };
+  return { grade, title, description, idempotencyKey, expectedSchoolId, compatibility };
 }
 
 function sha256Hex(value: string): string {
@@ -144,8 +161,11 @@ export function teacherUnitCreateReceiptId(
 }
 
 // Hash of the NORMALIZED request (after trimming and defaulting), so
-// `" Energy "` and `"Energy"` are the same request.
-export function teacherUnitCreateRequestHash(input: ValidatedCreate): string {
+// `" Energy "` and `"Energy"` are the same request. Only the create intent
+// participates: never `expectedSchoolId` or the compatibility envelope.
+export function teacherUnitCreateRequestHash(
+  input: Pick<ValidatedCreate, "grade" | "title" | "description">,
+): string {
   return sha256Hex(JSON.stringify([input.grade, input.title, input.description]));
 }
 
@@ -172,6 +192,7 @@ export type TeacherUnitCreateHooks = {
 const CREATE_ATTEMPTS = 2;
 
 export async function createTeacherUnit(
+  scope: A3Scope,
   actor: TeacherUnitActor,
   input: ValidatedCreate,
   hooks: TeacherUnitCreateHooks = {},
@@ -184,10 +205,10 @@ export async function createTeacherUnit(
     const unitId = teacherUnitsCollectionRef().doc().id;
     try {
       outcome = await runFirestoreTransaction<CreateOutcome>(async (tx) => {
-        const verified = await reassertTeacherContextInTransaction(tx, actor);
+        const verified = await authorizeTeacherUnitsTransaction(tx, scope, actor, input.compatibility);
         // School binding: refused before the receipt read and before any
         // write is staged, for first creates and replays alike.
-        if (input.expectedSchoolId !== undefined && input.expectedSchoolId !== verified.schoolId) {
+        if (input.expectedSchoolId !== verified.schoolId) {
           throw new PlatformError(
             "teacherUnits.schoolContextChanged",
             "The caller's school is not the school this request was made in.",
@@ -274,17 +295,27 @@ export async function createTeacherUnit(
   safeLog(() =>
     log.info("teacherUnits.created", { actorUserId: actor.uid, unitId, grade: input.grade }),
   );
-  if (hooks.afterCommit) await hooks.afterCommit();
-  return { unit: await readOwnedTeacherUnit(actor, unitId), replayed: false };
+  return respondAfterCommit("create", { actorUserId: actor.uid, unitId }, async () => {
+    if (hooks.afterCommit) await hooks.afterCommit();
+    return { unit: await readOwnedTeacherUnit(scope, actor, unitId), replayed: false };
+  });
 }
 
-async function teacherUnitsCreateHandler(
-  request: CallableRequest<unknown>,
-): Promise<TeacherUnitsCreateResponse> {
-  const actor = await assertActiveTeacher(request);
-  const input = validateRequest(request.data);
-  return createTeacherUnit(actor, input);
+// Handler factory. Exported callables bind PRODUCTION_TEACHER_UNITS_ENFORCEMENT;
+// other wiring exists only for server-side tests.
+export function createTeacherUnitsCreateHandler(enforcement: TeacherUnitsEnforcement) {
+  return async function teacherUnitsCreateHandler(
+    request: CallableRequest<unknown>,
+  ): Promise<TeacherUnitsCreateResponse> {
+    const identity = await requireRuntimeIdentity(enforcement);
+    const actor = await assertActiveTeacher(request);
+    const input = validateRequest(request.data);
+    const scope = { identity, enforcement, endpoint: "teacherUnitsCreate" } as const;
+    return createTeacherUnit(scope, actor, input);
+  };
 }
+
+const teacherUnitsCreateHandler = createTeacherUnitsCreateHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
 export const teacherUnitsCreate = platformCallable(teacherUnitsCreateHandler);
 

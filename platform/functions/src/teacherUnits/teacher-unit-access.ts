@@ -17,6 +17,8 @@ import {
   type TeacherUnitRecord,
   type TeacherUnitStatus,
 } from "../shared";
+import { type A3Scope, assertScopeIdentity, enforceManagementAvailability } from "./a3-enforcement";
+import type { MutationCompatibilityV1 } from "./a3-protocol";
 
 // U1A - shared authorization, validation, and projection for the
 // `teacherUnits*` callables. See docs/platform/TEACHER_UNITS.md.
@@ -107,6 +109,24 @@ export async function reassertTeacherContextInTransaction(
   return { uid: actor.uid, schoolId: actor.schoolId, districtId };
 }
 
+// A3-3: the authoritative prefix of every Teacher Units management transaction
+// attempt, in the approved order: runtime identity, canonical reauthorization,
+// then uncached availability (policy, release, evidence, provenance, release
+// authority) and, for mutations, the compatibility envelope. Callers evaluate
+// receipts, replays, no-ops and writes only after this returns. It runs again on
+// every Firestore SDK transaction attempt; nothing is cached.
+export async function authorizeTeacherUnitsTransaction(
+  tx: Transaction,
+  scope: A3Scope,
+  actor: TeacherUnitActor,
+  envelope?: MutationCompatibilityV1,
+): Promise<TeacherUnitActor> {
+  assertScopeIdentity(scope);
+  const verified = await reassertTeacherContextInTransaction(tx, actor);
+  await enforceManagementAvailability(tx, scope, envelope);
+  return verified;
+}
+
 // Ownership: the record's `teacherId` must be the caller and its `schoolId`
 // the caller's canonical school. A missing record, another teacher's
 // record, and a record from another school all produce the SAME refusal,
@@ -121,16 +141,17 @@ export function assertOwnedUnit(
 }
 
 // Authorized consistent read of one owned unit: the canonical
-// authorization and the unit are read in one transaction snapshot. Used by
-// `teacherUnitsGet` and for every post-commit response read, so no response
-// carries unit data under authorization that was revoked before the read.
-// Read-only: the transaction writes nothing.
+// authorization, A3 availability and the unit are read in one transaction
+// snapshot. Used by `teacherUnitsGet` and for every post-commit response
+// read, so no response carries unit data under authorization or availability
+// that was revoked before the read. Read-only: the transaction writes nothing.
 export async function readOwnedTeacherUnit(
+  scope: A3Scope,
   actor: TeacherUnitActor,
   unitId: string,
 ): Promise<TeacherUnitView> {
   return runFirestoreTransaction(async (tx) => {
-    const verified = await reassertTeacherContextInTransaction(tx, actor);
+    const verified = await authorizeTeacherUnitsTransaction(tx, scope, actor);
     const snapshot = await tx.get(teacherUnitDocRef(unitId));
     const record = snapshot.exists ? snapshot.data() : undefined;
     assertOwnedUnit(record, verified);
@@ -195,15 +216,15 @@ export function readIdempotencyKey(payload: Record<string, unknown>): string {
   return key;
 }
 
-// Optional `teacherUnitsCreate.expectedSchoolId` (U2.2): the school the
-// client's create intent was made in. Absent means the legacy (U1A/U2.1)
-// request; when present it must follow the canonical schoolId grammar
+// Required `teacherUnitsCreate.expectedSchoolId` (U2.2; required by the A3
+// v2 contract on first attempts and replays): the school the client's create
+// intent was made in, in the canonical schoolId grammar
 // (`SCHOOL_ID_PATTERN`). It is only ever COMPARED with the server-verified
 // school inside the create transaction; it never supplies or overrides the
-// school a unit, receipt, or audit event is written under.
-export function readExpectedSchoolId(payload: Record<string, unknown>): string | undefined {
+// school a unit, receipt, or audit event is written under. Missing or
+// malformed values are refused before any transaction.
+export function readExpectedSchoolId(payload: Record<string, unknown>): string {
   const value = payload.expectedSchoolId;
-  if (value === undefined) return undefined;
   if (!isCanonicalSchoolId(value)) {
     throw new PlatformError(
       "teacherUnits.invalidExpectedSchoolId",

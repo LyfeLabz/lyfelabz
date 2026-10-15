@@ -16,12 +16,21 @@ import {
   type TeacherUnitRecord,
 } from "../shared";
 import {
+  PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
+  type A3Scope,
+  type TeacherUnitsEnforcement,
+  readCompatibility,
+  requireRuntimeIdentity,
+  respondAfterCommit,
+} from "./a3-enforcement";
+import type { MutationCompatibilityV1 } from "./a3-protocol";
+import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
+  authorizeTeacherUnitsTransaction,
   compareTeacherUnitViews,
   readGrade,
   readUnitId,
-  reassertTeacherContextInTransaction,
   requestObject,
   safeLog,
   toTeacherUnitView,
@@ -39,8 +48,9 @@ import { TEACHER_UNITS_LIST_MAX, listOwnedTeacherUnits } from "./teacher-units-l
 // given `sortOrder = i + 1`.
 //
 // One Firestore transaction:
-//   1. re-verify the caller's canonical authorization
-//      (`reassertTeacherContextInTransaction`);
+//   1. A3-3 authoritative prefix (`authorizeTeacherUnitsTransaction`):
+//      runtime identity, the caller's canonical authorization, uncached
+//      availability and the compatibility envelope;
 //   2. read the caller's units with the same owner-and-school query as
 //      `teacherUnitsList` (no new index) and keep the active units of the
 //      grade;
@@ -71,10 +81,18 @@ import { TEACHER_UNITS_LIST_MAX, listOwnedTeacherUnits } from "./teacher-units-l
 // reorder; they keep their `sortOrder` through archive and restore, and a
 // restored unit is placed by that preserved value (ties: creation time,
 // then id) until the next reorder.
+//
+// Firestore SDK reruns (approved A3-3 Option A): a rerun after an earlier
+// attempt actually committed finds every unit already in position and
+// resolves as a no-op with no second write or audit. A refusal raised inside
+// the transaction is not proof that nothing was written by this request.
+// After a confirmed commit, a failed response read becomes
+// `teacherUnits.responseUnavailable` (outcome unconfirmed).
 
 export type TeacherUnitsReorderRequest = {
   readonly grade: TeacherUnitGrade;
   readonly units: ReadonlyArray<{ readonly unitId: string; readonly expectedRevision: number }>;
+  readonly compatibility: MutationCompatibilityV1;
 };
 
 export type TeacherUnitsReorderResponse = {
@@ -134,8 +152,9 @@ export function readUnitOrder(value: unknown): readonly OrderEntry[] {
 
 function validateRequest(data: unknown): TeacherUnitsReorderRequest {
   const payload = requestObject(data);
-  assertOnlyAllowedKeys(payload, ["grade", "units"]);
-  return { grade: readGrade(payload.grade), units: readUnitOrder(payload.units) };
+  assertOnlyAllowedKeys(payload, ["grade", "units", "compatibility"]);
+  const compatibility = readCompatibility(payload);
+  return { grade: readGrade(payload.grade), units: readUnitOrder(payload.units), compatibility };
 }
 
 type Outcome =
@@ -148,6 +167,7 @@ export type TeacherUnitReorderHooks = {
 };
 
 export async function reorderTeacherUnits(
+  scope: A3Scope,
   actor: TeacherUnitActor,
   input: TeacherUnitsReorderRequest,
   hooks: TeacherUnitReorderHooks = {},
@@ -155,7 +175,7 @@ export async function reorderTeacherUnits(
   let outcome: Outcome;
   try {
     outcome = await runFirestoreTransaction<Outcome>(async (tx) => {
-      const verified = await reassertTeacherContextInTransaction(tx, actor);
+      const verified = await authorizeTeacherUnitsTransaction(tx, scope, actor, input.compatibility);
       const snapshot = await tx.get(
         teacherUnitsCollectionRef()
           .where("teacherId", "==", verified.uid)
@@ -268,20 +288,29 @@ export async function reorderTeacherUnits(
   safeLog(() =>
     log.info("teacherUnits.reordered", { actorUserId: actor.uid, grade: input.grade, moved }),
   );
-  if (hooks.afterCommit) await hooks.afterCommit();
-
   // Post-commit authorized read (same contract as U1A mutations).
-  const units = await listOwnedTeacherUnits(actor, { includeArchived: false, grade: input.grade });
-  return { units, noop: false };
+  return respondAfterCommit("reorder", { actorUserId: actor.uid, grade: input.grade, moved }, async () => {
+    if (hooks.afterCommit) await hooks.afterCommit();
+    const units = await listOwnedTeacherUnits(scope, actor, { includeArchived: false, grade: input.grade });
+    return { units, noop: false };
+  });
 }
 
-async function teacherUnitsReorderHandler(
-  request: CallableRequest<unknown>,
-): Promise<TeacherUnitsReorderResponse> {
-  const actor = await assertActiveTeacher(request);
-  const input = validateRequest(request.data);
-  return reorderTeacherUnits(actor, input);
+// Handler factory. Exported callables bind PRODUCTION_TEACHER_UNITS_ENFORCEMENT;
+// other wiring exists only for server-side tests.
+export function createTeacherUnitsReorderHandler(enforcement: TeacherUnitsEnforcement) {
+  return async function teacherUnitsReorderHandler(
+    request: CallableRequest<unknown>,
+  ): Promise<TeacherUnitsReorderResponse> {
+    const identity = await requireRuntimeIdentity(enforcement);
+    const actor = await assertActiveTeacher(request);
+    const input = validateRequest(request.data);
+    const scope = { identity, enforcement, endpoint: "teacherUnitsReorder" } as const;
+    return reorderTeacherUnits(scope, actor, input);
+  };
 }
+
+const teacherUnitsReorderHandler = createTeacherUnitsReorderHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
 export const teacherUnitsReorder = platformCallable(teacherUnitsReorderHandler);
 

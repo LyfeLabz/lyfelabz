@@ -12,20 +12,41 @@ import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import type { CallableRequest } from "firebase-functions/v2/https";
 
 import { log } from "../shared/logging/logger";
-import { readOwnedTeacherUnit, type TeacherUnitActor } from "./teacher-unit-access";
-import { mutateOwnedTeacherUnit } from "./teacher-unit-mutation";
-import { __teacherUnitsArchiveHandler } from "./teacher-units-archive";
+import type { EndpointName } from "./a3-contracts";
 import {
-  __teacherUnitsCreateHandler,
+  PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
+  RUNTIME_PLACEMENT_FINGERPRINT,
+  TEACHER_UNITS_POLICY_PATH,
+  type A3Scope,
+  type TeacherUnitsEnforcement,
+} from "./a3-enforcement";
+import type { MutationCompatibilityV1 } from "./a3-protocol";
+import { validateCapabilityResponse } from "./a3-protocol";
+import { UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER } from "./a3-release-authority";
+import { isResolvedRuntimeIdentity, resolveRuntimeIdentity, type RuntimeIdentity } from "./a3-runtime-identity";
+import {
+  buildEnabledChain,
+  closedPolicy,
+  emulatorExpectation,
+  matchedProvenance,
+  testVerifier,
+  type EnabledChain,
+} from "./a3-test-support.test";
+import { readOwnedTeacherUnit, type TeacherUnitActor } from "./teacher-unit-access";
+import { mutateOwnedTeacherUnit, type TeacherUnitMutationTarget } from "./teacher-unit-mutation";
+import { createTeacherUnitsArchiveHandler } from "./teacher-units-archive";
+import { createTeacherUnitsCapabilitiesHandler } from "./teacher-units-capabilities";
+import {
   createTeacherUnit,
+  createTeacherUnitsCreateHandler,
   teacherUnitCreateReceiptId,
 } from "./teacher-units-create";
-import { __teacherUnitsGetHandler } from "./teacher-units-get";
-import { __teacherUnitsListHandler, listOwnedTeacherUnits } from "./teacher-units-list";
-import { __teacherUnitsReorderHandler, reorderTeacherUnits } from "./teacher-units-reorder";
-import { __teacherUnitsRestoreHandler } from "./teacher-units-restore";
-import { __teacherUnitsSetResourcesHandler } from "./teacher-units-set-resources";
-import { __teacherUnitsUpdateHandler } from "./teacher-units-update";
+import { createTeacherUnitsGetHandler } from "./teacher-units-get";
+import { createTeacherUnitsListHandler, listOwnedTeacherUnits } from "./teacher-units-list";
+import { createTeacherUnitsReorderHandler, reorderTeacherUnits } from "./teacher-units-reorder";
+import { createTeacherUnitsRestoreHandler } from "./teacher-units-restore";
+import { createTeacherUnitsSetResourcesHandler } from "./teacher-units-set-resources";
+import { createTeacherUnitsUpdateHandler } from "./teacher-units-update";
 
 const PROJECT = "demo-bootstrap";
 const hasEmulator = !!process.env.FIRESTORE_EMULATOR_HOST;
@@ -41,6 +62,110 @@ if (hasEmulator) {
   if (getApps().length === 0) initializeApp({ projectId: PROJECT });
 }
 const db = hasEmulator ? getFirestore() : (undefined as never);
+
+// ---------- A3-3 emulator identity and availability ----------
+//
+// The real A3-2 resolver binds the shared Admin Firestore client to an
+// explicitly injected `demo-bootstrap` local profile BEFORE any test touches
+// Firestore. Production exports never receive a profile (see the A3-3 block at
+// the end of this file). Provenance and the release-authority verdict are
+// TEST-ONLY injections: compiled-artifact provenance cannot match under ts-jest,
+// and A3-6 trust anchors do not exist. The policy and evidence documents are
+// real Firestore records that round-trip through strict A3-1 validation.
+const AUTH_EMULATOR_HOST = "127.0.0.1:9099";
+const EXPECTED = hasEmulator
+  ? emulatorExpectation(PROJECT, {
+      firestoreHost: process.env.FIRESTORE_EMULATOR_HOST,
+      authOrigin: `http://${AUTH_EMULATOR_HOST}`,
+    })
+  : emulatorExpectation(PROJECT);
+const CHAIN: EnabledChain = buildEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT);
+const COMPAT: MutationCompatibilityV1 = CHAIN.compatibility;
+let IDENTITY: RuntimeIdentity;
+
+function emulatorEnforcement(overrides: Partial<TeacherUnitsEnforcement> = {}): TeacherUnitsEnforcement {
+  return {
+    resolveIdentity: async () => {
+      const result = await resolveRuntimeIdentity(EXPECTED);
+      return result.ok ? result.identity : null;
+    },
+    isIdentityCurrent: isResolvedRuntimeIdentity,
+    provenance: () => matchedProvenance(CHAIN.releaseId),
+    verifier: testVerifier(CHAIN),
+    ...overrides,
+  };
+}
+const ENFORCEMENT = emulatorEnforcement();
+const scopeFor = (endpoint: EndpointName): A3Scope => ({ identity: IDENTITY, enforcement: ENFORCEMENT, endpoint });
+const target = (
+  operation: TeacherUnitMutationTarget["operation"],
+  unitId: string,
+  expectedRevision: number,
+): TeacherUnitMutationTarget => ({ operation, unitId, expectedRevision, compatibility: COMPAT });
+
+async function seedEnabledPolicy(chain: EnabledChain = CHAIN): Promise<void> {
+  const batch = db.batch();
+  batch.set(db.doc(TEACHER_UNITS_POLICY_PATH), chain.policy);
+  for (const [path, data] of Object.entries(chain.documents)) batch.set(db.doc(path), data);
+  await batch.commit();
+}
+
+if (hasEmulator) {
+  beforeAll(async () => {
+    process.env.FUNCTIONS_EMULATOR = "true";
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = AUTH_EMULATOR_HOST;
+    // Bind before first use of the shared client; refusing here fails the suite.
+    const result = await resolveRuntimeIdentity(EXPECTED);
+    if (!result.ok) throw new Error("A3-2 emulator runtime identity could not be resolved");
+    IDENTITY = result.identity;
+  });
+  beforeEach(async () => {
+    await seedEnabledPolicy();
+  });
+}
+
+function handlersFor(enforcement: TeacherUnitsEnforcement) {
+  return {
+    capabilities: createTeacherUnitsCapabilitiesHandler(enforcement),
+    create: createTeacherUnitsCreateHandler(enforcement),
+    get: createTeacherUnitsGetHandler(enforcement),
+    list: createTeacherUnitsListHandler(enforcement),
+    update: createTeacherUnitsUpdateHandler(enforcement),
+    archive: createTeacherUnitsArchiveHandler(enforcement),
+    restore: createTeacherUnitsRestoreHandler(enforcement),
+    setResources: createTeacherUnitsSetResourcesHandler(enforcement),
+    reorder: createTeacherUnitsReorderHandler(enforcement),
+  };
+}
+const RAW = handlersFor(ENFORCEMENT);
+
+// The pre-A3 suites exercise unit semantics under an enabled, verified policy:
+// mutations get the current v2 envelope, and creates the caller's token school,
+// unless a test names its own.
+function decorate<R>(
+  handler: (r: CallableRequest<unknown>) => Promise<R>,
+  defaults: (r: CallableRequest<unknown>) => Record<string, unknown>,
+): (r: CallableRequest<unknown>) => Promise<R> {
+  return (r) => {
+    const data = r.data;
+    if (!data || typeof data !== "object" || Array.isArray(data)) return handler(r);
+    return handler({ ...r, data: { ...defaults(r), ...(data as Record<string, unknown>) } });
+  };
+}
+const withCompat = () => ({ compatibility: COMPAT });
+const __teacherUnitsCreateHandler = decorate(RAW.create, (r) => ({
+  compatibility: COMPAT,
+  expectedSchoolId: (r.auth?.token as { schoolId?: unknown } | undefined)?.schoolId,
+}));
+const __teacherUnitsGetHandler = RAW.get;
+const __teacherUnitsListHandler = RAW.list;
+const __teacherUnitsUpdateHandler = decorate(RAW.update, withCompat);
+const __teacherUnitsArchiveHandler = decorate(RAW.archive, withCompat);
+const __teacherUnitsRestoreHandler = decorate(RAW.restore, withCompat);
+const __teacherUnitsSetResourcesHandler = decorate(RAW.setResources, withCompat);
+const __teacherUnitsReorderHandler = decorate(RAW.reorder, withCompat);
+const v2 = <T extends Record<string, unknown>>(input: T, expectedSchoolId: string) =>
+  ({ expectedSchoolId, ...input, compatibility: COMPAT });
 
 type World = {
   readonly schoolId: string;
@@ -165,6 +290,7 @@ d("U1A teacher units (emulator)", () => {
 
   beforeAll(() => {
     jest.spyOn(log, "info").mockImplementation(() => undefined);
+    jest.spyOn(log, "warn").mockImplementation(() => undefined);
   });
 
   beforeEach(async () => {
@@ -349,9 +475,9 @@ d("U1A teacher units (emulator)", () => {
       await db.doc(`users/${w.teacher}`).update({ status: "suspended" });
       await expectCode(
         mutateOwnedTeacherUnit(
+          scopeFor("teacherUnitsUpdate"),
           { uid: w.teacher, schoolId: w.schoolId, districtId: w.districtId },
-          unit.unitId,
-          1,
+          target("update", unit.unitId, 1),
           () => ({ fields: { title: "Late" }, action: "teacherUnits.updated", changedFields: ["title"] }),
         ),
         "account-inactive",
@@ -736,13 +862,13 @@ d("U1A teacher units (emulator)", () => {
     it.each(REVOCATIONS)("get refuses after %s", async (_label, revoke, code) => {
       const unit = await createUnit(w);
       await revoke(w);
-      await expectCode(readOwnedTeacherUnit(actorOf(), unit.unitId), code);
+      await expectCode(readOwnedTeacherUnit(scopeFor("teacherUnitsGet"), actorOf(), unit.unitId), code);
     });
 
     it.each(REVOCATIONS)("list refuses after %s", async (_label, revoke, code) => {
       await createUnit(w);
       await revoke(w);
-      await expectCode(listOwnedTeacherUnits(actorOf(), { includeArchived: true, grade: undefined }), code);
+      await expectCode(listOwnedTeacherUnits(scopeFor("teacherUnitsList"), actorOf(), { includeArchived: true, grade: undefined }), code);
     });
 
     it.each(REVOCATIONS)("mutation refuses after %s and writes nothing", async (_label, revoke, code) => {
@@ -750,7 +876,7 @@ d("U1A teacher units (emulator)", () => {
       const before = await unitData(unit.unitId);
       await revoke(w);
       await expectCode(
-        mutateOwnedTeacherUnit(actorOf(), unit.unitId, 1, () => ({
+        mutateOwnedTeacherUnit(scopeFor("teacherUnitsUpdate"), actorOf(), target("update", unit.unitId, 1), () => ({
           fields: { title: "Late" },
           action: "teacherUnits.updated",
           changedFields: ["title"],
@@ -764,7 +890,7 @@ d("U1A teacher units (emulator)", () => {
     it.each(REVOCATIONS)("create refuses after %s and writes nothing", async (_label, revoke, code) => {
       await revoke(w);
       await expectCode(
-        createTeacherUnit(actorOf(), { grade: "7", title: "Late", description: "", idempotencyKey: freshKey() }),
+        createTeacherUnit(scopeFor("teacherUnitsCreate"), actorOf(), v2({ grade: "7", title: "Late", description: "", idempotencyKey: freshKey() }, w.schoolId)),
         code,
       );
       expect(await unitIdsOwnedBy(w.teacher)).toEqual([]);
@@ -776,7 +902,7 @@ d("U1A teacher units (emulator)", () => {
       await create(w, w.teacher, { grade: "7", title: "Earth", idempotencyKey });
       await db.doc(`users/${w.teacher}`).update({ status: "suspended" });
       await expectCode(
-        createTeacherUnit(actorOf(), { grade: "7", title: "Earth", description: "", idempotencyKey }),
+        createTeacherUnit(scopeFor("teacherUnitsCreate"), actorOf(), v2({ grade: "7", title: "Earth", description: "", idempotencyKey }, w.schoolId)),
         "account-inactive",
       );
     });
@@ -797,27 +923,28 @@ d("U1A teacher units (emulator)", () => {
       const unit = await createUnit(w);
       await expectCode(
         mutateOwnedTeacherUnit(
+          scopeFor("teacherUnitsUpdate"),
           actorOf(),
-          unit.unitId,
-          1,
+          target("update", unit.unitId, 1),
           () => ({ fields: { title: "Committed" }, action: "teacherUnits.updated", changedFields: ["title"] }),
           { afterCommit: () => db.doc(`users/${w.teacher}`).update({ status: "suspended" }).then(() => undefined) },
         ),
-        "account-inactive",
+        "teacherUnits.responseUnavailable",
       );
-      // The write itself committed (with its audit); only the response was refused.
+      // The write itself committed (with its audit); only the response was
+      // refused, as an unconfirmed outcome (A3-3 Decision 2).
       expect(await unitData(unit.unitId)).toMatchObject({ title: "Committed", revision: 2 });
       expect(await auditsFor(unit.unitId)).toHaveLength(2);
     });
 
     it("refuses the create response after a post-commit revocation; the same key later replays the unit", async () => {
       const idempotencyKey = freshKey();
-      const input = { grade: "7" as const, title: "Ambiguous", description: "", idempotencyKey };
+      const input = v2({ grade: "7" as const, title: "Ambiguous", description: "", idempotencyKey }, w.schoolId);
       await expectCode(
-        createTeacherUnit(actorOf(), input, {
+        createTeacherUnit(scopeFor("teacherUnitsCreate"), actorOf(), input, {
           afterCommit: () => db.doc(`users/${w.teacher}`).update({ status: "suspended" }).then(() => undefined),
         }),
-        "account-inactive",
+        "teacherUnits.responseUnavailable",
       );
       const ids = await unitIdsOwnedBy(w.teacher);
       expect(ids).toHaveLength(1);
@@ -1021,14 +1148,14 @@ d("U1A teacher units (emulator)", () => {
 
     it("3b. the same retry bound to A is refused even when the transfer lands between pre-check and transaction", async () => {
       const idempotencyKey = freshKey();
-      const input = { grade: "7" as const, title: "Earth", description: "", idempotencyKey, expectedSchoolId: w.schoolId };
-      await createTeacherUnit(actorOf(), input);
+      const input = v2({ grade: "7" as const, title: "Earth", description: "", idempotencyKey }, w.schoolId);
+      await createTeacherUnit(scopeFor("teacherUnitsCreate"), actorOf(), input);
       await transferToOtherSchool();
       // Pre-check already authorized the teacher in A (stale actor): the
       // in-transaction snapshot refuses it.
-      await expectCode(createTeacherUnit(actorOf(), input), "claim-state-mismatch");
+      await expectCode(createTeacherUnit(scopeFor("teacherUnitsCreate"), actorOf(), input), "claim-state-mismatch");
       // Pre-check authorized the teacher in B: the school binding refuses it.
-      await expectCode(createTeacherUnit(actorOf(w.teacher, w.otherSchoolId), input), "teacherUnits.schoolContextChanged");
+      await expectCode(createTeacherUnit(scopeFor("teacherUnitsCreate"), actorOf(w.teacher, w.otherSchoolId), input), "teacherUnits.schoolContextChanged");
       expect(await unitIdsOwnedBy(w.teacher)).toHaveLength(1);
       expect(await receiptsOwnedBy(w.teacher)).toHaveLength(1);
       expect(await auditsByActor(w.teacher)).toHaveLength(1);
@@ -1060,25 +1187,28 @@ d("U1A teacher units (emulator)", () => {
       expect(await auditsByActor(w.teacher)).toEqual([]);
     });
 
-    it("6. legacy requests without the field keep the U1A behavior (including the legacy cross-school key scope)", async () => {
+    it("6. v2 create requires the field on first attempts and replays (A3-3); a bound key never moves schools", async () => {
       const idempotencyKey = freshKey();
-      const legacy = { grade: "7", title: "Earth", idempotencyKey };
-      const first = await create(w, w.teacher, legacy);
+      const legacy = { grade: "7", title: "Earth", idempotencyKey, compatibility: COMPAT };
+      await expectCode(RAW.create(req(w, w.teacher, legacy)), "teacherUnits.invalidExpectedSchoolId");
+      expect(await unitIdsOwnedBy(w.teacher)).toEqual([]);
+      const first = await create(w, w.teacher, { ...legacy, expectedSchoolId: w.schoolId });
       expect(first.replayed).toBe(false);
-      expect(await create(w, w.teacher, legacy)).toEqual({ replayed: true, unit: first.unit });
-      // Legacy and school-bound requests with one key are the same request.
+      // A replay without the field is refused before any transaction; with it, it replays.
+      await expectCode(RAW.create(req(w, w.teacher, legacy)), "teacherUnits.invalidExpectedSchoolId");
       expect(await create(w, w.teacher, { ...legacy, expectedSchoolId: w.schoolId })).toEqual({
         replayed: true,
         unit: first.unit,
       });
-      await expectCode(create(w, w.teacher, { ...legacy, title: "Other" }), "teacherUnits.idempotencyKeyConflict");
+      await expectCode(
+        create(w, w.teacher, { ...legacy, title: "Other", expectedSchoolId: w.schoolId }),
+        "teacherUnits.idempotencyKeyConflict",
+      );
       expect(await auditsByActor(w.teacher)).toHaveLength(1);
-      // Unchanged legacy semantics: without the binding the key is scoped to
-      // the new school (the gap the field closes for callers that send it).
+      // After a transfer, the same key bound to A is refused and writes nothing in B.
       await transferToOtherSchool();
-      const moved = await inOtherSchool(legacy);
-      expect(moved.replayed).toBe(false);
-      expect((await unitData(moved.unit.unitId))?.schoolId).toBe(w.otherSchoolId);
+      await expectCode(inOtherSchool({ ...legacy, expectedSchoolId: w.schoolId }), "teacherUnits.schoolContextChanged");
+      expect(await unitIdsOwnedBy(w.teacher)).toEqual([first.unit.unitId]);
     });
 
     it.each([[""], [" "], ["has/slash"], ["-leading"], ["trailing-"], ["x".repeat(65)], ["__reserved__"], [42], [null], [true], [["a"]]])(
@@ -1133,7 +1263,7 @@ d("U1A teacher units (emulator)", () => {
       // in-transaction snapshot before the binding is consulted.
       await db.doc(`schools/${w.schoolId}`).update({ districtId: `${w.districtId}-other` });
       await expectCode(
-        createTeacherUnit(actorOf(), { grade: "7", title: "x", description: "", idempotencyKey: freshKey(), expectedSchoolId: w.schoolId }),
+        createTeacherUnit(scopeFor("teacherUnitsCreate"), actorOf(), v2({ grade: "7", title: "x", description: "", idempotencyKey: freshKey() }, w.schoolId)),
         "district-mismatch",
       );
       for (const uid of [w.teacher, w.crossSchoolTeacher, w.student, w.suspendedTeacher]) {
@@ -1182,7 +1312,7 @@ d("U1A teacher units (emulator)", () => {
       // 3 old-school + 2 current-school units with a ceiling of 2: a
       // teacher-only query would read 5 and overflow.
       const newIds = await transferTeacherWithUnits(3, 2);
-      const units = await listOwnedTeacherUnits(actorOf(w.teacher, w.otherSchoolId), {
+      const units = await listOwnedTeacherUnits(scopeFor("teacherUnitsList"), actorOf(w.teacher, w.otherSchoolId), {
         includeArchived: true,
         grade: undefined,
         max: 2,
@@ -1194,11 +1324,11 @@ d("U1A teacher units (emulator)", () => {
       const a = await createUnit(w, "A");
       const b = await createUnit(w, "B");
       const opts = { includeArchived: false, grade: undefined, max: 2 } as const;
-      expect((await listOwnedTeacherUnits(actorOf(), opts)).map((u) => u.unitId)).toEqual([a.unitId, b.unitId]);
+      expect((await listOwnedTeacherUnits(scopeFor("teacherUnitsList"), actorOf(), opts)).map((u) => u.unitId)).toEqual([a.unitId, b.unitId]);
       const c = await createUnit(w, "C");
       await archive(w, w.teacher, { unitId: c.unitId, expectedRevision: 1 });
-      await expectCode(listOwnedTeacherUnits(actorOf(), opts), "teacherUnits.listLimitExceeded");
-      await expectCode(listOwnedTeacherUnits(actorOf(), { ...opts, grade: "8" }), "teacherUnits.listLimitExceeded");
+      await expectCode(listOwnedTeacherUnits(scopeFor("teacherUnitsList"), actorOf(), opts), "teacherUnits.listLimitExceeded");
+      await expectCode(listOwnedTeacherUnits(scopeFor("teacherUnitsList"), actorOf(), { ...opts, grade: "8" }), "teacherUnits.listLimitExceeded");
     });
   });
 
@@ -1226,7 +1356,7 @@ d("U1A teacher units (emulator)", () => {
       const unit = await createUnit(w);
       await db.doc(`schools/${w.schoolId}`).update({ districtId: `${w.districtId}-other` });
       await expectCode(
-        mutateOwnedTeacherUnit(actorOf(), unit.unitId, 1, () => null),
+        mutateOwnedTeacherUnit(scopeFor("teacherUnitsUpdate"), actorOf(), target("update", unit.unitId, 1), () => null),
         "district-mismatch",
       );
     });
@@ -1453,7 +1583,7 @@ d("U1A teacher units (emulator)", () => {
       const actor = actorOf();
       await revoke(w);
       await expectCode(
-        mutateOwnedTeacherUnit(actor, unit.unitId, 1, () => ({
+        mutateOwnedTeacherUnit(scopeFor("teacherUnitsSetResources"), actor, target("setResources", unit.unitId, 1), () => ({
           fields: { resourceIds: [LESSON_A] },
           action: "teacherUnits.resourcesUpdated",
           changedFields: ["resourceIds"],
@@ -1730,7 +1860,7 @@ d("U1A teacher units (emulator)", () => {
       const actor = actorOf();
       await revoke(w);
       await expectCode(
-        reorderTeacherUnits(actor, { grade: "7", units: [at(c), at(b), at(a)] }),
+        reorderTeacherUnits(scopeFor("teacherUnitsReorder"), actor, { grade: "7", units: [at(c), at(b), at(a)], compatibility: COMPAT }),
         code,
       );
       expect(await Promise.all([a, b, c].map(unitData))).toEqual(before);
@@ -1740,13 +1870,144 @@ d("U1A teacher units (emulator)", () => {
       const { a, b } = { a: (await createUnit(w, "A")).unitId, b: (await createUnit(w, "B")).unitId };
       await expectCode(
         reorderTeacherUnits(
+          scopeFor("teacherUnitsReorder"),
           actorOf(),
-          { grade: "7", units: [at(b), at(a)] },
+          { grade: "7", units: [at(b), at(a)], compatibility: COMPAT },
           { afterCommit: async () => { await db.doc(`users/${w.teacher}`).update({ status: "suspended" }); } },
         ),
-        "account-inactive",
+        "teacherUnits.responseUnavailable",
       );
       expect(await unitData(b)).toMatchObject({ sortOrder: 1, revision: 2 });
     });
   });
+});
+
+// ---------- A3-3 transactional enforcement against real Firestore ----------
+
+d("A3-3 enforcement (emulator)", () => {
+  let w: World;
+  const NONCE = "a3_emulator_nonce_0123456789";
+  const A3_LESSON = "earths-layers";
+  const DISCOVERY = { schemaVersion: 2, nonce: NONCE, clientContractVersion: "teacher-units-v2" };
+
+  beforeAll(() => {
+    jest.spyOn(log, "info").mockImplementation(() => undefined);
+    jest.spyOn(log, "warn").mockImplementation(() => undefined);
+  });
+  beforeEach(async () => {
+    w = await seedWorld();
+  });
+
+  const managementRequests = (unitId: string): [keyof ReturnType<typeof handlersFor>, Record<string, unknown>][] => [
+    ["create", { grade: "7", title: "A3", idempotencyKey: freshKey(), expectedSchoolId: w.schoolId, compatibility: COMPAT }],
+    ["get", { unitId }],
+    ["list", {}],
+    ["update", { unitId, expectedRevision: 1, title: "Renamed", compatibility: COMPAT }],
+    ["archive", { unitId, expectedRevision: 1, compatibility: COMPAT }],
+    ["restore", { unitId, expectedRevision: 1, compatibility: COMPAT }],
+    ["setResources", { unitId, expectedRevision: 1, resourceIds: [A3_LESSON], compatibility: COMPAT }],
+    ["reorder", { grade: "7", units: [{ unitId, expectedRevision: 1 }], compatibility: COMPAT }],
+  ];
+
+  it("production exports accept no emulator profile: every endpoint refuses before tenant reads", async () => {
+    expect(process.env.FUNCTIONS_EMULATOR).toBe("true");
+    const unit = await createUnit(w);
+    const production = handlersFor(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
+    await expectCode(production.capabilities(req(w, w.teacher, { ...DISCOVERY, emulatorProfile: EXPECTED })), "teacherUnits.runtimeIdentityUnavailable");
+    for (const [name, data] of managementRequests(unit.unitId)) {
+      await expectCode(production[name](req(w, w.teacher, { ...data, emulatorProfile: EXPECTED })), "teacherUnits.runtimeIdentityUnavailable");
+      await expectCode(production[name](req(w, w.teacher, data)), "teacherUnits.runtimeIdentityUnavailable");
+    }
+    expect(await unitData(unit.unitId)).toMatchObject({ title: "Earth Systems", revision: 1 });
+    expect(await auditsFor(unit.unitId)).toHaveLength(1);
+  });
+
+  it("keeps management unavailable with the UNCONFIGURED verifier over real policy and evidence documents", async () => {
+    const unit = await createUnit(w);
+    const unconfigured = handlersFor(emulatorEnforcement({ verifier: UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER }));
+    for (const [name, data] of managementRequests(unit.unitId)) {
+      await expectCode(unconfigured[name](req(w, w.teacher, data)), "teacherUnits.deploymentIneligible");
+    }
+    const discovery = await unconfigured.capabilities(req(w, w.teacher, DISCOVERY));
+    expect(discovery.teacherUnits.availability).toEqual({ state: "unverified", policyInstanceId: COMPAT.policyInstanceId,
+      policyGeneration: COMPAT.policyGeneration, backendReleaseId: CHAIN.releaseId, deploymentEligible: false });
+    expect(await unitData(unit.unitId)).toMatchObject({ title: "Earth Systems", revision: 1 });
+    expect(await auditsFor(unit.unitId)).toHaveLength(1);
+  });
+
+  it("round-trips the policy and evidence through Firestore into a contract-valid schema 2 declaration", async () => {
+    const response = await RAW.capabilities(req(w, w.teacher, DISCOVERY));
+    expect(validateCapabilityResponse(response, PROJECT).ok).toBe(true);
+    expect(response.backend).toEqual({ projectId: PROJECT, environment: "emulator", region: "us-central1", enforcementVersion: "teacher-units-a3-v1" });
+    expect(response.teacherUnits.availability).toEqual({ state: "enabled", policyInstanceId: COMPAT.policyInstanceId,
+      policyGeneration: COMPAT.policyGeneration, backendReleaseId: CHAIN.releaseId, deploymentEligible: true });
+    expect(response.caller).toEqual({ uid: w.teacher, role: "teacher", schoolId: w.schoolId, districtId: w.districtId });
+    await expectCode(RAW.capabilities(req(w, w.teacher, { schemaVersion: 1, nonce: NONCE, clientContractVersion: "teacher-units-v1" })),
+      "teacherUnits.contractUnsupported");
+  });
+
+  it("honors a closed, missing or malformed policy written to Firestore", async () => {
+    const unit = await createUnit(w);
+    await db.doc(TEACHER_UNITS_POLICY_PATH).set(closedPolicy(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT));
+    for (const [name, data] of managementRequests(unit.unitId)) await expectCode(RAW[name](req(w, w.teacher, data)), "teacherUnits.availabilityClosed");
+    expect((await RAW.capabilities(req(w, w.teacher, DISCOVERY))).teacherUnits.availability.state).toBe("closed");
+    await db.doc(TEACHER_UNITS_POLICY_PATH).delete();
+    await expectCode(RAW.update(req(w, w.teacher, managementRequests(unit.unitId)[3][1])), "teacherUnits.policyMissing");
+    await db.doc(TEACHER_UNITS_POLICY_PATH).set({ ...CHAIN.policy, updatedAt: { seconds: 1, nanoseconds: 0 } });
+    await expectCode(RAW.update(req(w, w.teacher, managementRequests(unit.unitId)[3][1])), "teacherUnits.policyInvalid");
+    await expectCode(RAW.capabilities(req(w, w.teacher, DISCOVERY)), "teacherUnits.policyInvalid");
+    expect(await auditsFor(unit.unitId)).toHaveLength(1);
+  });
+
+  it("refuses a missing release document as deploymentIneligible", async () => {
+    const unit = await createUnit(w);
+    await db.doc(CHAIN.releaseRef).delete();
+    await expectCode(RAW.get(req(w, w.teacher, { unitId: unit.unitId })), "teacherUnits.deploymentIneligible");
+  });
+
+  it("binds mutations to the current generation; a fresh envelope replays a create across generations", async () => {
+    const idempotencyKey = freshKey();
+    const data = { grade: "7", title: "Earth", idempotencyKey, expectedSchoolId: w.schoolId };
+    const first = await RAW.create(req(w, w.teacher, { ...data, compatibility: COMPAT }));
+    const next = buildEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT, { generation: 4 });
+    await seedEnabledPolicy(next);
+    const nextHandlers = handlersFor(emulatorEnforcement({ verifier: testVerifier(next), provenance: () => matchedProvenance(next.releaseId) }));
+    await expectCode(nextHandlers.create(req(w, w.teacher, { ...data, compatibility: COMPAT })), "teacherUnits.policyChanged");
+    await expectCode(
+      nextHandlers.update(req(w, w.teacher, { unitId: first.unit.unitId, expectedRevision: 1, title: "x", compatibility: COMPAT })),
+      "teacherUnits.policyChanged",
+    );
+    const replay = await nextHandlers.create(req(w, w.teacher, { ...data, compatibility: next.compatibility }));
+    expect(replay).toMatchObject({ replayed: true, unit: { unitId: first.unit.unitId } });
+    expect(await unitIdsOwnedBy(w.teacher)).toEqual([first.unit.unitId]);
+    expect(await auditsFor(first.unit.unitId)).toHaveLength(1);
+    expect(await unitData(first.unit.unitId)).toMatchObject({ title: "Earth", revision: 1 });
+  });
+
+  it("reports a post-commit availability loss as responseUnavailable with the write, receipt and audit preserved", async () => {
+    const idempotencyKey = freshKey();
+    const closeAfterCommit = { afterCommit: async () => { await db.doc(TEACHER_UNITS_POLICY_PATH).set(closedPolicy(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT)); } };
+    const details = await expectCode(
+      createTeacherUnit(scopeFor("teacherUnitsCreate"), actorOf(),
+        v2({ grade: "7" as const, title: "Unconfirmed", description: "", idempotencyKey }, w.schoolId), closeAfterCommit),
+      "teacherUnits.responseUnavailable",
+    );
+    expect(details).toEqual({ outcome: "unconfirmed", operation: "create" });
+    const ids = await unitIdsOwnedBy(w.teacher);
+    expect(ids).toHaveLength(1);
+    expect(await receiptsOwnedBy(w.teacher)).toHaveLength(1);
+    expect(await auditsFor(ids[0])).toHaveLength(1);
+    // Once available again, the same key and payload reconcile by replay.
+    await seedEnabledPolicy();
+    const replay = await create(w, w.teacher, { grade: "7", title: "Unconfirmed", idempotencyKey });
+    expect(replay).toMatchObject({ replayed: true, unit: { unitId: ids[0] } });
+  });
+
+  function actorOf(uid: string = w.teacher, schoolId: string = w.schoolId): TeacherUnitActor {
+    return { uid, schoolId, districtId: w.districtId };
+  }
+  async function receiptsOwnedBy(uid: string): Promise<string[]> {
+    const snap = await db.collection("teacherUnitCreateReceipts").where("teacherId", "==", uid).get();
+    return snap.docs.map((doc) => doc.id);
+  }
 });

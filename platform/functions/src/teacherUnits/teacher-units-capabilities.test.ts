@@ -1,37 +1,62 @@
-jest.mock("../shared/firestore/admin", () => ({ getAdminFirestore: () => ({ projectId: "lyfelabz-prod" }) }));
-import type { CallableRequest } from "firebase-functions/v2/https";
+// A3-3 schema 2 discovery request parsing (approved decision record, Decision 1).
+// Transactional discovery behavior, availability declarations and production
+// wiring are covered in teacher-units.test.ts against the hermetic Firestore
+// stand-in. The A2 schema 1 / teacher-units-v1 protocol is retired: legacy
+// requests are refused and no schema 1 response exists.
 import { createHash } from "node:crypto";
-const actor = { uid: "teacher", schoolId: "school", districtId: "district" };
-const authorize = jest.fn();
-const reassert = jest.fn();
-jest.mock("./teacher-unit-access", () => ({
-  ...jest.requireActual("./teacher-unit-access"),
-  assertActiveTeacher: (request: unknown) => authorize(request),
-  reassertTeacherContextInTransaction: (...args: unknown[]) => reassert(...args),
-}));
-jest.mock("../shared", () => ({
-  ...jest.requireActual("../shared"),
-  runFirestoreTransaction: (fn: (tx: unknown) => unknown) => fn(Object.freeze({})),
-}));
-jest.mock("firebase-admin/app", () => ({ getApp: () => ({ options: { projectId: "lyfelabz-prod" } }) }));
-import { __teacherUnitsCapabilitiesHandler as handler, capabilityRuntimeIdentity, TEACHER_UNITS_OPERATIONS } from "./teacher-units-capabilities";
-import { UNIT_PLACEABLE_RESOURCE_ID_LIST } from "./unit-placeable-resources";
+
 import { PlatformError } from "../shared";
-const payload = { schemaVersion: 1, nonce: "0123456789abcdef", clientContractVersion: "teacher-units-v1" };
-const request = (data: unknown) => ({ data }) as CallableRequest<unknown>;
-const original = process.env;
-beforeEach(() => { process.env = { ...original, GCLOUD_PROJECT: "lyfelabz-prod" }; delete process.env.FIREBASE_CONFIG; delete process.env.GOOGLE_CLOUD_PROJECT; delete process.env.FUNCTIONS_EMULATOR; authorize.mockResolvedValue(actor); reassert.mockResolvedValue(actor); jest.clearAllMocks(); });
-afterAll(() => { process.env = original; });
-test("versioned read-only response uses revalidated caller and canonical fingerprint, without availability", async () => {
-  const response = await handler(request(payload));
-  expect(response).toEqual({ schemaVersion: 1, nonce: payload.nonce, backend: { projectId: "lyfelabz-prod", environment: "production", region: "us-central1" }, teacherUnits: { apiContractVersion: "teacher-units-v1", supportedOperations: [...TEACHER_UNITS_OPERATIONS], acceptedClientContractVersions: ["teacher-units-v1"], placementFingerprint: createHash("sha256").update(JSON.stringify(UNIT_PLACEABLE_RESOURCE_ID_LIST)).digest("hex") }, caller: { ...actor, role: "teacher" } });
-  expect(reassert).toHaveBeenCalledTimes(1);
+import * as capabilities from "./teacher-units-capabilities";
+import { RUNTIME_PLACEMENT_FINGERPRINT } from "./a3-enforcement";
+import { UNIT_PLACEABLE_RESOURCE_ID_LIST } from "./unit-placeable-resources";
+
+const { TEACHER_UNITS_OPERATIONS, readCapabilityRequest } = capabilities;
+const valid = { schemaVersion: 2, nonce: "0123456789abcdef", clientContractVersion: "teacher-units-v2" };
+
+function codeOf(fn: () => unknown): string {
+  try {
+    fn();
+  } catch (err) {
+    expect(err).toBeInstanceOf(PlatformError);
+    return (err as PlatformError).code;
+  }
+  return "accepted";
+}
+
+test("accepts exactly the schema 2 / teacher-units-v2 request", () => {
+  expect(readCapabilityRequest({ ...valid })).toEqual(valid);
 });
-test.each([null, [], { ...payload, projectId: "lyfelabz-prod" }, { ...payload, schemaVersion: 2 }, { ...payload, nonce: "short" }, { ...payload, clientContractVersion: "v2" }])("closed schema rejects %p", async (data) => { await expect(handler(request(data))).rejects.toBeInstanceOf(PlatformError); });
-test.each(["unauthenticated", "role-forbidden", "account-inactive", "claim-state-mismatch", "district-mismatch"])("canonical refusal %s propagates", async (code) => { authorize.mockRejectedValue(new PlatformError(code, "Refused")); await expect(handler(request(payload))).rejects.toMatchObject({ code }); expect(reassert).not.toHaveBeenCalled(); });
-test("transactional context refusal propagates", async () => { reassert.mockRejectedValue(new PlatformError("district-mismatch", "Changed")); await expect(handler(request(payload))).rejects.toMatchObject({ code: "district-mismatch" }); });
+
 test.each([
-  [{}, undefined], [{ GCLOUD_PROJECT: "unknown" }, undefined], [{ GCLOUD_PROJECT: "lyfelabz-prod", GOOGLE_CLOUD_PROJECT: "lyfelabz-staging" }, "lyfelabz-prod"], [{ GCLOUD_PROJECT: "lyfelabz-prod", FIREBASE_CONFIG: "bad" }, "lyfelabz-prod"], [{ GCLOUD_PROJECT: "lyfelabz-prod", FUNCTION_REGION: "europe-west1" }, "lyfelabz-prod"], [{ GCLOUD_PROJECT: "lyfelabz-prod", FUNCTIONS_EMULATOR: "maybe" }, "lyfelabz-prod"], [{ GCLOUD_PROJECT: "lyfelabz-prod" }, "lyfelabz-staging"],
-])("ambiguous runtime identity refuses %p", (env, admin) => { expect(() => capabilityRuntimeIdentity(env, admin)).toThrow(PlatformError); });
-test("explicit staging and approved emulator identities", () => { expect(capabilityRuntimeIdentity({ GCLOUD_PROJECT: "lyfelabz-staging" }, "lyfelabz-staging").environment).toBe("staging"); expect(capabilityRuntimeIdentity({ GCLOUD_PROJECT: "demo-bootstrap", FUNCTIONS_EMULATOR: "true" }, "demo-bootstrap").environment).toBe("emulator"); });
-test("resolved database project must agree with runtime identity", () => { expect(() => capabilityRuntimeIdentity({ GCLOUD_PROJECT: "lyfelabz-prod" }, undefined, "lyfelabz-staging")).toThrow(PlatformError); });
+  ["exact A2 v1 request", { schemaVersion: 1, nonce: valid.nonce, clientContractVersion: "teacher-units-v1" }],
+  ["schema 2 with v1 contract", { ...valid, clientContractVersion: "teacher-units-v1" }],
+  ["schema 1 with v2 contract", { ...valid, schemaVersion: 1 }],
+  ["unknown contract", { ...valid, clientContractVersion: "v2" }],
+  ["schema 3", { ...valid, schemaVersion: 3 }],
+])("refuses %s as contractUnsupported", (_label, data) => {
+  expect(codeOf(() => readCapabilityRequest(data))).toBe("teacherUnits.contractUnsupported");
+});
+
+test.each([
+  ["null", null],
+  ["array", []],
+  ["string", "schema 2"],
+  ["empty object", {}],
+  ["unknown field", { ...valid, projectId: "lyfelabz-prod" }],
+  ["missing nonce", { schemaVersion: 2, clientContractVersion: "teacher-units-v2" }],
+  ["short nonce", { ...valid, nonce: "short" }],
+  ["nonce with spaces", { ...valid, nonce: "0123456789 abcdef" }],
+])("refuses %s as invalidRequest", (_label, data) => {
+  expect(codeOf(() => readCapabilityRequest(data))).toBe("teacherUnits.invalidRequest");
+});
+
+test("retires the A2 identity helper and keeps the canonical operation order", () => {
+  expect("capabilityRuntimeIdentity" in capabilities).toBe(false);
+  expect(TEACHER_UNITS_OPERATIONS).toEqual(["create", "list", "get", "update", "archive", "restore", "setResources", "reorder"]);
+});
+
+test("placement fingerprint keeps the existing ordered resourceIds digest bytes", () => {
+  expect(RUNTIME_PLACEMENT_FINGERPRINT).toBe(
+    createHash("sha256").update(JSON.stringify(UNIT_PLACEABLE_RESOURCE_ID_LIST), "utf8").digest("hex"),
+  );
+});

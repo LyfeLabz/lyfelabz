@@ -8,11 +8,17 @@ import {
   type TeacherUnitGrade,
 } from "../shared";
 import {
+  PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
+  type TeacherUnitsEnforcement,
+  requireRuntimeIdentity,
+  type A3Scope,
+} from "./a3-enforcement";
+import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
   compareTeacherUnitViews,
+  authorizeTeacherUnitsTransaction,
   readGrade,
-  reassertTeacherContextInTransaction,
   requestObject,
   toTeacherUnitView,
   type TeacherUnitActor,
@@ -27,7 +33,8 @@ import {
 // ordering clause). Units the teacher created at a previous school are
 // never read. The query runs in the same transaction snapshot that
 // re-verifies the caller's canonical authorization (user, school,
-// district), so a revocation committed before that snapshot is honored.
+// district) and A3-3 availability, so a revocation committed before that
+// snapshot is honored.
 //
 // Archived units are excluded unless `includeArchived` is true; `grade`
 // optionally narrows to one grade. Both filters apply in memory AFTER the
@@ -57,12 +64,13 @@ export type TeacherUnitsListOptions = {
 };
 
 export async function listOwnedTeacherUnits(
+  scope: A3Scope,
   actor: TeacherUnitActor,
   options: TeacherUnitsListOptions,
 ): Promise<readonly TeacherUnitView[]> {
   const max = options.max ?? TEACHER_UNITS_LIST_MAX;
   const { verified, docs } = await runFirestoreTransaction(async (tx) => {
-    const context = await reassertTeacherContextInTransaction(tx, actor);
+    const context = await authorizeTeacherUnitsTransaction(tx, scope, actor);
     const snapshot = await tx.get(
       teacherUnitsCollectionRef()
         .where("teacherId", "==", context.uid)
@@ -88,21 +96,29 @@ export async function listOwnedTeacherUnits(
     .sort(compareTeacherUnitViews);
 }
 
-async function teacherUnitsListHandler(
-  request: CallableRequest<unknown>,
-): Promise<TeacherUnitsListResponse> {
-  const actor = await assertActiveTeacher(request);
-  const payload = requestObject(request.data);
-  assertOnlyAllowedKeys(payload, ["includeArchived", "grade"]);
-  const includeArchived = payload.includeArchived ?? false;
-  if (typeof includeArchived !== "boolean") {
-    throw new PlatformError("teacherUnits.invalidRequest", "includeArchived must be a boolean.");
-  }
-  const grade = payload.grade === undefined ? undefined : readGrade(payload.grade);
+// Handler factory. Exported callables bind PRODUCTION_TEACHER_UNITS_ENFORCEMENT;
+// other wiring exists only for server-side tests.
+export function createTeacherUnitsListHandler(enforcement: TeacherUnitsEnforcement) {
+  return async function teacherUnitsListHandler(
+    request: CallableRequest<unknown>,
+  ): Promise<TeacherUnitsListResponse> {
+    const identity = await requireRuntimeIdentity(enforcement);
+    const actor = await assertActiveTeacher(request);
+    const payload = requestObject(request.data);
+    assertOnlyAllowedKeys(payload, ["includeArchived", "grade"]);
+    const includeArchived = payload.includeArchived ?? false;
+    if (typeof includeArchived !== "boolean") {
+      throw new PlatformError("teacherUnits.invalidRequest", "includeArchived must be a boolean.");
+    }
+    const grade = payload.grade === undefined ? undefined : readGrade(payload.grade);
 
-  const units = await listOwnedTeacherUnits(actor, { includeArchived, grade });
-  return { units };
+    const scope = { identity, enforcement, endpoint: "teacherUnitsList" } as const;
+    const units = await listOwnedTeacherUnits(scope, actor, { includeArchived, grade });
+    return { units };
+  };
 }
+
+const teacherUnitsListHandler = createTeacherUnitsListHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
 export const teacherUnitsList = platformCallable(teacherUnitsListHandler);
 

@@ -1,9 +1,11 @@
 # U2.6 A3 contracts — A3-1
 
 Status: pure contracts and validation only. Teacher Units remains closed by the
-existing application/build gate. A3 server enforcement is not connected. Existing
-A2 capability discovery and mutation dispatch remain unchanged. No policy or
-release record is created by these modules.
+existing application/build gate. No policy or release record is created by these
+modules. At A3-1 certification, A3 server enforcement was not connected and A2
+capability discovery and mutation dispatch were unchanged (historical). A3-3 later
+connects these contracts to the server (`U2_6_A3_3_ENFORCEMENT.md`); the contract
+definitions below are unchanged by it.
 
 Authority: the approved A3 architectural specification and approved A3 contract
 completion supplement. Baseline HEAD is
@@ -282,7 +284,8 @@ A3-3 must enforce canonical authorization, uncached policy, release and activati
 bindings transactionally on every management read/mutation, receipt replay, no-op,
 transaction retry and post-commit response read. Closed discovery remains available
 under canonical authentication. Post-commit refusal becomes responseUnavailable with
-outcome unconfirmed; it does not undo writes. Error translation is not connected here.
+outcome unconfirmed; it does not undo writes. Error translation is not connected by
+A3-1; A3-3 connects it in the shared HTTPS translator.
 
 A3-5 must implement callable-only Rules; A3-6 must implement protected approval,
 provider normalization/observation, IAM/route review, freshness, history/CAS,

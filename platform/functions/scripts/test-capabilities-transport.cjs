@@ -16,8 +16,23 @@ const fixtureModules = path.join(fixture, 'functions/node_modules');
 const installedModules = path.join(root, 'node_modules');
 if (!fs.existsSync(fixtureModules)) fs.symlinkSync(installedModules, fixtureModules, 'dir');
 if (fs.realpathSync(fixtureModules) !== fs.realpathSync(installedModules)) throw new Error('Unexpected fixture dependency root');
-// Load the real compiled endpoint and its dependencies; no mock auth or callable wrapper.
-fs.writeFileSync(path.join(fixture, 'functions/index.cjs'), `exports.teacherUnitsCapabilities = require(${JSON.stringify(path.join(root, 'lib/teacherUnits/teacher-units-capabilities.js'))}).teacherUnitsCapabilities;\n`);
+// Load the real compiled production endpoint, plus a fixture-only endpoint built by the
+// A3-3 handler factory with an explicitly injected demo-bootstrap local profile. The
+// fixture exists only in this disposable directory; production exports accept no profile.
+const lib = (relative) => JSON.stringify(path.join(root, 'lib', relative));
+fs.writeFileSync(path.join(fixture, 'functions/index.cjs'), [
+  `const capabilities = require(${lib('teacherUnits/teacher-units-capabilities.js')});`,
+  `const enforcement = require(${lib('teacherUnits/a3-enforcement.js')});`,
+  `const identity = require(${lib('teacherUnits/a3-runtime-identity.js')});`,
+  `const { platformCallable } = require(${lib('shared/errors/https-callable.js')});`,
+  `const profile = { environment: 'emulator', projectId: 'demo-bootstrap', projectNumber: '0', localProfile: { fingerprint: '${'f'.repeat(64)}', authOrigin: 'http://127.0.0.1:19199', firestoreHost: '127.0.0.1:18080', functionsOrigin: 'http://127.0.0.1:15001' } };`,
+  `exports.teacherUnitsCapabilities = capabilities.teacherUnitsCapabilities;`,
+  `exports.teacherUnitsCapabilitiesFixture = platformCallable({ region: 'us-central1' }, capabilities.createTeacherUnitsCapabilitiesHandler(Object.freeze({`,
+  `  ...enforcement.PRODUCTION_TEACHER_UNITS_ENFORCEMENT,`,
+  `  resolveIdentity: async () => { const result = await identity.resolveRuntimeIdentity(profile); return result.ok ? result.identity : null; },`,
+  `})));`,
+  '',
+].join('\n'));
 fs.writeFileSync(path.join(fixture, 'firebase.json'), JSON.stringify({
   functions:{source:'functions'},
   firestore:{rules:path.join(root,'../firebase/firestore.rules')},

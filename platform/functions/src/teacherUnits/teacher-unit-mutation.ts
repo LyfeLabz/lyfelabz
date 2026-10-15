@@ -12,10 +12,12 @@ import {
   type TeacherUnitRecord,
   type TeacherUnitUpdateWrite,
 } from "../shared";
+import { type A3Scope, type TeacherUnitsMutationOperation, respondAfterCommit } from "./a3-enforcement";
+import type { MutationCompatibilityV1 } from "./a3-protocol";
 import {
   assertOwnedUnit,
+  authorizeTeacherUnitsTransaction,
   readOwnedTeacherUnit,
-  reassertTeacherContextInTransaction,
   safeLog,
   toTeacherUnitView,
   type TeacherUnitActor,
@@ -28,9 +30,10 @@ import {
 // transaction with the same steps (teacher-units-reorder.ts).
 //
 // One Firestore transaction:
-//   1. re-verify the caller's canonical authorization (active teacher, same
-//      school, school still resolves to the verified district; see
-//      `reassertTeacherContextInTransaction`);
+//   1. A3-3 authoritative prefix (`authorizeTeacherUnitsTransaction`):
+//      runtime identity, the caller's canonical authorization (active
+//      teacher, same school, school still resolves to the verified
+//      district), uncached availability and the compatibility envelope;
 //   2. read the unit and verify ownership (uniform `teacherUnits.notFound`);
 //   3. ask the operation for its change against the CURRENT record. The
 //      operation may refuse (e.g. editing an archived unit) or return
@@ -45,12 +48,22 @@ import {
 //      append the audit event, atomically.
 //
 // Every refusal is thrown inside the transaction before any write is
-// staged, so a refused request writes nothing. The no-op response is built
-// from the same snapshot that authorized it. After a write, the response is
-// produced by `readOwnedTeacherUnit` (a second consistent snapshot that
-// re-verifies authorization), so a revocation committed between the write
-// and the response read is honored: the write stands, and the response is
-// refused.
+// staged, so a refused attempt writes nothing. The no-op response is built
+// from the same snapshot that authorized it. After a confirmed commit, the
+// response is produced by `readOwnedTeacherUnit` (a second consistent
+// snapshot that re-verifies authorization and availability). Any failure
+// there becomes `teacherUnits.responseUnavailable` with outcome unconfirmed:
+// the write and its audit stand and are never reported as rolled back.
+//
+// Firestore SDK reruns (approved A3-3 Option A). The SDK may rerun this
+// callback after a commit error whose outcome is unknown. A rerun repeats the
+// whole authoritative prefix. If the earlier attempt actually committed, the
+// rerun observes the committed record: `planChange` returns null and the
+// request resolves as a no-op, with no second write or audit. Because an
+// earlier attempt may have committed, a refusal thrown inside the
+// transaction is never proof that nothing was written by this request; only
+// refusals decided before the transaction starts are. Nothing here resubmits
+// a request after an uncertain outcome.
 //
 // Because the comparison and the write share one transaction, two writers
 // holding the same expected revision can never both commit: the second
@@ -82,17 +95,25 @@ export type TeacherUnitMutationHooks = {
   readonly afterCommit?: () => Promise<void>;
 };
 
+export type TeacherUnitMutationTarget = {
+  readonly operation: Exclude<TeacherUnitsMutationOperation, "create" | "reorder">;
+  readonly unitId: string;
+  readonly expectedRevision: number;
+  readonly compatibility: MutationCompatibilityV1;
+};
+
 export async function mutateOwnedTeacherUnit(
+  scope: A3Scope,
   actor: TeacherUnitActor,
-  unitId: string,
-  expectedRevision: number,
+  target: TeacherUnitMutationTarget,
   planChange: (current: TeacherUnitRecord) => TeacherUnitChange | null,
   hooks: TeacherUnitMutationHooks = {},
 ): Promise<TeacherUnitMutationResponse> {
+  const { unitId, expectedRevision } = target;
   let outcome: Outcome;
   try {
     outcome = await runFirestoreTransaction<Outcome>(async (tx) => {
-      const verified = await reassertTeacherContextInTransaction(tx, actor);
+      const verified = await authorizeTeacherUnitsTransaction(tx, scope, actor, target.compatibility);
 
       const snapshot = await tx.get(teacherUnitDocRef(unitId));
       const current = snapshot.exists ? snapshot.data() : undefined;
@@ -160,11 +181,12 @@ export async function mutateOwnedTeacherUnit(
     log.info(outcome.change.action, { actorUserId: actor.uid, unitId, revision: outcome.revision }),
   );
 
-  if (hooks.afterCommit) await hooks.afterCommit();
-
   // Post-commit authorized read so the response carries resolved server
   // timestamps. Under a concurrent later write this may already show a
   // newer revision; that newer state is the correct base for the caller's
   // next request.
-  return { unit: await readOwnedTeacherUnit(actor, unitId), noop: false };
+  return respondAfterCommit(target.operation, { actorUserId: actor.uid, unitId }, async () => {
+    if (hooks.afterCommit) await hooks.afterCommit();
+    return { unit: await readOwnedTeacherUnit(scope, actor, unitId), noop: false };
+  });
 }

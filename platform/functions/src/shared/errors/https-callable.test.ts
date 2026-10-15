@@ -9,6 +9,7 @@ import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
 
 import { PlatformError } from "./platform-error";
+import { A3_ERRORS } from "../../teacherUnits/a3-errors";
 import {
   mapPlatformCodeToHttpsCode,
   translateThrown,
@@ -297,5 +298,29 @@ describe("translateThrown diagnostic logging", () => {
     const translated = translateThrown(original);
     expect(errorSpy).not.toHaveBeenCalled();
     expect(translated).toBe(original);
+  });
+});
+
+describe("A3-3 Teacher Units error mappings", () => {
+  it("maps every A3 code exactly as teacherUnits/a3-errors.ts declares", () => {
+    const codes = Object.entries(A3_ERRORS);
+    expect(codes).toHaveLength(12);
+    for (const [code, category] of codes) expect(mapPlatformCodeToHttpsCode(code)).toBe(category);
+  });
+
+  it("translates a post-commit responseUnavailable with only stable, client-safe details", () => {
+    const cause = new PlatformError("teacherUnits.deploymentIneligible", "internal release detail");
+    const translated = translateThrown(
+      new PlatformError(
+        "teacherUnits.responseUnavailable",
+        "Your change may have been saved, but it could not be confirmed. Reload your units before trying again.",
+        cause,
+        { outcome: "unconfirmed", operation: "update" },
+      ),
+    );
+    expect(translated).toBeInstanceOf(HttpsError);
+    expect(translated.code).toBe("unavailable");
+    expect(translated.details).toEqual({ code: "teacherUnits.responseUnavailable", outcome: "unconfirmed", operation: "update" });
+    expect(JSON.stringify(translated.toJSON())).not.toContain("internal release detail");
   });
 });

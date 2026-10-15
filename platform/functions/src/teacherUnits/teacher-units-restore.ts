@@ -2,6 +2,13 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 
 import { platformCallable } from "../shared";
 import {
+  PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
+  type TeacherUnitsEnforcement,
+  readCompatibility,
+  requireRuntimeIdentity,
+} from "./a3-enforcement";
+import type { MutationCompatibilityV1 } from "./a3-protocol";
+import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
   readExpectedRevision,
@@ -19,29 +26,41 @@ import { mutateOwnedTeacherUnit, type TeacherUnitMutationResponse } from "./teac
 export type TeacherUnitsRestoreRequest = {
   readonly unitId: string;
   readonly expectedRevision: number;
+  readonly compatibility: MutationCompatibilityV1;
 };
 
 export type TeacherUnitsRestoreResponse = TeacherUnitMutationResponse;
 
-async function teacherUnitsRestoreHandler(
-  request: CallableRequest<unknown>,
-): Promise<TeacherUnitsRestoreResponse> {
-  const actor = await assertActiveTeacher(request);
-  const payload = requestObject(request.data);
-  assertOnlyAllowedKeys(payload, ["unitId", "expectedRevision"]);
-  const unitId = readUnitId(payload);
-  const expectedRevision = readExpectedRevision(payload);
+// Handler factory. Exported callables bind PRODUCTION_TEACHER_UNITS_ENFORCEMENT;
+// other wiring exists only for server-side tests.
+export function createTeacherUnitsRestoreHandler(enforcement: TeacherUnitsEnforcement) {
+  return async function teacherUnitsRestoreHandler(
+    request: CallableRequest<unknown>,
+  ): Promise<TeacherUnitsRestoreResponse> {
+    const identity = await requireRuntimeIdentity(enforcement);
+    const actor = await assertActiveTeacher(request);
+    const payload = requestObject(request.data);
+    assertOnlyAllowedKeys(payload, ["unitId", "expectedRevision", "compatibility"]);
+    const compatibility = readCompatibility(payload);
+    const unitId = readUnitId(payload);
+    const expectedRevision = readExpectedRevision(payload);
+    const scope = { identity, enforcement, endpoint: "teacherUnitsRestore" } as const;
 
-  return mutateOwnedTeacherUnit(actor, unitId, expectedRevision, (current) =>
-    current.status === "active"
-      ? null
-      : {
-          fields: { status: "active", archivedAt: null },
-          action: "teacherUnits.restored",
-          changedFields: ["status", "archivedAt"],
-        },
-  );
+    const target = { operation: "restore", unitId, expectedRevision, compatibility } as const;
+
+    return mutateOwnedTeacherUnit(scope, actor, target, (current) =>
+      current.status === "active"
+        ? null
+        : {
+            fields: { status: "active", archivedAt: null },
+            action: "teacherUnits.restored",
+            changedFields: ["status", "archivedAt"],
+          },
+    );
+  };
 }
+
+const teacherUnitsRestoreHandler = createTeacherUnitsRestoreHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
 export const teacherUnitsRestore = platformCallable(teacherUnitsRestoreHandler);
 

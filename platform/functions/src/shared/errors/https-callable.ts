@@ -140,6 +140,25 @@ const INVALID_ARG_CODES = new Set([
   "teacherUnits.invalidUnitOrder",
 ]);
 
+// A3-3 Teacher Units enforcement. Exact codes and categories, identical to
+// `teacherUnits/a3-errors.ts` (a parity test guards drift). Checked first so
+// no suffix rule can reclassify them; `responseUnavailable` must never fall
+// through to the `failed-precondition` default.
+const A3_TEACHER_UNITS_CODES: ReadonlyMap<string, FunctionsErrorCode> = new Map<string, FunctionsErrorCode>([
+  ["teacherUnits.availabilityClosed", "failed-precondition"],
+  ["teacherUnits.policyMissing", "failed-precondition"],
+  ["teacherUnits.policyInvalid", "failed-precondition"],
+  ["teacherUnits.policyUnavailable", "unavailable"],
+  ["teacherUnits.deploymentIneligible", "failed-precondition"],
+  ["teacherUnits.runtimeIdentityUnavailable", "unavailable"],
+  ["teacherUnits.compatibilityRequired", "failed-precondition"],
+  ["teacherUnits.invalidCompatibility", "invalid-argument"],
+  ["teacherUnits.contractUnsupported", "failed-precondition"],
+  ["teacherUnits.policyChanged", "failed-precondition"],
+  ["teacherUnits.placementMismatch", "failed-precondition"],
+  ["teacherUnits.responseUnavailable", "unavailable"],
+]);
+
 function endsWithAny(code: string, suffixes: readonly string[]): boolean {
   for (const suffix of suffixes) {
     if (code.endsWith(suffix)) return true;
@@ -148,6 +167,8 @@ function endsWithAny(code: string, suffixes: readonly string[]): boolean {
 }
 
 export function mapPlatformCodeToHttpsCode(code: string): FunctionsErrorCode {
+  const a3 = A3_TEACHER_UNITS_CODES.get(code);
+  if (a3 !== undefined) return a3;
   if (RETRIABLE_BEGIN_CODES.has(code)) return "unavailable";
   if (code === "LAUNCH_REF_INVALID") return "failed-precondition";
   if (AUTH_CODES.has(code)) return "unauthenticated";

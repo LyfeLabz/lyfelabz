@@ -2,6 +2,13 @@ import { type CallableRequest } from "firebase-functions/v2/https";
 
 import { PlatformError, TEACHER_UNIT_RESOURCES_MAX, platformCallable } from "../shared";
 import {
+  PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
+  type TeacherUnitsEnforcement,
+  readCompatibility,
+  requireRuntimeIdentity,
+} from "./a3-enforcement";
+import type { MutationCompatibilityV1 } from "./a3-protocol";
+import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
   readExpectedRevision,
@@ -37,11 +44,12 @@ export type TeacherUnitsSetResourcesRequest = {
   readonly unitId: string;
   readonly expectedRevision: number;
   readonly resourceIds: readonly string[];
+  readonly compatibility: MutationCompatibilityV1;
 };
 
 export type TeacherUnitsSetResourcesResponse = TeacherUnitMutationResponse;
 
-const ALLOWED_KEYS: readonly string[] = ["unitId", "expectedRevision", "resourceIds"];
+const ALLOWED_KEYS: readonly string[] = ["unitId", "expectedRevision", "resourceIds", "compatibility"];
 
 export function readResourceIds(value: unknown): readonly string[] {
   if (!Array.isArray(value)) {
@@ -84,7 +92,9 @@ export function readResourceIds(value: unknown): readonly string[] {
 function validateRequest(data: unknown): TeacherUnitsSetResourcesRequest {
   const payload = requestObject(data);
   assertOnlyAllowedKeys(payload, ALLOWED_KEYS);
+  const compatibility = readCompatibility(payload);
   return {
+    compatibility,
     unitId: readUnitId(payload),
     expectedRevision: readExpectedRevision(payload),
     resourceIds: readResourceIds(payload.resourceIds),
@@ -95,31 +105,47 @@ function sameOrderedIds(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((id, i) => id === b[i]);
 }
 
-async function teacherUnitsSetResourcesHandler(
-  request: CallableRequest<unknown>,
-): Promise<TeacherUnitsSetResourcesResponse> {
-  const actor = await assertActiveTeacher(request);
-  const input = validateRequest(request.data);
+// Handler factory. Exported callables bind PRODUCTION_TEACHER_UNITS_ENFORCEMENT;
+// other wiring exists only for server-side tests.
+export function createTeacherUnitsSetResourcesHandler(enforcement: TeacherUnitsEnforcement) {
+  return async function teacherUnitsSetResourcesHandler(
+    request: CallableRequest<unknown>,
+  ): Promise<TeacherUnitsSetResourcesResponse> {
+    const identity = await requireRuntimeIdentity(enforcement);
+    const actor = await assertActiveTeacher(request);
+    const input = validateRequest(request.data);
+    const scope = { identity, enforcement, endpoint: "teacherUnitsSetResources" } as const;
+    const target = {
+      operation: "setResources",
+      unitId: input.unitId,
+      expectedRevision: input.expectedRevision,
+      compatibility: input.compatibility,
+    } as const;
 
-  return mutateOwnedTeacherUnit(actor, input.unitId, input.expectedRevision, (current) => {
-    if (current.status !== "active") {
-      throw new PlatformError(
-        "teacherUnits.invalidStatus",
-        "An archived unit cannot be edited. Restore it first.",
-      );
-    }
-    if (sameOrderedIds(current.resourceIds, input.resourceIds)) return null;
-    return {
-      fields: { resourceIds: [...input.resourceIds] },
-      action: "teacherUnits.resourcesUpdated",
-      changedFields: ["resourceIds"],
-      auditPayload: {
-        previousResourceCount: current.resourceIds.length,
-        resourceCount: input.resourceIds.length,
-      },
-    };
-  });
+    return mutateOwnedTeacherUnit(scope, actor, target, (current) => {
+      if (current.status !== "active") {
+        throw new PlatformError(
+          "teacherUnits.invalidStatus",
+          "An archived unit cannot be edited. Restore it first.",
+        );
+      }
+      if (sameOrderedIds(current.resourceIds, input.resourceIds)) return null;
+      return {
+        fields: { resourceIds: [...input.resourceIds] },
+        action: "teacherUnits.resourcesUpdated",
+        changedFields: ["resourceIds"],
+        auditPayload: {
+          previousResourceCount: current.resourceIds.length,
+          resourceCount: input.resourceIds.length,
+        },
+      };
+    });
+  };
 }
+
+const teacherUnitsSetResourcesHandler = createTeacherUnitsSetResourcesHandler(
+  PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
+);
 
 export const teacherUnitsSetResources = platformCallable(teacherUnitsSetResourcesHandler);
 
