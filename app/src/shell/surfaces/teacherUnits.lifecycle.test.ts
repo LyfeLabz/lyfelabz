@@ -155,7 +155,7 @@ const LOCATION_CLAIMS = {
 const retained = (h: H, text: string) => notices(h, text);
 // The single retained conflict notice for unit "Plants".
 const plantsConflict = (h: H) => {
-  const all = retained(h, "nothing was removed");
+  const all = retained(h, "couldn't confirm whether it was removed");
   expect(all).toHaveLength(1);
   return all[0];
 };
@@ -204,7 +204,7 @@ describe("notice context follows the current state and view", () => {
     expect(n.textContent).not.toContain(LOCATION_CLAIMS.archived);
     expect(n.textContent).not.toContain(LOCATION_CLAIMS.hidden);
     // The historical fact is unchanged throughout.
-    expect(n.textContent).toContain("This unit changed since it was loaded here, so nothing was removed.");
+    expect(n.textContent).toContain("This unit changed since it was loaded here, so LyfeLabz couldn't confirm whether it was removed.");
   });
 
   test("C: authoritative absence, then positive evidence", async () => {
@@ -248,11 +248,11 @@ describe("notice context follows the current state and view", () => {
     h.calls.get[1].d.resolve({ unit: { ...a, revision: 5 } });
     await tick(); // notice 2: conflict in the card
     await checkWith(h, [archived(a, 6)]); // archived again: both hidden
-    const both = [...retained(h, "couldn't confirm"), ...retained(h, "nothing was removed")];
+    const both = [...retained(h, "couldn't confirm").filter(n => !(n.textContent ?? "").includes("since it was loaded here")), ...retained(h, "since it was loaded here, so LyfeLabz couldn't confirm whether it was removed")];
     expect(both).toHaveLength(2);
     for (const n of both) expect(n.textContent).toContain(LOCATION_CLAIMS.archived);
     await toggleArchived(h, true, [archived(a, 6)]);
-    for (const n of [...retained(h, "couldn't confirm"), ...retained(h, "nothing was removed")]) {
+    for (const n of [...retained(h, "couldn't confirm").filter(n => !(n.textContent ?? "").includes("since it was loaded here")), ...retained(h, "since it was loaded here, so LyfeLabz couldn't confirm whether it was removed")]) {
       expect(n.textContent).not.toContain(LOCATION_CLAIMS.hidden);
     }
   });
@@ -266,9 +266,9 @@ describe("notice context follows the current state and view", () => {
     h.calls.get[1].d.resolve({ unit: { ...b, revision: 2 } });
     await tick();
     await checkWith(h, [archived(a, 3), { ...b, revision: 2 }]);
-    const [pn] = retained(h, `"Plants"`).filter((e) => (e.textContent ?? "").includes("nothing was removed"));
+    const [pn] = retained(h, `"Plants"`).filter((e) => (e.textContent ?? "").includes("couldn't confirm whether it was removed"));
     expect(pn.textContent).toContain(LOCATION_CLAIMS.archived);
-    const wn = retained(h, "nothing was removed").filter((e) => !(e.textContent ?? "").includes(`"Plants"`));
+    const wn = retained(h, "couldn't confirm whether it was removed").filter((e) => !(e.textContent ?? "").includes(`"Plants"`));
     expect(wn).toHaveLength(1);
     expect(wn[0].textContent).toContain(LOCATION_CLAIMS.shown);
     expect(wn[0].textContent).not.toContain(LOCATION_CLAIMS.archived);
@@ -298,10 +298,10 @@ describe("notice context follows the current state and view", () => {
     await checkWith(h, [archived(a, 3), archived(b, 3)]);
     await toggleArchived(h, true, [archived(a, 3), archived(b, 3)]);
     await toggleArchived(h, false, []);
-    const plants = retained(h, "nothing was removed").find((e) => (e.textContent ?? "").includes(`"Plants"`)) as HTMLElement;
+    const plants = retained(h, "couldn't confirm whether it was removed").find((e) => (e.textContent ?? "").includes(`"Plants"`)) as HTMLElement;
     expect(plants.textContent).toContain(LOCATION_CLAIMS.archived);
     (plants.querySelector("button") as HTMLButtonElement).click();
-    const left = retained(h, "nothing was removed");
+    const left = retained(h, "couldn't confirm whether it was removed");
     expect(left).toHaveLength(1);
     expect(left[0].textContent).toContain(`"Water"`);
   });

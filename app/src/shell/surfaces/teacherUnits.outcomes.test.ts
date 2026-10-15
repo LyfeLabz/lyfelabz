@@ -194,9 +194,9 @@ describe("B: outcomes of separate operations do not overwrite one another", () =
     await tick();
     h.calls.get[1].d.resolve({ unit: { ...a, revision: 5 } });
     await tick();
-    expect(notices(h, "nothing was removed")).toHaveLength(1);
+    expect(notices(h, "couldn't confirm whether it was removed")).toHaveLength(1);
     await refreshWith(h, []); // the card leaves; its notice moves
-    expect(notices(h, "nothing was removed")).toHaveLength(1);
+    expect(notices(h, "couldn't confirm whether it was removed")).toHaveLength(1);
     expect(notices(h, "couldn't confirm whether your change was saved")).toHaveLength(1);
   });
 
@@ -243,7 +243,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
     await tick();
     h.calls.get[0].d.resolve({ unit: { ...a, revision: 2 } });
     await tick();
-    const inCard = notices(h, "nothing was removed");
+    const inCard = notices(h, "couldn't confirm whether it was removed");
     expect(inCard).toHaveLength(1);
     // While the card is shown, saying so is accurate.
     expect(inCard[0].textContent).toContain("Its current resources are shown.");
@@ -253,7 +253,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
   test("conflict, then archived elsewhere (hidden)", async () => {
     const { h, a, b } = await visibleConflict();
     await checkWith(h, [archived(a, 3), b]);
-    const moved = notices(h, "nothing was removed");
+    const moved = notices(h, "couldn't confirm whether it was removed");
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
     expect(moved[0].textContent).toContain(
@@ -265,7 +265,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
   test("conflict, then found absent by a full check", async () => {
     const { h, b } = await visibleConflict();
     await checkWith(h, [b]);
-    const moved = notices(h, "nothing was removed");
+    const moved = notices(h, "couldn't confirm whether it was removed");
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
     expect(moved[0].textContent).toContain("This unit is no longer in your units.");
@@ -274,7 +274,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
   test("conflict, then omitted by a refresh", async () => {
     const { h, b } = await visibleConflict();
     await refreshWith(h, [b]);
-    const moved = notices(h, "nothing was removed");
+    const moved = notices(h, "couldn't confirm whether it was removed");
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
     expect(moved[0].textContent).toContain("This unit's current state hasn't been confirmed. Choose Check for changes to see it.");
@@ -287,7 +287,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
     await refreshWith(h, [b]);
     await confirmRemove(h, 1, b, [R2.id], 2);
     expect(status(h.host)).toBe(`Removed "${R1.title}" from "Water".`);
-    const moved = notices(h, "nothing was removed");
+    const moved = notices(h, "couldn't confirm whether it was removed");
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
     expect(a.unitId).toBeTruthy();
@@ -322,7 +322,7 @@ describe("B: every completion order of three hidden-unit outcomes", () => {
       const label = order.join(",");
       expect([label, notices(h, `Removed "${R1.title}" from "Plants"`).length]).toEqual([label, 1]);
       expect([label, notices(h, `"Water": LyfeLabz couldn't confirm`).length]).toEqual([label, 1]);
-      expect([label, notices(h, `"Rocks": This unit was archived, so nothing was removed`).length]).toEqual([label, 1]);
+      expect([label, notices(h, `"Rocks": This unit was archived, so LyfeLabz couldn't confirm whether it was removed`).length]).toEqual([label, 1]);
       expect([label, notices(h, "Its current resources are shown").length]).toEqual([label, 0]);
     }
   });

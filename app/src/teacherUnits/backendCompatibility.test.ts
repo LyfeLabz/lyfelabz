@@ -8,7 +8,7 @@ const callable = jest.fn();
 jest.mock("firebase/auth", () => ({ onIdTokenChanged: (_auth: unknown, callback: (user: User | null) => void) => { listener = callback; return unsubscribe; } }));
 jest.mock("firebase/functions", () => ({ httpsCallable: () => callable }));
 jest.mock("./placeableResources", () => ({ getPlaceableResources: () => [{ id: "one" }] }));
-import { assertTeacherUnitsTransport, createTeacherUnitsMutationVerifier, REQUIRED_OPERATIONS, TeacherUnitsCompatibilityError, trustedTeacherUnitsEnvironment, validateTeacherUnitsCapability } from "./backendCompatibility";
+import { assertTeacherUnitsTransport, createTeacherUnitsMutationVerifier, createTeacherUnitsV1Handshake, REQUIRED_OPERATIONS, TeacherUnitsCompatibilityError, trustedTeacherUnitsEnvironment, validateTeacherUnitsCapability } from "./backendCompatibility";
 const expected = { projectId: "lyfelabz-prod", environment: "emulator", region: "us-central1" };
 const caller = { uid: "t", schoolId: "s", districtId: "d" };
 const response = (nonce = "nonce", placementFingerprint = "fingerprint") => ({ schemaVersion: 1, nonce, backend: expected, teacherUnits: { apiContractVersion: "teacher-units-v1", acceptedClientContractVersions: ["teacher-units-v1"], supportedOperations: [...REQUIRED_OPERATIONS], placementFingerprint }, caller: { ...caller, role: "teacher" } });
@@ -56,7 +56,7 @@ beforeEach(() => {
     return { data: response(req.nonce, Buffer.from(digest).toString("hex")) };
   });
 });
-const verifier = () => createTeacherUnitsMutationVerifier(functions, auth, () => session);
+const verifier = () => createTeacherUnitsV1Handshake(functions, auth, () => session);
 test("fresh request per verification; permit rechecks session and app", async () => {
   const verify = verifier();
   (await verify())();
@@ -138,4 +138,9 @@ test("unused permits expire and release their auth observer", async () => {
   expect(unused).toThrow(TeacherUnitsCompatibilityError);
   expect(unsubscribe).toHaveBeenCalledTimes(2);
   jest.useRealTimers();
+});
+
+test("A3-4: the v1 handshake yields no envelope, so every mutation permit refuses locally", async () => {
+  const permit = await createTeacherUnitsMutationVerifier(functions, auth, () => session)();
+  expect(permit).toThrow(TeacherUnitsCompatibilityError);
 });

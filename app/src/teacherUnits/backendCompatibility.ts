@@ -5,6 +5,7 @@ import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 import { getPlaceableResources } from "./placeableResources";
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
+import type { MutationCompatibilityV1 } from "./a3Protocol";
 const VERSION = "teacher-units-v1";
 export const REQUIRED_OPERATIONS = Object.freeze(["create", "list", "get", "update", "archive", "restore", "setResources", "reorder"]);
 export { TeacherUnitsCompatibilityError } from "./compatibilityError";
@@ -75,8 +76,26 @@ export function assertTeacherUnitsTransport(functions: Functions, auth: Auth, ex
   if (auth.emulatorConfig && (auth.emulatorConfig.host !== "127.0.0.1" || auth.emulatorConfig.port !== 9099 || auth.emulatorConfig.protocol !== "http"))
     refuse();
 }
-export type TeacherUnitsMutationVerifier = () => Promise<() => void>;
+// A3-4: a single-use permit that rechecks the verified context and returns
+// the A3-3 mutation `compatibility` envelope obtained by the same fresh
+// discovery. The envelope is attached immediately before dispatch and never
+// persisted (U2_6_A3_CONTRACTS.md, Protocol).
+export type TeacherUnitsMutationVerifier = () => Promise<() => MutationCompatibilityV1>;
+export type TeacherUnitsV1Handshake = () => Promise<() => void>;
 export function createTeacherUnitsMutationVerifier(functions: Functions, auth: Auth, readSession: () => CompatibilitySession | null): TeacherUnitsMutationVerifier {
+  const handshake = createTeacherUnitsV1Handshake(functions, auth, readSession);
+  // The A2 v1 handshake declares no policy identity, so no envelope can be
+  // formed and every mutation is refused locally before dispatch. A3-4 v2
+  // discovery replaces this handshake.
+  return async () => {
+    const permit = await handshake();
+    return () => {
+      permit();
+      return refuse();
+    };
+  };
+}
+export function createTeacherUnitsV1Handshake(functions: Functions, auth: Auth, readSession: () => CompatibilitySession | null): TeacherUnitsV1Handshake {
   // Resolve expectations only when the closed release permits construction.
   requireTeacherUnitsAvailable();
   const expected = trustedTeacherUnitsEnvironment(window.location.origin);

@@ -478,6 +478,36 @@ describe("Check for changes", () => {
     expect(h.c.setResources).toHaveBeenCalledTimes(1);
   });
 
+  test("A3-3: responseUnavailable after a remove reads as unconfirmed, never resent", async () => {
+    const a = unit();
+    const h = await panel([a]);
+    press(btn(h, `units-resource-remove-${a.unitId}-${R1.id}`));
+    last(h, "setResources").d.reject(Object.assign(new Error("x"), {
+      code: "unavailable",
+      details: { code: "teacherUnits.responseUnavailable", outcome: "unconfirmed", operation: "setResources" },
+    }));
+    await tick();
+    last(h, "get").d.reject(LOST());
+    await tick();
+    const notice = noticeOf(h, a) as HTMLElement;
+    expect(notice.textContent).toContain("Choose Check for changes before trying again.");
+    expect(h.c.setResources).toHaveBeenCalledTimes(1);
+  });
+
+  test("A3-3: an availability refusal on a check names availability, not the connection", async () => {
+    const a = unit();
+    const h = await panel([a]);
+    press(btn(h, "units-check-changes"));
+    last(h, "list").d.reject(Object.assign(new Error("x"), {
+      code: "failed-precondition",
+      details: { code: "teacherUnits.availabilityClosed" },
+    }));
+    await tick();
+    const alert = q(h.host, "units-list-state")?.querySelector("[role=alert]")?.textContent ?? "";
+    expect(alert).toContain("because Teacher Units isn't available right now");
+    expect(alert).not.toContain("connection");
+  });
+
   test("a failed check shows the list alert, clears its pending message, and announces no success", async () => {
     const a = unit();
     const h = await panel([a]);
@@ -548,7 +578,7 @@ describe("messages", () => {
     last(h, "get").d.resolve({ unit: next(a, { title: "Theirs" }) });
     await tick();
     const text = noticeOf(h, a)?.textContent ?? "";
-    expect(text).toContain("This unit changed since it was loaded here, so your change wasn't saved.");
+    expect(text).toContain("This unit changed since it was loaded here, so LyfeLabz couldn't confirm whether your change was saved.");
     expect(h.host.textContent).not.toMatch(/somewhere else|another (person|teacher|session)/);
   });
 
@@ -820,5 +850,63 @@ describe("F3: confirmed and uncertain membership outcomes stay distinct", () => 
     last(h, "get").d.resolve({ unit: a });
     await tick();
     expect(noticeOf(h, a)?.textContent).toContain("LyfeLabz couldn't confirm whether your change was saved.");
+  });
+});
+
+// A3-3 section 5.1 (Option A): writeConflict and invalidStatus come from a
+// transaction attempt. An earlier SDK attempt of the SAME request may already
+// have committed, so the panel must not claim the change was not saved, and
+// must never resend. Reproduces the certification probes.
+describe("A3-3 transaction-attempt refusals after an earlier committed attempt", () => {
+  const editTo = (h: H, a: TeacherUnit, value: string) => {
+    btn(h, `units-edit-${a.unitId}`).click();
+    (q(h.host, `units-edit-title-${a.unitId}`) as HTMLInputElement).value = value;
+    press(btn(h, `units-edit-save-${a.unitId}`));
+  };
+
+  test("writeConflict: the reread shows the committed rename, the notice says unconfirmed, nothing is resent", async () => {
+    const a = unit();
+    const h = await panel([a]);
+    editTo(h, a, "Renamed");
+    await tick();
+    last(h, "update").d.reject(CONFLICT());
+    await tick();
+    // The earlier attempt committed: the authoritative read holds the rename.
+    last(h, "get").d.resolve({ unit: next(a, { title: "Renamed" }) });
+    await tick();
+    const text = noticeOf(h, a)?.textContent ?? "";
+    expect(text).toContain("so LyfeLabz couldn't confirm whether your change was saved");
+    expect(text).not.toMatch(/wasn't saved|was not saved|weren't saved|nothing was/);
+    expect(text).toContain('"Renamed"');
+    expect(h.c.update).toHaveBeenCalledTimes(1);
+    expect(h.ctl.getKnownUnit(a.unitId)?.title).toBe("Renamed");
+  });
+
+  test("invalidStatus: the reread shows the committed rename on an archived unit, unconfirmed, nothing is resent", async () => {
+    const a = unit();
+    const h = await panel([a]);
+    editTo(h, a, "Renamed");
+    await tick();
+    last(h, "update").d.reject({ details: { code: "teacherUnits.invalidStatus" } });
+    await tick();
+    last(h, "get").d.resolve({ unit: archivedOf(next(a, { title: "Renamed" })) });
+    await tick();
+    const card = q(h.host, `units-card-${a.unitId}`)?.textContent ?? "";
+    expect(card).toContain("This unit was archived, so LyfeLabz couldn't confirm whether your changes were saved.");
+    expect(card).not.toMatch(/wasn't saved|was not saved|weren't saved/);
+    expect(h.c.update).toHaveBeenCalledTimes(1);
+    expect(h.ctl.getKnownUnit(a.unitId)).toMatchObject({ status: "archived", title: "Renamed" });
+  });
+
+  test("a no-op response is not reported as the whole request changing nothing", async () => {
+    const a = unit();
+    const h = await panel([a]);
+    editTo(h, a, "Renamed");
+    await tick();
+    last(h, "update").d.resolve({ unit: next(a, { title: "Renamed" }), noop: true });
+    await tick();
+    expect(status(h)).toBe("No change was needed when this request was checked.");
+    expect(status(h)).not.toMatch(/made no changes|Nothing was changed/);
+    expect(h.c.update).toHaveBeenCalledTimes(1);
   });
 });

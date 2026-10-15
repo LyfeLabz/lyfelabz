@@ -14,6 +14,7 @@ import {
 } from "./unitsController";
 import { createTeacherUnitCreateAttemptStore } from "./createAttemptStore";
 import { getPlaceableResources } from "./placeableResources";
+import { isSafeToResend } from "./errors";
 import type { TeacherUnit, TeacherUnitsCallables } from "./types";
 import type { TeacherUnitCreateContext } from "./saveCoordination";
 
@@ -294,6 +295,25 @@ describe("concurrency and failures", () => {
     await expect(third).resolves.toEqual({ kind: "busy" });
     await first;
     expect(c.setResources).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([
+    "teacherUnits.responseUnavailable",
+    "teacherUnits.availabilityClosed",
+    "teacherUnits.policyChanged",
+  ])("A3-3 %s after a possible commit: one call, a read, never a resend", async (code) => {
+    const u = unit();
+    const { c, units } = server([u]);
+    c.setResources.mockImplementationOnce(async () => {
+      units.set(u.unitId, { ...u, resourceIds: [R1], revision: 2 });
+      throw Object.assign(new Error("x"), { code: "unavailable", details: { code, outcome: "unconfirmed", operation: "setResources" } });
+    });
+    const ctl = mount(c);
+    await flush();
+    const r = await ctl.addResources(u.unitId, [R1]);
+    expect(r).toMatchObject({ kind: "uncertain", error: { category: "unconfirmed" } });
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    expect(listed(ctl, u.unitId)?.resourceIds).toEqual([R1]);
   });
 
   test("lost response: one call, then a read; uncertain with the authoritative unit", async () => {
@@ -753,5 +773,59 @@ describe("production seam context guard (P2)", () => {
     const src = fs.readFileSync(path.join(__dirname, "../index.ts"), "utf8");
     // Bound to the run's own session (see unitsController.recert.test.ts).
     expect(src).toMatch(/readActiveTeacher: bootstrapActiveTeacherReader\(\{\s*runToken,\s*session,/);
+  });
+});
+
+// A3-3 section 5.1: refusals from a transaction attempt are not proof that the
+// request wrote nothing. The controller rereads (never resends) and reports
+// current state without asserting either outcome.
+describe("A3-3 transaction-attempt refusals after an earlier committed attempt", () => {
+  test("writeConflict: one call, an authoritative reread showing the committed write, conflict kind", async () => {
+    const u = unit();
+    const { c, units } = server([u]);
+    c.update.mockImplementationOnce(async () => {
+      units.set(u.unitId, { ...u, title: "Renamed", revision: u.revision + 1 });
+      throw { details: { code: "teacherUnits.writeConflict", currentRevision: u.revision + 1 } };
+    });
+    const ctl = mount(c);
+    await flush();
+    const r = await ctl.updateUnit(u.unitId, { title: "Renamed" });
+    expect(r).toMatchObject({ kind: "conflict", latest: { title: "Renamed" }, error: { category: "conflict" } });
+    if (r.kind !== "conflict") throw new Error("unreachable");
+    expect(r.error.message).toContain("couldn't confirm whether your change was saved");
+    expect(r.error.message).not.toMatch(/was not saved/);
+    expect(isSafeToResend(r.error)).toBe(false);
+    expect(c.update).toHaveBeenCalledTimes(1);
+    expect(c.get).toHaveBeenCalledWith({ unitId: u.unitId });
+  });
+
+  test("invalidStatus: one call, a reread showing the committed write on the archived unit", async () => {
+    const u = unit();
+    const { c, units } = server([u]);
+    c.update.mockImplementationOnce(async () => {
+      units.set(u.unitId, { ...u, title: "Renamed", status: "archived", archivedAtMillis: 9, revision: u.revision + 2 });
+      throw { details: { code: "teacherUnits.invalidStatus" } };
+    });
+    const ctl = mount(c);
+    await flush();
+    const r = await ctl.updateUnit(u.unitId, { title: "Renamed" });
+    expect(r).toMatchObject({ kind: "archived", latest: { title: "Renamed", status: "archived" }, error: { category: "invalidStatus" } });
+    if (r.kind !== "archived") throw new Error("unreachable");
+    expect(r.error.message).toContain("couldn't confirm whether your change was saved");
+    expect(isSafeToResend(r.error)).toBe(false);
+    expect(c.update).toHaveBeenCalledTimes(1);
+  });
+
+  test("a definite pre-transaction refusal (duplicateResource) keeps its definite classification", async () => {
+    const u = unit({ resourceIds: [R1] });
+    const { c } = server([u]);
+    c.setResources.mockImplementationOnce(async () => {
+      throw { details: { code: "teacherUnits.duplicateResource", resourceId: R1 } };
+    });
+    const ctl = mount(c);
+    await flush();
+    const r = await ctl.addResources(u.unitId, [R2]);
+    expect(r).toMatchObject({ kind: "error", error: { category: "resourceRejected" } });
+    expect(c.setResources).toHaveBeenCalledTimes(1);
   });
 });

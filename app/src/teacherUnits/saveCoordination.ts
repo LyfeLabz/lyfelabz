@@ -276,6 +276,9 @@ const PRE_COMMIT_REJECTION_CODES: ReadonlySet<string> = new Set([
   "teacherUnits.invalidGrade",
   "teacherUnits.invalidTitle",
   "teacherUnits.invalidDescription",
+  // A3-3 envelope checks run before any transaction.
+  "teacherUnits.compatibilityRequired",
+  "teacherUnits.invalidCompatibility",
 ]);
 
 export function classifyCreateFailure(

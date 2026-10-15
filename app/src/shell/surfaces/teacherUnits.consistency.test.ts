@@ -146,7 +146,7 @@ describe("Remove", () => {
     // Removed elsewhere already: the server wrote nothing.
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R2.id], revision: 2 }, noop: true });
     await tick();
-    expect(status(h.host)).toBe(`Nothing was changed. "${R1.title}" isn't in "${a.title}" now.`);
+    expect(status(h.host)).toBe(`No change was needed when this request was checked. "${R1.title}" isn't in "${a.title}" now.`);
     expect(status(h.host)).not.toMatch(/saved|Removed/);
   });
 
@@ -158,7 +158,7 @@ describe("Remove", () => {
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R2.id], revision: 2 }, noop: true });
     await tick();
     expect(status(h.host)).toBe(
-      `Nothing was changed. "${R1.title}" is in "${a.title}" after this unit changed. Its current resources are shown.`,
+      `No change was needed when this request was checked. "${R1.title}" is in "${a.title}" after this unit changed. Its current resources are shown.`,
     );
   });
 
@@ -197,7 +197,7 @@ describe("Remove", () => {
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [], revision: 2 }, noop: true });
     await tick();
     expect(status(h.host)).toBe(
-      `Nothing was changed. "${R1.title}" is in "${a.title}" after this unit changed. "${a.title}" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`,
+      `No change was needed when this request was checked. "${R1.title}" is in "${a.title}" after this unit changed. "${a.title}" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`,
     );
   });
 
@@ -208,7 +208,7 @@ describe("Remove", () => {
     await checkWith(h, []);
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [], revision: 2 }, noop: true });
     await tick();
-    expect(status(h.host)).toBe("Nothing was changed. This unit is no longer in your units.");
+    expect(status(h.host)).toBe("No change was needed when this request was checked. This unit is no longer in your units.");
   });
 
   test("missing unit: the refusal is shown, nothing claimed", async () => {
@@ -230,7 +230,7 @@ describe("Remove", () => {
     h.calls.get[0].resolve({ unit: { ...a, revision: 2 } });
     await tick();
     expect(status(h.host)).toBe("");
-    expect(noticeOf(h.host, a.unitId).textContent).toContain("nothing was removed");
+    expect(noticeOf(h.host, a.unitId).textContent).toContain("couldn't confirm whether it was removed");
     clickRemove(h, a, R1.id);
     h.calls.setResources[1].reject(Object.assign(new Error("lost"), { code: "unavailable" }));
     await tick();
@@ -271,7 +271,7 @@ describe("Add", () => {
     addVia(h, a, R1.id);
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R1.id], revision: 2 }, noop: true });
     await tick();
-    expect(status(h.host)).toBe(`Nothing was changed. Those resources are already in "${a.title}" now.`);
+    expect(status(h.host)).toBe(`No change was needed when this request was checked. Those resources are already in "${a.title}" now.`);
   });
 
   test("no-op, but a newer state removed them: no presence claim", async () => {
@@ -282,7 +282,7 @@ describe("Add", () => {
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R1.id], revision: 2 }, noop: true });
     await tick();
     expect(status(h.host)).toBe(
-      `Nothing was changed. "${a.title}" changed since that request, so not every resource you chose is in it now. Its current resources are shown.`,
+      `No change was needed when this request was checked. "${a.title}" changed since that request, so not every resource you chose is in it now. Its current resources are shown.`,
     );
     expect(status(h.host)).not.toContain("already");
   });
@@ -314,7 +314,7 @@ describe("Remove unavailable resources (bulk repair)", () => {
     repairVia(h, a);
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R1.id], revision: 2 }, noop: true });
     await tick();
-    expect(status(h.host)).toBe(`Nothing was changed. "${a.title}" has no unavailable resources now.`);
+    expect(status(h.host)).toBe(`No change was needed when this request was checked. "${a.title}" has no unavailable resources now.`);
   });
 
   test("no-op for a unit a newer read no longer finds: neutral", async () => {
@@ -324,7 +324,7 @@ describe("Remove unavailable resources (bulk repair)", () => {
     await checkWith(h, []);
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [], revision: 2 }, noop: true });
     await tick();
-    expect(status(h.host)).toBe("Nothing was changed. This unit is no longer in your units.");
+    expect(status(h.host)).toBe("No change was needed when this request was checked. This unit is no longer in your units.");
   });
 
   test("uncertain: never stated as removed, no retry", async () => {

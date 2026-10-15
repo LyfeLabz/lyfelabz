@@ -139,7 +139,7 @@ const toGrade = async (h: H, g: "6" | "7", units: TeacherUnit[]) => {
   await tick();
 };
 const refusal = (h: H) => {
-  const all = notices(h, "nothing was removed");
+  const all = notices(h, "couldn't confirm whether it was removed");
   expect(all).toHaveLength(1);
   return all[0];
 };
@@ -154,14 +154,14 @@ async function archiveRefusal(extra: TeacherUnit[] = []) {
   h.calls.get[0].d.resolve({ unit: arch });
   await tick();
   const n = refusal(h);
-  expect(n.textContent).toContain("nothing was removed");
+  expect(n.textContent).toContain("couldn't confirm whether it was removed");
   expect(n.textContent).toContain("Restore");
   return { h, a, arch, active: { ...a, revision: 3 } };
 }
 const STALE = ["Restore it", "is archived", "Restore the unit"];
 const expectNotArchivedClaims = (n: HTMLElement) => {
   for (const t of STALE) expect(n.textContent).not.toContain(t);
-  expect(n.textContent).toContain("nothing was removed");
+  expect(n.textContent).toContain("couldn't confirm whether it was removed");
 };
 
 describe("archive-refusal notices follow the unit's current state", () => {
@@ -207,11 +207,11 @@ describe("archive-refusal notices follow the unit's current state", () => {
     await tick();
     h.calls.get[1].d.resolve({ unit: { ...active, revision: 4 } });
     await tick();
-    const all = notices(h, "nothing was removed");
+    const all = notices(h, "couldn't confirm whether it was removed");
     expect(all).toHaveLength(2);
     for (const n of all) for (const t of STALE) expect(n.textContent).not.toContain(t);
     await checkWith(h, [archived({ ...active, revision: 4 }, 5)]);
-    const after = notices(h, "nothing was removed");
+    const after = notices(h, "couldn't confirm whether it was removed");
     expect(after).toHaveLength(2);
     for (const n of after) expect(n.textContent).toContain("archived");
   });
@@ -234,10 +234,10 @@ describe("archive-refusal notices follow the unit's current state", () => {
     await tick();
     h.calls.get[1].d.resolve({ unit: { ...active, revision: 4 } });
     await tick();
-    const all = notices(h, "nothing was removed");
+    const all = notices(h, "couldn't confirm whether it was removed");
     expect(all).toHaveLength(2);
     for (const n of all) for (const t of STALE) expect(n.textContent).not.toContain(t);
-    expect(all.some((n) => (n.textContent ?? "").includes("This unit was archived, so nothing was removed."))).toBe(true);
+    expect(all.some((n) => (n.textContent ?? "").includes("This unit was archived, so LyfeLabz couldn't confirm whether it was removed."))).toBe(true);
   });
 
   test("dismissal still removes only that notice, and unchanged refreshes do not rewrite it", async () => {
@@ -254,7 +254,7 @@ describe("archive-refusal notices follow the unit's current state", () => {
     const btn = n.querySelector("button");
     if (btn !== null) {
       btn.click();
-      expect(notices(h, "nothing was removed")).toHaveLength(0);
+      expect(notices(h, "couldn't confirm whether it was removed")).toHaveLength(0);
     }
   });
 });

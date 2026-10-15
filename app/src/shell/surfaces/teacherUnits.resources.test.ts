@@ -279,7 +279,7 @@ describe("Add resources picker", () => {
     const notice = q(host, `units-card-${a.unitId}`)?.querySelector(".shell-units-notice") as HTMLElement;
     expect(notice.hidden).toBe(false);
     expect(notice.getAttribute("role")).toBe("alert");
-    expect(notice.textContent).toContain("nothing was added");
+    expect(notice.textContent).toContain("couldn't confirm whether anything was added");
     expect(status(host)).toBe("");
     expect(rowsOf(host, a.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R2.id]);
     expect(q(host, `units-picker-${a.unitId}`)).not.toBeNull();
@@ -447,7 +447,7 @@ describe("retired-resource repair UI (P1)", () => {
     await flush();
     expect(c.setResources).toHaveBeenCalledTimes(1);
     expect(status(host)).toBe("");
-    expect(noticeOf(host, a.unitId).textContent).toContain("nothing was removed");
+    expect(noticeOf(host, a.unitId).textContent).toContain("couldn't confirm whether it was removed");
     expect(q(host, `units-retired-confirm-${a.unitId}`)).toBeNull();
     expect(q(host, `units-retired-remove-${a.unitId}`)?.textContent).toBe("Remove 3 unavailable resources");
     expect(document.activeElement).toBe(q(host, `units-retired-remove-${a.unitId}`));
@@ -553,7 +553,7 @@ describe("status messages (P2)", () => {
     await flush();
     await flush();
     expect(status(host)).toBe("");
-    expect(noticeOf(host, a.unitId).textContent).toContain("nothing was removed");
+    expect(noticeOf(host, a.unitId).textContent).toContain("couldn't confirm whether it was removed");
     expect(rowsOf(host, a.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R1.id, R2.id, R3.id]);
     expect(document.activeElement).toBe(q(host, `units-resource-remove-${a.unitId}-${R1.id}`));
   });

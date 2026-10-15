@@ -35,6 +35,11 @@ export type TeacherUnitErrorCategory =
   // Create only (U2.2): the caller's verified school is no longer the
   // school the create intent was made in (`expectedSchoolId`).
   | "schoolContextChanged"
+  // A3-3: the server reported `teacherUnits.responseUnavailable` (outcome
+  // "unconfirmed") or an availability refusal decided inside a transaction.
+  // Neither proves the change was or was not saved. Never resent
+  // automatically; reconcile with an authoritative read.
+  | "unconfirmed"
   // Could not reach the server, or the result is unknown. Retry is safe
   // only where the operation is idempotent (see `retry`).
   | "network"
@@ -109,7 +114,32 @@ const INVALID_REQUEST_CODES: ReadonlySet<string> = new Set([
   "teacherUnits.invalidExpectedRevision",
   "teacherUnits.invalidResourceIds",
   "teacherUnits.invalidUnitOrder",
+  // A3-3 mutation envelope checks, decided before any transaction.
+  "teacherUnits.compatibilityRequired",
+  "teacherUnits.invalidCompatibility",
 ]);
+
+// A3-3 availability refusals (a3-errors.ts). Each can be raised inside an
+// authoritative transaction, including an SDK rerun after an earlier attempt
+// committed, so none is proof that nothing was written
+// (U2_6_A3_3_APPROVED_DECISIONS.md section 5.1).
+const A3_UNCONFIRMED_CODES: ReadonlySet<string> = new Set([
+  "teacherUnits.runtimeIdentityUnavailable",
+  "teacherUnits.policyUnavailable",
+  "teacherUnits.policyMissing",
+  "teacherUnits.policyInvalid",
+  "teacherUnits.availabilityClosed",
+  "teacherUnits.deploymentIneligible",
+  "teacherUnits.policyChanged",
+  "teacherUnits.placementMismatch",
+  "teacherUnits.contractUnsupported",
+]);
+
+// True for codes that report Teacher Units availability rather than the
+// request itself (read surfaces use this to word refusals).
+export function isTeacherUnitsAvailabilityCode(code: string): boolean {
+  return A3_UNCONFIRMED_CODES.has(code);
+}
 
 // Account and context refusals shared with requireDistrictContext.
 const UNAUTHORIZED_CODES: ReadonlySet<string> = new Set([
@@ -172,12 +202,16 @@ export function normalizeTeacherUnitError(err: unknown): TeacherUnitError {
   const details = readDetails(err);
 
   switch (code) {
+    // writeConflict and invalidStatus are decided inside a transaction. Under
+    // A3-3 Option A (U2_6_A3_3_APPROVED_DECISIONS.md section 5.1) an earlier
+    // SDK attempt of the same request may already have committed, so neither
+    // proves the change was not saved. Reconcile by reading; never resend.
     case "teacherUnits.writeConflict":
       return make(
         "conflict",
         "refresh",
         code,
-        "This unit was changed somewhere else, so your change was not saved. Refresh to load the latest version, then make your change again if you still need it.",
+        "This unit was changed somewhere else, so we couldn't confirm whether your change was saved. Refresh to load the latest version before making your change again.",
         {
           currentRevision:
             typeof details.currentRevision === "number" &&
@@ -192,7 +226,7 @@ export function normalizeTeacherUnitError(err: unknown): TeacherUnitError {
         "invalidStatus",
         "refresh",
         code,
-        "This unit is archived, so your change was not saved. Refresh, then restore the unit to make changes.",
+        "This unit is archived, so we couldn't confirm whether your change was saved. Refresh to check, then restore the unit to make changes.",
       );
     case "teacherUnits.notFound":
       return make(
@@ -246,6 +280,15 @@ export function normalizeTeacherUnitError(err: unknown): TeacherUnitError {
         code,
         "Your school changed, so we couldn't confirm whether this unit was created. Reload the page to continue at your current school.",
       );
+    case "teacherUnits.responseUnavailable":
+      // Decision 2: after a confirmed commit the response could not be
+      // produced. The write may have landed; it is never a rejection.
+      return make(
+        "unconfirmed",
+        "refresh",
+        code,
+        "Your change may have been saved, but it could not be confirmed. Reload your units before trying again.",
+      );
     case "teacherUnits.listLimitExceeded":
       return make(
         "limitExceeded",
@@ -253,6 +296,15 @@ export function normalizeTeacherUnitError(err: unknown): TeacherUnitError {
         code,
         "You have too many units to show at once. Contact LyfeLabz support.",
       );
+  }
+
+  if (A3_UNCONFIRMED_CODES.has(code)) {
+    return make(
+      "unconfirmed",
+      "refresh",
+      code,
+      "Teacher Units isn't available right now, so we couldn't confirm whether your change was saved. Reload your units before trying again.",
+    );
   }
 
   const field = FIELD_CODES.get(code);
@@ -298,6 +350,8 @@ export function normalizeTeacherUnitError(err: unknown): TeacherUnitError {
 // - yes for network/unexpected, because
 //   the request carries its expectedRevision; if the first attempt actually
 //   committed, the retry is either an authorized no-op or a writeConflict.
+// - unconfirmed (A3-3 responseUnavailable and availability refusals): never;
+//   the outcome must be reconciled by reading, not by resending.
 // - conflict and every other category: never. Conflicts require a refresh
 //   and a new teacher action; stale writes are never replayed.
 export function isSafeToResend(error: TeacherUnitError): boolean {

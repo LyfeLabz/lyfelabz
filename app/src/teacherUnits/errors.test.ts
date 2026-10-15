@@ -251,3 +251,45 @@ describe("createMutationGate", () => {
     expect(gate.isBusy("u1")).toBe(false);
   });
 });
+
+describe("A3-3 codes (U2_6_A3_3_APPROVED_DECISIONS.md)", () => {
+  const A3_UNCONFIRMED = [
+    "teacherUnits.runtimeIdentityUnavailable",
+    "teacherUnits.policyUnavailable",
+    "teacherUnits.policyMissing",
+    "teacherUnits.policyInvalid",
+    "teacherUnits.availabilityClosed",
+    "teacherUnits.deploymentIneligible",
+    "teacherUnits.policyChanged",
+    "teacherUnits.placementMismatch",
+    "teacherUnits.contractUnsupported",
+  ];
+  test("responseUnavailable is unconfirmed, never a success, rejection or resend", () => {
+    const e = normalizeTeacherUnitError(
+      httpsError("unavailable", { code: "teacherUnits.responseUnavailable", outcome: "unconfirmed", operation: "update" }),
+    );
+    expect(e).toMatchObject({ category: "unconfirmed", recovery: "refresh", code: "teacherUnits.responseUnavailable" });
+    expect(e.message).toBe("Your change may have been saved, but it could not be confirmed. Reload your units before trying again.");
+    expect(isSafeToResend(e)).toBe(false);
+  });
+  test.each(A3_UNCONFIRMED)("%s (may be raised inside a transaction) is unconfirmed and never resendable", (code) => {
+    const e = normalizeTeacherUnitError(httpsError("failed-precondition", { code }));
+    expect(e.category).toBe("unconfirmed");
+    expect(e.recovery).toBe("refresh");
+    expect(isSafeToResend(e)).toBe(false);
+    expect(e.message).not.toMatch(/server text/);
+  });
+  test("unconfirmed codes are never classified as compatibilityBlocked", () => {
+    for (const code of [...A3_UNCONFIRMED, "teacherUnits.responseUnavailable", "teacherUnits.compatibilityBlocked"]) {
+      expect(normalizeTeacherUnitError(httpsError("unavailable", { code })).category).not.toBe("compatibilityBlocked");
+    }
+  });
+  test.each(["teacherUnits.compatibilityRequired", "teacherUnits.invalidCompatibility"])(
+    "%s (decided before any transaction) is an invalid request",
+    (code) => {
+      const e = normalizeTeacherUnitError(httpsError("invalid-argument", { code }));
+      expect(e.category).toBe("invalidRequest");
+      expect(isSafeToResend(e)).toBe(false);
+    },
+  );
+});

@@ -24,7 +24,7 @@ import {
 } from "../../teacherUnits/placeableResources";
 import type { FlatResource } from "../../curriculum/resourceProjection";
 import { FORMAL_RESOURCE_LABEL, type FormalResourceType } from "../../curriculum/curriculumManifest";
-import type { TeacherUnitError } from "../../teacherUnits/errors";
+import { isTeacherUnitsAvailabilityCode, type TeacherUnitError } from "../../teacherUnits/errors";
 import type { UnresolvedCreateReason } from "../../teacherUnits/saveCoordination";
 
 // U2.2 - My Units panel inside Curriculum (docs/platform/TEACHER_UNITS.md
@@ -909,7 +909,7 @@ export function renderTeacherUnitsPanel(
     switch (result.kind) {
       case "saved":
         showNotice(card, null);
-        announce(result.noop ? "This request made no changes." : `${VERB[op]}: "${result.unit.title}".`);
+        announce(result.noop ? "No change was needed when this request was checked." : `${VERB[op]}: "${result.unit.title}".`);
         return;
       case "invalid":
         if (card.editor) {
@@ -928,7 +928,7 @@ export function renderTeacherUnitsPanel(
         showNotice(
           card,
           contextualNotice(
-            "This unit was archived, so your changes weren't saved.",
+            "This unit was archived, so LyfeLabz couldn't confirm whether your changes were saved.",
             (ctx) => sentences([
               card.editor !== null ? "Your edits are still here." : null,
               afterArchivedRefusal(
@@ -1040,8 +1040,11 @@ export function renderTeacherUnitsPanel(
   // ---------- Membership confirmation evidence ----------
   //
   // A settled membership request is described from two facts only:
-  // 1. what the response proves: `noop` means the server wrote nothing
-  //    (never "saved"); otherwise the server committed the write;
+  // 1. what the response proves: `noop` means the unit already matched the
+  //    request when the response was produced (never "saved"; under A3-3
+  //    section 5.1 an earlier SDK attempt of the same request may have made
+  //    that change, so never "nothing changed"); otherwise the server
+  //    committed the write;
   // 2. what the latest accepted state of the WHOLE unit holds now
   //    (`getUnitState`: active or archived with its full record, or not
   //    current: omitted, not found, or never seen). Whether a card is shown
@@ -1141,7 +1144,7 @@ export function renderTeacherUnitsPanel(
       : action === "remove" ? !u.resourceIds.includes(targets[0])
       : action === "move" ? u.resourceIds.indexOf(targets[0]) === at - 1 && u.resourceIds.length === of
       : retiredCount(u) === 0;
-    const fact = !write ? "Nothing was changed."
+    const fact = !write ? "No change was needed when this request was checked."
       : action === "add" ? `Added ${plural(count, "resource", "resources")} to "${title}".`
       : action === "remove" ? `Removed "${name}" from "${title}".`
       : action === "move" ? `Moved "${name}" to position ${at} of ${of}.`
@@ -1231,8 +1234,8 @@ export function renderTeacherUnitsPanel(
     const min = latest !== null ? latest.revision : base + 1;
     const outcome =
       what === "edit"
-        ? "This unit changed since it was loaded here, so your change wasn't saved."
-        : `This unit changed since it was loaded here, so ${what === "add" ? "nothing was added" : what === "move" ? "nothing was moved" : "nothing was removed"}.`;
+        ? "This unit changed since it was loaded here, so LyfeLabz couldn't confirm whether your change was saved."
+        : `This unit changed since it was loaded here, so LyfeLabz couldn't confirm whether ${what === "add" ? "anything was added" : what === "move" ? "it was moved" : "it was removed"}.`;
     return contextualNotice(outcome, (ctx) => {
       const loaded = ctx.unit !== null && ctx.unit.revision >= min ? ctx.unit : null;
       const editing = what === "edit" && card.editor !== null;
@@ -1319,7 +1322,7 @@ export function renderTeacherUnitsPanel(
     error: TeacherUnitError,
     lifecycle?: { readonly card: CardView; readonly op: LifecycleOp; readonly base: number },
   ): NoticeText => {
-    if (lifecycle !== undefined && (error.category === "network" || error.category === "unexpected")) {
+    if (lifecycle !== undefined && (error.category === "network" || error.category === "unexpected" || error.category === "unconfirmed")) {
       return uncertainLifecycle(lifecycle.card, lifecycle.op, lifecycle.base);
     }
     switch (error.category) {
@@ -1345,6 +1348,7 @@ export function renderTeacherUnitsPanel(
         );
       case "network":
       case "unexpected":
+      case "unconfirmed":
         return UNCERTAIN;
       default:
         return contextualNotice("This request couldn't be completed.", ctx =>
@@ -1359,6 +1363,7 @@ export function renderTeacherUnitsPanel(
       return `${history} because an authorization check failed when LyfeLabz tried. If this keeps happening, sign in again, then try again.`;
     }
     if (error.category === "limitExceeded") return error.message;
+    if (isTeacherUnitsAvailabilityCode(error.code)) return `${history} because Teacher Units isn't available right now. Try again later.`;
     return `${history}. ${error.category === "network" ? "Check your connection, then try again." : "Try again."}`;
   };
   // U2.5 create wording, owned here so it is one LyfeLabz voice with no
@@ -1398,7 +1403,8 @@ export function renderTeacherUnitsPanel(
     base: number,
   ): void => {
     render();
-    const nothing = action === "add" ? "nothing was added" : action === "move" ? "nothing was moved" : "nothing was removed";
+    // A transaction refusal never proves this request wrote nothing (A3-3 5.1).
+    const unconfirmed = action === "add" ? "anything was added" : action === "move" ? "it was moved" : "it was removed";
     switch (result.kind) {
       case "conflict":
         showNotice(card, conflictNotice(card, action, result.latest, base), "conflict");
@@ -1406,7 +1412,7 @@ export function renderTeacherUnitsPanel(
       case "archived":
         showNotice(
           card,
-          contextualNotice(`This unit was archived, so ${nothing}.`, ctx =>
+          contextualNotice(`This unit was archived, so LyfeLabz couldn't confirm whether ${unconfirmed}.`, ctx =>
             afterArchivedRefusal(ctx, "Restore it to change its resources.", "It is active again, so you can try again.").trim()),
           "conflict",
         );

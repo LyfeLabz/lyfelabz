@@ -62,12 +62,11 @@ export type TeacherUnitsCreateRequest = {
   readonly title: string;
   readonly description?: string;
   readonly idempotencyKey: string;
-  // U2.2, optional and additive (TEACHER_UNITS.md §5.4): the school the
-  // create intent was made in. The server compares it with its verified
-  // school inside the create transaction and refuses a mismatch with
-  // `teacherUnits.schoolContextChanged` before any write. Omitted, the
-  // request is the unchanged U2.1 request.
-  readonly expectedSchoolId?: string;
+  // U2.2; required since A3-3 (TEACHER_UNITS.md §5.4): the school the
+  // create intent was made in, sent on the first attempt and every replay.
+  // The server compares it with its verified school inside the create
+  // transaction and refuses a mismatch with `teacherUnits.schoolContextChanged`.
+  readonly expectedSchoolId: string;
 };
 
 export type TeacherUnitsListRequest = {

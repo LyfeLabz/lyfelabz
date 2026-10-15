@@ -162,10 +162,10 @@ describe("notice contract: immutable outcome, live membership", () => {
     await refreshWith(h, [{ ...a, title: "Renamed", revision: 3 }]);
     expect(statusText(h)).not.toContain(`"${R1.title}" isn't in`);
     expect(statusText(h)).toContain('"Renamed"');
-    expect(statusText(h)).toContain(noop ? "Nothing was changed" : "saved");
+    expect(statusText(h)).toContain(noop ? "No change was needed when this request was checked" : "saved");
     await refreshWith(h, [{ ...a, title: "Renamed", resourceIds: [R2.id], revision: 4 }]);
     expect(statusText(h)).not.toMatch(/is in .*again|is in .*because/);
-    expect(statusText(h)).toContain(noop ? "Nothing was changed" : "Removed");
+    expect(statusText(h)).toContain(noop ? "No change was needed when this request was checked" : "Removed");
   });
   test.each([false, true])("addition (noop=%s) follows later removal and re-add", async noop => {
     const a = unit({ resourceIds: [R2.id] });
@@ -176,7 +176,7 @@ describe("notice contract: immutable outcome, live membership", () => {
     await refreshWith(h, [{ ...a, revision: 3 }]);
     expect(statusText(h)).not.toMatch(/are already in/);
     expect(statusText(h)).toContain("not every resource");
-    expect(statusText(h)).toContain(noop ? "Nothing was changed" : "saved");
+    expect(statusText(h)).toContain(noop ? "No change was needed when this request was checked" : "saved");
     await refreshWith(h, [{ ...a, resourceIds: [R2.id, R1.id], revision: 4 }]);
     expect(statusText(h)).not.toContain("not every resource");
   });
@@ -398,10 +398,10 @@ test("a retained no-op follows this panel's later successful add/remove without 
   last(h.calls.setResources).d.resolve({ unit: { ...a, revision: 5 }, noop: false }); await tick();
   expect(entry.textContent).toContain("is in");
   expect(entry.textContent).not.toContain("somewhere else");
-  expect(entry.textContent).toContain("Nothing was changed");
+  expect(entry.textContent).toContain("No change was needed when this request was checked");
   clickRemove(h, a, R1.id);
   last(h.calls.setResources).d.resolve({ unit: { ...a, revision: 6, resourceIds: [R2.id] }, noop: false }); await tick();
   expect(entry.textContent).toContain("isn't in");
   expect(entry.dataset.testid).toBe(id);
-  expect(entry.textContent).toContain("Nothing was changed");
+  expect(entry.textContent).toContain("No change was needed when this request was checked");
 });

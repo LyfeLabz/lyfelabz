@@ -32,6 +32,16 @@ import {
 } from "./wire";
 
 const FUNCTIONS = {} as Functions;
+// A structurally valid A3-3 mutation envelope (A3-1 compatibilityRule).
+const ENVELOPE = Object.freeze({
+  schemaVersion: 1 as const,
+  clientContractVersion: "teacher-units-v2" as const,
+  policyInstanceId: "0f8fad5b-d9cb-469f-a165-70867728950e",
+  policyGeneration: 3,
+  backendReleaseId: "a".repeat(64),
+  placementFingerprint: "b".repeat(64),
+});
+const PERMIT = async () => () => ENVELOPE;
 const UNIT_A = "AbCdEfGhIjKlMnOpQrSt";
 const UNIT_B = "ZyXwVuTsRqPoNmLkJiHg";
 
@@ -76,19 +86,19 @@ describe("teacherUnits wire", () => {
   });
 
   test("constructing the adapter invokes nothing", () => {
-    createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     expect(invocations).toEqual([]);
     expect(created.sort()).toEqual(Object.values(TEACHER_UNITS_CALLABLE_NAMES).sort());
   });
 
   test("create sends allowlisted keys and returns unit + replayed", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = { unit: unit({ revision: 1 }), replayed: true };
-    const res = await c.create({ grade: "7", title: "Earth Systems", idempotencyKey: "key-12345678" });
+    const res = await c.create({ grade: "7", title: "Earth Systems", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" });
     expect(invocations).toEqual([
       {
         name: "teacherUnitsCreate",
-        payload: { grade: "7", title: "Earth Systems", idempotencyKey: "key-12345678" },
+        payload: { grade: "7", title: "Earth Systems", idempotencyKey: "key-12345678", expectedSchoolId: "school-a", compatibility: ENVELOPE },
       },
     ]);
     expect(res.replayed).toBe(true);
@@ -96,30 +106,30 @@ describe("teacherUnits wire", () => {
   });
 
   test("create includes description only when given", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = { unit: unit({ grade: "6" }), replayed: false };
-    await c.create({ grade: "6", title: "T", description: "", idempotencyKey: "key-12345678" });
+    await c.create({ grade: "6", title: "T", description: "", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" });
     expect(invocations[0]?.payload).toEqual({
       grade: "6",
       title: "T",
       description: "",
       idempotencyKey: "key-12345678",
+      expectedSchoolId: "school-a",
+      compatibility: ENVELOPE,
     });
   });
 
-  test("create sends expectedSchoolId only when given (U2.2, additive)", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+  test("create always sends expectedSchoolId (required since A3-3)", async () => {
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = { unit: unit({ revision: 1 }), replayed: false };
     await c.create({ grade: "7", title: "T", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" });
-    await c.create({ grade: "7", title: "T", idempotencyKey: "key-12345679" });
     expect(invocations.map((i) => i.payload)).toEqual([
-      { grade: "7", title: "T", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" },
-      { grade: "7", title: "T", idempotencyKey: "key-12345679" },
+      { grade: "7", title: "T", idempotencyKey: "key-12345678", expectedSchoolId: "school-a", compatibility: ENVELOPE },
     ]);
   });
 
   test("list sends only provided options and keeps server order", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = {
       units: [
         unit({ unitId: "b".repeat(20), sortOrder: 1 }),
@@ -135,7 +145,7 @@ describe("teacherUnits wire", () => {
   });
 
   test("get returns the unit with exact resource order", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = { unit: unit() };
     const res = await c.get({ unitId: "AbCdEfGhIjKlMnOpQrSt" });
     expect(invocations[0]).toEqual({
@@ -150,12 +160,12 @@ describe("teacherUnits wire", () => {
   });
 
   test("update sends only changed fields and preserves noop + revision", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = { unit: unit({ revision: 3 }), noop: true };
     const res = await c.update({ unitId: UNIT_A, expectedRevision: 3, title: "New" });
     expect(invocations[0]).toEqual({
       name: "teacherUnitsUpdate",
-      payload: { unitId: UNIT_A, expectedRevision: 3, title: "New" },
+      payload: { unitId: UNIT_A, expectedRevision: 3, title: "New", compatibility: ENVELOPE },
     });
     expect(res).toEqual({ unit: expect.objectContaining({ revision: 3 }), noop: true });
   });
@@ -164,30 +174,30 @@ describe("teacherUnits wire", () => {
     ["archive", "teacherUnitsArchive"],
     ["restore", "teacherUnitsRestore"],
   ] as const)("%s sends unitId + expectedRevision", async (op, name) => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = { unit: unit({ revision: 5 }), noop: false };
     const res = await c[op]({ unitId: UNIT_A, expectedRevision: 4 });
     expect(invocations[0]).toEqual({
       name,
-      payload: { unitId: UNIT_A, expectedRevision: 4 },
+      payload: { unitId: UNIT_A, expectedRevision: 4, compatibility: ENVELOPE },
     });
     expect(res.noop).toBe(false);
     expect(res.unit.revision).toBe(5);
   });
 
   test("setResources sends the complete ordered list", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = { unit: unit({ revision: 4 }), noop: false };
     const ids = ["plate-tectonics", "earths-layers"];
     await c.setResources({ unitId: UNIT_A, expectedRevision: 3, resourceIds: ids });
     expect(invocations[0]).toEqual({
       name: "teacherUnitsSetResources",
-      payload: { unitId: UNIT_A, expectedRevision: 3, resourceIds: ids },
+      payload: { unitId: UNIT_A, expectedRevision: 3, resourceIds: ids, compatibility: ENVELOPE },
     });
   });
 
   test("reorder sends grade + entries and returns units + noop", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = {
       units: [unit({ unitId: "b".repeat(20), sortOrder: 1 }), unit({ unitId: "a".repeat(20), sortOrder: 2 })],
       noop: false,
@@ -207,6 +217,7 @@ describe("teacherUnits wire", () => {
           { unitId: "b".repeat(20), expectedRevision: 2 },
           { unitId: "a".repeat(20), expectedRevision: 9 },
         ],
+        compatibility: ENVELOPE,
       },
     });
     expect(res.units.map((u) => u.sortOrder)).toEqual([1, 2]);
@@ -214,7 +225,7 @@ describe("teacherUnits wire", () => {
   });
 
   test("server errors propagate unchanged", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     const err = Object.assign(new Error("conflict"), {
       code: "functions/already-exists",
       details: { code: "teacherUnits.writeConflict", currentRevision: 7 },
@@ -226,7 +237,7 @@ describe("teacherUnits wire", () => {
   });
 
   test("malformed responses throw instead of succeeding", async () => {
-    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
     nextResponse = { unit: unit() }; // missing noop
     await expect(c.archive({ unitId: UNIT_A, expectedRevision: 1 })).rejects.toBeInstanceOf(
       TeacherUnitsResponseError,
@@ -241,7 +252,7 @@ describe("teacherUnits wire", () => {
 
   describe("runtime validation of authoritative state", () => {
     const get = async (u: Record<string, unknown>) => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       nextResponse = { unit: u };
       return c.get({ unitId: "AbCdEfGhIjKlMnOpQrSt" });
     };
@@ -311,7 +322,7 @@ describe("teacherUnits wire", () => {
     });
 
     test("rejects malformed envelopes and flags", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       const req = { unitId: UNIT_A, expectedRevision: 1 };
       for (const bad of [[], "ok", { unit: unit(), noop: "false" }, { unit: unit(), noop: 0 }]) {
         nextResponse = bad;
@@ -321,18 +332,18 @@ describe("teacherUnits wire", () => {
       }
       nextResponse = { unit: unit(), replayed: "yes" };
       await expect(
-        c.create({ grade: "7", title: "T", idempotencyKey: "key-12345678" }),
+        c.create({ grade: "7", title: "T", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" }),
       ).rejects.toBeInstanceOf(TeacherUnitsResponseError);
       nextResponse = { unit: unit() };
       await expect(
-        c.create({ grade: "7", title: "T", idempotencyKey: "key-12345678" }),
+        c.create({ grade: "7", title: "T", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" }),
       ).rejects.toBeInstanceOf(TeacherUnitsResponseError);
       nextResponse = { units: {} };
       await expect(c.list()).rejects.toBeInstanceOf(TeacherUnitsResponseError);
     });
 
     test("rejects list results that violate the request or canonical order", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       nextResponse = { units: [unit({ unitId: "a".repeat(20) }), unit({ unitId: "a".repeat(20) })] };
       await expect(c.list({ includeArchived: true })).rejects.toBeInstanceOf(TeacherUnitsResponseError);
       nextResponse = { units: [unit({ grade: "6" })] };
@@ -346,7 +357,7 @@ describe("teacherUnits wire", () => {
     });
 
     test("rejects invalid reorder results", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       const req = { grade: "7" as const, units: [{ unitId: "a".repeat(20), expectedRevision: 1 }] };
       for (const bad of [
         { units: [unit({ unitId: "a".repeat(20), grade: "6" })], noop: false },
@@ -367,7 +378,7 @@ describe("teacherUnits wire", () => {
 
   describe("response correlation", () => {
     test("get A returning B is rejected", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       nextResponse = { unit: unit({ unitId: UNIT_B }) };
       await expect(c.get({ unitId: UNIT_A })).rejects.toBeInstanceOf(TeacherUnitsResponseError);
     });
@@ -375,7 +386,7 @@ describe("teacherUnits wire", () => {
     test.each(["update", "archive", "restore", "setResources"] as const)(
       "%s A returning B is rejected (noop or not)",
       async (op) => {
-        const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+        const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
         const base = { unitId: UNIT_A, expectedRevision: 1 };
         const req =
           op === "update"
@@ -393,17 +404,17 @@ describe("teacherUnits wire", () => {
     );
 
     test("create Grade 7 returning a Grade 6 unit is rejected", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       for (const replayed of [false, true]) {
         nextResponse = { unit: unit({ grade: "6" }), replayed };
         await expect(
-          c.create({ grade: "7", title: "Earth Systems", idempotencyKey: "key-12345678" }),
+          c.create({ grade: "7", title: "Earth Systems", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" }),
         ).rejects.toBeInstanceOf(TeacherUnitsResponseError);
       }
     });
 
     test("matching identity with legitimately changed mutable fields is accepted", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       nextResponse = {
         unit: unit({
           title: "Renamed elsewhere",
@@ -423,7 +434,7 @@ describe("teacherUnits wire", () => {
     });
 
     test("create replay returning the original unit's current state is accepted", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       nextResponse = {
         unit: unit({
           title: "Renamed since",
@@ -434,7 +445,7 @@ describe("teacherUnits wire", () => {
         }),
         replayed: true,
       };
-      const res = await c.create({ grade: "7", title: "Earth Systems", idempotencyKey: "key-12345678" });
+      const res = await c.create({ grade: "7", title: "Earth Systems", idempotencyKey: "key-12345678", expectedSchoolId: "school-a" });
       expect(res).toMatchObject({ replayed: true, unit: { unitId: UNIT_A, title: "Renamed since" } });
     });
   });
@@ -457,7 +468,7 @@ describe("teacherUnits wire", () => {
       return p;
     }
 
-    const c = () => createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+    const c = () => createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
 
     test("get: original id accepted, mutated id rejected", async () => {
       const req = { unitId: UNIT_A };
@@ -502,10 +513,11 @@ describe("teacherUnits wire", () => {
     );
 
     test("create: original grade accepted, mutated grade rejected", async () => {
-      const make = (): { grade: "6" | "7"; title: string; idempotencyKey: string } => ({
+      const make = (): { grade: "6" | "7"; title: string; idempotencyKey: string; expectedSchoolId: string } => ({
         grade: "7",
         title: "Earth Systems",
         idempotencyKey: "key-12345678",
+        expectedSchoolId: "school-a",
       });
       const req = make();
       await expect(
@@ -585,6 +597,7 @@ describe("teacherUnits wire", () => {
         unitId: UNIT_A,
         expectedRevision: 1,
         resourceIds: ["earths-layers"],
+        compatibility: ENVELOPE,
       });
     });
 
@@ -605,6 +618,7 @@ describe("teacherUnits wire", () => {
       expect(invocations[0]?.payload).toEqual({
         grade: "7",
         units: [{ unitId: UNIT_A, expectedRevision: 1 }],
+        compatibility: ENVELOPE,
       });
     });
   });
@@ -618,22 +632,25 @@ describe("teacherUnits wire", () => {
           return "T";
         },
         idempotencyKey: "original-key",
-      }) as unknown as { grade: "6" | "7"; title: string; idempotencyKey: string };
+        expectedSchoolId: "school-a",
+      }) as unknown as { grade: "6" | "7"; title: string; idempotencyKey: string; expectedSchoolId: string };
 
     test("dispatches Grade 6 and accepts a Grade 6 response", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       nextResponse = { unit: unit({ grade: "6" }), replayed: false };
       const res = await c.create(makeReq());
       expect(invocations[0]?.payload).toEqual({
         grade: "6",
         title: "T",
         idempotencyKey: "original-key",
+        expectedSchoolId: "school-a",
+        compatibility: ENVELOPE,
       });
       expect(res.unit.grade).toBe("6");
     });
 
     test("rejects a Grade 7 response", async () => {
-      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => {});
+      const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
       nextResponse = { unit: unit({ grade: "7" }), replayed: false };
       await expect(c.create(makeReq())).rejects.toBeInstanceOf(TeacherUnitsResponseError);
       expect(invocations[0]?.payload).toMatchObject({ grade: "6" });
@@ -652,7 +669,7 @@ describe("A2 mutation dispatch guard", () => {
     reorder: { grade: "7", units: [{ unitId: UNIT_A, expectedRevision: 3 }] },
   } as const;
   test.each(Object.keys(requests) as Array<keyof typeof requests>)("%s and its retry block before dispatch", async operation => {
-    const verify = jest.fn(async (): Promise<() => void> => { throw new Error("blocked"); });
+    const verify = jest.fn(async (): Promise<() => typeof ENVELOPE> => { throw new Error("blocked"); });
     const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, verify);
     const fn = c[operation] as (req: unknown) => Promise<unknown>;
     await expect(fn(requests[operation])).rejects.toBeInstanceOf(TeacherUnitsCompatibilityError);
@@ -662,6 +679,24 @@ describe("A2 mutation dispatch guard", () => {
   test("final session recheck blocks dispatch", async () => {
     const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => { throw new Error("stale"); });
     await expect(c.archive(requests.archive)).rejects.toBeInstanceOf(TeacherUnitsCompatibilityError); expect(invocations).toHaveLength(0);
+  });
+  test.each(Object.keys(requests) as Array<keyof typeof requests>)("%s attaches the permit's envelope to the dispatched copy only", async operation => {
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT);
+    const req = JSON.parse(JSON.stringify(requests[operation])) as Record<string, unknown>;
+    nextError = new Error("lost");
+    await expect((c[operation] as (r: unknown) => Promise<unknown>)(req)).rejects.toThrow("lost");
+    expect(invocations[0]?.payload).toMatchObject({ compatibility: ENVELOPE });
+    expect(req).not.toHaveProperty("compatibility");
+  });
+  test.each([
+    ["missing field", Object.fromEntries(Object.entries(ENVELOPE).filter(([k]) => k !== "placementFingerprint"))],
+    ["v1 contract", { ...ENVELOPE, clientContractVersion: "teacher-units-v1" }],
+    ["extra field", { ...ENVELOPE, retryAfter: 1 }],
+    ["schema 2", { ...ENVELOPE, schemaVersion: 2 }],
+  ])("an invalid envelope (%s) blocks dispatch locally", async (_label, envelope) => {
+    const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => envelope as unknown as typeof ENVELOPE);
+    await expect(c.archive(requests.archive)).rejects.toBeInstanceOf(TeacherUnitsCompatibilityError);
+    expect(invocations).toHaveLength(0);
   });
   test("reads preserve their behavior without capability traffic", async () => {
     const verify = jest.fn(); const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, verify);
@@ -673,7 +708,7 @@ describe("A2 mutation dispatch guard", () => {
 test("A2 compatible declaration cannot attest a separately deployed mutation revision", async () => {
   // Synthetic mixed fleet: capability declares v1 while an older endpoint
   // still returns a shape compatible with v1. A2 cannot identify its revision.
-  const verify = jest.fn(async () => () => {});
+  const verify = jest.fn(PERMIT);
   const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, verify);
   nextResponse = { unit: unit({ revision: 1 }), replayed: false };
   await expect(c.create({ grade: "7", title: "Unit", idempotencyKey: "abcdefgh", expectedSchoolId: "school" })).resolves.toMatchObject({ unit: { revision: 1 } });

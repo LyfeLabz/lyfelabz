@@ -1,6 +1,7 @@
 import { TeacherUnitsCompatibilityError } from "./compatibilityError";
 import type { TeacherUnitsMutationVerifier } from "./backendCompatibility";
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
+import { validateMutationCompatibility, type MutationCompatibilityV1 } from "./a3Protocol";
 import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 
@@ -228,16 +229,23 @@ export function createFirebaseTeacherUnitsCallables(
   const setResources = call(n.setResources);
   const reorder = call(n.reorder);
 
+  // The payload is built by the caller before verification. The A3-3
+  // `compatibility` envelope comes from the permit of this attempt's own
+  // fresh discovery, is validated, and is attached only to the dispatched
+  // copy: it is never written back to the caller's payload or persisted.
   const mutate = async (fn: ReturnType<typeof call>, payload: Record<string, unknown>) => {
+    let compatibility: MutationCompatibilityV1;
     try {
       requireTeacherUnitsAvailable();
-      const assertCurrent = await verifyMutation();
-      assertCurrent();
+      const permit = await verifyMutation();
+      const checked = validateMutationCompatibility(permit());
+      if (!checked.ok) throw new TeacherUnitsCompatibilityError();
+      compatibility = Object.freeze({ ...checked.value });
     } catch {
       throw new TeacherUnitsCompatibilityError();
     }
     // Keep dispatched failures separate: they may follow a committed write.
-    return fn(payload);
+    return fn({ ...payload, compatibility });
   };
 
   // Request correlation is immutable: every adapter builds the exact
@@ -253,7 +261,8 @@ export function createFirebaseTeacherUnitsCallables(
         title: req.title,
         ...(req.description !== undefined ? { description: req.description } : {}),
         idempotencyKey: req.idempotencyKey,
-        ...(req.expectedSchoolId !== undefined ? { expectedSchoolId: req.expectedSchoolId } : {}),
+        // Required since A3-3 on first attempts and replays (TEACHER_UNITS.md §5.4).
+        expectedSchoolId: req.expectedSchoolId,
       };
       // Taken from the dispatched payload, never re-read from `req`: a
       // caller-owned accessor on another field could change `req.grade`

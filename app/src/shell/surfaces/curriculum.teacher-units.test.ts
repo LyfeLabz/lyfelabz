@@ -551,7 +551,7 @@ describe("My Units panel", () => {
     expect(q(host, `units-edit-title-${u.unitId}`)).toBe(title);
     expect(title.value).toBe("My Draft");
     expect(desc.value).toBe("My notes");
-    expect(card.textContent).toContain("This unit was archived, so your changes weren't saved");
+    expect(card.textContent).toContain("This unit was archived, so LyfeLabz couldn't confirm whether your changes were saved");
     expect((q(host, `units-edit-save-${u.unitId}`) as HTMLButtonElement).disabled).toBe(true);
     (q(host, `units-editor-restore-${u.unitId}`) as HTMLButtonElement).click();
     await flush();

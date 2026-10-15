@@ -407,7 +407,7 @@ describe("create-specific feedback for unresolved attempts", () => {
       httpsError("functions/already-exists", "teacherUnits.writeConflict"),
     );
     expect(update.recovery).toBe("refresh");
-    expect(update.message).toMatch(/your change was not saved/);
+    expect(update.message).toMatch(/couldn't confirm whether your change was saved/);
     const reorder = normalizeTeacherUnitError(
       Object.assign(new Error("x"), {
         code: "functions/already-exists",
@@ -433,6 +433,19 @@ describe("classifyCreateFailure", () => {
     ["claim-state-mismatch", { kind: "unresolved", reason: "unauthorized" }],
     ["district-mismatch", { kind: "unresolved", reason: "unauthorized" }],
     ["functions/internal", { kind: "unresolved", reason: "uncertain" }],
+    // A3-3: envelope checks precede any transaction; everything else may
+    // follow a commit (section 5.1) and stays unresolved.
+    ["teacherUnits.compatibilityRequired", { kind: "rejected" }],
+    ["teacherUnits.invalidCompatibility", { kind: "rejected" }],
+    ["teacherUnits.responseUnavailable", { kind: "unresolved", reason: "uncertain" }],
+    ["teacherUnits.runtimeIdentityUnavailable", { kind: "unresolved", reason: "uncertain" }],
+    ["teacherUnits.policyUnavailable", { kind: "unresolved", reason: "uncertain" }],
+    ["teacherUnits.policyMissing", { kind: "unresolved", reason: "uncertain" }],
+    ["teacherUnits.policyInvalid", { kind: "unresolved", reason: "uncertain" }],
+    ["teacherUnits.availabilityClosed", { kind: "unresolved", reason: "uncertain" }],
+    ["teacherUnits.deploymentIneligible", { kind: "unresolved", reason: "uncertain" }],
+    ["teacherUnits.policyChanged", { kind: "unresolved", reason: "uncertain" }],
+    ["teacherUnits.placementMismatch", { kind: "unresolved", reason: "uncertain" }],
   ])("%s", (code, expected) => {
     const err = code.startsWith("functions/") ? httpsError(code) : httpsError("functions/x", code);
     expect(classifyCreateFailure(normalizeTeacherUnitError(err))).toEqual(expected);

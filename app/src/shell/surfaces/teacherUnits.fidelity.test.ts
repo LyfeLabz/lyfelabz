@@ -190,7 +190,7 @@ describe("B: addition and removal messages follow the committed write", () => {
     // Added elsewhere first: the server writes nothing (revision 2 is not ours).
     h2.calls.setResources[0].d.resolve({ unit: { ...b, resourceIds: [R1.id], revision: 2 }, noop: true });
     await tick();
-    expect(status(h2.host)).toBe(`Nothing was changed. Those resources are already in "${b.title}" now.`);
+    expect(status(h2.host)).toBe(`No change was needed when this request was checked. Those resources are already in "${b.title}" now.`);
 
     const c = unit({ title: "Air" });
     const h3 = await panel([c]);
@@ -281,10 +281,10 @@ describe("C: an outcome for a unit that is no longer shown stays attached and an
     await tick();
     h.calls.get[0].d.resolve({ unit: { ...a, revision: 2 } });
     await tick();
-    expect(attachedAlerts().filter((e) => (e.textContent ?? "").includes("nothing was removed"))).toHaveLength(1);
+    expect(attachedAlerts().filter((e) => (e.textContent ?? "").includes("couldn't confirm whether it was removed"))).toHaveLength(1);
     await refreshWith(h, []); // archived elsewhere: the card leaves
     expect(q(h.host, `units-card-${a.unitId}`)).toBeNull();
-    const alerts = attachedAlerts().filter((e) => (e.textContent ?? "").includes("nothing was removed"));
+    const alerts = attachedAlerts().filter((e) => (e.textContent ?? "").includes("couldn't confirm whether it was removed"));
     expect(alerts).toHaveLength(1);
     expect(alerts[0].textContent).toContain("Plants");
   });

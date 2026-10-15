@@ -163,11 +163,14 @@ export type UnitMutationResult =
   // Field validation before sending; nothing was sent.
   | { readonly kind: "invalid"; readonly field: "title" | "description"; readonly message: string }
   // Revision conflict. `latest` is the freshly fetched server state (null
-  // when it could not be fetched). Nothing was saved; edits are the
-  // caller's to keep.
+  // when it could not be fetched). The refusal came from a transaction
+  // attempt, so it does not prove this request saved nothing (A3-3 section
+  // 5.1): an earlier SDK attempt may have committed. Edits are the caller's
+  // to keep; `latest` is current state, not proof of either outcome.
   | { readonly kind: "conflict"; readonly latest: TeacherUnit | null; readonly error: TeacherUnitError }
   // The unit is archived (`latest` is the archived server state when
-  // known). Nothing was saved; edits are the caller's to keep.
+  // known). Like a conflict, this does not prove nothing was saved; edits
+  // are the caller's to keep.
   | { readonly kind: "archived"; readonly latest: TeacherUnit | null; readonly error: TeacherUnitError }
   | { readonly kind: "error"; readonly error: TeacherUnitError }
   // U2.3 membership only: the request may or may not have committed (lost
@@ -664,7 +667,9 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       return { kind: "error", error };
     }
     if (error.category === "conflict" || error.category === "invalidStatus") {
-      // Fetch the authoritative unit; never resend the stale request.
+      // Fetch the authoritative unit; never resend the request. The read
+      // shows current state only: it cannot prove whether an earlier SDK
+      // attempt of this request committed.
       const latest = await reread(unitId);
       if (latest === "stale") return { kind: "stale" };
       if (latest !== null && latest.status === "archived") return { kind: "archived", latest, error };
@@ -704,6 +709,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       result.kind !== "error" ||
       (result.error.category !== "network" &&
         result.error.category !== "unexpected" &&
+        result.error.category !== "unconfirmed" &&
         result.error.category !== "resourceRejected")
     ) {
       return result;
