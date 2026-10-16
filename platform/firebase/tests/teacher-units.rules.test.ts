@@ -1,10 +1,10 @@
 import {
   assertFails,
-  assertSucceeds,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
 import {
   collection,
+  collectionGroup,
   deleteDoc,
   doc,
   getDoc,
@@ -17,17 +17,22 @@ import {
 
 import { createTestEnvironment } from "./setup";
 
-// U1A - Rules tests for `teacherUnits/{unitId}` and the server-only
-// `teacherUnitCreateReceipts/{receiptId}`.
+// Rules tests for `teacherUnits/{unitId}`, the server-only
+// `teacherUnitCreateReceipts/{receiptId}`, and every other Firestore path
+// the A3-3 `teacherUnits*` callables read or write.
 //
-// Access model: the owning teacher may get/list their own units while their
-// canonical record is an active teacher and the unit belongs to their
-// current school. Every direct client write is denied for every role; the
-// `teacherUnits*` callables are the sole writers (Admin SDK).
+// Access model (A3-5 callable-only): every direct client read and write is
+// denied for every role, including the owning active teacher. The
+// `teacherUnits*` callables are the sole readers and writers (Admin SDK),
+// so every management read passes the A3-3 transactional availability and
+// release-authority enforcement. Before A3-5 the owning active teacher could
+// get/list their own units directly; those cases are kept below as denials.
 
 const OWNER_UID = "teacher-owner-uid";
 const OTHER_TEACHER_UID = "teacher-other-uid";
 const STUDENT_UID = "student-uid";
+const OTHER_SCHOOL_TEACHER_UID = "teacher-other-school-uid";
+const ADMIN_UID = "platform-admin-uid";
 const SCHOOL_ID = "school-a";
 const OTHER_SCHOOL_ID = "school-b";
 const UNIT_ID = "unitOwnerAAAAAAAAAAA";
@@ -81,6 +86,14 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
       await setDoc(doc(db, "users", OWNER_UID), userDoc(OWNER_UID));
       await setDoc(doc(db, "users", OTHER_TEACHER_UID), userDoc(OTHER_TEACHER_UID));
       await setDoc(doc(db, "users", STUDENT_UID), userDoc(STUDENT_UID, { role: "student" }));
+      await setDoc(
+        doc(db, "users", OTHER_SCHOOL_TEACHER_UID),
+        userDoc(OTHER_SCHOOL_TEACHER_UID, { schoolId: OTHER_SCHOOL_ID }),
+      );
+      await setDoc(
+        doc(db, "users", ADMIN_UID),
+        userDoc(ADMIN_UID, { role: "platformAdministrator" }),
+      );
       await setDoc(doc(db, "teacherUnits", UNIT_ID), unitDoc(OWNER_UID, SCHOOL_ID));
       // A unit the owner created at a previous school (the owner has since
       // moved to SCHOOL_ID).
@@ -110,9 +123,13 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
   }
 
   describe("get", () => {
-    it("allows the owning active teacher to get their own unit", async () => {
-      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
-      await assertSucceeds(getDoc(doc(db, "teacherUnits", UNIT_ID)));
+    // A3-5: previously allowed. The owner must read through
+    // `teacherUnitsGet` / `teacherUnitsList`.
+    it("denies the owning active teacher getting their own unit (A3-5 callable-only)", async () => {
+      const db = testEnv
+        .authenticatedContext(OWNER_UID, { role: "teacher", schoolId: SCHOOL_ID })
+        .firestore();
+      await assertFails(getDoc(doc(db, "teacherUnits", UNIT_ID)));
     });
 
     it("denies another teacher in the same school", async () => {
@@ -159,10 +176,12 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
   });
 
   describe("list", () => {
-    it("allows the owner to list own units scoped by teacherId and schoolId", async () => {
-      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
-      const snapshot = await assertSucceeds(getDocs(ownQuery(db)));
-      expect(snapshot.docs.map((d) => d.id)).toEqual([UNIT_ID]);
+    // A3-5: previously allowed (the admissible scoped query).
+    it("denies the owner listing own units scoped by teacherId and schoolId (A3-5 callable-only)", async () => {
+      const db = testEnv
+        .authenticatedContext(OWNER_UID, { role: "teacher", schoolId: SCHOOL_ID })
+        .firestore();
+      await assertFails(getDocs(ownQuery(db)));
     });
 
     it("denies a list scoped only by teacherId (could include another school's units)", async () => {
@@ -315,5 +334,137 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
       const db = testEnv.unauthenticatedContext().firestore();
       await assertFails(getDoc(doc(db, "teacherUnitCreateReceipts", RECEIPT_ID)));
     });
+  });
+
+  // A3-5 callable-only matrix: every role, every operation, every Teacher
+  // Units path the A3-3 callables touch, plus nested and collection-group
+  // access. Seeded documents exist so a denial is a Rules decision, not a
+  // missing document.
+  describe("A3-5 callable-only matrix", () => {
+    const HEX = "d".repeat(64);
+    const HEX2 = "e".repeat(64);
+    const AUDIT_ID = "auditTeacherUnitAAAA";
+
+    type Caller = {
+      readonly name: string;
+      readonly ctx: () => ReturnType<RulesTestEnvironment["unauthenticatedContext"]>;
+    };
+    const callers: readonly Caller[] = [
+      { name: "unauthenticated", ctx: () => testEnv.unauthenticatedContext() },
+      {
+        name: "owning active teacher",
+        ctx: () => testEnv.authenticatedContext(OWNER_UID, { role: "teacher", schoolId: SCHOOL_ID }),
+      },
+      {
+        name: "other teacher, same school",
+        ctx: () =>
+          testEnv.authenticatedContext(OTHER_TEACHER_UID, { role: "teacher", schoolId: SCHOOL_ID }),
+      },
+      {
+        name: "teacher, different school",
+        ctx: () =>
+          testEnv.authenticatedContext(OTHER_SCHOOL_TEACHER_UID, {
+            role: "teacher",
+            schoolId: OTHER_SCHOOL_ID,
+          }),
+      },
+      {
+        name: "suspended owner with stale teacher token",
+        ctx: () => testEnv.authenticatedContext(OWNER_UID, { role: "teacher", schoolId: SCHOOL_ID }),
+      },
+      {
+        name: "student",
+        ctx: () => testEnv.authenticatedContext(STUDENT_UID, { role: "student", schoolId: SCHOOL_ID }),
+      },
+      {
+        name: "platform administrator",
+        ctx: () =>
+          testEnv.authenticatedContext(ADMIN_UID, { role: "platformAdministrator", schoolId: SCHOOL_ID }),
+      },
+    ];
+
+    // [collection path, seeded document id]
+    const paths: ReadonlyArray<readonly [string, string]> = [
+      ["teacherUnits", UNIT_ID],
+      ["teacherUnitCreateReceipts", HEX],
+      ["auditEvents", AUDIT_ID],
+      ["platformConfig", "teacherUnitsAvailability"],
+      ["teacherUnitsBackendReleases", HEX],
+      ["teacherUnitsReleaseEvidence", HEX],
+      ["teacherUnits/" + UNIT_ID + "/revisions", "r1"],
+      ["teacherUnits/" + UNIT_ID + "/anything", "x1"],
+    ];
+
+    beforeEach(async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        const db = ctx.firestore();
+        const owned = { teacherId: OWNER_UID, schoolId: SCHOOL_ID };
+        await setDoc(doc(db, "teacherUnitCreateReceipts", HEX), { ...owned, unitId: UNIT_ID });
+        await setDoc(doc(db, "auditEvents", AUDIT_ID), {
+          ...owned,
+          actorUid: OWNER_UID,
+          action: "teacherUnits.created",
+          targetId: UNIT_ID,
+        });
+        await setDoc(doc(db, "platformConfig", "teacherUnitsAvailability"), {
+          schemaVersion: 1,
+          state: "closed",
+        });
+        await setDoc(doc(db, "teacherUnitsBackendReleases", HEX), { ...owned, releaseId: HEX });
+        await setDoc(doc(db, "teacherUnitsReleaseEvidence", HEX), { ...owned, kind: "teacher-units-activation" });
+        await setDoc(doc(db, "teacherUnits", UNIT_ID, "revisions", "r1"), { ...owned, revision: 1 });
+        await setDoc(doc(db, "teacherUnits", UNIT_ID, "anything", "x1"), owned);
+      });
+    });
+
+    for (const caller of callers) {
+      describe(caller.name, () => {
+        beforeEach(async () => {
+          if (caller.name.startsWith("suspended")) await setOwnerRecord({ status: "suspended" });
+        });
+
+        for (const [path, id] of paths) {
+          it(`denies get, list, create, update and delete on ${path}`, async () => {
+            const db = caller.ctx().firestore();
+            const col = collection(db, path);
+            await assertFails(getDoc(doc(col, id)));
+            await assertFails(getDocs(col));
+            await assertFails(getDocs(query(col, where("teacherId", "==", OWNER_UID))));
+            await assertFails(
+              getDocs(
+                query(col, where("teacherId", "==", OWNER_UID), where("schoolId", "==", SCHOOL_ID)),
+              ),
+            );
+            await assertFails(setDoc(doc(col, HEX2), { teacherId: OWNER_UID, schoolId: SCHOOL_ID }));
+            await assertFails(setDoc(doc(col, id), { teacherId: OWNER_UID, schoolId: SCHOOL_ID }));
+            await assertFails(updateDoc(doc(col, id), { schoolId: SCHOOL_ID, title: "x" }));
+            await assertFails(deleteDoc(doc(col, id)));
+          });
+        }
+
+        it("denies collection-group queries over every Teacher Units collection", async () => {
+          const db = caller.ctx().firestore();
+          for (const group of [
+            "teacherUnits",
+            "teacherUnitCreateReceipts",
+            "teacherUnitsBackendReleases",
+            "teacherUnitsReleaseEvidence",
+            "revisions",
+            "anything",
+          ]) {
+            await assertFails(getDocs(collectionGroup(db, group)));
+            await assertFails(
+              getDocs(
+                query(
+                  collectionGroup(db, group),
+                  where("teacherId", "==", OWNER_UID),
+                  where("schoolId", "==", SCHOOL_ID),
+                ),
+              ),
+            );
+          }
+        });
+      });
+    }
   });
 });

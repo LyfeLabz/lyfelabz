@@ -840,26 +840,21 @@ service cloud.firestore {
     // one school. `teacherId` and `schoolId` are stamped at creation from
     // the caller's verified identity and never change.
     //
-    // Reads:
-    //   - `get` / `list`: the owning teacher only, while their canonical
-    //     `users/{uid}` record is an `active` `teacher` (Phase 8G.1 gate) AND
-    //     the unit belongs to the caller's current canonical school. A list
-    //     query is admissible only when its filters guarantee both
-    //     conditions for every returned document, so a client list must
-    //     filter `teacherId == uid` and `schoolId == <own schoolId>`; it can
-    //     never enumerate another teacher's or another school's units.
-    //
-    // Writes:
-    //   - All client writes denied. The `teacherUnits*` callables are the
-    //     sole writers and run through the Admin SDK, bypassing Rules.
-    //     Stated explicitly (not only via the terminal deny) to document
-    //     the callable-only writer contract at the surface.
+    // A3-5 callable-only access. Every client read and write is denied for
+    // every role, including the owning teacher. The `teacherUnits*`
+    // callables are the sole readers and writers and run through the Admin
+    // SDK, bypassing Rules. A direct client read would skip the A3-3
+    // transactional availability and release-authority enforcement that
+    // every management read must pass (docs/platform/TEACHER_UNITS.md
+    // section 7). Stated explicitly (not only via the terminal deny) to
+    // document the callable-only contract at the surface. Under the current
+    // Rules no other block grants client access to Teacher Units paths.
+    // Firestore allows a request when any matching rule allows it, so this
+    // deny does not prevent access granted by another match: overlapping
+    // allow rules (for example a broader wildcard) must remain absent.
+    // `read` covers `get` and `list`.
     match /teacherUnits/{unitId} {
-      allow get, list: if isSignedIn()
-        && resource.data.teacherId == request.auth.uid
-        && callerIsActiveTeacher()
-        && resource.data.schoolId == callerUserData().schoolId;
-      allow create, update, delete: if false;
+      allow read, write: if false;
     }
 
     // ---------- teacherUnitCreateReceipts/{receiptId} ----------
