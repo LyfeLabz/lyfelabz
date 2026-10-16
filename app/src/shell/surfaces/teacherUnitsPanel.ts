@@ -26,6 +26,12 @@ import type { FlatResource } from "../../curriculum/resourceProjection";
 import { FORMAL_RESOURCE_LABEL, type FormalResourceType } from "../../curriculum/curriculumManifest";
 import { isTeacherUnitsAvailabilityCode, type TeacherUnitError } from "../../teacherUnits/errors";
 import type { UnresolvedCreateReason } from "../../teacherUnits/saveCoordination";
+import type {
+  CapacityReason,
+  PendingMutationEntry,
+  PendingMutationResolution,
+} from "../../teacherUnits/pendingMutations";
+import type { PendingUnitMutationRecord } from "../../teacherUnits/mutationReconciliation";
 
 // U2.2 - My Units panel inside Curriculum (docs/platform/TEACHER_UNITS.md
 // §9.4). DOM only: no Firebase, no browser storage. Everything it shows
@@ -298,6 +304,27 @@ export function renderTeacherUnitsPanel(
   const outcomes = el("div", "shell-units-outcomes");
   outcomes.setAttribute("data-testid", "units-outcomes");
   root.appendChild(outcomes);
+  // A3-4 S2 Unconfirmed changes: every pending non-create request of this
+  // teacher and school, from the controller (which reads the seam-owned
+  // registry, so the list survives leaving and reopening My Units). Each
+  // entry states what was asked and what the unit looks like now; it never
+  // says whether the request was saved. Controls only read (Check current
+  // state) or acknowledge (Dismiss); nothing here resends a request.
+  const pendingBox = el("div", "shell-units-recovery shell-units-pending");
+  pendingBox.setAttribute("data-testid", "units-pending");
+  pendingBox.setAttribute("role", "region");
+  pendingBox.setAttribute("aria-label", "Unconfirmed changes");
+  pendingBox.hidden = true;
+  root.appendChild(pendingBox);
+  // The list is rebuilt; the live status line is not, so a screen reader
+  // announces each update written to it (P2-5).
+  const pendingBody = el("div");
+  pendingBox.appendChild(pendingBody);
+  const pendingStatus = el("p", "shell-units-recovery-note");
+  pendingStatus.setAttribute("role", "status");
+  pendingStatus.setAttribute("aria-live", "polite");
+  pendingStatus.setAttribute("data-testid", "units-pending-status");
+  pendingBox.appendChild(pendingStatus);
   let outcomeSeq = 0;
   // Each entry keeps its operation's facts (id, unit, kind, historical
   // wording or formatter); only the wording derived from the current state
@@ -945,6 +972,14 @@ export function renderTeacherUnitsPanel(
       case "uncertain":
         showNotice(card, failureNotice(result.error, { card, op, base }));
         return;
+      case "needsCheck":
+        showNotice(card, needsCheckNotice(card), "conflict");
+        if (card.editor) settleFocus(card, card.editor.save);
+        return;
+      case "capacity":
+        showNotice(card, capacityNotice(card, result.reason), "conflict");
+        if (card.editor) settleFocus(card, card.editor.save);
+        return;
       case "busy":
         return;
     }
@@ -1309,8 +1344,8 @@ export function renderTeacherUnitsPanel(
           editing,
           ctx.where,
           op === "edit"
-            ? "Choose Check for changes to see whether they were saved before trying again."
-            : `Choose Check for changes to see whether it was ${op === "archive" ? "archived" : "restored"}.`,
+            ? "Choose Check for changes to see its current state before trying again."
+            : "Choose Check for changes to see its current state.",
         ]);
       }
       const now = op === "edit"
@@ -1318,6 +1353,49 @@ export function renderTeacherUnitsPanel(
         : ctx.archived ? "It is archived now." : "It is active now.";
       return sentences([now, editing, ctx.where]);
     });
+  // A3-4 S2 (D3, P2-1): the controller refused to send a change because an
+  // earlier change to this unit is unconfirmed and no current state has been
+  // loaded since. Definite: this request was not sent. Nothing is resent.
+  const needsCheckNotice = (card: CardView): NoticeText =>
+    contextualNotice("An earlier change to this unit wasn't confirmed, so LyfeLabz didn't send this one.", () =>
+      sentences([
+        card.editor !== null ? "Your edits are still here." : null,
+        "Choose Check current state under Unconfirmed changes, or Check for changes, to load the unit's current state. Then review it and try again.",
+      ]),
+    );
+  // Bounded tracking (pendingMutations.ts): this request was not sent.
+  // Fifth remediation P3: the guidance names only an action that can free
+  // the bound that refused this change (pendingMutations.ts CapacityReason),
+  // never a dismissal when nothing can be dismissed, never a read when reads
+  // cannot help, and never a change made only to free room.
+  const capacityNotice = (card: CardView, reason: CapacityReason): NoticeText =>
+    contextualNotice(
+      reason === "retained"
+        ? "LyfeLabz has reached its limit for keeping track of earlier unconfirmed changes during this visit, so it didn't send this one."
+        : "LyfeLabz is already keeping track of as many unconfirmed changes as it can, so it didn't send this one.",
+      () => {
+        const editing = card.editor !== null ? "Your edits are still here." : null;
+        if (reason === "retained") {
+          return sentences([
+            editing,
+            "Checking for changes or dismissing notices won't make room. Reloading the page starts a new visit and clears what LyfeLabz is keeping track of here, but it doesn't confirm or undo any earlier change, and it doesn't cancel changes already sent, which may still finish. Anything you haven't saved on this page will be lost, so copy it first.",
+          ]);
+        }
+        if (reason === "blocking") {
+          return sentences([
+            editing,
+            "Too many units have unconfirmed changes whose current state hasn't been loaded. Choose Check for changes for the grades they're in (turn on Show archived units to include archived units), then try again.",
+          ]);
+        }
+        const dismissible = controller.getState().pending.some((e) => e.status === "uncertain");
+        return sentences([
+          editing,
+          dismissible
+            ? "Review the changes listed under Unconfirmed changes and dismiss the ones you've checked, then try again."
+            : "LyfeLabz is still waiting for responses to earlier changes. Try again once they're listed under Unconfirmed changes or resolved.",
+        ]);
+      },
+    );
   const failureNotice = (
     error: TeacherUnitError,
     lifecycle?: { readonly card: CardView; readonly op: LifecycleOp; readonly base: number },
@@ -1422,6 +1500,12 @@ export function renderTeacherUnitsPanel(
         return;
       case "error":
         showNotice(card, failureNotice(result.error));
+        return;
+      case "needsCheck":
+        showNotice(card, needsCheckNotice(card), "conflict");
+        return;
+      case "capacity":
+        showNotice(card, capacityNotice(card, result.reason), "conflict");
         return;
       default:
         return;
@@ -2122,6 +2206,231 @@ export function renderTeacherUnitsPanel(
     if (departed !== null) departFocus(departed.unitId, departed.index);
   };
 
+  // ---------- Unconfirmed changes (A3-4 S2) ----------
+  //
+  // Present-state wording only (approved decision D2): a finding describes
+  // the unit as LyfeLabz last read it after the request, never whether the
+  // request committed. A matching state may come from another change.
+  const askedFor = (r: PendingUnitMutationRecord): string => {
+    const name = `"${r.titleAtRequest}"`;
+    switch (r.intent.op) {
+      case "update":
+        if (r.intent.title !== undefined && r.intent.title !== r.titleAtRequest) {
+          return r.intent.description !== undefined
+            ? `You asked to rename ${name} to "${r.intent.title}" and change its description.`
+            : `You asked to rename ${name} to "${r.intent.title}".`;
+        }
+        return `You asked to change the description of ${name}.`;
+      case "archive":
+        return `You asked to archive ${name}.`;
+      case "restore":
+        return `You asked to restore ${name}.`;
+      case "setResources":
+        switch (r.intent.purpose) {
+          case "add":
+            return `You asked to add resources to ${name}.`;
+          case "remove":
+            return `You asked to remove a resource from ${name}.`;
+          case "move":
+            return `You asked to move a resource in ${name}.`;
+          case "repair":
+            return `You asked to remove unavailable resources from ${name}.`;
+        }
+    }
+  };
+  const pendingMatches = (e: PendingMutationEntry): string => {
+    switch (e.record.intent.op) {
+      case "update":
+        return "Its current details match what you asked for.";
+      case "archive":
+        return "It is archived now.";
+      case "restore":
+        return "It is active now.";
+      case "setResources":
+        return "Its current resources match what you asked for.";
+    }
+  };
+  const pendingNow = (e: PendingMutationEntry): string => {
+    if (e.checking) return "Checking its current state...";
+    const ev = e.evaluation;
+    switch (ev.finding) {
+      case "consistentWithRequest":
+        return `${pendingMatches(e)} That may be from your request or from another change.`;
+      case "notInEffectNow":
+        return "Your requested change isn't in effect now. If you still want it, make the change again from the unit.";
+      case "changedSince":
+        return "This unit has changed since your request, and its current state doesn't match it. Review the unit before making more changes.";
+      case "unknown":
+        switch (ev.basis) {
+          case "notFound":
+            return "LyfeLabz couldn't find this unit when it checked.";
+          case "readUnavailable":
+            return "LyfeLabz couldn't check its current state. Choose Check current state to try again.";
+          case "inconsistent":
+            return "LyfeLabz couldn't compare its current state with your request. Choose Check current state to try again.";
+          default:
+            return "Its current state hasn't been checked yet. Choose Check current state.";
+        }
+    }
+  };
+  const pendingText = (e: PendingMutationEntry): string =>
+    e.status === "inFlight"
+      ? sentences([askedFor(e.record), "LyfeLabz is still waiting for a response, so this unit can't be changed yet."])
+      : sentences([askedFor(e.record), "This change wasn't confirmed.", pendingNow(e)]);
+  // P2-5: asynchronous reconciliation updates are announced through the
+  // region's own persistent polite status line (role="status",
+  // aria-live="polite"), one message per change, never the whole list on
+  // every render:
+  // - on mount (including a remount), how many changes are listed;
+  // - a restored request's outcome arriving, and every later change of an
+  //   entry's present-state finding (an automatic or deliberate read, or a
+  //   later confirmed change), as that entry's text;
+  // - a request whose result arrived after the panel that sent it was
+  //   replaced (a confirmed save, a no-op, or a definite refusal).
+  // An entry's own first uncertain outcome is not repeated here: its card
+  // shows it as an alert.
+  // Each entry is tracked by the teacher-facing wording of its finding, so a
+  // newer revision that reads the same is not news (F5).
+  type Seen = { readonly text: string; readonly notChecked: boolean; readonly checked: boolean };
+  let pendingSeen: Map<string, Seen> | null = null;
+  const restoredIds = new Set<string>();
+  let resolutionSeen = 0;
+  // What the status line currently says is about: entry ids whose present
+  // state it describes (cleared as soon as any of them is dismissed or
+  // settled, so a dismissed finding is never left looking current, F4).
+  let statusAbout: ReadonlySet<string> = new Set();
+  const findingText = (e: PendingMutationEntry): string | null =>
+    e.status !== "uncertain" || e.checking ? null : pendingText(e);
+  const resolutionText = (r: PendingMutationResolution): string =>
+    sentences([
+      askedFor(r.record),
+      r.outcome === "saved"
+        ? "This change was saved."
+        : r.outcome === "noop"
+          ? "No change was needed when this request was checked."
+          : "LyfeLabz couldn't make this change, so nothing was saved.",
+    ]);
+  const setPendingStatus = (text: string, about: ReadonlySet<string>): void => {
+    statusAbout = about;
+    // Never rewritten with the same words: no repeated announcement (F5).
+    if ((pendingStatus.textContent ?? "") !== text) pendingStatus.textContent = text;
+  };
+  const announcePendingUpdates = (s: TeacherUnitsViewState): void => {
+    const messages: string[] = [];
+    const about = new Set<string>();
+    const present = new Set(s.pending.map((e) => e.record.id));
+    if (pendingSeen === null) {
+      pendingSeen = new Map();
+      for (const e of s.pending) {
+        restoredIds.add(e.record.id);
+        about.add(e.record.id);
+        pendingSeen.set(e.record.id, {
+          text: findingText(e) ?? "",
+          notChecked: e.evaluation.basis === "notChecked",
+          checked: e.checking,
+        });
+      }
+      resolutionSeen = s.resolutions.reduce((m, r) => Math.max(m, r.seq), 0);
+      const n = s.pending.length;
+      if (n > 0) {
+        messages.push(n === 1 ? "One change is listed under Unconfirmed changes." : `${n} changes are listed under Unconfirmed changes.`);
+      }
+    } else {
+      for (const e of s.pending) {
+        const id = e.record.id;
+        const prev = pendingSeen.get(id);
+        const text = findingText(e);
+        const prevText = prev?.text ?? "";
+        // The panel's own first outcome (and the automatic read that
+        // completes it) is the card's alert; after that, every change is
+        // news. Restored entries and deliberate checks are always news.
+        const news = restoredIds.has(id) || prev?.checked === true || (prevText !== "" && prev?.notChecked !== true);
+        if (text !== null && text !== prevText && news) {
+          messages.push(text);
+          about.add(id);
+        }
+        pendingSeen.set(id, {
+          text: text ?? prevText,
+          notChecked: text === null ? (prev?.notChecked ?? true) : e.evaluation.basis === "notChecked",
+          checked: text === null ? (prev?.checked ?? false) || e.checking : false,
+        });
+      }
+      for (const id of Array.from(pendingSeen.keys())) if (!present.has(id)) pendingSeen.delete(id);
+      for (const r of s.resolutions) {
+        if (r.seq <= resolutionSeen) continue;
+        resolutionSeen = r.seq;
+        messages.push(resolutionText(r));
+      }
+    }
+    if (messages.length > 0) {
+      setPendingStatus(messages.join(" "), about);
+    } else if (Array.from(statusAbout).some((id) => !present.has(id))) {
+      // Dismissed or settled: its present-state wording is withdrawn.
+      // Dismissal confirms, cancels and undoes nothing, so nothing replaces it.
+      setPendingStatus("", new Set());
+    }
+  };
+  let pendingKey = "";
+  const renderPending = (s: TeacherUnitsViewState): void => {
+    announcePendingUpdates(s);
+    // Shown while it lists anything or holds the latest update.
+    pendingBox.hidden = s.pending.length === 0 && (pendingStatus.textContent ?? "") === "";
+    const key = JSON.stringify(s.pending.map((e) => [e.record.id, pendingText(e), e.status, e.checking]));
+    if (key === pendingKey) return;
+    pendingKey = key;
+    rebuildKeepingFocus(
+      pendingBody,
+      () => {
+        if (s.pending.length === 0) return;
+        const h = el("h4", "shell-units-subheading", "Unconfirmed changes");
+        h.id = "units-pending-heading";
+        pendingBody.appendChild(h);
+        pendingBody.appendChild(
+          el(
+            "p",
+            "shell-units-recovery-intro",
+            "LyfeLabz couldn't confirm these changes. Each one shows what the unit looks like now, which can't tell you whether your request was saved. This list is kept while you stay on this page. Reloading the page clears it, but doesn't confirm or undo anything.",
+          ),
+        );
+        const ul = el("ul", "shell-units-recovery-list");
+        pendingBody.appendChild(ul);
+        for (const e of s.pending) {
+          const id = e.record.id;
+          const li = el("li", "shell-units-recovery-item");
+          li.setAttribute("data-testid", `units-pending-${id}`);
+          li.setAttribute("data-unit-id", e.record.unitId);
+          li.setAttribute("data-status", e.status);
+          li.setAttribute("data-finding", e.status === "inFlight" ? "pending" : e.evaluation.finding);
+          li.appendChild(el("p", "shell-units-recovery-message", pendingText(e)));
+          if (e.status === "uncertain") {
+            const actions = el("div", "shell-units-actions");
+            const check = button("Check current state");
+            check.setAttribute("data-testid", `units-pending-check-${id}`);
+            setAriaDisabled(check, e.checking);
+            check.addEventListener("click", () => {
+              if (isInert(check)) return;
+              void controller.checkPendingMutation(id);
+            });
+            const dismiss = button("Dismiss");
+            dismiss.setAttribute("data-testid", `units-pending-dismiss-${id}`);
+            dismiss.setAttribute("aria-label", `Dismiss unconfirmed change to "${e.record.titleAtRequest}"`);
+            dismiss.addEventListener("click", () => {
+              controller.dismissPendingMutation(id);
+            });
+            actions.appendChild(check);
+            actions.appendChild(dismiss);
+            li.appendChild(actions);
+          }
+          ul.appendChild(li);
+        }
+      },
+      (tid) =>
+        tid !== null && tid.startsWith("units-pending-")
+          ? pendingBox.querySelector<HTMLElement>("[data-testid^=units-pending-dismiss-]") ?? heading
+          : null,
+    );
+  };
+
   let wasConnected = false;
   // Focus that a render took away (its control was disabled, hidden, moved,
   // or removed) is put back: on the same control when it is still usable,
@@ -2161,6 +2470,7 @@ export function renderTeacherUnitsPanel(
     setAriaDisabled(checkChanges, checking || s.list.kind === "loading");
     renderCreate(s);
     renderList(s);
+    renderPending(s);
     refreshNotices();
     rescueFocus(before);
   };

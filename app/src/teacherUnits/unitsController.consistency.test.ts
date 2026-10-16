@@ -344,12 +344,17 @@ describe("P2: a confirmed restore against lists that overlap it", () => {
     expect(listed(h.ctl, a.unitId)?.revision).toBe(4);
   });
 
-  test("Restore with an unknown outcome: an error, no retry, nothing shown as restored", async () => {
+  // A3-4 S2: the unknown outcome gets one authoritative reread (a get, never
+  // a resend); when that read fails, nothing is claimed either way.
+  test("Restore with an unknown outcome: uncertain, one reread, no retry, nothing shown as restored", async () => {
     const { h, a } = await archivedUnit();
     const restore = h.ctl.restoreUnit(a.unitId);
     await tick();
     h.calls.restore[0].d.reject(NETWORK());
-    expect((await restore).kind).toBe("error");
+    await tick();
+    expect(h.c.get).toHaveBeenCalledTimes(1);
+    h.calls.get[0].d.reject(NETWORK());
+    expect(await restore).toMatchObject({ kind: "uncertain", latest: null });
     expect(h.c.restore).toHaveBeenCalledTimes(1);
     expect(listedIds(h.ctl)).toEqual([]);
     expect(h.ctl.getKnownUnit(a.unitId)?.status).toBe("archived");

@@ -541,14 +541,22 @@ describe("messages", () => {
     press(btn(h, `units-edit-save-${a.unitId}`));
     last(h, "update").d.reject(LOST());
     await tick();
+    // A3-4 S2: one automatic reread; here it fails, so nothing is known now.
+    last(h, "get").d.reject(LOST());
+    await tick();
     let text = noticeOf(h, a)?.textContent ?? "";
     expect(text).toContain("LyfeLabz couldn't confirm whether your changes were saved.");
     expect(text).toContain("Your edits are still here.");
     expect(text).toContain("Choose Check for changes");
     expect(text).not.toMatch(/resource/i);
     btn(h, `units-edit-cancel-${a.unitId}`).click();
+    // A3-4 S2 (D3): after the unconfirmed edit and its failed read, a new
+    // change needs the unit's current state first.
+    await checkChanges(h, [a]);
     press(btn(h, `units-archive-${a.unitId}`));
     last(h, "archive").d.reject(LOST());
+    await tick();
+    last(h, "get").d.reject(LOST());
     await tick();
     text = noticeOf(h, a)?.textContent ?? "";
     expect(text).toContain("LyfeLabz couldn't confirm whether this unit was archived.");
@@ -561,6 +569,8 @@ describe("messages", () => {
     expect(text).toBe("LyfeLabz couldn't confirm whether this unit was archived. It is archived now.");
     press(btn(h, `units-restore-${a.unitId}`));
     last(h, "restore").d.reject(LOST());
+    await tick();
+    last(h, "get").d.reject(LOST());
     await tick();
     text = noticeOf(h, a)?.textContent ?? "";
     expect(text).toContain("LyfeLabz couldn't confirm whether this unit was restored.");

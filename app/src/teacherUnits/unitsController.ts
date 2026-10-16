@@ -17,6 +17,19 @@ import { validateUnitDescription, validateUnitTitle } from "./fieldRules";
 import { getPlaceableResourceById } from "./placeableResources";
 import { moveIdByStep } from "./unitOrderMath";
 import {
+  isUncertainMutationFailure,
+  shouldRereadAfter,
+  type PendingUnitMutationIntent,
+} from "./mutationReconciliation";
+import {
+  createPendingMutationRegistry,
+  isPresent,
+  type PendingMutationEntry,
+  type PendingMutationRegistry,
+  type PendingMutationResolution,
+  type CapacityReason,
+} from "./pendingMutations";
+import {
   compareTeacherUnits,
   TEACHER_UNIT_RESOURCES_MAX,
   type TeacherUnit,
@@ -118,7 +131,18 @@ export type TeacherUnitsViewState = {
   readonly formerSchool: FormerSchoolNotices;
   // The most recent attempt confirmed by reconciliation (restored or own).
   readonly lastConfirmed: { readonly unit: TeacherUnit; readonly replayed: boolean } | null;
+  // Units with a mutation in flight: this controller's own, plus requests
+  // an earlier controller of this teacher and school dispatched that have
+  // no response yet (A3-4 S2).
   readonly busyUnitIds: ReadonlySet<string>;
+  // A3-4 S2: this teacher and school's uncertain (and still in-flight)
+  // non-create mutations, oldest first, with each one's latest present-state
+  // finding. Memory only: kept across Curriculum navigation and panel
+  // remounts in one signed-in session, never across a browser reload.
+  readonly pending: ReadonlyArray<PendingMutationEntry>;
+  // A3-4 S2: requests whose response arrived after the controller that sent
+  // them was replaced, oldest first (bounded). Announced once by the panel.
+  readonly resolutions: ReadonlyArray<PendingMutationResolution>;
 };
 
 // What the latest accepted evidence says about one unit.
@@ -173,13 +197,25 @@ export type UnitMutationResult =
   // are the caller's to keep.
   | { readonly kind: "archived"; readonly latest: TeacherUnit | null; readonly error: TeacherUnitError }
   | { readonly kind: "error"; readonly error: TeacherUnitError }
-  // U2.3 membership only: the request may or may not have committed (lost
-  // response, malformed response, or a refusal that names resources).
-  // `latest` is the authoritative unit fetched afterwards (null when it
-  // could not be fetched). Never resent automatically.
+  // The request may or may not have committed (lost response, malformed
+  // response, or an A3-3 availability refusal or responseUnavailable).
+  // `latest` is the authoritative unit fetched once afterwards (null when it
+  // could not be fetched). Never resent. A3-4 S2: update, archive and
+  // restore report this too, not only membership writes.
   | { readonly kind: "uncertain"; readonly latest: TeacherUnit | null; readonly error: TeacherUnitError }
   // Another mutation for this unit is in flight; nothing was sent.
   | { readonly kind: "busy" }
+  // A3-4 S2: the scope already tracks the most unconfirmed changes it can
+  // (pendingMutations.ts). Nothing was sent. `reason` names the bound, so
+  // the teacher is only offered a recovery action that can help.
+  | { readonly kind: "capacity"; readonly reason: CapacityReason }
+  // A3-4 S2 (D3): an earlier change to this unit has an unconfirmed outcome
+  // and no authoritative state has been accepted since, so nothing was sent.
+  // This is also returned instead of any answer computed from held state
+  // (a local no-op, an archived or unavailable-resource refusal).
+  // A read (Check current state, Check for changes) restores eligibility;
+  // the teacher then decides again. Unsaved input is the caller's to keep.
+  | { readonly kind: "needsCheck" }
   // The controller was disposed or the account changed; ignore.
   | { readonly kind: "stale" };
 
@@ -244,6 +280,12 @@ export type TeacherUnitsController = {
     resourceId: string,
     direction: ResourceMoveDirection,
   ) => Promise<UnitMutationResult>;
+  // A3-4 S2: one deliberate authoritative read (a get, never a mutation) of
+  // a pending entry's unit, re-evaluating its present-state finding.
+  readonly checkPendingMutation: (id: string) => Promise<void>;
+  // A3-4 S2: explicit acknowledgment that removes one uncertain entry. Never
+  // sends anything. False for an in-flight or unknown entry.
+  readonly dismissPendingMutation: (id: string) => boolean;
   readonly dispose: () => void;
 };
 
@@ -258,7 +300,15 @@ export type TeacherUnitsControllerDeps = {
   readonly initialGrade: TeacherUnitGrade;
   readonly mint?: () => string;
   readonly now?: () => number;
+  // A3-4 S2: the owner of pending reconciliation records, above this
+  // controller's lifetime (one per surface seam). Omitted: a private
+  // registry that lives only as long as this controller.
+  readonly pendingRegistry?: PendingMutationRegistry;
 };
+
+// A success response that contradicts the write contract (see `mutate`).
+// Categorized "unexpected": uncertain, one automatic read, never resent.
+const INCONSISTENT_WRITE_RESPONSE = normalizeTeacherUnitError(new Error("inconsistent write response"));
 
 function sameContext(a: TeacherUnitCreateContext | null, b: TeacherUnitCreateContext): boolean {
   return a !== null && a.teacherId === b.teacherId && a.schoolId === b.schoolId;
@@ -292,8 +342,9 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   let disposed = false;
   let loadSeq = 0;
 
-  const alive = (): boolean => {
-    if (disposed) return false;
+  // The live canonical context is still the one this controller was
+  // mounted for (whether or not it is disposed).
+  const scopeCurrent = (): boolean => {
     let current: TeacherUnitCreateContext | null = null;
     try {
       current = deps.readCurrentContext();
@@ -301,6 +352,31 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       current = null;
     }
     return sameContext(current, session);
+  };
+  const alive = (): boolean => !disposed && scopeCurrent();
+
+  // A3-4 S2 pending reconciliation records. Bound to this teacher and
+  // school; binding clears any other scope's records. Writes are refused
+  // once the canonical context changes, so a late response of this
+  // controller can settle its own record after a panel remount, but never
+  // reaches another account or school.
+  const pending = (deps.pendingRegistry ?? createPendingMutationRegistry(deps.now ? { now: deps.now } : {})).forScope(
+    session,
+    scopeCurrent,
+  );
+  // This controller's own in-flight units (see `busyUnitIds`).
+  const ownBusy = new Set<string>();
+  // Registry writes this controller makes while it is applying evidence
+  // itself: its own listener ignores them (the controller updates its view
+  // right after), so it never re-renders half-applied state.
+  let ownWrite = 0;
+  const quietly = <T>(write: () => T): T => {
+    ownWrite++;
+    try {
+      return write();
+    } finally {
+      ownWrite--;
+    }
   };
 
   // Re-read immediately before every dispatch; refuses another account.
@@ -383,16 +459,28 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     formerSchool,
     lastConfirmed: null,
     busyUnitIds: new Set<string>(),
+    pending: pending.list(),
+    resolutions: pending.resolutions(),
   });
 
   // The units the last completed Check my units returned (its own result).
   let checkedIds: ReadonlyArray<string> = [];
+
+  const busyNow = (): ReadonlySet<string> => {
+    const ids = new Set(ownBusy);
+    for (const e of pending.list()) if (e.status === "inFlight") ids.add(e.record.unitId);
+    const prev = state.busyUnitIds;
+    return prev.size === ids.size && Array.from(ids).every((id) => prev.has(id)) ? prev : ids;
+  };
 
   const set = (patch: Partial<TeacherUnitsViewState>): void => {
     const recoveryCheck = patch.recoveryCheck ?? state.recoveryCheck;
     state = Object.freeze({
       ...state,
       ...patch,
+      busyUnitIds: busyNow(),
+      pending: pending.list(),
+      resolutions: pending.resolutions(),
       create: primary.state(),
       storage,
       recoveries: recoveries(),
@@ -450,7 +538,10 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   // (and status). It is never evidence about a unit; `getUnitState` is.
   // This is client ordering only. Authorization and `expectedRevision`
   // stay server-enforced; nothing here is ever resent.
-  let clock = 0;
+  // A3-4 S2 (P2-4): the clock is the registry's, shared by every controller
+  // of this teacher and school, so evidence a replaced controller accepted
+  // is ordered against this controller's own reads.
+  const tick = (): number => pending.stamp();
   type Presence = { readonly at: number; readonly kind: "present" | "notActive" | "absent" };
   const presence = new Map<string, Presence>();
   // A list is evidence about its whole scope, including units this
@@ -521,8 +612,20 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     // read that finds it again can never lower its revision.
     const held = known.get(unit.unitId);
     if (held === undefined || unit.revision > held.revision) known.set(unit.unitId, unit);
+    // Shared with every controller of this scope (revision-monotonic).
+    quietly(() => pending.accept(unit, at));
     const now = known.get(unit.unitId) as TeacherUnit;
-    if (p !== undefined && p.at > at && p.kind === "absent") return null;
+    if (p !== undefined && p.at > at && p.kind === "absent") {
+      // Third remediation F2: absence and records are ordered by ONE rule,
+      // the registry's (`isPresent`): a record outranks an absence it
+      // overlapped only when its revision was first seen after the absent
+      // read began. When that rule says present, so does this controller.
+      const ev = pending.latest(unit.unitId);
+      if (ev === null || !isPresent(ev)) return null;
+      presence.set(unit.unitId, { at: p.at, kind: "present" });
+      relist();
+      return now;
+    }
     if (p !== undefined && p.at > at && p.kind === "notActive") {
       return now.status === "archived" ? now : null;
     }
@@ -556,7 +659,9 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
 
   // `notFound` observed by a request dispatched at `at`. Presence only: the
   // highest-revision record seen stays (see `accept`).
-  const drop = (unitId: string, at: number): void => {
+  const drop = (unitId: string, at: number, share = true): void => {
+    // Authoritative absence is shared with every controller of the scope.
+    if (share) quietly(() => pending.markAbsent(unitId, at));
     const p = presence.get(unitId);
     if (p !== undefined && p.at > at) return;
     presence.set(unitId, { at, kind: "absent" });
@@ -580,20 +685,31 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     for (const [unitId, u] of known) {
       if (ids.has(unitId) || !inScope(u)) continue;
       presence.set(unitId, merged(presence.get(unitId), { at, kind: omitted }));
+      // Complete for absence: archived units were included, and a unit's
+      // grade never changes (see `publishListAbsence`).
+      if (scope.includeArchived) quietly(() => pending.markAbsent(unitId, at));
     }
   };
 
   const load = async (): Promise<void> => {
     if (!alive()) return;
     const seq = ++loadSeq;
-    const at = ++clock;
+    const at = tick();
     const grade = state.grade;
     const includeArchived = state.showArchived;
     set({ list: { kind: "loading" } });
     const outcome = await runTeacherUnitMutation(() => deps.callables.list({ grade, includeArchived }));
-    if (!alive() || seq !== loadSeq) return;
+    // A replaced controller still shares what its read established. A live
+    // one applies it locally first (which shares it), so its own evidence
+    // never comes back to it as another controller's.
+    if (!alive()) {
+      if (outcome.ok) shareList(outcome.result.units, at, { grade, includeArchived });
+      return;
+    }
+    if (seq !== loadSeq) return;
     if (outcome.ok) {
       acceptList(outcome.result.units, at, { grade, includeArchived });
+      quietly(() => publishListAbsence(outcome.result.units, at, { grade, includeArchived }));
       set({ list: listedNow() });
     } else {
       set({ list: { kind: "error", error: outcome.error } });
@@ -601,29 +717,162 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   };
 
   const busy = (unitId: string, on: boolean): void => {
-    const next = new Set(state.busyUnitIds);
-    if (on) next.add(unitId);
-    else next.delete(unitId);
-    set({ busyUnitIds: next });
+    if (on) ownBusy.add(unitId);
+    else ownBusy.delete(unitId);
+    set({});
   };
 
-  // Read one unit after a failed mutation; returns the unit now held (null
-  // when it could not be read or no longer exists).
+  // When a successful list is COMPLETE for absence: it included archived
+  // units (an active-only list omits archived units, so its omissions prove
+  // nothing), and it covered every grade or the unit's own grade (the
+  // server stamps a unit's grade at creation and never changes it). The
+  // server refuses a list above its ceiling (listLimitExceeded) instead of
+  // truncating it, so a successful list is never partial. A unit in scope
+  // that such a list omits is not in this teacher's units now. Failed lists
+  // say nothing. Units known only from the shared registry are covered too.
+  const publishListAbsence = (
+    units: ReadonlyArray<TeacherUnit>,
+    at: number,
+    scope: { readonly grade: TeacherUnitGrade | null | undefined; readonly includeArchived: boolean | undefined },
+  ): void => {
+    if (scope.includeArchived !== true) return;
+    const listed = new Set(units.map((u) => u.unitId));
+    for (const ev of pending.units()) {
+      if (listed.has(ev.unitId) || ev.unit === null) continue;
+      if (scope.grade !== null && scope.grade !== undefined && ev.unit.grade !== scope.grade) continue;
+      pending.markAbsent(ev.unitId, at);
+    }
+  };
+
+  // A replaced controller's list result: records and complete-list absence.
+  const shareList = (
+    units: ReadonlyArray<TeacherUnit>,
+    at: number,
+    scope: { readonly grade: TeacherUnitGrade | null | undefined; readonly includeArchived: boolean | undefined },
+  ): void => {
+    for (const u of units) pending.accept(u, at);
+    publishListAbsence(units, at, scope);
+  };
+
+  // Adopts the scope's shared evidence (P2-4): records another controller
+  // of this teacher and school accepted, including a replaced controller's
+  // late reread or confirmed write. Each keeps the stamp it was accepted
+  // with, so the controller's own ordering (revision-monotonic content,
+  // newest-evidence presence) decides, never arrival order.
+  // True when this controller adopted anything.
+  const syncShared = (): boolean => {
+    let changed = false;
+    for (const ev of pending.units()) {
+      if (ev.unit !== null) {
+        const held = known.get(ev.unitId);
+        const p = presence.get(ev.unitId);
+        const skip =
+          (held !== undefined && held.revision > ev.unit.revision) ||
+          (held !== undefined && held.revision === ev.unit.revision && p !== undefined && p.at >= ev.at);
+        if (!skip) {
+          accept(ev.unit, ev.at);
+          changed = true;
+        }
+      }
+      // Shared authoritative absence (a late notFound of a replaced
+      // controller, another controller's complete list), as the registry
+      // orders it against records (`isPresent`). Adopted at the stamp it was
+      // received, so a read that overlapped it never hides it; and released
+      // the moment the same rule says a record outranks it (F2).
+      if (ev.absentAt >= 0) {
+        const p = presence.get(ev.unitId);
+        if (!isPresent(ev) && (p === undefined || p.kind !== "absent")) {
+          drop(ev.unitId, ev.absentSeenAt, false);
+          changed = true;
+        } else if (isPresent(ev) && p !== undefined && p.kind === "absent" && known.has(ev.unitId)) {
+          presence.set(ev.unitId, { at: Math.max(p.at, ev.at), kind: "present" });
+          changed = true;
+        }
+      }
+    }
+    return changed;
+  };
+
+  // D3 (P2-1, F1): checked before ANY answer that relies on held state,
+  // including local no-ops and archived or unavailable-resource refusals,
+  // so a cached value is never reported as saved or as needing no change
+  // while an earlier change to the unit is unconfirmed.
+  const heldStateBlock = (unitId: string): UnitMutationResult | null => {
+    if (!alive()) return { kind: "stale" };
+    if (pending.hasInFlight(unitId)) return { kind: "busy" };
+    if (pending.requiresFreshRead(unitId)) return { kind: "needsCheck" };
+    return null;
+  };
+
+  // Read one unit (a get, never a mutation); returns the unit now held (null
+  // when it could not be read or no longer exists). The observation reaches
+  // pending entries even when this controller was replaced meanwhile.
   const reread = async (unitId: string): Promise<TeacherUnit | null | "stale"> => {
-    const at = ++clock;
+    const at = tick();
     const fresh = await runTeacherUnitMutation(() => deps.callables.get({ unitId }));
+    pending.observe(
+      unitId,
+      fresh.ok
+        ? { kind: "unit", unit: fresh.result.unit }
+        : fresh.error.category === "notFound"
+          ? { kind: "notFound" }
+          : { kind: "unavailable" },
+      at,
+    );
     if (!alive()) return "stale";
     if (fresh.ok) return adopt(fresh.result.unit, at);
     if (fresh.error.category === "notFound") drop(unitId, at);
     return null;
   };
 
-  // Shared handling for revision-guarded single-unit mutations.
+  // A pending entry's read: marks it checking while the get is outstanding.
+  const readForEntry = async (entry: PendingMutationEntry): Promise<TeacherUnit | null | "stale"> => {
+    const id = entry.record.id;
+    pending.setChecking(id, true);
+    try {
+      return await reread(entry.record.unitId);
+    } finally {
+      pending.setChecking(id, false);
+    }
+  };
+
+  // The single automatic reread of uncertain entries this controller did not
+  // dispatch: their own controller was replaced before it could read (for
+  // example the teacher left My Units while the request was in flight).
+  const claimAutomaticReads = (): void => {
+    if (!alive()) return;
+    for (const e of pending.list()) {
+      if (e.status !== "uncertain" || e.failure === null) continue;
+      // The sending controller is still current: the read is its own.
+      if (pending.ownerActive(e.record.id)) continue;
+      if (!shouldRereadAfter(e.failure)) continue;
+      if (pending.claimAutomaticRead(e.record.id)) void readForEntry(e);
+    }
+  };
+
+  // Shared handling for revision-guarded single-unit mutations. `plan`
+  // builds the request from the record held at dispatch and states what it
+  // asks for (the pending record's intent).
+  //
+  // A3-4 S2. The request is sent exactly once. Its pending record is opened
+  // at dispatch and closed only by a confirmed success or a proven non-commit
+  // (isUncertainMutationFailure). Every other failure keeps the record as
+  // uncertain and, where useful (shouldRereadAfter), performs at most one
+  // automatic authoritative get. Nothing here ever resends the request.
   const mutate = async (
     unitId: string,
-    run: (current: TeacherUnit) => Promise<{ readonly unit: TeacherUnit; readonly noop: boolean }>,
+    plan: (current: TeacherUnit) => {
+      readonly intent: PendingUnitMutationIntent;
+      readonly send: () => Promise<{ readonly unit: TeacherUnit; readonly noop: boolean }>;
+    },
   ): Promise<UnitMutationResult> => {
     if (!alive()) return { kind: "stale" };
+    // An earlier controller's request for this unit has no response yet.
+    if (pending.hasInFlight(unitId)) return { kind: "busy" };
+    // D3 (P2-1): after an unconfirmed outcome, nothing is sent from state
+    // held before it. An accepted authoritative read since (or a newer
+    // revision) is required first; a failed read never counts.
+    if (pending.requiresFreshRead(unitId)) return { kind: "needsCheck" };
     const current = heldUnit(unitId);
     if (current === undefined) {
       return { kind: "error", error: normalizeTeacherUnitError({ details: { code: "teacherUnits.notFound" } }) };
@@ -649,16 +898,84 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
         error: normalizeTeacherUnitError({ details: { code: "teacherUnits.writeConflict" } }),
       };
     }
-    const at = ++clock;
-    const pending = gate.run(unitId, () => runTeacherUnitMutation(() => run(current)));
-    if (pending === null) return { kind: "busy" };
+    if (gate.isBusy(unitId)) return { kind: "busy" };
+    // Bounded tracking (pendingMutations.ts): at capacity nothing is sent,
+    // so no record or guard is ever dropped to make room.
+    const full = pending.capacityReason(unitId);
+    if (full !== null) return { kind: "capacity", reason: full };
+    const at = tick();
+    const step = plan(current);
+    const entryId = pending.begin({
+      unitId,
+      expectedRevision: current.revision,
+      intent: step.intent,
+      titleAtRequest: current.title,
+      ownerActive: alive,
+    });
+    // Never sent without its record (scope changed, or capacity reached).
+    if (entryId === null) {
+      return alive() ? { kind: "capacity", reason: pending.capacityReason(unitId) ?? "pending" } : { kind: "stale" };
+    }
+    // The record this request is based on is shared as its revision floor
+    // (after `begin`, so the entry protects it from pruning): evidence pruned
+    // earlier can never let an older read, or different content at the
+    // base, count as a recovery (third remediation F1). Its original stamp
+    // is kept, so it is not mistaken for a fresh read.
+    quietly(() => pending.accept(current, presence.get(unitId)?.at ?? 0));
+    const dispatched = gate.run(unitId, () => runTeacherUnitMutation(step.send));
+    if (dispatched === null) {
+      pending.settle(entryId);
+      return { kind: "busy" };
+    }
     busy(unitId, true);
-    const outcome = await pending;
+    const raw = await dispatched;
+    // Seventh remediation P2. Backend contract (teacher-unit-mutation.ts): a
+    // state-changing write commits `expectedRevision + 1` and its response is
+    // a later read, so its revision is ABOVE this request's base (it may be
+    // more than base + 1 when another write landed in between; that is
+    // valid). A non-no-op success at or below the base cannot be this
+    // request's commit: it is internally inconsistent. It is handled exactly
+    // like any other uncertain result (pending record kept, never resent,
+    // never announced as saved, input kept), and its unit is not accepted as
+    // evidence. Nothing is claimed about whether the server committed. Its
+    // automatic read is not made here (a response that just contradicted the
+    // contract is not followed by an immediate read; the teacher's Check
+    // current state is the recovery), so at most one automatic read can
+    // still happen, by a replacement controller.
+    const outcome =
+      raw.ok && !raw.result.noop && !(raw.result.unit.revision > current.revision)
+        ? Object.freeze({ ok: false as const, error: INCONSISTENT_WRITE_RESPONSE })
+        : raw;
+    // Settled before the lifetime check: a replaced controller still closes
+    // or keeps its own record, and shares a confirmed result, while the
+    // canonical context is unchanged (the registry refuses otherwise). It
+    // never touches a newer panel directly: the current controller adopts
+    // the shared evidence (P2-4).
+    const id: string | null = entryId;
+    const live = alive();
+    const uncertain = !outcome.ok && isUncertainMutationFailure(outcome.error);
+    // A no-op wrote nothing: it is a read. A write is stamped on receipt.
+    const resultAt = outcome.ok && !outcome.result.noop ? tick() : at;
+    if (outcome.ok) pending.accept(outcome.result.unit, resultAt);
+    if (id !== null) {
+      if (uncertain) pending.markUncertain(id, outcome.error as TeacherUnitError);
+      else {
+        pending.settle(
+          id,
+          live ? undefined : outcome.ok ? (outcome.result.noop ? "noop" : "saved") : "notMade",
+          // Only a confirmed STATE-CHANGING write can settle the unit's
+          // earlier uncertainty; a no-op never does (fifth remediation P2).
+          // The proof is this response's own revision, never the registry's
+          // current record (sixth remediation; checked against this
+          // request's base in pendingMutations.ts `settlesEarlier`).
+          outcome.ok && !outcome.result.noop ? { committedRevision: outcome.result.unit.revision } : false,
+        );
+      }
+    }
     if (!alive()) return { kind: "stale" };
     busy(unitId, false);
     if (outcome.ok) {
-      // A no-op wrote nothing: it is a read. A write is stamped on receipt.
-      adopt(outcome.result.unit, outcome.result.noop ? at : ++clock);
+      adopt(outcome.result.unit, resultAt);
       return { kind: "saved", unit: outcome.result.unit, noop: outcome.result.noop };
     }
     const error = outcome.error;
@@ -666,17 +983,21 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       drop(unitId, at);
       return { kind: "error", error };
     }
+    if (!uncertain || !shouldRereadAfter(error)) return { kind: "error", error };
+    if (outcome !== raw) return { kind: "uncertain", latest: null, error };
+    // The single automatic reread: fetch the authoritative unit; never
+    // resend the request. The read shows current state only: it cannot
+    // prove whether this request (or an earlier SDK attempt of it)
+    // committed.
+    const reads = id === null || pending.claimAutomaticRead(id);
+    const latest = reads ? await reread(unitId) : null;
+    if (latest === "stale") return { kind: "stale" };
     if (error.category === "conflict" || error.category === "invalidStatus") {
-      // Fetch the authoritative unit; never resend the request. The read
-      // shows current state only: it cannot prove whether an earlier SDK
-      // attempt of this request committed.
-      const latest = await reread(unitId);
-      if (latest === "stale") return { kind: "stale" };
       if (latest !== null && latest.status === "archived") return { kind: "archived", latest, error };
       if (error.category === "invalidStatus") return { kind: "archived", latest, error };
       return { kind: "conflict", latest, error };
     }
-    return { kind: "error", error };
+    return { kind: "uncertain", latest, error };
   };
 
   // U2.3 membership. Archived units are refused before sending (the server
@@ -686,9 +1007,11 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   // re-read revision, so it cannot overwrite another session's change.
   const setMembership = async (
     unitId: string,
+    purpose: "add" | "remove" | "move" | "repair",
     next: (current: TeacherUnit) => ReadonlyArray<string> | null,
   ): Promise<UnitMutationResult> => {
-    if (!alive()) return { kind: "stale" };
+    const blocked = heldStateBlock(unitId);
+    if (blocked !== null) return blocked;
     const held = heldUnit(unitId);
     if (held !== undefined && held.status !== "active") {
       return {
@@ -702,24 +1025,19 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     const result = await mutate(unitId, (u) => {
       const resourceIds = next(u) ?? u.resourceIds;
       sent = Object.freeze({ revision: u.revision + 1, previous: u.resourceIds, resourceIds });
-      return deps.callables.setResources({ unitId, expectedRevision: u.revision, resourceIds });
+      return {
+        intent: { op: "setResources", purpose, resourceIds },
+        send: () => deps.callables.setResources({ unitId, expectedRevision: u.revision, resourceIds }),
+      };
     });
     if (result.kind === "saved" && !result.noop && sent !== null) return { ...result, committed: sent };
-    if (
-      result.kind !== "error" ||
-      (result.error.category !== "network" &&
-        result.error.category !== "unexpected" &&
-        result.error.category !== "unconfirmed" &&
-        result.error.category !== "resourceRejected")
-    ) {
-      return result;
-    }
-    // A placement refusal is definitive (nothing written) but means the held
-    // list may be stale: show the authoritative unit with the refusal.
+    if (result.kind !== "error" || result.error.category !== "resourceRejected") return result;
+    // A placement refusal is definitive (decided in request validation,
+    // nothing written) but means the held list may be stale: show the
+    // authoritative unit with the refusal. A read, never a resend.
     const latest = await reread(unitId);
     if (latest === "stale") return { kind: "stale" };
-    if (result.error.category === "resourceRejected") return result;
-    return { kind: "uncertain", latest, error: result.error };
+    return result;
   };
 
   // Retired = stored in the unit but not RA-1 unitPlaceable in this client.
@@ -754,7 +1072,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
   // receipt; a replay returns the unit's current state as read by the
   // server after dispatch, so it is a read stamped at dispatch.
   const createdAt = (replayed: boolean, dispatchedAt: number): number =>
-    replayed ? dispatchedAt : ++clock;
+    replayed ? dispatchedAt : tick();
 
   // A restored attempt that reconciled to a confirmed unit leaves the
   // recovery list; its unit is adopted.
@@ -808,7 +1126,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
         set({ createBlocked: "recoveryPending" });
         return;
       }
-      const dispatchedAt = ++clock;
+      const dispatchedAt = tick();
       const result = primary.submit(payload);
       const s = primary.state();
       if (s.kind === "inFlight") ownKeys.add(s.key);
@@ -827,7 +1145,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       if (!alive()) return;
       const c = coordinatorForKey(key);
       if (c === null) return;
-      const dispatchedAt = ++clock;
+      const dispatchedAt = tick();
       const result = c.reconcile(options);
       set({ createBlocked: null });
       const settled = await result;
@@ -851,18 +1169,24 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       if (!alive()) return;
       scan();
       set({ recoveryCheck: { kind: "checking" } });
-      const at = ++clock;
+      const at = tick();
       // Every grade and status: the unit may have been archived since.
       const outcome = await runTeacherUnitMutation(() =>
         deps.callables.list({ includeArchived: true }),
       );
-      if (!alive()) return;
+      // Every grade and status was in scope: an omitted unit is not in this
+      // teacher's units now (shared; see `load` for the order).
+      const all = { grade: null, includeArchived: true } as const;
+      if (!alive()) {
+        if (outcome.ok) shareList(outcome.result.units, at, all);
+        return;
+      }
       if (!outcome.ok) {
         set({ recoveryCheck: { kind: "error", error: outcome.error } });
         return;
       }
-      // Every grade and status is in scope.
-      acceptList(outcome.result.units, at, { grade: null, includeArchived: true });
+      acceptList(outcome.result.units, at, all);
+      quietly(() => publishListAbsence(outcome.result.units, at, all));
       checkedIds = Object.freeze(outcome.result.units.map((u) => u.unitId));
       // `units` is projected from the latest accepted state on every update
       // (see `set`), so recovery hints never show an older title.
@@ -928,18 +1252,29 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
           request.description = edit.description.trim();
         }
       }
+      const blocked = heldStateBlock(unitId);
+      if (blocked !== null) return blocked;
       if (current !== undefined && request.title === undefined && request.description === undefined) {
         return { kind: "saved", unit: current, noop: true };
       }
-      return mutate(unitId, (u) =>
-        deps.callables.update({ unitId, expectedRevision: u.revision, ...request }),
-      );
+      return mutate(unitId, (u) => ({
+        intent: { op: "update", ...request },
+        send: () => deps.callables.update({ unitId, expectedRevision: u.revision, ...request }),
+      }));
     },
     archiveUnit: (unitId) =>
-      mutate(unitId, (u) => deps.callables.archive({ unitId, expectedRevision: u.revision })),
+      mutate(unitId, (u) => ({
+        intent: { op: "archive" },
+        send: () => deps.callables.archive({ unitId, expectedRevision: u.revision }),
+      })),
     restoreUnit: (unitId) =>
-      mutate(unitId, (u) => deps.callables.restore({ unitId, expectedRevision: u.revision })),
+      mutate(unitId, (u) => ({
+        intent: { op: "restore" },
+        send: () => deps.callables.restore({ unitId, expectedRevision: u.revision }),
+      })),
     addResources: (unitId, resourceIds) => {
+      const guarded = heldStateBlock(unitId);
+      if (guarded !== null) return Promise.resolve(guarded);
       const blocked = retiredBlock(unitId, null);
       if (blocked !== null) return Promise.resolve(blocked);
       for (const id of resourceIds) {
@@ -975,38 +1310,69 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
           }),
         });
       }
-      return setMembership(unitId, appended);
+      return setMembership(unitId, "add", appended);
     },
     removeResource: (unitId, resourceId) => {
+      const guarded = heldStateBlock(unitId);
+      if (guarded !== null) return Promise.resolve(guarded);
       const blocked = retiredBlock(unitId, resourceId);
       if (blocked !== null) return Promise.resolve(blocked);
-      return setMembership(unitId, (u) =>
+      return setMembership(unitId, "remove", (u) =>
         u.resourceIds.includes(resourceId) ? u.resourceIds.filter((id) => id !== resourceId) : null,
       );
     },
     removeRetiredResources: (unitId) =>
-      setMembership(unitId, (u) =>
+      setMembership(unitId, "repair", (u) =>
         retiredIds(u).length === 0 ? null : u.resourceIds.filter((id) => !isRetired(id)),
       ),
     moveResource: (unitId, resourceId, direction) => {
+      const guarded = heldStateBlock(unitId);
+      if (guarded !== null) return Promise.resolve(guarded);
       const blocked = retiredBlock(unitId, null);
       if (blocked !== null) return Promise.resolve(blocked);
       // Computed from the record held at dispatch, so the permutation and
       // its expectedRevision come from the same snapshot: a resource added
       // or removed elsewhere means a newer revision, and the server refuses
       // the stale list instead of dropping it.
-      return setMembership(unitId, (u) => {
+      return setMembership(unitId, "move", (u) => {
         const next = moveIdByStep(u.resourceIds, resourceId, direction === "up" ? -1 : 1);
         return next === u.resourceIds ? null : next;
       });
     },
+    checkPendingMutation: async (id) => {
+      if (!alive()) return;
+      const entry = pending.list().find((e) => e.record.id === id);
+      if (entry === undefined || entry.status !== "uncertain" || entry.checking) return;
+      await readForEntry(entry);
+    },
+    dismissPendingMutation: (id) => {
+      if (!alive()) return false;
+      return pending.dismiss(id);
+    },
     dispose: () => {
       disposed = true;
+      unsubscribePending();
       listeners.clear();
     },
   });
 
+  // Another controller of this teacher and school settled, observed, or
+  // dismissed a pending entry: show it, and take over any automatic reread
+  // that controller could no longer make.
+  const unsubscribePending = pending.subscribe(() => {
+    if (!alive() || ownWrite > 0) return;
+    // Only evidence this controller did not already hold re-projects the
+    // list; its own acceptance never does more than it did before.
+    if (syncShared() && state.list.kind === "ready") set({ list: listedNow() });
+    else set({});
+    claimAutomaticReads();
+  });
+
+  // Start from what this scope already established (a remount), before
+  // this controller's own first read, which is newer evidence.
+  syncShared();
   void load();
+  claimAutomaticReads();
   return controller;
 }
 
@@ -1044,6 +1410,9 @@ export function bootstrapActiveTeacherReader<
     run.readCurrentRunToken() === run.runToken && run.readActiveSession() === run.session ? identity : null;
 }
 
+// A3-4 S2: the seam owns the pending reconciliation registry, so records
+// outlive any one panel and controller (Curriculum navigation, remounts) and
+// end with the seam itself, which the app rebuilds for every bootstrap run.
 export function createTeacherUnitsSurfaceSeam(deps: {
   readonly callables: TeacherUnitsCallables;
   // The current Firebase Auth uid (null when signed out), read at call time.
@@ -1056,6 +1425,7 @@ export function createTeacherUnitsSurfaceSeam(deps: {
   readonly createStore: (scope: TeacherUnitCreateContext) => CreateAttemptStore;
 }): TeacherUnitsSurfaceSeam {
   requireTeacherUnitsAvailable();
+  const pendingRegistry = createPendingMutationRegistry();
   return Object.freeze({
     createController: ({ uid, schoolId, initialGrade }) => {
       const session = Object.freeze({ teacherId: uid, schoolId });
@@ -1072,6 +1442,7 @@ export function createTeacherUnitsSurfaceSeam(deps: {
         },
         store: deps.createStore(session),
         initialGrade,
+        pendingRegistry,
       });
     },
   });

@@ -40,8 +40,8 @@ export type TeacherUnitErrorCategory =
   // Neither proves the change was or was not saved. Never resent
   // automatically; reconcile with an authoritative read.
   | "unconfirmed"
-  // Could not reach the server, or the result is unknown. Retry is safe
-  // only where the operation is idempotent (see `retry`).
+  // Could not reach the server, or the result is unknown. After a mutation
+  // was dispatched this never means "not saved": reconcile by reading.
   | "network"
   // Anything else.
   | "unexpected";
@@ -53,7 +53,9 @@ export type TeacherUnitRecovery =
   | "refresh" // reload authoritative state, keep nothing stale
   | "returnToList"
   | "editField" // keep the form open with its contents
-  | "retry" // offer Try again, keeping unsaved form contents
+  // Offer Try again, keeping unsaved form contents. Only for a request that
+  // was never sent (`compatibilityBlocked`); never after a dispatch.
+  | "retry"
   // Unresolved create only: deliberately resend the SAME key and payload
   // through the create coordinator's `reconcile`. Never a new key.
   | "reconcileCreate"
@@ -330,30 +332,23 @@ export function normalizeTeacherUnitError(err: unknown): TeacherUnitError {
   if (isNetwork(code, err)) {
     return make(
       "network",
-      "retry",
+      "refresh",
       code,
       "We couldn't confirm whether your change was saved. Check your connection, then refresh to check before trying again.",
     );
   }
   return make(
     "unexpected",
-    "retry",
+    "refresh",
     code,
     "Something went wrong and we couldn't confirm whether your change was saved. Refresh to check before trying again.",
   );
 }
 
-// After a failure of a REVISION-GUARDED mutation (update, archive, restore,
-// setResources, reorder), may the SAME request be sent again unchanged?
-// Not used for create: a create's idempotency key lifecycle is decided by
-// `createUnitCreateCoordinator` (saveCoordination.ts), never by this flag.
-// - yes for network/unexpected, because
-//   the request carries its expectedRevision; if the first attempt actually
-//   committed, the retry is either an authorized no-op or a writeConflict.
-// - unconfirmed (A3-3 responseUnavailable and availability refusals): never;
-//   the outcome must be reconciled by reading, not by resending.
-// - conflict and every other category: never. Conflicts require a refresh
-//   and a new teacher action; stale writes are never replayed.
-export function isSafeToResend(error: TeacherUnitError): boolean {
-  return error.category === "network" || error.category === "unexpected";
-}
+// A3-4 S2: there is no resend signal. After any failure of a dispatched
+// revision-guarded mutation (update, archive, restore, setResources,
+// reorder), including network and unexpected failures, the same request is
+// never sent again: the first attempt may have committed. Outcomes are
+// reconciled by an authoritative read (mutationReconciliation.ts), and any
+// further change is a new, deliberate teacher action built from freshly read
+// state. Create keys are owned by the create coordinator (saveCoordination.ts).

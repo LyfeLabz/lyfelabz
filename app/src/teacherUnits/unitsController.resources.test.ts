@@ -14,7 +14,7 @@ import {
 } from "./unitsController";
 import { createTeacherUnitCreateAttemptStore } from "./createAttemptStore";
 import { getPlaceableResources } from "./placeableResources";
-import { isSafeToResend } from "./errors";
+import { isUncertainMutationFailure } from "./mutationReconciliation";
 import type { TeacherUnit, TeacherUnitsCallables } from "./types";
 import type { TeacherUnitCreateContext } from "./saveCoordination";
 
@@ -291,7 +291,10 @@ describe("concurrency and failures", () => {
     const first = ctl.addResources(u.unitId, [R1]);
     const second = ctl.removeResource(u.unitId, R1);
     const third = ctl.addResources(u.unitId, [R2]);
-    await expect(second).resolves.toMatchObject({ kind: "saved", noop: true });
+    // A3-4 S2 (second recertification F1): no answer is computed from held
+    // state while a change to the unit is in flight; previously this
+    // reported a cached no-op.
+    await expect(second).resolves.toEqual({ kind: "busy" });
     await expect(third).resolves.toEqual({ kind: "busy" });
     await first;
     expect(c.setResources).toHaveBeenCalledTimes(1);
@@ -546,20 +549,24 @@ describe("out-of-order responses (P1)", () => {
     expect(listed(ctl, created.unitId)).not.toBeNull();
   });
 
-  test("2. a lost-response re-read arriving after a later successful mutation is ignored", async () => {
+  test("2. a lost-response re-read arriving after newer state is established is ignored", async () => {
     const u = unit();
     const { c } = server([u]);
     const reread = deferred<{ unit: TeacherUnit }>();
-    c.setResources
-      .mockRejectedValueOnce(NETWORK())
-      .mockResolvedValueOnce({ unit: { ...u, resourceIds: [R2], revision: 3 }, noop: false });
+    c.setResources.mockRejectedValueOnce(NETWORK());
     c.get.mockReturnValueOnce(reread.promise);
     const ctl = mount(c);
     await flush();
     const first = ctl.addResources(u.unitId, [R1]);
     await flush();
-    // The gate is free while the re-read is outstanding.
-    expect((await ctl.addResources(u.unitId, [R2])).kind).toBe("saved");
+    // A3-4 S2 (D3): the gate is free while the re-read is outstanding, but a
+    // change built from state held before the unconfirmed outcome is never
+    // sent; nothing new has been read yet.
+    expect((await ctl.addResources(u.unitId, [R2])).kind).toBe("needsCheck");
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    // Newer state (another session's change) is established by a later read.
+    c.list.mockResolvedValueOnce({ units: [{ ...u, resourceIds: [R2], revision: 3 }] });
+    await ctl.refresh();
     reread.resolve({ unit: { ...u, resourceIds: [R1], revision: 2 } });
     const r = await first;
     expect(r.kind).toBe("uncertain");
@@ -794,7 +801,7 @@ describe("A3-3 transaction-attempt refusals after an earlier committed attempt",
     if (r.kind !== "conflict") throw new Error("unreachable");
     expect(r.error.message).toContain("couldn't confirm whether your change was saved");
     expect(r.error.message).not.toMatch(/was not saved/);
-    expect(isSafeToResend(r.error)).toBe(false);
+    expect(isUncertainMutationFailure(r.error)).toBe(true);
     expect(c.update).toHaveBeenCalledTimes(1);
     expect(c.get).toHaveBeenCalledWith({ unitId: u.unitId });
   });
@@ -812,7 +819,7 @@ describe("A3-3 transaction-attempt refusals after an earlier committed attempt",
     expect(r).toMatchObject({ kind: "archived", latest: { title: "Renamed", status: "archived" }, error: { category: "invalidStatus" } });
     if (r.kind !== "archived") throw new Error("unreachable");
     expect(r.error.message).toContain("couldn't confirm whether your change was saved");
-    expect(isSafeToResend(r.error)).toBe(false);
+    expect(isUncertainMutationFailure(r.error)).toBe(true);
     expect(c.update).toHaveBeenCalledTimes(1);
   });
 

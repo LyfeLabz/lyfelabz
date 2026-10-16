@@ -1,4 +1,5 @@
-import { isSafeToResend, normalizeTeacherUnitError } from "./errors";
+import { normalizeTeacherUnitError } from "./errors";
+import { isUncertainMutationFailure } from "./mutationReconciliation";
 import {
   createMutationGate,
   gradeOrderGateKey,
@@ -101,7 +102,7 @@ describe("normalizeTeacherUnitError", () => {
   ])("prototype-like or unusual code %p falls back safely", (code) => {
     const e = normalizeTeacherUnitError(httpsError("functions/x", { code }));
     expect(e.category).toBe("unexpected");
-    expect(e.recovery).toBe("retry");
+    expect(e.recovery).toBe("refresh");
     expect(e.field).toBeNull();
     expect(typeof e.message).toBe("string");
     expect(e.message.length).toBeGreaterThan(0);
@@ -135,7 +136,7 @@ describe("normalizeTeacherUnitError", () => {
       httpsError("functions/already-exists", { code: "teacherUnits.writeConflict", currentRevision: 7 }),
     );
     expect(e.currentRevision).toBe(7);
-    expect(isSafeToResend(e)).toBe(false);
+    expect(isUncertainMutationFailure(e)).toBe(true);
   });
 
   test("resource rejections carry the rejected ids", () => {
@@ -164,7 +165,9 @@ describe("normalizeTeacherUnitError", () => {
     ).toBe("title");
   });
 
-  test("network failures are retryable", () => {
+  // A3-4 S2: a network failure after dispatch may follow a commit. It is
+  // never a retry signal; the outcome is reconciled by reading.
+  test("network failures are uncertain and recover by refreshing, never by resending", () => {
     for (const err of [
       httpsError("functions/unavailable"),
       httpsError("functions/deadline-exceeded"),
@@ -172,8 +175,8 @@ describe("normalizeTeacherUnitError", () => {
     ]) {
       const e = normalizeTeacherUnitError(err);
       expect(e.category).toBe("network");
-      expect(e.recovery).toBe("retry");
-      expect(isSafeToResend(e)).toBe(true);
+      expect(e.recovery).toBe("refresh");
+      expect(isUncertainMutationFailure(e)).toBe(true);
     }
   });
 
@@ -190,7 +193,8 @@ describe("normalizeTeacherUnitError", () => {
     for (const err of [httpsError("functions/internal"), "boom", null, undefined, {}]) {
       const e = normalizeTeacherUnitError(err);
       expect(e.category).toBe("unexpected");
-      expect(e.recovery).toBe("retry");
+      expect(e.recovery).toBe("refresh");
+      expect(isUncertainMutationFailure(e)).toBe(true);
       expect(e.message).not.toMatch(/server text|teacherUnits\./);
       expect(e.conflictUnitId).toBeNull();
     }
@@ -212,17 +216,18 @@ describe("runTeacherUnitMutation", () => {
     expect(out.ok).toBe(false);
     if (!out.ok) {
       expect(out.error.category).toBe("conflict");
-      expect(out.canResend).toBe(false);
+      expect("canResend" in out).toBe(false);
     }
   });
 
-  test("network failures report canResend without resending", async () => {
+  test("network failures carry no resend signal and are not resent", async () => {
     const fn = jest.fn(async () => {
       throw httpsError("functions/unavailable");
     });
     const out = await runTeacherUnitMutation(fn);
     expect(fn).toHaveBeenCalledTimes(1);
-    expect(out).toMatchObject({ ok: false, canResend: true });
+    expect(out.ok).toBe(false);
+    expect(Object.keys(out).sort()).toEqual(["error", "ok"]);
   });
 });
 
@@ -270,13 +275,13 @@ describe("A3-3 codes (U2_6_A3_3_APPROVED_DECISIONS.md)", () => {
     );
     expect(e).toMatchObject({ category: "unconfirmed", recovery: "refresh", code: "teacherUnits.responseUnavailable" });
     expect(e.message).toBe("Your change may have been saved, but it could not be confirmed. Reload your units before trying again.");
-    expect(isSafeToResend(e)).toBe(false);
+    expect(isUncertainMutationFailure(e)).toBe(true);
   });
   test.each(A3_UNCONFIRMED)("%s (may be raised inside a transaction) is unconfirmed and never resendable", (code) => {
     const e = normalizeTeacherUnitError(httpsError("failed-precondition", { code }));
     expect(e.category).toBe("unconfirmed");
     expect(e.recovery).toBe("refresh");
-    expect(isSafeToResend(e)).toBe(false);
+    expect(isUncertainMutationFailure(e)).toBe(true);
     expect(e.message).not.toMatch(/server text/);
   });
   test("unconfirmed codes are never classified as compatibilityBlocked", () => {
@@ -289,7 +294,8 @@ describe("A3-3 codes (U2_6_A3_3_APPROVED_DECISIONS.md)", () => {
     (code) => {
       const e = normalizeTeacherUnitError(httpsError("invalid-argument", { code }));
       expect(e.category).toBe("invalidRequest");
-      expect(isSafeToResend(e)).toBe(false);
+      // Proven pre-transaction refusal: never collapsed into uncertainty.
+      expect(isUncertainMutationFailure(e)).toBe(false);
     },
   );
 });

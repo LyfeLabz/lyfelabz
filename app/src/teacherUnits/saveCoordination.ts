@@ -17,7 +17,6 @@
 
 import { generateClassId } from "../classes/classId";
 import {
-  isSafeToResend,
   normalizeTeacherUnitError,
   type TeacherUnitError,
   type TeacherUnitRecovery,
@@ -57,21 +56,16 @@ export function gradeOrderGateKey(grade: string): string {
 
 export type MutationOutcome<T> =
   | { readonly ok: true; readonly result: T }
-  | {
-      readonly ok: false;
-      readonly error: TeacherUnitError;
-      // Revision-guarded mutations only: true for network/unexpected
-      // failures, where re-sending the identical request is safe. The caller
-      // decides; nothing is resent here. Never used for create keys.
-      readonly canResend: boolean;
-    };
+  // A3-4 S2: no resend signal. A failure never says the same request may be
+  // sent again; uncertain outcomes are reconciled by reading.
+  | { readonly ok: false; readonly error: TeacherUnitError };
 
 export async function runTeacherUnitMutation<T>(fn: () => Promise<T>): Promise<MutationOutcome<T>> {
   try {
     return Object.freeze({ ok: true as const, result: await fn() });
   } catch (err) {
     const error = normalizeTeacherUnitError(err);
-    return Object.freeze({ ok: false as const, error, canResend: isSafeToResend(error) });
+    return Object.freeze({ ok: false as const, error });
   }
 }
 
