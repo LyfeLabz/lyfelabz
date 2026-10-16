@@ -142,6 +142,9 @@ const dispositionStatement: Rule = (v, p) => {
   const s = v as C.ApprovalDispositionStatementV1;
   if ((s.action === "revoke" && s.replacementApprovalRef !== null) || (s.action === "supersede" && (!s.replacementApprovalRef || s.replacementApprovalRef === s.targetApprovalRef))) refuse(p, "contradictory disposition");
 };
+const certificationStatement = object({ ...identityFields, schemaVersion: literal(1), kind: literal("teacher-units-release-certification"), action: literal("certify-release"),
+  backendReleaseId: digest, hostingCandidateFingerprint: digest, placementFingerprint: digest, enforcementVersion: literal("teacher-units-a3-v1"),
+  clientContractVersion: contract, certificationReport: contentObject, authority, issuedAt: instant });
 const signature: Rule = (v, p) => { pattern(/^[A-Za-z0-9+/]{86}==$/)(v, p); const bytes = Buffer.from(v as string, "base64");
   if (bytes.length !== 64 || bytes.toString("base64") !== v) refuse(p, "noncanonical signature encoding"); };
 const source = object({ statementObject: contentObject, signerKeyId: text, signatureAlgorithm: literal("ed25519"), signatureBase64: signature });
@@ -155,6 +158,15 @@ function approvalRule(kind: string, statement: Rule, expected?: C.ExpectedEnviro
 export const validateDeploymentApproval = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.DeploymentApprovalDocumentV1> => validate(approvalRule("teacher-units-deployment-approval", deploymentStatement, expected), v);
 export const validateActivationApproval = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.ActivationApprovalDocumentV1> => validate(approvalRule("teacher-units-activation-approval", activationStatement, expected), v);
 export const validateApprovalDisposition = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.ApprovalDispositionDocumentV1> => validate(approvalRule("teacher-units-approval-disposition", dispositionStatement, expected), v);
+// A report is a separate immutable Storage object: it never names the statement's
+// own object version (bucket, object and object generation), whatever hash it claims.
+const certificationRule = (expected?: C.ExpectedEnvironment): Rule => (v, p) => {
+  approvalRule("teacher-units-release-certification", certificationStatement, expected)(v, p);
+  const { statement, source } = (v as C.ReleaseCertificationDocumentV1).payload;
+  const report = statement.certificationReport, own = source.statementObject;
+  if (report.bucket === own.bucket && report.object === own.object && report.generation === own.generation) refuse(p, "self-referential certification report");
+};
+export const validateReleaseCertification = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.ReleaseCertificationDocumentV1> => validate(certificationRule(expected), v);
 export const validateActivationEvidence = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.ActivationEvidenceDocumentV1> => validate(object({ schemaVersion: literal(1), payload: identified(activationSchema, expected) }), v);
 function releaseRule(expected?: C.ExpectedEnvironment): Rule {
   return object({ schemaVersion: literal(1), manifest: (v, p) => {
@@ -177,4 +189,19 @@ export const validateGeneration = (v: unknown): StructuralResult<number> => vali
 export const validatePlacementFingerprint = (v: unknown): StructuralResult<string> => validate(digest, v);
 export const validateDeploymentApprovalStatement = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.DeploymentApprovalStatementV1> => validate(identified(deploymentStatement, expected), v);
 export const validateActivationApprovalStatement = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.ActivationApprovalStatementV1> => validate(identified(activationStatement, expected), v);
+export const validateReleaseCertificationStatement = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.ReleaseCertificationStatementV1> => validate(identified(certificationStatement, expected), v);
 export const validateApprovalDispositionStatement = (v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.ApprovalDispositionStatementV1> => validate(identified(dispositionStatement, expected), v);
+const releaseOrEvidenceRef = pattern(/^(?:teacherUnitsBackendReleases|teacherUnitsReleaseEvidence)\/[a-f0-9]{64}$/);
+const historySchema = object({ ...identityFields, schemaVersion: literal(1), kind: literal("teacher-units-availability-history"),
+  transition: literal("initialize", "prepare", "enable", "shutdown"), policyInstanceId: uuid, nextGeneration: generation,
+  previousPolicyDigest: nullable(digest), nextPolicyDigest: digest,
+  evidenceRefs: array(releaseOrEvidenceRef, v => v as string), operatorSubject: text, reason: text });
+/** D8 history document structure. A noop transition has no kind and is never written. */
+export function validateAvailabilityHistory(v: unknown, expected?: C.ExpectedEnvironment): StructuralResult<C.AvailabilityHistoryDocumentV1> {
+  return validate((value, p) => { identified(historySchema, expected)(value, p); const h = value as C.AvailabilityHistoryDocumentV1;
+    if ((h.transition === "initialize") !== (h.previousPolicyDigest === null)) refuse(p, "only initialize has no previous policy");
+    if ((h.transition === "initialize") !== (h.nextGeneration === 1)) refuse(p, "only initialize creates generation one");
+    if (h.previousPolicyDigest === h.nextPolicyDigest) refuse(p, "noop history is never written");
+    if (h.transition === "initialize" && h.evidenceRefs.length !== 0) refuse(p, "initialize uses no evidence");
+    if (h.transition === "enable" && h.evidenceRefs.length === 0) refuse(p, "enable requires evidence"); }, v);
+}

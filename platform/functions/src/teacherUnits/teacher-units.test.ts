@@ -186,7 +186,10 @@ import {
 } from "./a3-enforcement";
 import { validateCapabilityResponse } from "./a3-protocol";
 import { UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER } from "./a3-release-authority";
+import { validateEvidenceReference } from "./a3-bindings";
+import { contentDigest, evidenceRef } from "./a3-canonical";
 import {
+  A3_FIXTURE,
   buildEnabledChain,
   closedPolicy,
   emulatorExpectation,
@@ -988,8 +991,35 @@ describe("A3-3 schema 2 discovery and legacy rejection", () => {
   });
 });
 
+// A3-6 S2: validateEvidenceReference now accepts a release certification. A certification
+// stored where activation evidence or the activation approval is expected must still refuse.
+function emulatorCertification(): { ref: string; doc: Record<string, any> } {
+  const doc = JSON.parse(JSON.stringify(A3_FIXTURE.valid.releaseCertification));
+  doc.payload.statement = { ...doc.payload.statement, environment: EXPECTED.environment, projectId: EXPECTED.projectId,
+    projectNumber: EXPECTED.projectNumber, backendReleaseId: CHAIN.releaseId, placementFingerprint: RUNTIME_PLACEMENT_FINGERPRINT };
+  doc.payload.source.statementObject.sha256 = contentDigest(doc.payload.statement);
+  // The substitute is valid evidence, so any refusal comes from the kind checks.
+  expect(validateEvidenceReference(evidenceRef(doc.payload), doc, EXPECTED).ok).toBe(true);
+  return { ref: evidenceRef(doc.payload), doc };
+}
+function certificationAsActivationEvidence(): void {
+  const { ref, doc } = emulatorCertification();
+  store.set(ref, { data: doc, version: ++version });
+  setPolicy({ ...CHAIN.policy, activationEvidenceRef: ref });
+}
+function certificationAsActivationApproval(): void {
+  const { ref, doc } = emulatorCertification();
+  store.set(ref, { data: doc, version: ++version });
+  const evidence = JSON.parse(JSON.stringify(CHAIN.documents[CHAIN.activationEvidenceRef]));
+  evidence.payload.authorizationEvidenceRef = ref;
+  store.set(evidenceRef(evidence.payload), { data: evidence, version: ++version });
+  setPolicy({ ...CHAIN.policy, activationEvidenceRef: evidenceRef(evidence.payload) });
+}
+
 describe("A3-3 availability states for management operations", () => {
   const states: [string, () => void, string][] = [
+    ["release certification in place of activation evidence", certificationAsActivationEvidence, "teacherUnits.deploymentIneligible"],
+    ["release certification in place of activation approval", certificationAsActivationApproval, "teacherUnits.deploymentIneligible"],
     ["missing policy", () => store.delete(TEACHER_UNITS_POLICY_PATH), "teacherUnits.policyMissing"],
     ["closed policy", () => setPolicy(closedPolicy(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT)), "teacherUnits.availabilityClosed"],
     ["malformed policy (unknown field)", () => setPolicy({ ...CHAIN.policy, extra: true }), "teacherUnits.policyInvalid"],

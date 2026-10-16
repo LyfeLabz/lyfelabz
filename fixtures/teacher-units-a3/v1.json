@@ -1567,6 +1567,69 @@
           "signatureBase64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
         }
       }
+    },
+    "releaseCertification": {
+      "schemaVersion": 1,
+      "payload": {
+        "schemaVersion": 1,
+        "kind": "teacher-units-release-certification",
+        "statement": {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "teacher-units-release-certification",
+          "action": "certify-release",
+          "backendReleaseId": "372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128",
+          "hostingCandidateFingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "enforcementVersion": "teacher-units-a3-v1",
+          "clientContractVersion": "teacher-units-v2",
+          "certificationReport": {
+            "bucket": "a3-test-evidence",
+            "object": "teacher-units-certification-report.json",
+            "generation": "1",
+            "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+          },
+          "authority": {
+            "authorityId": "test-authority",
+            "approverSubject": "test-human",
+            "approvalSystemId": "test-system",
+            "workflowId": "test-workflow",
+            "workflowRunId": "fixed-run-001",
+            "decisionId": "fixed-decision-001"
+          },
+          "issuedAt": "2026-01-02T03:04:05.500000000Z"
+        },
+        "source": {
+          "statementObject": {
+            "bucket": "a3-test-evidence",
+            "object": "teacher-units-release-certification.json",
+            "generation": "1",
+            "sha256": "c82732dc6c8b604f49a78873bc7dab5e66092d5bf6a78ed1f2535be96d671552"
+          },
+          "signerKeyId": "untrusted-test-key",
+          "signatureAlgorithm": "ed25519",
+          "signatureBase64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        }
+      }
+    },
+    "availabilityHistory": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "schemaVersion": 1,
+      "kind": "teacher-units-availability-history",
+      "transition": "shutdown",
+      "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+      "nextGeneration": 4,
+      "previousPolicyDigest": "1111111111111111111111111111111111111111111111111111111111111111",
+      "nextPolicyDigest": "2222222222222222222222222222222222222222222222222222222222222222",
+      "evidenceRefs": [
+        "teacherUnitsReleaseEvidence/3333333333333333333333333333333333333333333333333333333333333333"
+      ],
+      "operatorSubject": "test-operator",
+      "reason": "Synthetic shutdown record."
     }
   },
   "invalid": [
@@ -2835,6 +2898,213 @@
       "operation": "set",
       "value": "teacherUnitsReleaseEvidence/e8becd5ad402662b684fd85c08c7a462995a98cba384fb15f13bb29d5d6288e3",
       "reason": "revoke cannot supersede"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "kind"
+      ],
+      "operation": "set",
+      "value": "teacher-units-activation-approval",
+      "reason": "certification kind is not an activation approval"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "statement",
+        "action"
+      ],
+      "operation": "set",
+      "value": "activate-teacher-units",
+      "reason": "certification is signed only for certify-release"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "statement",
+        "policyInstanceId"
+      ],
+      "operation": "set",
+      "value": "123e4567-e89b-42d3-a456-426614174000",
+      "reason": "certification binds no policy instance"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "statement",
+        "enabledGeneration"
+      ],
+      "operation": "set",
+      "value": 3,
+      "reason": "certification binds no generation"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "statement",
+        "enforcementVersion"
+      ],
+      "operation": "set",
+      "value": "teacher-units-a3-v2",
+      "reason": "unknown enforcement version"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "statement",
+        "certificationReport",
+        "sha256"
+      ],
+      "operation": "set",
+      "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "reason": "noncanonical report digest"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "statement",
+        "backendReleaseId"
+      ],
+      "operation": "set",
+      "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "reason": "statement digest no longer matches the statement object"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "statement",
+        "projectNumber"
+      ],
+      "operation": "set",
+      "value": "182791689935",
+      "reason": "cross-project identity"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "transition"
+      ],
+      "operation": "set",
+      "value": "noop",
+      "reason": "noop history is never written"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "previousPolicyDigest"
+      ],
+      "operation": "set",
+      "value": null,
+      "reason": "only initialize has no previous policy"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "nextPolicyDigest"
+      ],
+      "operation": "set",
+      "value": "1111111111111111111111111111111111111111111111111111111111111111",
+      "reason": "previous and next digests are equal"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "nextPolicyDigest"
+      ],
+      "operation": "set",
+      "value": "222222222222222222222222222222222222222222222222222222222222222",
+      "reason": "malformed policy digest"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "evidenceRefs"
+      ],
+      "operation": "set",
+      "value": [
+        "teacherUnitsReleaseEvidence/3333333333333333333333333333333333333333333333333333333333333333",
+        "teacherUnitsReleaseEvidence/3333333333333333333333333333333333333333333333333333333333333333"
+      ],
+      "reason": "duplicate evidence references"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "evidenceRefs"
+      ],
+      "operation": "set",
+      "value": [
+        "teacherUnitsReleaseEvidence/4444444444444444444444444444444444444444444444444444444444444444",
+        "teacherUnitsReleaseEvidence/3333333333333333333333333333333333333333333333333333333333333333"
+      ],
+      "reason": "unordered evidence references"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "evidenceRefs"
+      ],
+      "operation": "set",
+      "value": [
+        "platformConfig/teacherUnitsAvailability"
+      ],
+      "reason": "evidence references are release or evidence content addresses"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "operatorSubject"
+      ],
+      "operation": "set",
+      "value": "",
+      "reason": "operator subject required"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "nextGeneration"
+      ],
+      "operation": "set",
+      "value": 1,
+      "reason": "only initialize creates generation one"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "nextGeneration"
+      ],
+      "operation": "set",
+      "value": 0,
+      "reason": "generation is a positive safe integer"
+    },
+    {
+      "target": "availabilityHistory",
+      "path": [
+        "policyInstanceId"
+      ],
+      "operation": "set",
+      "value": "123E4567-E89B-42D3-A456-426614174000",
+      "reason": "noncanonical policy instance"
+    },
+    {
+      "target": "releaseCertification",
+      "path": [
+        "payload",
+        "statement",
+        "certificationReport",
+        "object"
+      ],
+      "operation": "set",
+      "value": "teacher-units-release-certification.json",
+      "reason": "report names the statement's own Storage object version"
     }
   ],
   "vectors": [
@@ -2883,6 +3153,74 @@
       },
       "canonical": "{\"authorizationEvidenceRef\":\"teacherUnitsReleaseEvidence/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"backendReleaseId\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"certificationEvidenceRef\":\"teacherUnitsReleaseEvidence/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"clientContractVersion\":\"teacher-units-v2\",\"enabledGeneration\":3,\"environment\":\"staging\",\"hostingCandidateFingerprint\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"kind\":\"teacher-units-activation\",\"placementFingerprint\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"policyInstanceId\":\"123e4567-e89b-42d3-a456-426614174000\",\"projectId\":\"lyfelabz-staging\",\"projectNumber\":\"293337283840\",\"schemaVersion\":1}",
       "digest": "9e1e6fa22a53093fd4ea3107a98f5d0f6affe11aad6ae8b786d73e70c05aec04"
+    },
+    {
+      "value": {
+        "schemaVersion": 1,
+        "kind": "teacher-units-release-certification",
+        "statement": {
+          "environment": "staging",
+          "projectId": "lyfelabz-staging",
+          "projectNumber": "293337283840",
+          "schemaVersion": 1,
+          "kind": "teacher-units-release-certification",
+          "action": "certify-release",
+          "backendReleaseId": "372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128",
+          "hostingCandidateFingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "enforcementVersion": "teacher-units-a3-v1",
+          "clientContractVersion": "teacher-units-v2",
+          "certificationReport": {
+            "bucket": "a3-test-evidence",
+            "object": "teacher-units-certification-report.json",
+            "generation": "1",
+            "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+          },
+          "authority": {
+            "authorityId": "test-authority",
+            "approverSubject": "test-human",
+            "approvalSystemId": "test-system",
+            "workflowId": "test-workflow",
+            "workflowRunId": "fixed-run-001",
+            "decisionId": "fixed-decision-001"
+          },
+          "issuedAt": "2026-01-02T03:04:05.500000000Z"
+        },
+        "source": {
+          "statementObject": {
+            "bucket": "a3-test-evidence",
+            "object": "teacher-units-release-certification.json",
+            "generation": "1",
+            "sha256": "c82732dc6c8b604f49a78873bc7dab5e66092d5bf6a78ed1f2535be96d671552"
+          },
+          "signerKeyId": "untrusted-test-key",
+          "signatureAlgorithm": "ed25519",
+          "signatureBase64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        }
+      },
+      "canonical": "{\"kind\":\"teacher-units-release-certification\",\"schemaVersion\":1,\"source\":{\"signatureAlgorithm\":\"ed25519\",\"signatureBase64\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==\",\"signerKeyId\":\"untrusted-test-key\",\"statementObject\":{\"bucket\":\"a3-test-evidence\",\"generation\":\"1\",\"object\":\"teacher-units-release-certification.json\",\"sha256\":\"c82732dc6c8b604f49a78873bc7dab5e66092d5bf6a78ed1f2535be96d671552\"}},\"statement\":{\"action\":\"certify-release\",\"authority\":{\"approvalSystemId\":\"test-system\",\"approverSubject\":\"test-human\",\"authorityId\":\"test-authority\",\"decisionId\":\"fixed-decision-001\",\"workflowId\":\"test-workflow\",\"workflowRunId\":\"fixed-run-001\"},\"backendReleaseId\":\"372143dbee6d15bd26345d096b28044d8686167a243d2fd292689cd223e8e128\",\"certificationReport\":{\"bucket\":\"a3-test-evidence\",\"generation\":\"1\",\"object\":\"teacher-units-certification-report.json\",\"sha256\":\"9999999999999999999999999999999999999999999999999999999999999999\"},\"clientContractVersion\":\"teacher-units-v2\",\"enforcementVersion\":\"teacher-units-a3-v1\",\"environment\":\"staging\",\"hostingCandidateFingerprint\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"issuedAt\":\"2026-01-02T03:04:05.500000000Z\",\"kind\":\"teacher-units-release-certification\",\"placementFingerprint\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"projectId\":\"lyfelabz-staging\",\"projectNumber\":\"293337283840\",\"schemaVersion\":1}}",
+      "digest": "ae6fb98b6feba2426d0831475ad873072fdd8957da812cf25573e0e687169216"
+    },
+    {
+      "value": {
+        "environment": "staging",
+        "projectId": "lyfelabz-staging",
+        "projectNumber": "293337283840",
+        "schemaVersion": 1,
+        "kind": "teacher-units-availability-history",
+        "transition": "shutdown",
+        "policyInstanceId": "123e4567-e89b-42d3-a456-426614174000",
+        "nextGeneration": 4,
+        "previousPolicyDigest": "1111111111111111111111111111111111111111111111111111111111111111",
+        "nextPolicyDigest": "2222222222222222222222222222222222222222222222222222222222222222",
+        "evidenceRefs": [
+          "teacherUnitsReleaseEvidence/3333333333333333333333333333333333333333333333333333333333333333"
+        ],
+        "operatorSubject": "test-operator",
+        "reason": "Synthetic shutdown record."
+      },
+      "canonical": "{\"environment\":\"staging\",\"evidenceRefs\":[\"teacherUnitsReleaseEvidence/3333333333333333333333333333333333333333333333333333333333333333\"],\"kind\":\"teacher-units-availability-history\",\"nextGeneration\":4,\"nextPolicyDigest\":\"2222222222222222222222222222222222222222222222222222222222222222\",\"operatorSubject\":\"test-operator\",\"policyInstanceId\":\"123e4567-e89b-42d3-a456-426614174000\",\"previousPolicyDigest\":\"1111111111111111111111111111111111111111111111111111111111111111\",\"projectId\":\"lyfelabz-staging\",\"projectNumber\":\"293337283840\",\"reason\":\"Synthetic shutdown record.\",\"schemaVersion\":1,\"transition\":\"shutdown\"}",
+      "digest": "20a9505911a65b69d2809b5cbda59d114bb26040b76736b0fe62421b7fafb705"
     }
   ]
 }

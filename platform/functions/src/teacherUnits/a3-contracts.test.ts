@@ -23,6 +23,7 @@ const validators: Record<string, (v: unknown) => StructuralResult<unknown>> = {
   cloudEndpoint: V.validateEndpoint, emulatorEndpoint: v => V.validateEndpoint(v, expected), backendRelease: V.validateBackendRelease,
   deploymentApproval: V.validateDeploymentApproval, activationApproval: V.validateActivationApproval,
   activationEvidence: V.validateActivationEvidence, approvalDisposition: V.validateApprovalDisposition,
+  releaseCertification: V.validateReleaseCertification, availabilityHistory: V.validateAvailabilityHistory,
 };
 function mustPass(result: StructuralResult<unknown>): void { expect(result).toMatchObject({ ok: true, scope: "structure-only", operationalVerification: "unverified" }); }
 function edit(value: any, path: string[], replacement: unknown, remove = false): any {

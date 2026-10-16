@@ -605,8 +605,9 @@ optional later hardening requiring its own Decision 4 amendment and Rules review
 
 Status: implemented; remediated after a certification review (NOT CERTIFIED, one
 P1 and five P3 findings); independently recertified (CERTIFIED, four nonblocking P3
-findings); P3 hardening applied; uncommitted, awaiting independent final
-verification. Not wired: no
+findings); P3 hardening applied; independently verified and integrated on `main`
+at `484de499f81e6fdec6594e66f164887bbfeb23ac`. S2 later extended
+`a3-signature.ts` with the certification kind only (see S2 below). Not wired: no
 non-test module outside S1 imports it (test-enforced), and production
 still uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`. Teacher Units remains closed.
 
@@ -689,3 +690,130 @@ still uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`. Teacher Units remains clos
 - Tests: `a3-ed25519.test.ts`, `a3-authority-registry.test.ts`,
   `a3-signature.test.ts` (test keys are generated only in test files, which
   `tsconfig.build.json` excludes from the compiled `lib`).
+
+### S2 - Certification statement, history schema and revocation list
+
+Status: implemented in the repository on top of `484de49`; uncommitted, not wired,
+not deployed. The first independent certification failed with remediation required
+(two blocking P2 findings, F1 and F2, and two P3 findings, F3 and F4); all four are
+remediated as described below; awaiting independent recertification. Teacher Units remains closed:
+`teacherUnitsAvailable()` returns `false` and production still uses
+`UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`. No key, signature, evidence, bucket, IAM,
+Rules, index, Hosting or deployment change. Authorized decisions: O1(a) (extend the
+S1 verifier with the certification kind only), O2 (standalone revocation-list
+module), O3 (D8 history over the existing policy-transition semantics).
+
+- **D7 certification** (`a3-contracts.ts`, `a3-validation.ts`). Kind
+  `teacher-units-release-certification`, action `certify-release`, the established
+  `{schemaVersion, payload: {schemaVersion, kind, statement, source}}` shape and
+  `approvalRule` (statement digest equals `source.statementObject.sha256`). The
+  statement binds exactly: environment identity, `backendReleaseId`,
+  `hostingCandidateFingerprint`, `placementFingerprint`, `enforcementVersion`
+  (`teacher-units-a3-v1`), `clientContractVersion` (`teacher-units-v2`),
+  `certificationReport` (`ContentObjectV1`), `authority` and `issuedAt`. It has no
+  policy instance or generation; any extra field is refused.
+- **Evidence reference** (`a3-bindings.ts`). `validateEvidenceReference` accepts the
+  certification kind at its content address. Every existing kind is unchanged. This
+  is runtime-reachable: A3-3 `readEvidence` and the policy chain use this validator.
+  A3-3 still requires `teacher-units-activation` and
+  `teacher-units-activation-approval` at their positions, and tests show a valid
+  certification substituted at either position refuses `deploymentIneligible`.
+- **D7 fix 3 dispositions.** `validateDispositionBinding` accepts a certification
+  target. `revoke` has no replacement; `supersede` requires a replacement of the same
+  kind (certification to certification only; no cross-kind replacement in either
+  direction).
+- **Certification-to-activation binding.** `validateCertificationBinding(certification,
+  activationApproval, release)` requires the certification to sit at the activation
+  approval's `certificationEvidenceRef` and to equal it, and the release, in
+  environment identity, `backendReleaseId` (also equal to the release manifest
+  digest), `hostingCandidateFingerprint`, `placementFingerprint` (also equal to the
+  manifest), `enforcementVersion` (the manifest's) and `clientContractVersion` (the
+  approval's and the manifest's). Structural only; it is not called by
+  `validateActivationBinding` or enforcement (test-enforced). Wiring is S3.
+- **S1 extension (O1(a)).** One entry added to the `KINDS` map in `a3-signature.ts`:
+  `teacher-units-release-certification` maps to `certify-release` and validates with
+  `validateReleaseCertification`. Algorithms, signing bytes, the snapshot, registry
+  branding, key admission, identity binding and failure reasons are unchanged.
+- **D8 history** (`validateAvailabilityHistory`, `availabilityPolicyDigest`,
+  `validateAvailabilityHistoryReference`, `validateAvailabilityHistoryBinding`).
+  Document fields: environment identity, `schemaVersion: 1`,
+  `kind: "teacher-units-availability-history"`, `transition` (`initialize`,
+  `prepare`, `enable`, `shutdown`), `policyInstanceId` and `nextGeneration` (the next
+  policy's own values; `nextGeneration` is 1 exactly for `initialize`),
+  `previousPolicyDigest` (null only for `initialize`), `nextPolicyDigest`, `evidenceRefs` (strictly ascending, unique release
+  or evidence content addresses), `operatorSubject`, `reason`. Stored at
+  `teacherUnitsAvailabilityHistory/{sha256(canonical document)}`. A policy digest is
+  the SHA-256 of the whole policy with `updatedAt` projected as explicit
+  `{seconds, nanoseconds}`; it requires a valid policy, so a server-timestamp sentinel
+  or JSON timestamp is refused. The binding derives the transition from the existing
+  semantics: no previous policy plus `validateInitialPolicy` is `initialize`;
+  otherwise `validatePolicyTransition` must pass, an unchanged generation (a noop) is
+  refused, closed to closed is `prepare`, closed to enabled is `enable`, enabled to
+  closed is `shutdown`, and enabled to enabled has no approved kind and is refused.
+  `enable` must record the activation evidence reference; `prepare` that sets a
+  release must record that release reference; `initialize` records none. The
+  binding also requires `policyInstanceId` and `nextGeneration` to equal the next
+  policy's. No CAS writer, transaction or storage (S6).
+- **D8 fix 4 reporting (F2 remediation).** A history record's generation is the
+  generation it produces, and its durable grouping key is
+  `(environment identity, policyInstanceId, nextGeneration)`: the same pair the
+  withdrawn `{policyInstanceId}_{generation}` ID named, now carried in the
+  content-addressed body instead of the ID, so no generation-keyed uniqueness can
+  block a shutdown. After a D1-B rollback to generation N, the next shutdown produces
+  a second record for N+1. `reportRepeatedHistoryGenerations(records)` takes
+  `{ref, document}` pairs, snapshots them once, validates each at its content
+  address, refuses mixed environments and repeated records, and returns every
+  `(policyInstanceId, nextGeneration)` group with more than one record. It reads no
+  policy and never refuses a transition. Retrieving the records (a collection read)
+  is S6 tooling.
+- **Certification report self-reference (F3 remediation).** A certification is
+  refused when `certificationReport` names the statement's own Storage object
+  version, that is the same `bucket`, `object` and object `generation` as
+  `source.statementObject`, whatever hash it claims. Sharing only a bucket, an object
+  name at another generation, or other metadata is accepted. Retrieving the report
+  bytes, checking their hash and reviewing their independence remain registration
+  and report-review gates (S6, A3-7); an S1 signature is never independent-report
+  verification.
+- **History immutable duplicates (F4 remediation, S2 portion).**
+  `validateImmutableDuplicate` now routes `teacherUnitsAvailabilityHistory/` paths to
+  the history content-address validator: an identical retry validates as a duplicate,
+  and any other proposal at that address is a conflict. A history document is never
+  accepted at an evidence or release address. **Deferred to S6 (already assigned by
+  section 5):** create-only writes, the transactional read that makes a concurrent
+  create conflict, and the emulator tests proving them. S2 provides no writer, so
+  this is a named S6 gate, not a claimed S2 guarantee.
+- **D5 revocation list** (`a3-revocation-list.ts`). Entry
+  `{schemaVersion: 1, environment, projectId, projectNumber, revokedEvidenceRef}`.
+  `createRevocationList(entries, identity)` snapshots its input through canonical
+  serialization, requires a pinned identity (or a `demo-` emulator project), entries
+  for exactly that identity, valid `teacherUnitsReleaseEvidence/` references and
+  strictly ascending unique order, and returns a frozen, branded list.
+  `revocationStatus(list, ref, expected)` fails closed (F1 remediation): it returns
+  `inputMismatch` when the query is not a canonical `teacherUnitsReleaseEvidence/`
+  reference (any malformed string or non-string) or the expected identity is
+  malformed or unreadable; `listUnrecognized` for an unbranded list or a list bound to
+  another identity; otherwise `revoked` or `notRevoked`. `inputMismatch` is the
+  existing S1 and A3-3 failure name. Callers must treat both failures as refusal,
+  never as `notRevoked`. A reference cannot carry its environment, so cross-list
+  leakage is prevented by the list's identity binding.
+  `PRODUCTION_REVOCATION_LIST` is empty and bound to production. No R1 lookup, no
+  tooling; nothing imports it (test-enforced).
+- **Fixtures.** `fixtures/teacher-units-a3/v1.json` gains `valid.releaseCertification`,
+  `valid.availabilityHistory`, 20 invalid cases and two vectors (the certification
+  payload and the history document). The four existing vectors and every existing
+  valid and invalid entry are byte-identical (the change is insertions only).
+- **Interpretations recorded for certification review.** D8 lists the history
+  content but not field names; the names, `schemaVersion` and `kind` above follow the
+  existing document conventions. `prepare` covers any non-noop closed-to-closed
+  transition. The per-transition evidence requirements are the minimum the transition
+  itself implies. D5 does not fix the deny-list entry shape; the shape above is the
+  O2 approval. `policyInstanceId` and `nextGeneration` were added in remediation
+  (F2): policy digests alone cannot recover generation once the singleton policy is
+  overwritten.
+- Tests: `a3-certification-history.test.ts`, `a3-revocation-list.test.ts`, S2 cases in
+  `a3-signature.test.ts`, fixture validators in `a3-contracts.test.ts`, and two A3-3
+  regression cases in `teacher-units.test.ts`. Mutation checks were run in a scratch copy,
+  including for each remediation. One overlapping guard survives by design: in the
+  history branch of `validateImmutableDuplicate`, validating the existing record is
+  also implied by canonical equality with the validated proposal (the same pattern
+  as the A3-1 release and evidence branches).

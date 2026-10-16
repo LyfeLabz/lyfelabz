@@ -12,13 +12,14 @@ import type * as C from "./a3-contracts";
 import { approvalSigningBytes, canonicalJSON, parseStrictJSON } from "./a3-canonical";
 import { decodeRawPublicKey, ed25519KeyId, ed25519PublicKeyObject, findAuthorityEntry } from "./a3-authority-registry";
 import type { AuthorityAction } from "./a3-authority-registry";
-import { validateActivationApproval, validateApprovalDisposition, validateDeploymentApproval } from "./a3-validation";
+import { validateActivationApproval, validateApprovalDisposition, validateDeploymentApproval, validateReleaseCertification } from "./a3-validation";
 
 export type SignatureVerification =
   | Readonly<{ verdict: "verified"; keyId: string; action: AuthorityAction; authorityId: string }>
   | Readonly<{ verdict: "unverified"; reason: "inputMismatch" | "authorityUnrecognized" | "signatureUnverified" }>;
 
-type ApprovalDocument = C.DeploymentApprovalDocumentV1 | C.ActivationApprovalDocumentV1 | C.ApprovalDispositionDocumentV1;
+type ApprovalDocument = C.DeploymentApprovalDocumentV1 | C.ActivationApprovalDocumentV1 | C.ApprovalDispositionDocumentV1 |
+  C.ReleaseCertificationDocumentV1;
 
 const unverified = (reason: "inputMismatch" | "authorityUnrecognized" | "signatureUnverified"): SignatureVerification =>
   Object.freeze({ verdict: "unverified", reason });
@@ -28,6 +29,8 @@ const KINDS: Readonly<Record<string, { action: AuthorityAction;
   "teacher-units-deployment-approval": { action: "deploy-backend", validate: validateDeploymentApproval },
   "teacher-units-activation-approval": { action: "activate-teacher-units", validate: validateActivationApproval },
   "teacher-units-approval-disposition": { action: "dispose-approval", validate: validateApprovalDisposition },
+  // A3-6 S2 (D7): a certification is signed with the per-action certify-release key.
+  "teacher-units-release-certification": { action: "certify-release", validate: validateReleaseCertification },
 });
 
 // Reads the caller's value once: canonical serialization refuses accessors, hidden

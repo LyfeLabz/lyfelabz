@@ -125,6 +125,29 @@ export type ApprovalDispositionPayloadV1 = {
   statement: ApprovalDispositionStatementV1; source: ApprovalSourceV1;
 };
 export type ApprovalDispositionDocumentV1 = { schemaVersion: 1; payload: ApprovalDispositionPayloadV1 };
+/** A3-6 S2 (decision record D7). Binds one exact release; no policy instance or generation. */
+export type ReleaseCertificationStatementV1 = EnvironmentBinding & {
+  schemaVersion: 1; kind: "teacher-units-release-certification"; action: "certify-release";
+  backendReleaseId: Digest; hostingCandidateFingerprint: Digest; placementFingerprint: Digest;
+  enforcementVersion: "teacher-units-a3-v1"; clientContractVersion: "teacher-units-v2";
+  certificationReport: ContentObjectV1; authority: ApprovalAuthorityV1; issuedAt: Instant;
+};
+export type ReleaseCertificationPayloadV1 = {
+  schemaVersion: 1; kind: "teacher-units-release-certification";
+  statement: ReleaseCertificationStatementV1; source: ApprovalSourceV1;
+};
+export type ReleaseCertificationDocumentV1 = { schemaVersion: 1; payload: ReleaseCertificationPayloadV1 };
+/** A3-6 S2 (decision record D8). Audit record, never read by the runtime verifier.
+ * Stored at `teacherUnitsAvailabilityHistory/{sha256(canonical document)}`.
+ * `policyInstanceId` and `nextGeneration` are the next policy's own values: the
+ * durable key under which several records for one generation (rollback evidence,
+ * D8 fix 4) are grouped after the singleton policy has been overwritten. */
+export type AvailabilityTransitionV1 = "initialize" | "prepare" | "enable" | "shutdown";
+export type AvailabilityHistoryDocumentV1 = EnvironmentBinding & {
+  schemaVersion: 1; kind: "teacher-units-availability-history"; transition: AvailabilityTransitionV1;
+  policyInstanceId: UUIDv4; nextGeneration: Generation; previousPolicyDigest: Digest | null; nextPolicyDigest: Digest;
+  evidenceRefs: string[]; operatorSubject: string; reason: string;
+};
 /** Caller-supplied expectations, not a validated or attested runtime identity. */
 export type ExpectedEnvironment = EnvironmentBinding & { localProfile?: {
   fingerprint: Digest; authOrigin: string; firestoreHost: string; functionsOrigin: string;

@@ -293,10 +293,114 @@ describe("identity binding (recertification P3-2)", () => {
   });
 });
 
+describe("release certification signatures (S2, D7)", () => {
+  const PRODUCTION: ExpectedEnvironment = { environment: "production", projectId: "lyfelabz-prod", projectNumber: "182791689935" };
+  const unrecognized = { verdict: "unverified", reason: "authorityUnrecognized" };
+
+  it("verifies against a matching certify-release entry", () => {
+    const key = testKey();
+    const result = verifyApprovalSignature(signed("releaseCertification", key), registry({ key, action: "certify-release" }), STAGING);
+    expect(result).toEqual({ verdict: "verified", keyId: key.keyId, action: "certify-release", authorityId: "test-authority" });
+    expect(Object.isFrozen(result)).toBe(true);
+  });
+
+  test.each(["deploy-backend", "activate-teacher-units", "dispose-approval"] as AuthorityAction[])("a %s key cannot sign a certification (4b)", action => {
+    const key = testKey();
+    expect(verifyApprovalSignature(signed("releaseCertification", key), registry({ key, action }), STAGING)).toEqual(unrecognized);
+  });
+
+  it("the empty production registry recognizes no certifier", () => {
+    const key = testKey();
+    const doc = signed("releaseCertification", key, s => { Object.assign(s, PRODUCTION); });
+    expect(verifyApprovalSignature(doc, PRODUCTION_AUTHORITY_REGISTRY, PRODUCTION)).toEqual(unrecognized);
+  });
+
+  test.each(["authorityId", "approverSubject", "approvalSystemId"])("refuses a certification whose %s differs from the entry", field => {
+    const key = testKey();
+    const doc = signed("releaseCertification", key, s => { s.authority[field] = "someone-else"; });
+    expect(verifyApprovalSignature(doc, registry({ key, action: "certify-release" }), STAGING)).toEqual(unrecognized);
+  });
+
+  it("refuses cross-environment replay and cross-project confusion", () => {
+    const key = testKey();
+    const staging = signed("releaseCertification", key);
+    expect(verifyApprovalSignature(staging, registry({ key, action: "certify-release" }), PRODUCTION))
+      .toEqual({ verdict: "unverified", reason: "inputMismatch" });
+    expect(verifyApprovalSignature(staging, registry({ key, action: "certify-release", identity: PRODUCTION }), STAGING)).toEqual(unrecognized);
+    const production = signed("releaseCertification", key, s => { Object.assign(s, PRODUCTION); });
+    expect(verifyApprovalSignature(production, registry({ key, action: "certify-release", identity: PRODUCTION }), PRODUCTION).verdict).toBe("verified");
+    // Relabelling a staging-signed statement as production breaks the signature.
+    const relabelled = clone(staging); Object.assign(relabelled.payload.statement, PRODUCTION);
+    relabelled.payload.source.statementObject.sha256 = contentDigest(relabelled.payload.statement);
+    expect(verifyApprovalSignature(relabelled, registry({ key, action: "certify-release", identity: PRODUCTION }), PRODUCTION))
+      .toEqual({ verdict: "unverified", reason: "signatureUnverified" });
+    const emulator = fixture.expectedEmulator as ExpectedEnvironment;
+    const other = signed("releaseCertification", key, s => { s.environment = "emulator"; s.projectId = emulator.projectId; s.projectNumber = "0"; });
+    expect(verifyApprovalSignature(other, registry({ key, action: "certify-release",
+      identity: { environment: "emulator", projectId: "demo-a3-other", projectNumber: "0" } }), emulator)).toEqual(unrecognized);
+  });
+
+  it("refuses a forged certification: altered release, zero signature, reused approval signature", () => {
+    const key = testKey();
+    const reg = registry({ key, action: "certify-release" });
+    const altered = signed("releaseCertification", key);
+    altered.payload.statement.backendReleaseId = "f".repeat(64);
+    altered.payload.source.statementObject.sha256 = contentDigest(altered.payload.statement);
+    expect(verifyApprovalSignature(altered, reg, STAGING)).toEqual({ verdict: "unverified", reason: "signatureUnverified" });
+    const zero = clone(fixture.valid.releaseCertification); zero.payload.source.signerKeyId = key.keyId;
+    expect(verifyApprovalSignature(zero, reg, STAGING)).toEqual({ verdict: "unverified", reason: "signatureUnverified" });
+    const reused = signed("releaseCertification", key);
+    reused.payload.source.signatureBase64 = signed("activationApproval", key).payload.source.signatureBase64;
+    expect(verifyApprovalSignature(reused, reg, STAGING)).toEqual({ verdict: "unverified", reason: "signatureUnverified" });
+  });
+
+  it("refuses a malleated certification signature (S + L)", () => {
+    const key = testKey();
+    const doc = signed("releaseCertification", key);
+    const original = Buffer.from(doc.payload.source.signatureBase64, "base64");
+    const s = BigInt(`0x${Buffer.from(original.subarray(32)).reverse().toString("hex")}`);
+    const malleated = Buffer.concat([original.subarray(0, 32), Buffer.from((s + ED25519_GROUP_ORDER).toString(16).padStart(64, "0"), "hex").reverse()]);
+    doc.payload.source.signatureBase64 = malleated.toString("base64");
+    expect(verifyApprovalSignature(doc, registry({ key, action: "certify-release" }), STAGING))
+      .toEqual({ verdict: "unverified", reason: "signatureUnverified" });
+  });
+
+  it("refuses malformed, mislabelled and accessor-based certification input", () => {
+    const key = testKey();
+    const reg = registry({ key, action: "certify-release" });
+    const mislabelled = signed("releaseCertification", key); mislabelled.payload.kind = "teacher-units-activation-approval";
+    const wrongAction = signed("releaseCertification", key, st => { st.action = "activate-teacher-units"; });
+    const extra = signed("releaseCertification", key, st => { st.enabledGeneration = 3; });
+    const digestMismatch = signed("releaseCertification", key); digestMismatch.payload.source.statementObject.sha256 = "0".repeat(64);
+    const accessor = signed("releaseCertification", key); const statement = accessor.payload.statement;
+    Object.defineProperty(accessor.payload, "statement", { get: () => statement, enumerable: true });
+    for (const input of [mislabelled, wrongAction, extra, digestMismatch, accessor])
+      expect(verifyApprovalSignature(input, reg, STAGING)).toEqual({ verdict: "unverified", reason: "inputMismatch" });
+  });
+
+  it("a validly signed certification whose report is its own statement object is refused (F3)", () => {
+    const key = testKey();
+    const doc = signed("releaseCertification", key, st => {
+      st.certificationReport = { ...fixture.valid.releaseCertification.payload.source.statementObject, sha256: "9".repeat(64) };
+    });
+    expect(verifyApprovalSignature(doc, registry({ key, action: "certify-release" }), STAGING))
+      .toEqual({ verdict: "unverified", reason: "inputMismatch" });
+  });
+
+  it("the S1 approval kinds and their actions are unchanged", () => {
+    for (const [name, action] of CASES) {
+      const key = testKey();
+      expect(verifyApprovalSignature(signed(name, key), registry({ key, action }), STAGING).verdict).toBe("verified");
+      expect(verifyApprovalSignature(signed(name, key), registry({ key, action: "certify-release" }), STAGING)).toEqual(unrecognized);
+    }
+  });
+});
+
 describe("not wired (S1)", () => {
-  it("no non-test source module outside S1 imports the registry, signature or curve modules", () => {
+  it("no non-test source module outside S1 and S2 imports the registry, signature, curve or revocation modules", () => {
     const root = resolve(__dirname, "..");
-    const S1 = new Set(["teacherUnits/a3-signature.ts", "teacherUnits/a3-authority-registry.ts", "teacherUnits/a3-ed25519.ts"]);
+    const S1 = new Set(["teacherUnits/a3-signature.ts", "teacherUnits/a3-authority-registry.ts", "teacherUnits/a3-ed25519.ts",
+      "teacherUnits/a3-revocation-list.ts"]);
     const files: string[] = [];
     const walk = (dir: string): void => { for (const name of readdirSync(dir)) {
       const path = join(dir, name);
@@ -306,7 +410,7 @@ describe("not wired (S1)", () => {
     expect(files.length).toBeGreaterThan(50);
     for (const file of files) {
       if (S1.has(relative(root, file))) continue;
-      expect([relative(root, file), /a3-signature|a3-authority-registry|a3-ed25519/.test(readFileSync(file, "utf8"))])
+      expect([relative(root, file), /a3-signature|a3-authority-registry|a3-ed25519|a3-revocation-list/.test(readFileSync(file, "utf8"))])
         .toEqual([relative(root, file), false]);
     }
   });
