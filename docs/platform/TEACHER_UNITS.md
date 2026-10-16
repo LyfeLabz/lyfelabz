@@ -578,7 +578,7 @@ Refusal precedence: `runtimeIdentityUnavailable`, `policyUnavailable`, `policyMi
 
 **Emulator limitation (accepted for A3-3).** firebase-tools 15.22.4 sets `K_SERVICE` and `K_REVISION` in the Functions emulator, and the A3-2 resolver refuses those labels in emulator mode. Every Teacher Units callable therefore refuses `runtimeIdentityUnavailable` under the real Functions emulator (including `scripts/ux-review/start.sh`); A3-2 is unchanged. Positive paths are proven by the Firestore-emulator suite.
 
-A3-4 (client migration, S1 to S3) is integrated on main. A3-5 callable-only Rules are implemented in the repository (section 7), not deployed, and await independent certification. Deferred: A3-6 release authority and evidence tooling, A3-7 integrated certification.
+A3-4 (client migration, S1 to S3) is integrated on main. A3-5 callable-only Rules are implemented in the repository (section 7), not deployed, and await independent certification. A3-6 decisions are recorded in `U2_6_A3_6_DECISION_RECORD.md`; A3-6 S1 (Ed25519 approval signature verification and an empty artifact-pinned authority registry) is implemented, not wired, independently recertified with nonblocking findings that were then addressed, and awaits independent final verification. Deferred: the remaining A3-6 release authority and evidence tooling, A3-7 integrated certification.
 
 ## U2.6 A3-4 client migration
 
