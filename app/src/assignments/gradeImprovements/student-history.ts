@@ -54,7 +54,9 @@ function describeEvent(e: GradeImprovementEvent): string {
       : `Undid mark at ${formatGradePercent(e.percentage)}`,
   ];
   if (e.createdAt !== null) parts.push(formatDateTime(e.createdAt));
-  parts.push(e.byCaller ? "by you" : "by another teacher");
+  // The caller's own actions carry no attribution; byCaller stays in the
+  // audit record either way.
+  if (!e.byCaller) parts.push("by another teacher");
   return parts.join(" · ");
 }
 

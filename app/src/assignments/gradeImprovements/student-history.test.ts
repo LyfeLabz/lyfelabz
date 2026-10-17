@@ -109,7 +109,7 @@ describe("Student Detail grade-update history", () => {
     expect(list2.querySelector(".shell-student-detail-grade-update")).toBeNull();
   });
 
-  test("history disclosure lists events newest first with type, score, time, and teacher", async () => {
+  test("history disclosure lists events newest first with type, score, and time", async () => {
     const list = buildList();
     await decorate(list, seam([UNDONE]));
     expect(q("student-detail-grade-update-status-a1")!.textContent).toBe("Grade update undone on Oct 18, 2026");
@@ -123,11 +123,34 @@ describe("Student Detail grade-update history", () => {
     expect(panel.hidden).toBe(false);
     const items = Array.from(panel.querySelectorAll("li")).map((li) => li.textContent);
     expect(items).toEqual([
-      "Undid mark at 90% · Oct 18, 2026, 9:30 AM · by you",
-      "Marked updated to 90% · Oct 17, 2026, 2:05 PM · by you",
+      "Undid mark at 90% · Oct 18, 2026, 9:30 AM",
+      "Marked updated to 90% · Oct 17, 2026, 2:05 PM",
     ]);
+    // The caller's own acknowledgment and reversal carry no attribution.
+    expect(panel.textContent).not.toMatch(/by you/);
     // No Undo when nothing is in effect.
     expect(q("student-detail-grade-update-undo-a1")).toBeNull();
+  });
+
+  test("acknowledgment history shows score and time without caller attribution", async () => {
+    const list = buildList();
+    await decorate(list, seam([ACKED]));
+    q<HTMLButtonElement>("student-detail-grade-update-toggle-a1")!.click();
+    const items = Array.from(q("student-detail-grade-update-history-a1")!.querySelectorAll("li")).map((li) => li.textContent);
+    expect(items).toEqual(["Marked updated to 90% · Oct 17, 2026, 2:05 PM"]);
+    expect(q("student-detail-grade-update-undo-a1")).not.toBeNull();
+  });
+
+  test("an action by another teacher keeps its attribution", async () => {
+    const list = buildList();
+    const other: GradeImprovementHistory = { ...UNDONE, events: [{ ...UNDONE.events[0]!, byCaller: false }, ACKED.events[0]!] };
+    await decorate(list, seam([other]));
+    q<HTMLButtonElement>("student-detail-grade-update-toggle-a1")!.click();
+    const items = Array.from(q("student-detail-grade-update-history-a1")!.querySelectorAll("li")).map((li) => li.textContent);
+    expect(items).toEqual([
+      "Undid mark at 90% · Oct 18, 2026, 9:30 AM · by another teacher",
+      "Marked updated to 90% · Oct 17, 2026, 2:05 PM",
+    ]);
   });
 
   test("Undo requires confirmation; Cancel does nothing", async () => {
