@@ -96,6 +96,20 @@ jobs:
       # No credentials and no provider calls.
       - name: A3-6 S5 access review (fixtures)
         run: node --test ../../scripts/teacher-units-release/access-review.test.cjs
+      - name: A3-6 S6a operator tooling (offline fixtures)
+        run: node --test ../../scripts/teacher-units-release/cli.test.cjs ../../scripts/teacher-units-release/freshness.test.cjs ../../scripts/teacher-units-release/statements.test.cjs
+      # S6a writers run only against the Firestore emulator for a demo- project, using the
+      # same Java and pinned firebase-tools setup as the Rules job. No credentials.
+      - name: Set up Java (Firestore emulator for A3-6 S6a)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Install Firebase emulator tooling
+        working-directory: platform/firebase
+        run: npm ci
+      - name: A3-6 S6a emulator-only writers (Firestore emulator, demo project)
+        run: ../firebase/node_modules/.bin/firebase emulators:exec --only firestore --project demo-a3-s6a --config ../firebase/firebase.json "node --test --test-concurrency=1 ../../scripts/teacher-units-release/registration.emulator.test.cjs ../../scripts/teacher-units-release/availability-cas.emulator.test.cjs"
 
   firestore-rules:
     name: Firestore Rules tests

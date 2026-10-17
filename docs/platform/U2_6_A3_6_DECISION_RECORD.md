@@ -1382,3 +1382,175 @@ observation, and observers for the unresolved surfaces need a later slice.
 IAM and live routes (with owner-approved read permissions); a separately authorized
 staging observation; S6 (expected-access and plan assembly, signing, registration,
 freshness at enable, revocation); D12, D13; the S3 O6 pre-wiring gate; A3-7.
+
+### S6a - Offline operator tooling core, emulator-only writers
+
+Status: implemented in the repository on top of `99e480e`; uncommitted, not deployed,
+never run against a real project. **Awaiting independent certification.** Verified only
+against synthetic fixtures (`SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`) and the Firestore
+emulator for a `demo-` project. Teacher Units remains closed: `teacherUnitsAvailable()`
+returns `false`, production uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the
+production registry and revocation list are empty. No S1 to S5, A3-1 to A3-5, RAP,
+publisher, Rules, index, Hosting, Functions source, build-profile, IAM, Storage, KMS or
+infrastructure change. S6b to S6e are not implemented.
+
+**Files.** `scripts/teacher-units-release/cli.cjs`, `freshness.cjs`, `statements.cjs`,
+`registration.cjs`, `availability-cas.cjs`; tests `cli.test.cjs`, `freshness.test.cjs`,
+`statements.test.cjs` (offline) and `registration.emulator.test.cjs`,
+`availability-cas.emulator.test.cjs` (Firestore emulator); `fixtures/synthetic-release.cjs`;
+`.github/workflows/platform-ci.yml`. CommonJS over the compiled A3 modules (canonical,
+validation, bindings, signature, authority registry, revocation list, composite verifier)
+and the S4/S5 exports, none modified. Not reachable from `index.ts`; not in the deployed
+Functions payload.
+
+**CLI (D14).** `node scripts/teacher-units-release/cli.cjs <command> --project <id>`.
+- `--project` is required exactly once: `lyfelabz-prod`, `lyfelabz-staging` or a `demo-`
+  emulator project. It is never inferred, and the Firebase alias file is never read
+  (test-enforced by a file-read spy and a source scan). `GOOGLE_CLOUD_PROJECT`,
+  `GCLOUD_PROJECT`, `CLOUDSDK_CORE_PROJECT` or `FIREBASE_CONFIG` disagreeing with it, any
+  emulator variable for a cloud project, or a non-loopback `FIRESTORE_EMULATOR_HOST`
+  refuses as ambiguous.
+- Every output carries `approvalSystemId: lyfelabz-operator-cli` and a fresh
+  `workflowRunId` (UUID v4) per invocation; prepared statements carry the same values and
+  cannot override them.
+- Commands, each separate: A offline validation (`validate plan`, `validate
+  expected-access`, `validate chain`); C preparation (`statement prepare`, `statement
+  assemble`, `activation-evidence prepare`); reporting (`history report`, offline over an
+  export or read-only against an emulator); emulator-only writes (`register`, `policy
+  initialize|prepare|enable|shutdown`). Class B (provider observation) is not exposed; no
+  command makes a provider request.
+- Mutating commands are dry runs by default. `--execute` requires the `--confirm <digest>`
+  the dry run printed, and every mutating command refuses every cloud project, including
+  staging and production, before any file, network or Firestore access.
+- No key, signing, or KMS call exists in the tool. `statement prepare` writes the
+  canonical statement bytes and the A3-1 signing bytes for a human signer; `statement
+  assemble` wraps a separately produced signature and does not verify it. Output files
+  are created exclusively and never overwritten.
+- Authority inputs: production uses only the artifact-pinned (empty) registry and
+  revocation list, and refuses caller-supplied ones; staging refuses (no pinned staging
+  registry exists); an emulator project takes explicit registry and revocation files,
+  which `createAuthorityRegistry` and `createRevocationList` bind to `demo-` identities.
+
+**Freshness (D6).** `assertStatementFresh(kind, statement, now, stage)`: future `issuedAt`
+refuses for every signed kind; deployment, activation and disposition approvals refuse
+when more than 24 hours old at registration; the activation approval also at enable;
+certification has no age limit. `assertObservationFresh` applies the five-minute window
+to an S4-shaped observation; S6a has no provider observation of its own. Bounds are A1's
+`MAX_PREPARE_AGE_MS` and `MAX_AGE_MS`.
+
+**Registration (emulator only).** `prepareRegistration` computes the content address and
+validates the release or evidence document with the A3-1 validators; for a signed kind it
+requires statement bytes that are exactly the canonical statement at its recorded hash
+(the local stand-in for statement-object retrieval, D9), a `verified` S1 signature against
+the supplied branded registry, and D6 freshness; it refuses any pinned-revoked reference
+or dependency. `register` accepts no prepared object (certification remediation F2): it takes the raw
+inputs, refuses any other input key, a non-digest `--confirm` and a non-function clock,
+snapshots the document (canonical JSON), the statement bytes (a copy) and the target
+identity when called, and in every transaction attempt, including each SDK rerun,
+rebuilds the whole preparation from those snapshots with that attempt's tooling clock
+(remediation F1): content address and destination, statement bytes, signature, D6
+freshness, revocation, dependencies and the confirmation digest, which must equal
+`--confirm`. Caller mutation after the call cannot reach the write, and a dry-run
+verdict is never reused. In each attempt every dependency must already be
+registered and bind (release to its deployment approval, certification to its release,
+activation approval to its release and certification, activation evidence to its
+approval, disposition to its target and replacement through
+`validateDispositionBinding`); then the target is read; an identical existing document is
+a validated duplicate (`validateImmutableDuplicate`), anything else refuses; otherwise
+`create`. Disposition targets are not revocation-checked, because a disposition records a
+decision about a reference that may already be pinned.
+
+**Availability CAS (D8, emulator only).** `planTransition` builds the next policy with an
+explicit SDK `Timestamp` from the tooling clock, the history document over the certified
+S2 contract and `validateAvailabilityHistoryBinding`, its content address, and a
+confirmation digest over the intent (identity, transition, previous policy digest, next
+policy without `updatedAt`, evidence references, operator subject, reason).
+`executeTransition` runs one transaction: read the policy (an invalid stored policy
+refuses; repair stays separate), re-plan, compare the confirmation digest (so a changed
+previous policy refuses), at enable verify the registered chain through the certified S3
+core `verifyReleaseAuthorityChain` and D6 activation-approval freshness, read the history
+address (an existing document refuses, identical or not), then `set` the policy and
+`create` the history. Refusals propagate unchanged and are never retried; only the
+installed SDK's own reruns of retryable errors apply, and each rerun re-reads and re-plans.
+History is never read by the runtime verifier. `readHistory` and `reportHistoryRecords`
+report repeated generations with `authorization: "none: rollback evidence only"` and never
+block a transition; any invalid stored record refuses the whole report.
+
+**Emulator-only enforcement.** Three independent layers: the CLI refuses cloud projects
+for mutating commands before I/O; the writers themselves (`assertEmulatorWriteTarget`)
+require a `demo-` emulator identity, a loopback `FIRESTORE_EMULATOR_HOST` and agreeing
+ambient project variables; and `assertDatabase` requires the Firestore client to be bound
+to the target project and routed to a loopback emulator (installed
+`@google-cloud/firestore` 7.11.6 settings `ssl: false`, loopback `servicePath`, integer
+`port`; a cloud-routed client has none, and a different private shape fails closed).
+
+**Interpretations recorded for certification review.**
+1. The confirmation digest does not bind `updatedAt`, which is taken from the tooling
+   clock inside the transaction; it binds the previous policy digest and every other next
+   policy field. A rerun with the same clock after a competing commit is refused by the S2
+   binding as a no-op; with a later clock, by the digest.
+2. `enable` history records the release and activation evidence references (the evidence
+   names its approval and certification); `prepare` records the release when one is set;
+   `shutdown` records the previous activation evidence.
+3. Registration verifies signatures and dependency order in addition to D6 freshness.
+4. Emulator `enable` has no provider observation: D6 3 (fresh observation equal to the
+   manifest) applies to cloud enable, which is S6c and not implemented.
+5. `operatorSubject` is a recorded, unverified label.
+6. Superseded approvals and certifications remain valid unless pinned (S3 O4, D5 R2).
+   This is a **documented limitation, not a satisfied refusal** (remediation F3): a
+   registered supersede (or revoke) disposition is a signed audit record only and
+   blocks nothing in S6a, at registration or at enable. The approved contract makes the
+   pinned revocation list, shipped by an artifact-changing redeploy, the only blocking
+   mechanism; R1 deterministic lookup and R3 query by target were not adopted, and a
+   tooling-side disposition lookup would need its own Decision 4 amendment. Registering a
+   disposition prints `effect: "audit record only: not a revocation; ..."`, and a
+   verified enable reports `dispositions: "not consulted: ..."`. A test registers a
+   supersede disposition with its replacement chain, shows enable and dependent
+   registration refuse once the target is pinned, and shows the superseded approval
+   still enables while unpinned. **Required future gate:** the R2 revocation and
+   supersede procedure (S6d, separately authorized: pin, artifact-changing redeploy of all
+   nine endpoints, observer confirmation, old-revision deletion). Superseded-evidence
+   refusal is not satisfied until that gate exists.
+
+**Certification remediation (Sol FAIL: F1, F2, F3).** Within the same 13 files; no S1
+to S5 change. F1 and F2 as described under Registration; F3 as interpretation 6. New
+emulator tests: F1 boundary crossing on an SDK rerun (the installed SDK's own retry loop,
+driven by a retryable `ABORTED` code 10 after the first attempt: an activation approval
+fresh at 24 h - 1 ms refuses at 24 h + 1 ms on the rerun, a clock moving before
+`issuedAt` refuses as future, certification still creates at 400 days, the clock is read
+once per attempt); F1 expired dry-run verdict; F2 forged prepared object and arbitrary
+destination keys; F2 modified bytes or document under an old confirmation, cross-project
+inputs, non-digest confirmations; F2 caller mutation during an attempt (document, bytes
+and identity tampered inside the clock callback: the original is written); F3 above. The
+real-contention rerun of registration is not separately reproduced; the injected
+`ABORTED` exercises the same SDK retry path. Remediation mutants (scratch, in place,
+restored): 15, all killed; 13 behaviorally. Two are killed only by a refusal message and
+are layered guards: the confirm digest-format check (the confirmation equality refuses
+underneath) and the writer emulator-target guard (pre-existing; `assertDatabase` refuses
+underneath).
+
+**Verification.** Offline: 32 tests (`cli` 15, `freshness` 9, `statements` 8). Emulator:
+31 tests (`registration` 17, `availability-cas` 14) after remediation, including concurrent identical
+registrations (one create, five validated duplicates), concurrent CAS (exactly one commit,
+SDK reruns observed under contention, a refusal never retried), stale and mismatched
+confirmations, conflicting and identical existing history, invalid stored policy, invalid
+transitions, tampered history through the S2 binding, D1-B rollback reported as a
+repeated generation, revoked, superseded, unrecognized, zero-signed and wrong-generation
+chains refusing enable, cloud targets and cloud-routed clients refused by the writers, and
+CLI dry-run then execute flows. Behavioral mutation (scratch copy; each mutant must make a
+suite fail): 49 mutants, 47 killed. Two survivors are equivalent by construction: the
+statement-bytes equality check (implied by the hash check plus the A3-1 rule that the
+statement object hash is the canonical statement digest) and an approval-system override
+(the authority key-set check already refuses the key). Layered guards killed only by a
+refusal message or the static write scan, and therefore defense in depth rather than sole
+protection: the CLI cloud-mutation guard (the writer guards refuse underneath; removing
+both is killed behaviorally), `--execute`/`--confirm` pairing (the writer requires the
+digest), the explicit invalid-policy refusal (the planner's validation refuses), the
+history-existence read and `create` for history (removing both is killed behaviorally),
+and `create` for registration (the transactional read and duplicate check precede it).
+
+**Unresolved and remaining.** Statement-object and report retrieval from Storage (D9
+buckets do not exist); release and plan assembly (S6b); live read-only observation (S6c);
+revocation and supersede preparation (S6d); any staging or production write, signing,
+registration or transition (S6e, separately authorized); D12, D13; the S3 O6 pre-wiring
+gate; gates G1 to G5; A3-7. The CI emulator step has not yet run in GitHub Actions.

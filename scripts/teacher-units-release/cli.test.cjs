@@ -1,0 +1,278 @@
+'use strict';
+// A3-6 S6a operator CLI tests. Offline: no emulator, no provider, no credentials.
+// SYNTHETIC fixtures only; nothing here is provider-verified.
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
+const C = require('./cli.cjs');
+const CAS = require('./availability-cas.cjs');
+const O = require('./provider-observation.cjs');
+const F = require('./fixtures/synthetic-release.cjs');
+const { buildProvider, planFor } = require('./fixtures/synthetic-provider.cjs');
+const { buildAccess, expectedFor: expectedAccessFor } = require('./fixtures/synthetic-access.cjs');
+const K = require('../../platform/functions/lib/teacherUnits/a3-canonical.js');
+const { getApps } = require(require.resolve('firebase-admin/app', { paths: [path.resolve(__dirname, '../../platform/functions')] }));
+
+const MODULES = ['cli.cjs', 'freshness.cjs', 'statements.cjs', 'registration.cjs', 'availability-cas.cjs'];
+const CLOUD = ['lyfelabz-prod', 'lyfelabz-staging'];
+const MUTATIONS = [['register', '--document', 'd.json'], ['policy', 'initialize'], ['policy', 'prepare', '--release-id', 'none'],
+  ['policy', 'enable', '--activation-evidence', 'x'], ['policy', 'shutdown', '--keep-release']];
+
+function scratch(files = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lyfelabz-s6a-cli-'));
+  // A Firebase alias file pointing at production: the CLI must never read it.
+  fs.writeFileSync(path.join(dir, '.firebaserc'), JSON.stringify({ projects: { default: 'lyfelabz-prod' } }));
+  for (const [name, content] of Object.entries(files)) {
+    fs.mkdirSync(path.dirname(path.join(dir, name)), { recursive: true });
+    fs.writeFileSync(path.join(dir, name), typeof content === 'string' || Buffer.isBuffer(content) ? content : JSON.stringify(content));
+  }
+  return dir;
+}
+async function cli(argv, { env = {}, cwd = scratch(), now = F.NOW } = {}) {
+  const out = [], err = [];
+  const code = await C.main(argv, { env, cwd, now: () => now, stdout: { write: s => out.push(s) }, stderr: { write: s => err.push(s) } });
+  return { code, cwd, stderr: err.join(''), json: code === 0 ? JSON.parse(out.join('')) : null };
+}
+async function refused(argv, pattern, options) {
+  const r = await cli(argv, options);
+  assert.equal(r.code, 1, `expected refusal for ${argv.join(' ')}`);
+  assert.match(r.stderr, /REFUSED/);
+  assert.match(r.stderr, pattern);
+  return r;
+}
+// Firestore write methods other than create; Map.set and the like are not Firestore writes.
+const FIRESTORE_WRITES = /\b(?:tx|db|transaction|batch)\.(?:set|update|delete)\(|\.doc\([^)]*\)\.(?:set|update|delete|create)\(|\.add\(|\.batch\(|bulkWriter|recursiveDelete/;
+const codeOnly = file => fs.readFileSync(path.join(__dirname, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+
+test('fixtures are labelled synthetic, never provider-verified', () => {
+  assert.equal(F.SYNTHETIC, 'synthetic, not provider-verified');
+  assert.match(fs.readFileSync(path.join(__dirname, 'fixtures/synthetic-release.cjs'), 'utf8'), /SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED/);
+});
+
+test('static: S6a modules never read the Firebase alias file, hold keys, sign, call KMS, make requests or load fixtures', () => {
+  for (const file of MODULES) {
+    const code = codeOnly(file);
+    for (const pattern of [/firebaserc/i, /generateKeyPair|createPrivateKey|\bsign\(|privateKey/, /kms|KeyManagement|cloudkms/i,
+      /\bfetch\(|https?:\/\/|readApi|tokenFromGcloud|gcloud/, /fixtures\//, FIRESTORE_WRITES]) {
+      const allowed = file === 'availability-cas.cjs' && pattern === FIRESTORE_WRITES ? code.replace('tx.set(db.doc(POLICY_PATH), plan.next)', '') : code;
+      assert.equal(pattern.test(allowed), false, `${file} matches ${pattern}`);
+    }
+  }
+  // The only writes: one create in registration, one policy set plus one create in the CAS.
+  assert.equal((codeOnly('registration.cjs').match(/\.create\(/g) || []).length, 1);
+  assert.equal((codeOnly('availability-cas.cjs').match(/\.create\(/g) || []).length, 1);
+  assert.equal((codeOnly('availability-cas.cjs').match(/\btx\.set\(/g) || []).length, 1);
+});
+
+test('the CAS writes the same policy path A3-3 enforcement reads', () => {
+  const E = require('../../platform/functions/lib/teacherUnits/a3-enforcement.js');
+  assert.equal(CAS.POLICY_PATH, E.TEACHER_UNITS_POLICY_PATH);
+});
+
+test('an explicit --project is required, exactly once, from the supported set', async () => {
+  await refused(['validate', 'chain', '--chain', 'c.json'], /explicit --project is required/);
+  await refused(['policy', 'initialize', '--execute', '--confirm', 'a'.repeat(64)], /explicit --project is required/);
+  await refused(['validate', 'chain', '--project', 'lyfelabz-prod', '--project', 'lyfelabz-prod'], /more than once/);
+  await refused(['validate', 'chain', '--project=lyfelabz-prod'], /unexpected argument/);
+  await refused(['validate', 'chain', '--project'], /requires a value/);
+  for (const project of ['lyfelabz-dev', 'default', 'demo_x', 'Demo-x', 'lyfelabz-prod-2', '182791689935']) {
+    await refused(['validate', 'chain', '--project', project, '--chain', 'c.json'], /unsupported --project/);
+  }
+  await refused(['nope', 'thing', '--project', 'lyfelabz-prod'], /unknown command/);
+  await refused(['validate', 'chain', '--project', 'lyfelabz-prod', '--approval-system-id', 'x'], /not accepted/);
+});
+
+test('ambiguous ambient identity refuses', async () => {
+  const argv = project => ['history', 'report', '--project', project, '--records', 'r.json'];
+  for (const name of ['GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT', 'CLOUDSDK_CORE_PROJECT']) {
+    await refused(argv('lyfelabz-staging'), new RegExp(`${name} disagrees`), { env: { [name]: 'lyfelabz-prod' } });
+    await refused(argv('demo-a3-s6a'), new RegExp(`${name} disagrees`), { env: { [name]: 'demo-other' } });
+  }
+  await refused(argv('lyfelabz-prod'), /FIREBASE_CONFIG disagrees/, { env: { FIREBASE_CONFIG: JSON.stringify({ projectId: 'lyfelabz-staging' }) } });
+  await refused(argv('lyfelabz-prod'), /FIREBASE_CONFIG is not strict JSON/, { env: { FIREBASE_CONFIG: '{bad' } });
+  for (const name of ['FIRESTORE_EMULATOR_HOST', 'FIREBASE_AUTH_EMULATOR_HOST', 'FUNCTIONS_EMULATOR']) {
+    await refused(argv('lyfelabz-prod'), new RegExp(`${name} set for cloud project`), { env: { [name]: '127.0.0.1:8080' } });
+  }
+  await refused(argv('demo-a3-s6a'), /not a loopback address/, { env: { FIRESTORE_EMULATOR_HOST: 'firestore.googleapis.com:443' } });
+});
+
+test('every mutating command refuses every cloud project before any I/O, dry run or not', async () => {
+  for (const project of CLOUD) {
+    for (const command of MUTATIONS) {
+      await refused([...command, '--project', project], /emulator-only in S6a/);
+      await refused([...command, '--project', project, '--execute', '--confirm', 'a'.repeat(64)], /emulator-only in S6a/);
+    }
+  }
+  assert.equal(getApps().length, 0, 'no Firebase app was ever initialized');
+});
+
+test('emulator mutations need a loopback emulator, and --execute needs --confirm', async () => {
+  await refused(['policy', 'initialize', '--project', 'demo-a3-s6a', '--policy-instance-id', F.POLICY_INSTANCE_ID, '--placement-fingerprint', F.PLACEMENT,
+    '--operator-subject', 'op', '--reason', 'r'], /FIRESTORE_EMULATOR_HOST on a loopback address/);
+  await refused(['policy', 'initialize', '--project', 'demo-a3-s6a', '--execute'], /must be given together/);
+  await refused(['policy', 'initialize', '--project', 'demo-a3-s6a', '--confirm', 'a'.repeat(64)], /must be given together/);
+  await refused(['policy', 'shutdown', '--project', 'demo-a3-s6a'], /exactly one of --clear-release or --keep-release/);
+  await refused(['policy', 'shutdown', '--project', 'demo-a3-s6a', '--clear-release', '--keep-release'], /exactly one of/);
+  await refused(['validate', 'chain', '--project', 'lyfelabz-prod', '--execute'], /--execute is not accepted by validate chain/);
+  await refused(['statement', 'prepare', '--project', 'lyfelabz-prod', '--confirm', 'a'.repeat(64)], /--confirm is not accepted by statement prepare/);
+  assert.equal(getApps().length, 0);
+});
+
+test('the Firebase alias file is never read, whatever the command', async () => {
+  const reads = [];
+  const original = { readFileSync: fs.readFileSync, openSync: fs.openSync, existsSync: fs.existsSync, statSync: fs.statSync };
+  for (const name of Object.keys(original)) fs[name] = function spy(file, ...rest) { reads.push(String(file)); return original[name].call(fs, file, ...rest); };
+  try {
+    await cli(['validate', 'chain', '--chain', 'c.json']);
+    await cli(['policy', 'initialize']);
+    await cli(['register', '--document', 'd.json', '--project', 'lyfelabz-prod']);
+    await cli(['history', 'report', '--project', 'demo-a3-s6a', '--records', 'missing.json']);
+  } finally { Object.assign(fs, original); }
+  assert.ok(reads.length > 0, 'spy observed file reads');
+  assert.deepEqual(reads.filter(f => /firebaserc/.test(f)), []);
+});
+
+test('the real process entry point refuses without --project and with a cloud write', () => {
+  const cwd = scratch();
+  const node = (args, env = {}) => {
+    try { execFileSync(process.execPath, [path.join(__dirname, 'cli.cjs'), ...args], { cwd, env: { PATH: process.env.PATH, ...env }, stdio: 'pipe' }); return { code: 0 }; }
+    catch (error) { return { code: error.status, stderr: String(error.stderr) }; }
+  };
+  for (const r of [node(['policy', 'initialize']), node(['register', '--project', 'lyfelabz-prod', '--document', 'd.json']),
+    node(['policy', 'enable', '--project', 'lyfelabz-staging', '--activation-evidence', 'x', '--execute', '--confirm', 'a'.repeat(64)])]) {
+    assert.equal(r.code, 1);
+    assert.match(r.stderr, /REFUSED/);
+  }
+});
+
+test('statement prepare: fixed approval system, fresh run ID per invocation, no overwrite, no signing', async () => {
+  const cwd = scratch({ 'fields.json': { candidate: F.candidate() } });
+  const argv = dir => ['statement', 'prepare', '--project', 'lyfelabz-prod', '--kind', 'deployment-approval', '--fields', 'fields.json',
+    '--authority-id', 'owner-authority', '--approver-subject', 'owner', '--decision-id', 'D-1', '--out-dir', dir];
+  fs.mkdirSync(path.join(cwd, 'a')); fs.mkdirSync(path.join(cwd, 'b'));
+  const a = await cli(argv('a'), { cwd }), b = await cli(argv('b'), { cwd });
+  assert.equal(a.code, 0); assert.equal(b.code, 0);
+  assert.equal(a.json.approvalSystemId, 'lyfelabz-operator-cli');
+  assert.notEqual(a.json.workflowRunId, b.json.workflowRunId);
+  const statement = JSON.parse(fs.readFileSync(path.join(cwd, 'a/statement.json'), 'utf8'));
+  assert.equal(statement.authority.workflowRunId, a.json.workflowRunId);
+  assert.equal(statement.authority.approvalSystemId, 'lyfelabz-operator-cli');
+  assert.equal(statement.environment, 'production');
+  assert.equal(K.sha256Bytes(fs.readFileSync(path.join(cwd, 'a/signing-bytes.bin'))), a.json.result.signingBytesSha256);
+  assert.match(a.json.result.signing, /not performed/);
+  await refused(argv('a'), /never overwritten/, { cwd });
+});
+
+test('statement assemble and activation-evidence prepare write new files only', async () => {
+  const chain = F.buildChain({ keys: F.testKeys() });
+  const cwd = scratch({ 'statement.json': chain.activationApproval.statementBytes, 'approval.json': chain.activationApproval.document });
+  const sig = chain.activationApproval.document.payload.source;
+  const assembled = await cli(['statement', 'assemble', '--project', 'demo-a3-s6a', '--statement', 'statement.json', '--bucket', 'lyfelabz-evidence-synthetic',
+    '--object', 'statements/activation-approval.json', '--generation', '1', '--signer-key-id', sig.signerKeyId, '--signature', sig.signatureBase64, '--out', 'doc.json'], { cwd });
+  assert.equal(assembled.code, 0);
+  assert.equal(assembled.json.result.ref, chain.activationApproval.ref);
+  const evidence = await cli(['activation-evidence', 'prepare', '--project', 'demo-a3-s6a', '--approval', 'approval.json', '--out', 'evidence.json'], { cwd });
+  assert.equal(evidence.json.result.ref, chain.activationEvidence.ref);
+  await refused(['activation-evidence', 'prepare', '--project', 'demo-a3-s6a', '--approval', 'approval.json', '--out', 'evidence.json'], /never overwritten/, { cwd });
+  // Cross-environment: an emulator statement assembled for production refuses.
+  await refused(['statement', 'assemble', '--project', 'lyfelabz-prod', '--statement', 'statement.json', '--bucket', 'b1', '--object', 'o', '--generation', '1',
+    '--signer-key-id', 'k', '--signature', F.ZERO_SIGNATURE, '--out', 'x.json'], /structure invalid/, { cwd });
+});
+
+function chainFiles(chain, keys, revoked = []) {
+  return {
+    'chain.json': { policy: chain.policy, releaseRef: chain.release.ref, release: chain.release.document, deploymentApprovalRef: chain.deployment.ref,
+      deploymentApproval: chain.deployment.document, activationEvidenceRef: chain.activationEvidence.ref, activationEvidence: chain.activationEvidence.document,
+      activationApprovalRef: chain.activationApproval.ref, activationApproval: chain.activationApproval.document, endpointName: 'teacherUnitsGet',
+      certification: chain.certification.document },
+    'registry.json': F.registryEntries(F.PROJECT, keys), 'revocations.json': F.revocationEntries(F.PROJECT, revoked), 'profile.json': F.LOCAL_PROFILE,
+  };
+}
+function enabledChain(keys, options) {
+  const chain = F.buildChain({ keys, ...options });
+  const expected = F.expectedFor();
+  const plan = steps => steps.reduce((previous, [transition, opts]) => CAS.planTransition({ transition, previous, expected, options: opts,
+    operatorSubject: 'op', reason: 'r', now: F.NOW }).next, null);
+  const next = plan([['initialize', { policyInstanceId: F.POLICY_INSTANCE_ID, placementFingerprint: F.PLACEMENT }], ['prepare', { releaseId: chain.release.releaseId }],
+    ['enable', { activationEvidenceRef: chain.activationEvidence.ref }]]);
+  chain.policy = { ...next, updatedAt: { seconds: next.updatedAt.seconds, nanoseconds: next.updatedAt.nanoseconds } };
+  return chain;
+}
+const chainArgs = project => ['validate', 'chain', '--project', project, '--chain', 'chain.json'];
+const emulatorChainArgs = ['--registry', 'registry.json', '--revocations', 'revocations.json', '--local-profile', 'profile.json'];
+
+test('validate chain: a signed emulator chain passes only the pure S3 checks', async () => {
+  const keys = F.testKeys(), chain = enabledChain(keys);
+  const ok = await cli([...chainArgs(F.PROJECT), ...emulatorChainArgs], { cwd: scratch(chainFiles(chain, keys)) });
+  assert.equal(ok.code, 0, ok.stderr);
+  assert.equal(ok.json.result.verdict.verdict, 'verified');
+  assert.match(ok.json.result.scope, /not A3-2 provenance, not provider eligibility, not authorization/);
+  // Revoked evidence (pinned) and an unrecognized signer refuse.
+  await refused([...chainArgs(F.PROJECT), ...emulatorChainArgs], /unverified: revoked/, { cwd: scratch(chainFiles(chain, keys, [chain.activationApproval.ref])) });
+  await refused([...chainArgs(F.PROJECT), ...emulatorChainArgs], /unverified: authorityUnrecognized/, { cwd: scratch(chainFiles(chain, F.testKeys())) });
+  await refused([...chainArgs(F.PROJECT), '--registry', 'registry.json', '--revocations', 'revocations.json'], /unverified: inputMismatch/, { cwd: scratch(chainFiles(chain, keys)) });
+});
+
+test('synthetic evidence never authorizes a release: zero signatures, cross-environment, production and staging', async () => {
+  const keys = F.testKeys();
+  const zero = enabledChain(null);
+  await refused([...chainArgs(F.PROJECT), ...emulatorChainArgs], /unverified: (authorityUnrecognized|signatureUnverified)/, { cwd: scratch(chainFiles(zero, keys)) });
+  const signed = enabledChain(keys);
+  // Production: only the artifact-pinned (empty) registry; caller registries refuse; cross-environment input refuses.
+  await refused(chainArgs('lyfelabz-prod'), /unverified: inputMismatch/, { cwd: scratch(chainFiles(signed, keys)) });
+  await refused([...chainArgs('lyfelabz-prod'), '--registry', 'registry.json'], /only the artifact-pinned registry/, { cwd: scratch(chainFiles(signed, keys)) });
+  await refused([...chainArgs('lyfelabz-prod'), '--local-profile', 'profile.json'], /only to emulator projects/, { cwd: scratch(chainFiles(signed, keys)) });
+  await refused(chainArgs('lyfelabz-staging'), /no artifact-pinned staging authority registry/, { cwd: scratch(chainFiles(signed, keys)) });
+  // An emulator registry naming another demo project does not verify this chain.
+  const other = chainFiles(signed, keys);
+  other['registry.json'] = F.registryEntries('demo-other', keys);
+  await refused([...chainArgs(F.PROJECT), ...emulatorChainArgs], /unverified: authorityUnrecognized/, { cwd: scratch(other) });
+  // A registry claiming a cloud identity cannot be supplied for an emulator project.
+  const cloudy = chainFiles(signed, keys);
+  cloudy['registry.json'] = F.registryEntries(F.PROJECT, keys).map(e => ({ ...e, environment: 'staging', projectId: 'lyfelabz-staging', projectNumber: '293337283840' }));
+  await refused([...chainArgs(F.PROJECT), ...emulatorChainArgs], /unverified: authorityUnrecognized/, { cwd: scratch(cloudy) });
+});
+
+test('validate plan and expected-access: S4 and S5 contracts, cloud projects only', async () => {
+  const f = buildProvider();
+  let observation;
+  try { observation = await O.observeA3Backend({ project: f.state.project, get: f.get, now: f.now }); } finally { f.cleanup(); }
+  const plan = planFor(observation);
+  const cwd = scratch({ 'plan.json': plan.bytes, 'plan-object.json': plan.object, 'bad-plan.json': Buffer.from(`${plan.bytes.toString()} `) });
+  const project = observation.projectId;
+  assert.equal((await cli(['validate', 'plan', '--project', project, '--plan', 'plan.json', '--plan-object', 'plan-object.json'], { cwd })).code, 0);
+  await refused(['validate', 'plan', '--project', project, '--plan', 'bad-plan.json', '--plan-object', 'plan-object.json'], /do not match/, { cwd });
+  const otherProject = project === 'lyfelabz-prod' ? 'lyfelabz-staging' : 'lyfelabz-prod';
+  await refused(['validate', 'plan', '--project', otherProject, '--plan', 'plan.json', '--plan-object', 'plan-object.json'], /environment identity mismatch/, { cwd });
+  await refused(['validate', 'plan', '--project', F.PROJECT, '--plan', 'plan.json', '--plan-object', 'plan-object.json'], /applies only to lyfelabz-staging or lyfelabz-prod/, { cwd });
+
+  const access = await buildAccess();
+  const expected = expectedAccessFor(access.observation);
+  const accessCwd = scratch({ 'expected.json': expected.bytes, 'expected-object.json': expected.object });
+  assert.equal((await cli(['validate', 'expected-access', '--project', access.observation.projectId, '--expected', 'expected.json', '--expected-object', 'expected-object.json'], { cwd: accessCwd })).code, 0);
+  await refused(['validate', 'expected-access', '--project', access.observation.projectId === 'lyfelabz-prod' ? 'lyfelabz-staging' : 'lyfelabz-prod',
+    '--expected', 'expected.json', '--expected-object', 'expected-object.json'], /REFUSED/, { cwd: accessCwd });
+});
+
+test('history report over an export: repeated generations are reported, never authority', async () => {
+  const expected = F.expectedFor();
+  const step = (transition, previous, options, now) => CAS.planTransition({ transition, previous, expected, options, operatorSubject: 'op', reason: transition, now });
+  const keys = F.testKeys(), chain = F.buildChain({ keys });
+  const g1 = step('initialize', null, { policyInstanceId: F.POLICY_INSTANCE_ID, placementFingerprint: F.PLACEMENT }, F.NOW);
+  const g2 = step('prepare', g1.next, { releaseId: chain.release.releaseId }, F.NOW);
+  const g3 = step('enable', g2.next, { activationEvidenceRef: chain.activationEvidence.ref }, F.NOW);
+  const g4 = step('shutdown', g3.next, { clearRelease: false }, '2026-10-17T12:01:00.000000000Z');
+  const again = step('shutdown', g3.next, { clearRelease: false }, '2026-10-17T12:02:00.000000000Z');
+  const records = [g1, g2, g3, g4, again].map(p => ({ ref: p.historyRef, document: p.history }));
+  const r = await cli(['history', 'report', '--project', F.PROJECT, '--records', 'records.json'], { cwd: scratch({ 'records.json': records }) });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.json.result.records, 5);
+  assert.deepEqual(r.json.result.repeatedGenerations, [{ policyInstanceId: F.POLICY_INSTANCE_ID, nextGeneration: 4, refs: [g4.historyRef, again.historyRef].sort() }]);
+  assert.match(r.json.result.authorization, /^none/);
+  const forged = records.map((x, i) => (i === 4 ? { ...x, document: { ...x.document, reason: 'edited' } } : x));
+  await refused(['history', 'report', '--project', F.PROJECT, '--records', 'records.json'], /history records structure invalid/, { cwd: scratch({ 'records.json': forged }) });
+  await refused(['history', 'report', '--project', 'lyfelabz-prod'], /reads only an emulator/);
+});

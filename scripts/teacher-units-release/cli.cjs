@@ -1,0 +1,260 @@
+#!/usr/bin/env node
+'use strict';
+
+// A3-6 S6a operator CLI (D14). Offline validation, unsigned statement preparation,
+// history reporting, and EMULATOR-ONLY registration and availability transitions.
+//
+//   node scripts/teacher-units-release/cli.cjs <command> [subcommand] --project <id> [flags]
+//
+// Every invocation needs an explicit --project (lyfelabz-prod, lyfelabz-staging, or a
+// demo- emulator project). The project is never inferred from the Firebase alias file,
+// a default alias or ambient configuration, and conflicting ambient identity refuses.
+// Mutating commands (register, policy) are dry runs unless --execute is given with the
+// --confirm digest the dry run printed, and they refuse every cloud project, including
+// staging and production, before any I/O. The CLI holds no key, never signs, never
+// calls KMS and makes no provider request. Nothing it prints is authority.
+const fs = require('node:fs');
+const path = require('node:path');
+const { randomUUID } = require('node:crypto');
+const { PROJECT_NUMBERS } = require('../hosting-release/backend-state.cjs');
+const O = require('./provider-observation.cjs');
+const AR = require('./access-review.cjs');
+const ST = require('./statements.cjs');
+const RG = require('./registration.cjs');
+const CAS = require('./availability-cas.cjs');
+
+const LIB = path.resolve(__dirname, '../../platform/functions/lib/teacherUnits');
+const K = require(path.join(LIB, 'a3-canonical.js'));
+const CV = require(path.join(LIB, 'a3-composite-verifier.js'));
+const R = require(path.join(LIB, 'a3-authority-registry.js'));
+const L = require(path.join(LIB, 'a3-revocation-list.js'));
+const { Timestamp } = RG.functionsModule('firebase-admin/firestore');
+
+class Refusal extends Error {}
+function refuse(message) { throw new Refusal(`[a3-operator-cli] REFUSED: ${message}`); }
+
+const CLOUD = Object.freeze({ 'lyfelabz-prod': 'production', 'lyfelabz-staging': 'staging' });
+const AMBIENT_PROJECT = Object.freeze(['GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT', 'CLOUDSDK_CORE_PROJECT']);
+const EMULATOR_VARIABLES = Object.freeze(['FIRESTORE_EMULATOR_HOST', 'FIREBASE_AUTH_EMULATOR_HOST', 'FUNCTIONS_EMULATOR']);
+
+// command -> allowed flags (value flags and boolean flags). --project is always required.
+// Only mutating commands accept --execute and --confirm; any other command refuses them.
+const COMMANDS = Object.freeze({
+  'validate plan': { values: ['plan', 'plan-object'], cloudOnly: true },
+  'validate expected-access': { values: ['expected', 'expected-object'], cloudOnly: true },
+  'validate chain': { values: ['chain', 'registry', 'revocations', 'local-profile'] },
+  'statement prepare': { values: ['kind', 'fields', 'authority-id', 'approver-subject', 'decision-id', 'out-dir'] },
+  'statement assemble': { values: ['statement', 'bucket', 'object', 'generation', 'signer-key-id', 'signature', 'out'] },
+  'activation-evidence prepare': { values: ['approval', 'out'] },
+  'history report': { values: ['records'] },
+  'register': { values: ['document', 'statement-bytes', 'registry', 'revocations', 'local-profile', 'confirm'], booleans: ['execute'], mutates: true },
+  'policy initialize': { values: ['policy-instance-id', 'placement-fingerprint', 'operator-subject', 'reason', 'confirm'], booleans: ['execute'], mutates: true },
+  'policy prepare': { values: ['release-id', 'placement-fingerprint', 'operator-subject', 'reason', 'confirm'], booleans: ['execute'], mutates: true },
+  'policy enable': { values: ['activation-evidence', 'registry', 'revocations', 'local-profile', 'operator-subject', 'reason', 'confirm'], booleans: ['execute'], mutates: true },
+  'policy shutdown': { values: ['operator-subject', 'reason', 'confirm'], booleans: ['execute', 'clear-release', 'keep-release'], mutates: true },
+});
+
+function parse(argv) {
+  if (!Array.isArray(argv) || argv.length < 2) refuse('usage: <command> <subcommand> --project <id> [flags]');
+  const name = argv.slice(0, 2).join(' ');
+  const two = Object.hasOwn(COMMANDS, name);
+  const command = two ? name : argv[0];
+  if (!Object.hasOwn(COMMANDS, command)) refuse(`unknown command: ${name}`);
+  const spec = COMMANDS[command], flags = {}, rest = argv.slice(two ? 2 : 1);
+  for (let i = 0; i < rest.length; i++) {
+    const token = rest[i];
+    if (typeof token !== 'string' || !token.startsWith('--') || token.includes('=')) refuse(`unexpected argument: ${token}`);
+    const key = token.slice(2);
+    if (Object.hasOwn(flags, key)) refuse(`--${key} given more than once`);
+    if ((spec.booleans || []).includes(key)) { flags[key] = true; continue; }
+    if (key !== 'project' && !spec.values.includes(key)) refuse(`--${key} is not accepted by ${command}`);
+    const value = rest[++i];
+    if (typeof value !== 'string' || value.startsWith('--') || value === '') refuse(`--${key} requires a value`);
+    flags[key] = value;
+  }
+  return { command, spec, flags };
+}
+
+/** Explicit project only. Ambient configuration may agree with it or be absent;
+ * anything else is ambiguous and refuses. */
+function resolveTarget(project, env) {
+  if (typeof project !== 'string') refuse('an explicit --project is required; it is never inferred');
+  for (const name of AMBIENT_PROJECT) if (env[name] !== undefined && env[name] !== project) refuse(`ambiguous project: ${name} disagrees with --project`);
+  if (env.FIREBASE_CONFIG !== undefined) {
+    let config;
+    try { config = K.parseStrictJSON(env.FIREBASE_CONFIG); } catch { refuse('ambiguous project: FIREBASE_CONFIG is not strict JSON'); }
+    if (!config || typeof config !== 'object' || config.projectId !== project) refuse('ambiguous project: FIREBASE_CONFIG disagrees with --project');
+  }
+  if (Object.hasOwn(CLOUD, project)) {
+    const present = EMULATOR_VARIABLES.filter(name => env[name] !== undefined);
+    if (present.length) refuse(`ambiguous environment: ${present.join(', ')} set for cloud project ${project}`);
+    return Object.freeze({ project, cloud: true, expected: { environment: CLOUD[project], projectId: project, projectNumber: PROJECT_NUMBERS[project] } });
+  }
+  if (!RG.DEMO_PROJECT.test(project)) refuse('unsupported --project: lyfelabz-prod, lyfelabz-staging or a demo- emulator project');
+  if (env.FIRESTORE_EMULATOR_HOST !== undefined && !RG.LOOPBACK_HOST.test(env.FIRESTORE_EMULATOR_HOST)) refuse('ambiguous environment: FIRESTORE_EMULATOR_HOST is not a loopback address');
+  return Object.freeze({ project, cloud: false, expected: { environment: 'emulator', projectId: project, projectNumber: '0' } });
+}
+
+function reader(cwd) {
+  const file = (value, flag) => {
+    if (typeof value !== 'string') refuse(`--${flag} is required`);
+    try { return fs.readFileSync(path.resolve(cwd, value)); } catch { return refuse(`--${flag} file is unreadable`); }
+  };
+  const json = (value, flag) => { try { return K.parseStrictJSON(file(value, flag).toString('utf8')); } catch (e) { if (e instanceof Refusal) throw e; return refuse(`--${flag} is not strict JSON`); } };
+  return { file, json };
+}
+function writeNew(cwd, value, flag, bytes) {
+  if (typeof value !== 'string') refuse(`--${flag} is required`);
+  try { fs.writeFileSync(path.resolve(cwd, value), bytes, { flag: 'wx' }); } catch { refuse(`--${flag} could not be created (existing files are never overwritten)`); }
+}
+function required(flags, key) { if (typeof flags[key] !== 'string') refuse(`--${key} is required`); return flags[key]; }
+
+function withLocalProfile(target, flags, io) {
+  if (flags['local-profile'] === undefined) return target.expected;
+  if (target.cloud) refuse('--local-profile applies only to emulator projects');
+  return { ...target.expected, localProfile: io.json(flags['local-profile'], 'local-profile') };
+}
+/** Production uses the pinned (empty) registry and list; staging has no pinned registry;
+ * an emulator project takes explicit files, which can never name a cloud identity. */
+function authorityFor(target, flags, io) {
+  if (target.expected.environment === 'production') {
+    if (flags.registry !== undefined || flags.revocations !== undefined) refuse('production uses only the artifact-pinned registry and revocation list');
+    return { registry: R.PRODUCTION_AUTHORITY_REGISTRY, revocationList: L.PRODUCTION_REVOCATION_LIST };
+  }
+  if (target.expected.environment === 'staging') refuse('no artifact-pinned staging authority registry exists');
+  const registry = R.createAuthorityRegistry(io.json(required(flags, 'registry'), 'registry'));
+  if (!registry.ok) refuse(`registry invalid at ${registry.issue.path}: ${registry.issue.reason}`);
+  const identity = { environment: 'emulator', projectId: target.project, projectNumber: '0' };
+  const list = L.createRevocationList(io.json(required(flags, 'revocations'), 'revocations'), identity);
+  if (!list.ok) refuse(`revocation list invalid at ${list.issue.path}: ${list.issue.reason}`);
+  return { registry: registry.value, revocationList: list.value };
+}
+// Chain files use the fixture codec {seconds, nanoseconds} for the policy timestamp.
+function hydratePolicy(policy) {
+  const t = policy?.updatedAt;
+  if (!t || typeof t !== 'object' || Object.keys(t).sort().join() !== 'nanoseconds,seconds') refuse('chain policy updatedAt must be {seconds, nanoseconds}');
+  try { return { ...policy, updatedAt: new Timestamp(t.seconds, t.nanoseconds) }; } catch { return refuse('chain policy updatedAt is out of range'); }
+}
+function printable(value) {
+  return JSON.parse(JSON.stringify(value, (key, v) => {
+    if (v instanceof Timestamp) return { seconds: v.seconds, nanoseconds: v.nanoseconds };
+    if (v && v.type === 'Buffer' && Array.isArray(v.data)) return undefined;
+    return typeof v === 'function' ? undefined : v;
+  }));
+}
+
+async function withEmulator(target, env, run) {
+  const { db, close } = RG.emulatorFirestore(target.expected, env);
+  try { return await run(db); } finally { await close(); }
+}
+
+async function run({ command, flags }, target, ctx) {
+  const io = reader(ctx.cwd), now = ctx.now;
+  switch (command) {
+    case 'validate plan': {
+      O.readPlan(io.json(required(flags, 'plan-object'), 'plan-object'), io.file(required(flags, 'plan'), 'plan'), target.project);
+      return { valid: true, scope: 'structure-only deployment plan; not observed, not approved' };
+    }
+    case 'validate expected-access': {
+      AR.readExpectedAccess(io.json(required(flags, 'expected-object'), 'expected-object'), io.file(required(flags, 'expected'), 'expected'), target.project);
+      return { valid: true, scope: 'structure-only expected-access plan; not observed, not approved' };
+    }
+    case 'validate chain': {
+      const expected = withLocalProfile(target, flags, io);
+      const deps = authorityFor(target, flags, io);
+      const chain = io.json(required(flags, 'chain'), 'chain');
+      if (!chain || typeof chain !== 'object') refuse('chain must be an object');
+      const verdict = CV.verifyReleaseAuthorityChain({ ...chain, identity: expected, policy: hydratePolicy(chain.policy) }, deps);
+      if (verdict.verdict !== 'verified') refuse(`release authority chain unverified: ${verdict.reason}`);
+      return { verdict, scope: 'pure S3 checks only; not A3-2 provenance, not provider eligibility, not authorization' };
+    }
+    case 'statement prepare': {
+      const prepared = ST.prepareStatement({ kind: required(flags, 'kind'), expected: target.expected, fields: io.json(required(flags, 'fields'), 'fields'),
+        authority: { authorityId: required(flags, 'authority-id'), approverSubject: required(flags, 'approver-subject'), decisionId: required(flags, 'decision-id') },
+        runId: ctx.workflowRunId, now: new Date(now()) });
+      const dir = required(flags, 'out-dir');
+      writeNew(ctx.cwd, path.join(dir, 'statement.json'), 'out-dir', prepared.statementBytes);
+      writeNew(ctx.cwd, path.join(dir, 'signing-bytes.bin'), 'out-dir', prepared.signingBytes);
+      return { statementSha256: prepared.statementSha256, signingBytesSha256: prepared.signingBytesSha256,
+        authority: prepared.authority, signing: 'not performed: a human signs signing-bytes.bin outside this tool' };
+    }
+    case 'statement assemble': {
+      const assembled = ST.assembleSignedDocument({ statementBytes: io.file(required(flags, 'statement'), 'statement'),
+        statementObject: { bucket: required(flags, 'bucket'), object: required(flags, 'object'), generation: required(flags, 'generation') },
+        signerKeyId: required(flags, 'signer-key-id'), signatureBase64: required(flags, 'signature'), expected: target.expected });
+      writeNew(ctx.cwd, required(flags, 'out'), 'out', `${K.canonicalJSON(assembled.document)}\n`);
+      return { ref: assembled.ref, signatureVerification: assembled.signatureVerification };
+    }
+    case 'activation-evidence prepare': {
+      const approval = io.json(required(flags, 'approval'), 'approval');
+      const prepared = ST.prepareActivationEvidence({ approvalRef: K.evidenceRef(approval?.payload), approval, expected: target.expected });
+      writeNew(ctx.cwd, required(flags, 'out'), 'out', `${K.canonicalJSON(prepared.document)}\n`);
+      return { ref: prepared.ref, authority: 'none: unsigned activation evidence' };
+    }
+    case 'history report': {
+      if (flags.records !== undefined) return CAS.reportHistoryRecords(io.json(flags.records, 'records'), target.expected);
+      if (target.cloud) refuse('history report reads only an emulator; pass --records <export> for offline review');
+      return withEmulator(target, ctx.env, db => CAS.readHistory({ db, expected: target.expected, env: ctx.env }));
+    }
+    case 'register': {
+      const expected = withLocalProfile(target, flags, io);
+      const deps = authorityFor(target, flags, io);
+      const inputs = { document: io.json(required(flags, 'document'), 'document'), expected, registry: deps.registry, revocationList: deps.revocationList,
+        statementBytes: flags['statement-bytes'] === undefined ? undefined : io.file(flags['statement-bytes'], 'statement-bytes') };
+      if (!flags.execute) {
+        const prepared = RG.prepareRegistration({ ...inputs, now: now() });
+        return { dryRun: true, ref: prepared.ref, kind: prepared.kind, confirm: prepared.confirmDigest, intent: prepared.intent,
+          ...(prepared.kind === 'teacher-units-approval-disposition' ? { effect: RG.DISPOSITION_EFFECT } : {}) };
+      }
+      // The writer rebuilds and re-verifies everything per transaction attempt.
+      return withEmulator(target, ctx.env, db => RG.register({ db, ...inputs, confirm: flags.confirm, now, env: ctx.env }));
+    }
+    default: {
+      const transition = command.slice('policy '.length);
+      const expected = transition === 'enable' ? withLocalProfile(target, flags, io) : target.expected;
+      const options = {};
+      if (transition === 'initialize') Object.assign(options, { policyInstanceId: flags['policy-instance-id'], placementFingerprint: flags['placement-fingerprint'] });
+      if (transition === 'prepare') {
+        const id = required(flags, 'release-id');
+        Object.assign(options, { releaseId: id === 'none' ? null : id }, flags['placement-fingerprint'] === undefined ? {} : { placementFingerprint: flags['placement-fingerprint'] });
+      }
+      if (transition === 'enable') options.activationEvidenceRef = required(flags, 'activation-evidence');
+      if (transition === 'shutdown') {
+        if (Boolean(flags['clear-release']) === Boolean(flags['keep-release'])) refuse('shutdown requires exactly one of --clear-release or --keep-release');
+        options.clearRelease = Boolean(flags['clear-release']);
+      }
+      const common = { expected, transition, options, operatorSubject: flags['operator-subject'], reason: flags.reason, now, env: ctx.env };
+      if (!flags.execute) {
+        const plan = await withEmulator(target, ctx.env, db => CAS.dryRunTransition({ db, ...common }));
+        return { dryRun: true, transition, confirm: plan.confirmDigest, intent: plan.intent, historyPreview: plan.history,
+          note: 'the history address and updatedAt are fixed when --execute runs; the confirmation binds everything else' };
+      }
+      const enableDependencies = transition === 'enable' ? authorityFor(target, flags, io) : undefined;
+      return withEmulator(target, ctx.env, db => CAS.executeTransition({ db, ...common, confirm: flags.confirm, enableDependencies }));
+    }
+  }
+}
+
+/** Returns the exit code. `ctx` is injectable for tests; defaults are the process. */
+async function main(argv, ctx = {}) {
+  const context = { env: ctx.env || process.env, cwd: ctx.cwd || process.cwd(), stdout: ctx.stdout || process.stdout,
+    stderr: ctx.stderr || process.stderr, now: ctx.now || (() => new Date().toISOString()), workflowRunId: ctx.workflowRunId || randomUUID() };
+  try {
+    const parsed = parse(argv);
+    if (parsed.spec.mutates && Boolean(parsed.flags.execute) !== (parsed.flags.confirm !== undefined)) refuse('--execute and --confirm <digest> must be given together');
+    const target = resolveTarget(parsed.flags.project, context.env);
+    if (parsed.spec.mutates && target.cloud) refuse(`${parsed.command} is emulator-only in S6a; staging and production writes are not implemented`);
+    if (parsed.spec.cloudOnly && !target.cloud) refuse(`${parsed.command} applies only to lyfelabz-staging or lyfelabz-prod`);
+    const result = await run(parsed, target, context);
+    context.stdout.write(`${JSON.stringify(printable({ command: parsed.command, project: target.project, workflowRunId: context.workflowRunId,
+      approvalSystemId: ST.APPROVAL_SYSTEM_ID, result }), null, 2)}\n`);
+    return 0;
+  } catch (error) {
+    const message = error && typeof error.message === 'string' && /REFUSED/.test(error.message) ? error.message : `[a3-operator-cli] REFUSED: ${error && error.message ? error.message : 'unexpected failure'}`;
+    context.stderr.write(`${message}\n`);
+    return 1;
+  }
+}
+
+module.exports = { COMMANDS, parse, resolveTarget, main };
+if (require.main === module) main(process.argv.slice(2)).then(code => { process.exitCode = code; });
