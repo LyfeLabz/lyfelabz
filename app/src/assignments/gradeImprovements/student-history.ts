@@ -144,6 +144,17 @@ function renderBlock(
         body: `This removes your mark that the grade was updated to ${formatGradePercent(effective.percentage)}. If the improvement still needs a PowerSchool update, Update Grade will appear again. Quiz scores are not changed.`,
         confirmLabel: "Undo",
         returnFocusTo: undo,
+        // A successful Undo re-renders the block and removes this button, so
+        // focus moves to the new history toggle. Done on close, after the
+        // dialog's focus trap is gone; focusing earlier is pulled back into
+        // the dialog and then lost to body when the overlay is removed.
+        onClose: (confirmed) => {
+          if (!confirmed) return;
+          const toggle = block.isConnected
+            ? block.querySelector<HTMLElement>(".shell-student-detail-grade-update-toggle")
+            : null;
+          toggle?.focus({ preventScroll: true });
+        },
         onConfirm: async () => {
           try {
             const result = await opts.seam.reverse({
@@ -152,7 +163,6 @@ function renderBlock(
               eventId: effective.eventId,
             });
             renderBlock(block, result.history, label, opts);
-            block.querySelector<HTMLElement>(".shell-student-detail-grade-update-toggle")?.focus({ preventScroll: true });
             return { ok: true };
           } catch (err) {
             if (isStaleGradeImprovementError(err)) {

@@ -155,6 +155,45 @@ describe("Student Detail grade-update history", () => {
     expect(q("student-detail-grade-update-undo-a1")).toBeNull();
   });
 
+  test("confirmed Undo moves focus to the re-rendered history toggle, never body", async () => {
+    const list = buildList();
+    await decorate(list, seam([ACKED]));
+    const undo = q<HTMLButtonElement>("student-detail-grade-update-undo-a1")!;
+    undo.focus();
+    undo.click();
+    q<HTMLButtonElement>("student-detail-grade-undo-dialog-confirm")!.click();
+    // While saving, focus stays inside the modal.
+    expect(q("student-detail-grade-undo-dialog")!.contains(document.activeElement)).toBe(true);
+    await settle();
+    // The original Undo button was removed by the re-render.
+    expect(undo.isConnected).toBe(false);
+    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement).toBe(q("student-detail-grade-update-toggle-a1"));
+  });
+
+  test("Cancel and Escape return focus to the Undo button", async () => {
+    const list = buildList();
+    await decorate(list, seam([ACKED]));
+    const undo = q<HTMLButtonElement>("student-detail-grade-update-undo-a1")!;
+    undo.focus();
+    undo.click();
+    expect(document.activeElement).toBe(q("student-detail-grade-undo-dialog-cancel"));
+    q<HTMLButtonElement>("student-detail-grade-undo-dialog-cancel")!.click();
+    expect(document.activeElement).toBe(undo);
+    undo.click();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    expect(q("student-detail-grade-undo-dialog")).toBeNull();
+    expect(document.activeElement).toBe(undo);
+  });
+
+  test("focus outside the open Undo dialog is pulled back in", async () => {
+    const list = buildList();
+    await decorate(list, seam([ACKED]));
+    q<HTMLButtonElement>("student-detail-grade-update-undo-a1")!.click();
+    q<HTMLButtonElement>("student-detail-grade-update-toggle-a1")!.focus();
+    expect(q("student-detail-grade-undo-dialog")!.contains(document.activeElement)).toBe(true);
+  });
+
   test("a stale Undo undoes nothing and refreshes the block", async () => {
     const newer: GradeImprovementHistory = {
       ...ACKED,
