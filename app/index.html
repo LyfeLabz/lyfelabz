@@ -3992,7 +3992,7 @@
      line. DOM order equals visual order; no CSS reordering. */
   .shell-assignment-detail-roster-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 4.5rem 7.5rem;
+    grid-template-columns: minmax(0, 1fr) 4.5rem 7.5rem 6.75rem;
     column-gap: 1rem;
     row-gap: 0.2rem;
     align-items: baseline;
@@ -4055,12 +4055,9 @@
   /* Grade Improvements V1: "Update Grade" pill. The calm amber attention
      tint already used for draft / needs-setup status pills, as a compact
      button: noticeable, never an alarm. */
-  /* Only when some row has a pill, every row gains the same fixed fourth
-     track so the score and attempt columns stay aligned across rows. A
-     roster with no pending improvement keeps its three columns. */
-  .shell-assignment-detail-roster-has-grade-updates .shell-assignment-detail-roster-row {
-    grid-template-columns: minmax(0, 1fr) 4.5rem 7.5rem 6.75rem;
-  }
+  /* Every row always reserves the fixed fourth (pill) track, so the score
+     and attempt columns sit in the same place whether or not any row shows
+     a pill. An empty track renders nothing. */
   .shell-assignment-detail-roster-grade-update {
     grid-column: 4;
     justify-self: start;

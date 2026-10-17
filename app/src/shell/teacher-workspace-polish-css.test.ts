@@ -203,9 +203,10 @@ describe("D2B - Assignment Detail is styled inside the shell", () => {
     const row = ruleBody(html, ".shell-assignment-detail-roster-row");
     expect(row).not.toBeNull();
     expect(row).toMatch(/display:\s*grid/);
-    // Three columns: a flexible name column plus fixed score/attempt columns
-    // so values align across rows.
-    expect(row).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)\s+\S+\s+\S+;/);
+    // A flexible name column plus fixed score/attempt columns so values
+    // align across rows, and an always-reserved fixed Update Grade pill track
+    // so a pill's presence never shifts them (Grade Improvements V1).
+    expect(row).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)\s+\S+\s+\S+\s+\S+;/);
     // A divider row, not a card: no per-student background, shadow, or radius.
     expect(row).not.toMatch(/background|box-shadow|border-radius/);
     // Long names wrap instead of overflowing.

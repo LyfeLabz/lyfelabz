@@ -353,4 +353,24 @@ describe("Update Grade pill styling", () => {
     expect(rule).not.toBeNull();
     expect(rule![1]).toMatch(/(^|\s)margin: 0;/);
   });
+
+  test("every roster row reserves the pill track, so score and attempts never move", () => {
+    const html = fs.readFileSync(path.join(__dirname, "../../../index.html"), "utf8");
+    const css = html.replace(/\/\*[\s\S]*?\*\//g, "");
+    // Rules outside @media: the wide-screen layout.
+    const wide = css.replace(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, "");
+    const templates = (selector: RegExp): string[] =>
+      Array.from(wide.matchAll(new RegExp(`${selector.source}\\s*\\{([^}]*)\\}`, "g")))
+        .map((m) => /grid-template-columns:\s*([^;]+);/.exec(m[1])?.[1].trim())
+        .filter((t): t is string => t !== undefined);
+    const base = templates(/(?:^|\})\s*\.shell-assignment-detail-roster-row/);
+    expect(base).toEqual(["minmax(0, 1fr) 4.5rem 7.5rem 6.75rem"]);
+    // Pill presence must not swap in a different wide-screen template.
+    const withPills = templates(
+      /\.shell-assignment-detail-roster-has-grade-updates \.shell-assignment-detail-roster-row/,
+    );
+    for (const t of withPills) expect(t).toBe(base[0]);
+    const pillRule = /\.shell-assignment-detail-roster-grade-update \{([^}]*)\}/.exec(wide)!;
+    expect(pillRule[1]).toMatch(/grid-column: 4;/);
+  });
 });
