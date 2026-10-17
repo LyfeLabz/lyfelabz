@@ -4064,6 +4064,9 @@
   .shell-assignment-detail-roster-grade-update {
     grid-column: 4;
     justify-self: start;
+    /* Reset the shell base button margin-top (1rem) so a row with a
+       pill keeps the same height and baseline as its neighbors. */
+    margin: 0;
     padding: 0.12rem 0.6rem;
     border-radius: var(--tw-radius-pill);
     font: inherit;

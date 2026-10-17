@@ -30,6 +30,10 @@ export async function mountGradeImprovementPills(
   host: HTMLElement,
   assignmentId: string,
   seam: GradeImprovementsSeam,
+  // Called after a stale confirmation closes, so the host can refetch the
+  // roster (score, attempts, and pills together). Absent: only the pills
+  // are refreshed.
+  onStale?: () => void,
 ): Promise<void> {
   let pending: ReadonlyArray<GradeImprovementPending>;
   try {
@@ -37,7 +41,7 @@ export async function mountGradeImprovementPills(
   } catch {
     return;
   }
-  applyPills(host, assignmentId, seam, pending);
+  applyPills(host, assignmentId, seam, pending, onStale);
 }
 
 function applyPills(
@@ -45,6 +49,7 @@ function applyPills(
   assignmentId: string,
   seam: GradeImprovementsSeam,
   pending: ReadonlyArray<GradeImprovementPending>,
+  onStale: (() => void) | undefined,
 ): void {
   if (!host.isConnected) return;
   for (const old of Array.from(host.querySelectorAll(`.${PILL_CLASS}`))) old.remove();
@@ -54,7 +59,7 @@ function applyPills(
       `[data-testid="assignment-detail-roster-summary-${attr(p.studentId)}"]`,
     );
     if (summary === null) continue;
-    summary.appendChild(createPill(host, assignmentId, seam, p));
+    summary.appendChild(createPill(host, assignmentId, seam, p, onStale));
   }
   syncLayoutClass(host);
 }
@@ -68,6 +73,7 @@ function createPill(
   assignmentId: string,
   seam: GradeImprovementsSeam,
   p: GradeImprovementPending,
+  onStale: (() => void) | undefined,
 ): HTMLButtonElement {
   const doc = host.ownerDocument;
   const row = host.querySelector<HTMLElement>(`[data-student-id="${attr(p.studentId)}"]`);
@@ -84,6 +90,7 @@ function createPill(
   pill.textContent = "Update Grade";
 
   pill.addEventListener("click", () => {
+    let stale = false;
     openGradeConfirmDialog(doc, {
       testid: "assignment-detail-grade-update-dialog",
       title: "Mark Grade as Updated?",
@@ -98,13 +105,17 @@ function createPill(
             attemptId: p.bestAttemptId,
             percentage: p.bestPercentage,
           });
-          replacePending(host, assignmentId, seam, p.studentId, result.pending);
+          replacePending(host, assignmentId, seam, p.studentId, result.pending, onStale);
           return { ok: true };
         } catch (err) {
           if (isStaleGradeImprovementError(err)) {
             // The score changed after this dialog opened. Nothing was
-            // marked; refresh so the teacher reviews the newer score.
-            void mountGradeImprovementPills(host, assignmentId, seam);
+            // marked; refresh so the teacher reviews the newer score. With a
+            // roster refresh seam the whole roster refetches once the dialog
+            // closes (so the score and attempt count match the pill);
+            // otherwise only the pills refresh now.
+            stale = true;
+            if (onStale === undefined) void mountGradeImprovementPills(host, assignmentId, seam);
             return {
               ok: false,
               message: "This student's score changed. Nothing was marked. Close this and review the new score.",
@@ -115,7 +126,10 @@ function createPill(
         }
       },
       onClose: (confirmed) => {
-        if (!confirmed) return;
+        if (!confirmed) {
+          if (stale && onStale !== undefined && host.isConnected) onStale();
+          return;
+        }
         // The pill is gone; keep focus on the student's row.
         const nameControl = row?.querySelector<HTMLElement>("button.shell-assignment-detail-roster-name");
         try {
@@ -135,6 +149,7 @@ function replacePending(
   seam: GradeImprovementsSeam,
   studentId: string,
   next: GradeImprovementPending | null,
+  onStale: (() => void) | undefined,
 ): void {
   const existing = host.querySelector(
     `[data-testid="assignment-detail-roster-grade-update-${attr(studentId)}"]`,
@@ -144,7 +159,7 @@ function replacePending(
     const summary = host.querySelector<HTMLElement>(
       `[data-testid="assignment-detail-roster-summary-${attr(studentId)}"]`,
     );
-    summary?.appendChild(createPill(host, assignmentId, seam, next));
+    summary?.appendChild(createPill(host, assignmentId, seam, next, onStale));
   }
   syncLayoutClass(host);
 }

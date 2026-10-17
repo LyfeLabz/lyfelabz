@@ -16,6 +16,8 @@ import type {
   GradeImprovementPending,
   GradeImprovementsSeam,
 } from "../gradeImprovements/types";
+import fs from "fs";
+import path from "path";
 import { installGradeImprovementsSeam } from "../gradeImprovements/session";
 
 const flush = (): Promise<void> => new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -99,7 +101,10 @@ function seam(overrides: Partial<GradeImprovementsSeam> = {}): GradeImprovements
   } as never;
 }
 
-function render(gradeImprovements: GradeImprovementsSeam | null | undefined): HTMLElement {
+function render(
+  gradeImprovements: GradeImprovementsSeam | null | undefined,
+  attemptsCallable: AttemptsListForClassCallable = attemptsListForClassCallable,
+): HTMLElement {
   const mount = document.createElement("div");
   document.body.appendChild(mount);
   renderAssignmentDetail(mount, {
@@ -107,7 +112,7 @@ function render(gradeImprovements: GradeImprovementsSeam | null | undefined): HT
     loadMetadata: async () => meta,
     summaryCallable: async () => summary,
     recipientListCallable,
-    attemptsListForClassCallable,
+    attemptsListForClassCallable: attemptsCallable,
     onSelectStudent: () => undefined,
     ...(gradeImprovements === undefined ? {} : { gradeImprovements }),
   });
@@ -265,20 +270,61 @@ describe("Assignment Detail - Update Grade pill", () => {
     expect(pill(mount)).not.toBeNull();
   });
 
-  test("a stale confirmation marks nothing and refreshes the pill to the newer score", async () => {
+  test("a stale confirmation marks nothing and, once closed, refreshes the roster so score, attempts, and pill agree", async () => {
     const newer: GradeImprovementPending = { ...PENDING, bestPercentage: 100, bestAttemptId: "t4" };
     const list = jest.fn().mockResolvedValueOnce([PENDING]).mockResolvedValue([newer]);
     const staleErr = Object.assign(new Error("stale"), { details: { code: "gradeImprovements.stale" } });
     const s = seam({ listForAssignment: list, acknowledge: jest.fn(async () => Promise.reject(staleErr)) });
-    const mount = render(s);
+    // A newer completed attempt lands after the roster first rendered.
+    const attempts = [attempt("t1", S1, 1, 60), attempt("t2", S1, 2, 70), attempt("t3", S1, 3, 90), attempt("u1", S2, 1, 80)];
+    const attemptsCallable = jest.fn(async () => ({ classId: "c1", attempts: [...attempts] }));
+    const mount = render(s, attemptsCallable);
     await settle();
+    const row = (id: string) => mount.querySelector<HTMLElement>(`[data-testid=assignment-detail-roster-row-${id}]`)!;
+    const otherRowBefore = row(S2).textContent;
+    expect(row(S1).textContent).toContain("90%");
+    expect(attemptsCallable).toHaveBeenCalledTimes(1);
+    attempts.push(attempt("t4", S1, 4, 100));
+
     pill(mount)!.click();
     byTestId("assignment-detail-grade-update-dialog-confirm")!.click();
     await settle();
     expect(byTestId("assignment-detail-grade-update-dialog-error")!.textContent).toContain("Nothing was marked");
     expect(byTestId("assignment-detail-grade-update-dialog-confirm")!.disabled).toBe(true);
+    // Nothing behind the open dialog is torn down or refetched yet.
+    expect(attemptsCallable).toHaveBeenCalledTimes(1);
+    expect(s.listForAssignment).toHaveBeenCalledTimes(1);
+
     byTestId("assignment-detail-grade-update-dialog-cancel")!.click();
+    await settle();
+    expect(dialog()).toBeNull();
+    // Exactly one roster refetch, no navigation.
+    expect(attemptsCallable).toHaveBeenCalledTimes(2);
+    expect(s.listForAssignment).toHaveBeenCalledTimes(2);
+    expect(mount.querySelector("[data-testid=assignment-detail-roster-row-" + S1 + "]")).not.toBeNull();
+    expect(row(S1).querySelector(".shell-assignment-detail-roster-percentage")!.textContent).toBe("100%");
+    expect(mount.querySelector(`[data-testid=assignment-detail-roster-attempts-${S1}]`)!.textContent).toBe("4 attempts");
+    expect(mount.querySelectorAll(".shell-assignment-detail-roster-grade-update")).toHaveLength(1);
     expect(pill(mount)!.getAttribute("aria-label")).toBe("Update Grade: Ada Fictional improved from 60% to 100%");
+    expect(row(S2).textContent).toBe(otherRowBefore);
+    expect(s.acknowledge).toHaveBeenCalledTimes(1);
+    // Focus lands inside the surface, not on the document body.
+    expect(document.activeElement).not.toBe(document.body);
+  });
+
+  test("a non-stale failure that is cancelled does not refetch the roster", async () => {
+    const attemptsCallable = jest.fn(attemptsListForClassCallable);
+    const s = seam({ acknowledge: jest.fn(async () => Promise.reject(new Error("network"))) });
+    const mount = render(s, attemptsCallable);
+    await settle();
+    pill(mount)!.click();
+    byTestId("assignment-detail-grade-update-dialog-confirm")!.click();
+    await settle();
+    byTestId("assignment-detail-grade-update-dialog-cancel")!.click();
+    await settle();
+    expect(attemptsCallable).toHaveBeenCalledTimes(1);
+    expect(s.listForAssignment).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(pill(mount));
   });
 
   test("an acknowledgment that leaves a newer improvement pending re-renders the pill", async () => {
@@ -296,5 +342,15 @@ describe("Assignment Detail - Update Grade pill", () => {
     byTestId("assignment-detail-grade-update-dialog-confirm")!.click();
     await settle();
     expect(pill(mount)!.getAttribute("aria-label")).toBe("Update Grade: Ada Fictional improved from 90% to 100%");
+  });
+});
+
+describe("Update Grade pill styling", () => {
+  test("resets the shell base button margin so pill rows keep their neighbors' height", () => {
+    const html = fs.readFileSync(path.join(__dirname, "../../../index.html"), "utf8");
+    expect(html).toMatch(/button \{ margin-top: 1rem;/);
+    const rule = html.match(/\.shell-assignment-detail-roster-grade-update \{([^}]*)\}/);
+    expect(rule).not.toBeNull();
+    expect(rule![1]).toMatch(/(^|\s)margin: 0;/);
   });
 });

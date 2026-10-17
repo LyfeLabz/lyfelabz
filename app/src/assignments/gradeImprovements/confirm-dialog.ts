@@ -5,7 +5,10 @@ import { registerOpenModal } from "../../shell/openModals";
 // behavior as the Assignment Detail reopen/publish confirmations: modal
 // role, Escape and backdrop cancel, initial focus on Cancel. Adds an
 // in-flight state (both buttons disabled, confirm reads "Saving...") and an
-// inline failure message so a failed request never closes silently.
+// inline failure message so a failed request never closes silently. Focus is
+// contained: Tab and Shift+Tab cycle the enabled buttons, and focus that
+// lands outside the dialog is pulled back. While saving (no enabled button)
+// focus rests on the dialog itself.
 
 export type GradeConfirmOutcome =
   | { readonly ok: true }
@@ -37,6 +40,8 @@ export function openGradeConfirmDialog(doc: Document, opts: GradeConfirmOptions)
   dialog.setAttribute("aria-labelledby", titleId);
   dialog.setAttribute("aria-describedby", bodyId);
   dialog.setAttribute("data-testid", opts.testid);
+  // Focus target while both buttons are disabled; not a Tab stop.
+  dialog.tabIndex = -1;
 
   const title = doc.createElement("h3");
   title.id = titleId;
@@ -89,6 +94,7 @@ export function openGradeConfirmDialog(doc: Document, opts: GradeConfirmOptions)
     unregister();
     overlay.remove();
     doc.removeEventListener("keydown", onKey);
+    doc.removeEventListener("focusin", onFocusIn);
     const target = opts.returnFocusTo;
     if (target && target.isConnected) {
       try {
@@ -99,13 +105,44 @@ export function openGradeConfirmDialog(doc: Document, opts: GradeConfirmOptions)
     }
     opts.onClose?.(confirmed);
   };
+  const focusables = (): HTMLButtonElement[] => [cancel, confirm].filter((b) => !b.disabled);
+  const focusInside = (el: HTMLElement): void => {
+    try {
+      el.focus({ preventScroll: true });
+    } catch {
+      // ignored
+    }
+  };
   const onKey = (ev: KeyboardEvent): void => {
     if (ev.key === "Escape" && !busy) {
       ev.preventDefault();
       close(false);
+      return;
     }
+    if (ev.key !== "Tab") return;
+    const items = focusables();
+    ev.preventDefault();
+    if (items.length === 0) {
+      focusInside(dialog);
+      return;
+    }
+    const index = items.indexOf(doc.activeElement as HTMLButtonElement);
+    const step = ev.shiftKey ? -1 : 1;
+    const next =
+      index === -1
+        ? ev.shiftKey ? items[items.length - 1] : items[0]
+        : items[(index + step + items.length) % items.length];
+    focusInside(next);
+  };
+  // Focus moved outside the dialog by any other means (pointer, script, a
+  // screen reader's virtual cursor) is returned to it.
+  const onFocusIn = (ev: FocusEvent): void => {
+    const target = ev.target as Node | null;
+    if (target !== null && dialog.contains(target)) return;
+    focusInside(focusables()[0] ?? dialog);
   };
   doc.addEventListener("keydown", onKey);
+  doc.addEventListener("focusin", onFocusIn);
   overlay.addEventListener("click", (ev) => {
     if (ev.target === overlay && !busy) close(false);
   });
@@ -118,6 +155,9 @@ export function openGradeConfirmDialog(doc: Document, opts: GradeConfirmOptions)
     confirm.disabled = true;
     cancel.disabled = true;
     confirm.textContent = "Saving...";
+    dialog.setAttribute("aria-busy", "true");
+    // The focused button was just disabled; keep focus inside the dialog.
+    focusInside(dialog);
     error.hidden = true;
     void opts
       .onConfirm()
@@ -128,6 +168,7 @@ export function openGradeConfirmDialog(doc: Document, opts: GradeConfirmOptions)
       }))
       .then((outcome) => {
         busy = false;
+        dialog.removeAttribute("aria-busy");
         if (closed) return;
         if (outcome.ok) {
           close(true);
@@ -138,6 +179,7 @@ export function openGradeConfirmDialog(doc: Document, opts: GradeConfirmOptions)
         confirm.disabled = !outcome.allowRetry;
         error.textContent = outcome.message;
         error.hidden = false;
+        focusInside(outcome.allowRetry ? confirm : cancel);
       });
   });
 

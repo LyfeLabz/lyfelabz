@@ -539,6 +539,16 @@ export function renderAssignmentDetail(
               refreshDetailCache();
               rerender();
             },
+            onGradeImprovementStale: () => {
+              // Grade Improvements V1: a confirmation was rejected because the
+              // student's best score changed. Refetch the roster through the
+              // same cache-refresh + rerender seam as a late-recipient add so
+              // the displayed score, attempt count, and pill all reflect the
+              // newer attempt together.
+              if (state.kind !== "ready") return;
+              refreshDetailCache();
+              rerender();
+            },
           },
         );
         return;
@@ -891,6 +901,7 @@ function renderReady(
     readonly onEditCancel: () => void;
     readonly onPublishRequest: () => void;
     readonly onRecipientAdded: () => void;
+    readonly onGradeImprovementStale: () => void;
   },
 ): void {
   // Assignment Overview: one outer card holding the assignment identity,
@@ -1216,6 +1227,7 @@ function renderReady(
       deps.gradeImprovements === undefined
         ? readGradeImprovementsSeam()
         : deps.gradeImprovements,
+      handlers.onGradeImprovementStale,
     );
   }
 
@@ -1285,6 +1297,7 @@ async function renderRosterPanel(
   ) => Promise<CurrentForFamily> | null,
   rosterSort?: RosterSortPreference,
   gradeImprovements: GradeImprovementsSeam | null = null,
+  onGradeImprovementStale?: () => void,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -1496,7 +1509,12 @@ async function renderRosterPanel(
   // Grade Improvements V1: best-effort "Update Grade" pills on Completed
   // rows, added after the roster is in place (never blocks or alters it).
   if (gradeImprovements !== null) {
-    void mountGradeImprovementPills(groupsHost, metadata.assignmentId, gradeImprovements);
+    void mountGradeImprovementPills(
+      groupsHost,
+      metadata.assignmentId,
+      gradeImprovements,
+      onGradeImprovementStale,
+    );
   }
 
   const reconciliation = reconcileCounts({
