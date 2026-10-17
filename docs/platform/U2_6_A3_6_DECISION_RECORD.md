@@ -964,11 +964,14 @@ activation.
 
 ### S4 - Nine-endpoint provider observer
 
-Status: implemented in the repository on top of `c67d8b4`; uncommitted, not
+Status: **certified and integrated on main (`8c7cc55`)**, on top of `c67d8b4`; not
 deployed, never run against a real project. The independent certification reported
 four findings (F1 to F4); all are remediated as described below. Focused
-recertification then reported four further findings (A to D), also remediated below.
-**Awaiting targeted recertification** (not certified). Verified only against synthetic fixtures (O5); no response was
+recertification then reported four further findings (A to D), also remediated below,
+and the owner records targeted recertification as passed before integration (commit
+`8c7cc55`, "Add certified A3-6 S4 provider observer"). Status corrected in S5 at the
+owner's direction (S5-D7); this line previously read "awaiting targeted
+recertification". Verified only against synthetic fixtures (O5); no response was
 recorded from staging or production, so this is implementation verification, not
 provider verification. Teacher Units remains closed: `teacherUnitsAvailable()`
 returns `false`, production uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the
@@ -1182,3 +1185,200 @@ conventions are unverified.
 **Remaining dependencies.** S5 (IAM and route review, `invocation`, G3), S6 (plan
 generation, operator CLI, registration, freshness at enable, revocation), D12, D13,
 the S3 O6 pre-wiring gate, a separately authorized staging observation, and A3-7.
+
+### S5 - IAM and route review (fixture-based, level A)
+
+Status: implemented in the repository on top of `8c7cc55`; uncommitted, not deployed,
+never run against a real project. The independent certification failed with findings
+F1 to F6; all are remediated as described below. **Awaiting targeted recertification.**
+Verified only
+against synthetic fixtures labelled `SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`; this is
+implementation verification, not provider verification, and gate G3 stays open.
+Teacher Units remains closed: `teacherUnitsAvailable()` returns `false`, production
+uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the production registry and
+revocation list are empty. No S1 to S4, A3-3, A3-4, A3-5, RAP, publisher, Rules,
+index, Hosting, Functions source, IAM, service-account or infrastructure change.
+
+**Owner decisions (S5 reconnaissance).** Recorded at the human owner's direction; no
+separate signed approval artifact exists.
+
+- **S5-D1.** D11's public-callable model is preserved: an explicit Cloud Run
+  `roles/run.invoker` grant to `allUsers`, with authentication in callable code. The
+  expected Cloud Functions policy is not invented; it is stated in the expected-access
+  contract.
+- **S5-D2.** `invokerIamDisabled: true` refuses. An explicit IAM grant is the
+  canonical posture.
+- **S5-D3.** Organization, folder and project inheritance is in scope for final G3.
+  It is not observed in this slice, so it is recorded as unresolved and blocks full
+  eligibility.
+- **S5-D4.** `iapEnabled` must be `false`. No IAP administration or configuration.
+- **S5-D5.** Final G3 covers deployed Hosting routes, domain mappings, load balancer
+  backends, default endpoint URLs and ingress. Local `firebase.json` alone is
+  insufficient; unverified live routes remain unresolved.
+- **S5-D6.** A separate, versioned expected-access attachment. The S4 deployment-plan
+  schema is unchanged.
+- **S5-D7.** The stale S4 certification status above is corrected.
+
+**Files.** `scripts/teacher-units-release/access-review.cjs`, `access-review.test.cjs`,
+`fixtures/synthetic-access.cjs`; `.github/workflows/platform-ci.yml` (fixture test step,
+no credentials). CommonJS, using the compiled A3 protocol, validation and canonical
+modules, the S4 exports (`assertA3Observation`, `ENDPOINTS`, `FIELDS`, `instant`) and
+A1 `canonical`, `fingerprint`, `resource`, `readApi`. Not reachable from `index.ts`
+and not part of the deployed Functions payload.
+
+**Evidence levels.** A: structurally valid access review (produced by S5). B: complete
+provider-verified access review (never produced by S5 v1). C: release-authorized
+access evidence (S6 signing and registration). The receipt schema admits only
+`reviewLevel: "A-structural"`, `providerComplete: false` and `releaseAuthorized: false`,
+and only `status: "unresolved"` for inherited IAM, deployed Hosting releases, domain
+mappings and load balancer backends, so a fixture can never present itself as B or C.
+`assertProviderCompleteAccessReview` always refuses in v1.
+
+**Reads (GET only, injected transport, explicit `--project`).** For each of the nine
+endpoints: Cloud Functions v2 function GET and `:getIamPolicy?options.requestedPolicyVersion=3`;
+Cloud Run v2 service GET, serving revision GET and
+`:getIamPolicy?options.requestedPolicyVersion=3`. All 45 reads are made in two
+observation-wide passes (90 reads); any difference between passes,
+including an etag, refuses. Provider APIs offer no transactional snapshot: a change
+reverted between passes, or made after the second pass, is not detected. The review
+must start after the S4 observation ended and finish within the S4 five-minute window;
+no read is made after the window expires. A read failure refuses.
+
+**Policy normalization.** Documented fields only (`auditConfigs`, `bindings`, `etag`,
+`version`; binding `condition`, `members`, `role`; SDK 583.0.0). Refusals: unknown
+fields; `auditConfigs` present; missing or non-base64 etag; versions other than unset,
+1 or 3 (unset is read as 1, as IAM documents); malformed roles; empty or duplicate
+members; duplicate roles; **any IAM condition** (not evaluable safely). Members are
+accepted only when their meaning is evaluable from the policy alone: `allUsers`,
+lowercase `user:` and `serviceAccount:` emails. Groups, domains, principal sets,
+deleted principals, legacy project convenience values and `allAuthenticatedUsers`
+refuse. A service account is accepted only from the reviewed project (its
+`iam.gserviceaccount.com` domain, the project-number Compute default, the App Engine
+default, or a `service-<number>@` service agent); any other is cross-project and
+refuses. Bindings are sorted canonically and carry `condition: null`.
+
+**Eligibility.** Gen2 invocation is authorized by Cloud Run `run.routes.invoke`, so
+the Functions policy never establishes invocation security alone. Rules applied to
+the approved plan and to the observation alike: the Cloud Run policy has exactly one
+`roles/run.invoker` binding whose members are exactly `allUsers`; `allUsers` appears
+only in `roles/run.invoker` (Cloud Run) or `roles/cloudfunctions.invoker` (Functions).
+Then, per endpoint: `invokerIamDisabled` false; `iapEnabled` false; resource identities,
+the current Function, service and revision re-validated by the certified S4
+normalizer and reproducing the S4 record exactly (F2); the S4 deployment plan
+comparison passing; bound default URLs (F3); no revision route URL; and exact equality with
+the expected-access plan for runtime service account, ingress, `defaultUriDisabled`,
+`customAudiences` and both policies' bindings. The policy version is recorded, not
+compared: without conditions it carries no meaning and the provider chooses it.
+
+**Expected-access contract `lyfelabz.teacherUnitsA3ExpectedAccess` v1.** A
+`ContentObjectV1` attachment whose bytes must hash to its `sha256` and be exactly
+canonical JSON: `schemaVersion`, `kind`, `environment`, `projectId`, `projectNumber`,
+`region`, and nine sorted endpoints each with `runtimeServiceAccountEmail`, `ingress`,
+`invokerIamDisabled: false`, `iapEnabled: false`, `defaultUriDisabled`,
+`customAudiences` and complete `functionAllowPolicy` and `serviceAllowPolicy`
+(`IamAllowPolicyV1`, conditions must be `null`). It does not reference the S4 plan;
+binding the two is S6 release assembly.
+
+**Routes.** Locally checked: the environment's own Hosting config (`firebase.json` for
+production, `firebase.staging.json` for staging) refuses any rewrite with `function` or
+`run`, or any unknown rewrite key; its hash is recorded as `checked-local-only`. Observed
+from provider configuration (not network reachability): default URLs (function `url`,
+Cloud Run `uri` and `urls`, https only), revision and tag routes, and ingress.
+Unresolved: deployed Hosting releases, domain mappings, load balancer serverless
+backends, and inherited IAM. Their absence is never claimed.
+
+**Receipt `lyfelabz.teacherUnitsA3AccessReviewReceipt` v1.** Canonical JSON binding
+project, number, environment and region; provenance (`synthetic-fixture` or
+`provider-get`, a declaration that never raises the level); the S4 observation
+fingerprint and window; the S4 deployment-plan hash; the expected-access hash; the review window and sources; the
+inheritance and route statuses; and per endpoint the function, service and revision
+resources, runtime service account, ingress, access flags, both policies (resource,
+etag, normalized content and its SHA-256), default URLs and the revision route.
+`receiptContentObject` gives its `ContentObjectV1` address at a caller-chosen location;
+nothing is stored or signed. `assertAccessReview` verifies the bytes and re-applies
+every rule against the S4 observation and the expected-access plan, so a resealed
+forgery still refuses. `composeEndpoints` adds `InvocationAccessV1` to each S4
+configuration and requires the A3-1 `validateEndpoint` to pass; the result stays
+level A.
+
+**Verification at first submission (implementation only).** 26 fixture tests covering the adversarial
+cases set for this slice, including Cloud Run public access despite a restrictive
+Functions policy, `invokerIamDisabled`, unexpected or public bindings, unevaluable and
+cross-project principals, conditions, malformed policies, etag and content changes
+between passes, unreadable policies, IAP, audiences, runtime identity, ingress,
+missing and eight-endpoint substitution, cross-project and cross-environment
+substitution, local Hosting rewrites, tagged and old revision routes, missing route
+evidence, changes since S4, forged and resealed receipts, staleness, GET-only transport
+through A1 `readApi`, and level-B refusal. 30 compile-safe scratch mutations of the
+access guards were each killed. The `invokerIamDisabled` guard is also backed by the
+receipt schema literal; its mutant is killed through the specific refusal message,
+because the schema still refuses it.
+
+**Certification remediation (F1 to F6).** The independent certification demonstrated
+six defects. Each is remediated in the S5 files only; S1 to S4, A3-1 and every other
+protected surface are unchanged.
+
+- **F1 - forged level B.** Root cause: `assertProviderCompleteAccessReview` derived
+  completeness from caller-supplied `providerComplete`, `provenance` and status fields,
+  so a forged object, or a verified result edited afterwards, passed. Fix: the level B
+  helper refuses for every argument and reads none of them; the verified result is
+  frozen and its `unresolved` list is a fixed constant. There is no level B path.
+- **F2 - current provider drift.** Root cause: S5 compared a hand-picked set of fields,
+  so persistent changes to the service template, `reconciling`, latest revisions,
+  function state and nested fields, and a missing template or URIs, were accepted.
+  Fix: S5 also reads the serving revision and passes the current Function, service and
+  revision to the certified S4 `normalizeEndpoint` (unchanged), then requires the
+  normalized configuration, runtime profile and provider record to equal the S4
+  observation exactly; the S4 deployment plan is now a required input and is compared
+  through S4 `compareObservationToPlan`. Gap: the S4 normalizer is given the S4-recorded
+  archive record rather than re-downloading the archive; a different resolved source
+  generation refuses, and generation-pinned objects are immutable.
+- **F3 - route and receipt integrity.** Root cause: default URLs were checked only for
+  `https`, never bound, and the local Hosting path and hash were caller data never
+  re-derived. Fix: the Functions URL must be exactly
+  `https://us-central1-<project>.cloudfunctions.net/<endpoint>`; Cloud Run URIs must be
+  `https://<service>-<project number>.us-central1.run.app` or
+  `https://<service>-<hash>-uc.a.run.app`; a Cloud Run URI is required unless
+  `defaultUriDisabled`; `uri` must be among `urls`; the Functions `serviceConfig.uri`
+  must be among them. The Hosting path is fixed per environment and the hash comes only
+  from reading that file; `assertAccessReview` re-checks the file and re-applies every
+  URL rule, so a resealed substitution refuses. Gap: the hash form of a Cloud Run URL
+  carries no project identity, so it is bound to the service name and region only. The
+  URL forms are documented conventions, unverified against a live response; a live
+  difference refuses.
+- **F4 - contract mismatches.** Root cause: S5's content-object and policy schemas were
+  looser than A3-1. Fix: generation must be a positive decimal no greater than
+  9223372036854775807, and an IAM binding must have members, at the S5 schema and in
+  the posture check, before composition.
+- **F5 - etags.** Root cause: a character-class check accepted `a` and `abc==`. Fix:
+  only the canonical standard Base64 encoding of a nonempty byte sequence is accepted
+  (alphabet, padding, length and a byte-exact round trip). Two-pass etag equality is
+  unchanged.
+- **F6 - final deadline.** Root cause: no test exercised a window that expires after
+  the last provider read. Fix: a test moves the clock past the window only after all 90
+  reads and asserts that no receipt is produced, against a control run that produces
+  one.
+
+**Remediation verification.** 34 fixture tests. A scratch script reproduced all 18
+certification counterexamples as accepted by the pre-remediation module and refused
+after remediation. Behavioral mutation (a mutant counts only if a probe shows an unsafe
+input becomes accepted and the suite fails): 11 of 11 independent guards killed
+(level B, exact S4 comparison, S4 re-validation, Functions URL binding, Cloud Run URI
+binding, Cloud Run URI presence, the Hosting route binding (probed for both path and
+hash), generation bound, etag round trip, final deadline, and the empty-binding check
+with both layers removed). Redundant, not
+claimed as kills: the empty-binding schema check and posture check each alone (the
+other refuses), and the etag length check (the round trip refuses).
+
+**Unresolved [U] (gate G3).** Deployed invoker IAM; inherited organization, folder and
+project IAM; deployed Hosting release rewrites (the Firebase Hosting API schema is not
+in the installed SDK); Cloud Run domain mappings; load balancer serverless network
+endpoint groups; the deploy-time invoker grant firebase-tools writes for `onCall`; the
+etag and version form real policies return; whether real Cloud Run responses report
+`trafficStatuses` as the fixtures assume. Each needs a separately authorized real
+observation, and observers for the unresolved surfaces need a later slice.
+
+**Remaining dependencies.** Independent certification of S5; observers for inherited
+IAM and live routes (with owner-approved read permissions); a separately authorized
+staging observation; S6 (expected-access and plan assembly, signing, registration,
+freshness at enable, revocation); D12, D13; the S3 O6 pre-wiring gate; A3-7.

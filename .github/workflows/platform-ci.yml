@@ -17,7 +17,7 @@ on:
       - 'app/package-lock.json'
       - 'index.html'
       - 'scripts/unit-placement/**'
-      # A3-6 S4 provider observer and the A1 helpers it reuses.
+      # A3-6 S4 provider observer, S5 access review and the A1 helpers they reuse.
       - 'scripts/teacher-units-release/**'
       - 'scripts/hosting-release/backend-state.cjs'
       - 'scripts/hosting-release/contract.cjs'
@@ -38,7 +38,7 @@ on:
       - 'app/package-lock.json'
       - 'index.html'
       - 'scripts/unit-placement/**'
-      # A3-6 S4 provider observer and the A1 helpers it reuses.
+      # A3-6 S4 provider observer, S5 access review and the A1 helpers they reuse.
       - 'scripts/teacher-units-release/**'
       - 'scripts/hosting-release/backend-state.cjs'
       - 'scripts/hosting-release/contract.cjs'
@@ -92,6 +92,10 @@ jobs:
       # credentials and no provider calls. Uses the compiled lib from Build.
       - name: A3-6 S4 provider observer (fixtures)
         run: node --test ../../scripts/teacher-units-release/provider-observation.test.cjs
+      # A3-6 S5: IAM and route review over synthetic fixtures only (level A).
+      # No credentials and no provider calls.
+      - name: A3-6 S5 access review (fixtures)
+        run: node --test ../../scripts/teacher-units-release/access-review.test.cjs
 
   firestore-rules:
     name: Firestore Rules tests
