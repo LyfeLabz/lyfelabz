@@ -19,6 +19,8 @@ import {
 } from "./classes/updateClassColor";
 import { createReadGradePassbackStatuses } from "./lms/gradePassbackStatuses";
 import { createFirebaseGradePassbackRetry } from "./lms/gradePassbackRetry";
+import { installGradeImprovementsSeam } from "./assignments/gradeImprovements/session";
+import { createGradeImprovementsCallables } from "./assignments/gradeImprovements/wire";
 import {
   createFirebaseCreateClass,
   type CreateClass,
@@ -43,6 +45,7 @@ import {
   getFirebaseFirestore,
   signOut,
 } from "./firebase";
+import { getEmulatorEndpoints } from "./firebase-config";
 import { dispatch } from "./router/router";
 import { createRouteTable } from "./router/routes";
 import { renderLoadingSurface } from "./router/surfaces";
@@ -525,13 +528,14 @@ async function run(): Promise<void> {
                 const { getFunctions, connectFunctionsEmulator } =
                   await import("firebase/functions");
                 const functions = getFunctions();
-                if (
-                  typeof window !== "undefined" &&
-                  (window.location.hostname === "localhost" ||
-                    window.location.hostname === "127.0.0.1")
-                ) {
+                const emulators = getEmulatorEndpoints();
+                if (emulators !== null) {
                   try {
-                    connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+                    connectFunctionsEmulator(
+                      functions,
+                      emulators.functions.host,
+                      emulators.functions.port,
+                    );
                   } catch {
                     // already connected
                   }
@@ -660,13 +664,14 @@ async function run(): Promise<void> {
       "firebase/functions"
     );
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }
@@ -709,13 +714,14 @@ async function run(): Promise<void> {
         "firebase/functions"
       );
       const functions = getFunctions(auth.app, "us-central1");
-      if (
-        typeof window !== "undefined" &&
-        (window.location.hostname === "localhost" ||
-          window.location.hostname === "127.0.0.1")
-      ) {
+      const emulators = getEmulatorEndpoints();
+      if (emulators !== null) {
         try {
-          connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+          connectFunctionsEmulator(
+            functions,
+            emulators.functions.host,
+            emulators.functions.port,
+          );
         } catch {
           // already connected
         }
@@ -775,6 +781,7 @@ async function run(): Promise<void> {
       studentAssignmentsForClass =
         createAssessmentStudentAssignmentsForClassCallable(functions);
       attemptGetForTeacher = createAttemptGetForTeacherCallable(functions);
+      installGradeImprovementsSeam(createGradeImprovementsCallables(functions));
       createClass = createFirebaseCreateClass(functions);
       lmsCreateClass = createFirebaseLmsCreateClass(functions);
       activateClass = createFirebaseActivateClass(functions);
@@ -853,6 +860,7 @@ async function run(): Promise<void> {
       attemptsListForClass = null;
       studentAssignmentsForClass = null;
       attemptGetForTeacher = null;
+      installGradeImprovementsSeam(null);
       createClass = null;
       lmsCreateClass = null;
       activateClass = null;
@@ -876,6 +884,7 @@ async function run(): Promise<void> {
       attemptsListForClass = null;
       studentAssignmentsForClass = null;
       attemptGetForTeacher = null;
+      installGradeImprovementsSeam(null);
       createClass = null;
       lmsCreateClass = null;
       activateClass = null;
@@ -1011,13 +1020,14 @@ async function run(): Promise<void> {
     const { getFunctions, httpsCallable, connectFunctionsEmulator } =
       await import("firebase/functions");
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }
@@ -1037,13 +1047,14 @@ async function run(): Promise<void> {
     const { getFunctions, httpsCallable, connectFunctionsEmulator } =
       await import("firebase/functions");
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }
@@ -1071,13 +1082,14 @@ async function run(): Promise<void> {
     const { getFunctions, httpsCallable, connectFunctionsEmulator } =
       await import("firebase/functions");
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }
@@ -1115,13 +1127,14 @@ async function run(): Promise<void> {
     const { getFunctions, httpsCallable, connectFunctionsEmulator } =
       await import("firebase/functions");
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }

@@ -79,7 +79,7 @@ type LessonQuizGlobal = {
   ): Promise<LessonFinalizeResult>;
 };
 
-import { getFirebaseClientConfig, isEmulatorHost as detectEmulatorHost } from "../firebase-config";
+import { getEmulatorEndpoints, getFirebaseClientConfig } from "../firebase-config";
 
 // Sprint 17 Slice 6: the runtime consumes the same shared client config
 // module as the authenticated app shell (app/src/firebase.ts). Emulator
@@ -712,10 +712,6 @@ function detectAssignmentId(win: Window): string | null {
 }
 
 
-function isEmulatorHost(win: Window): boolean {
-  return detectEmulatorHost(win);
-}
-
 function waitForUser(auth: ReturnType<typeof getAuth>): Promise<User | null> {
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(
@@ -1004,14 +1000,17 @@ async function bootstrap(win: Window): Promise<void> {
   const auth = getAuth(app);
   const functions = getFunctions(app);
 
-  if (isEmulatorHost(win)) {
+  const emulators = getEmulatorEndpoints(win);
+  if (emulators !== null) {
     try {
-      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+      connectAuthEmulator(auth, `http://${emulators.auth.host}:${emulators.auth.port}`, {
+        disableWarnings: true,
+      });
     } catch {
       // Already connected on a prior init.
     }
     try {
-      connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+      connectFunctionsEmulator(functions, emulators.functions.host, emulators.functions.port);
     } catch {
       // Already connected on a prior init.
     }

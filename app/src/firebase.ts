@@ -14,7 +14,7 @@ import {
   getFirestore,
 } from "firebase/firestore";
 
-import { getFirebaseClientConfig, isEmulatorHost as detectEmulatorHost } from "./firebase-config";
+import { getEmulatorEndpoints, getFirebaseClientConfig } from "./firebase-config";
 import type {
   BootstrapAuthInput,
   BootstrapAuthUser,
@@ -27,8 +27,6 @@ import type {
 // certified project configuration. Neither the API key nor any other
 // secret is embedded here.
 
-const isEmulatorHost = (): boolean => detectEmulatorHost();
-
 let cachedAuth: Auth | null = null;
 let cachedDb: Firestore | null = null;
 
@@ -36,9 +34,9 @@ export function getFirebaseAuth(): Auth {
   if (cachedAuth) return cachedAuth;
   const app = getApps()[0] ?? initializeApp(getFirebaseClientConfig());
   const auth = getAuth(app);
-  if (isEmulatorHost()) {
-    // Auth emulator port matches platform/firebase/firebase.json.
-    connectAuthEmulator(auth, "http://127.0.0.1:9099", {
+  const emulators = getEmulatorEndpoints();
+  if (emulators !== null) {
+    connectAuthEmulator(auth, `http://${emulators.auth.host}:${emulators.auth.port}`, {
       disableWarnings: true,
     });
   }
@@ -50,8 +48,9 @@ export function getFirebaseFirestore(): Firestore {
   if (cachedDb) return cachedDb;
   const app = getApps()[0] ?? initializeApp(getFirebaseClientConfig());
   const db = getFirestore(app);
-  if (isEmulatorHost()) {
-    connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  const emulators = getEmulatorEndpoints();
+  if (emulators !== null) {
+    connectFirestoreEmulator(db, emulators.firestore.host, emulators.firestore.port);
   }
   cachedDb = db;
   return db;

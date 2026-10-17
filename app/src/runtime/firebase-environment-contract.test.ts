@@ -115,11 +115,12 @@ describe("host-aware Firebase configuration asset", () => {
     expect(config).toEqual(EMULATOR_CONFIG);
 
     const activeEntry = fs.readFileSync(ACTIVE_ENTRY_PATH, "utf8");
+    expect(activeEntry).toContain("const emulators = getEmulatorEndpoints(win);");
     expect(activeEntry).toContain(
-      'connectAuthEmulator(auth, "http://127.0.0.1:9099"',
+      "connectAuthEmulator(auth, `http://${emulators.auth.host}:${emulators.auth.port}`",
     );
     expect(activeEntry).toContain(
-      'connectFunctionsEmulator(functions, "127.0.0.1", 5001)',
+      "connectFunctionsEmulator(functions, emulators.functions.host, emulators.functions.port)",
     );
   });
 });

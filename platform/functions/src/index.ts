@@ -46,6 +46,12 @@ export {
   enrollmentsSetStatus,
   enrollmentsTeacherAdd,
 } from "./enrollments";
+export {
+  gradeImprovementsAcknowledge,
+  gradeImprovementsListForAssignment,
+  gradeImprovementsListForStudent,
+  gradeImprovementsReverse,
+} from "./gradeImprovements";
 export { labReportsGet, labReportsSave } from "./labReports";
 export {
   lmsAssignmentsPublish,
