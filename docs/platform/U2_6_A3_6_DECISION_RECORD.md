@@ -693,10 +693,12 @@ still uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`. Teacher Units remains clos
 
 ### S2 - Certification statement, history schema and revocation list
 
-Status: implemented in the repository on top of `484de49`; uncommitted, not wired,
-not deployed. The first independent certification failed with remediation required
-(two blocking P2 findings, F1 and F2, and two P3 findings, F3 and F4); all four are
-remediated as described below; awaiting independent recertification. Teacher Units remains closed:
+Status: implemented on top of `484de49`. The first independent certification failed
+with remediation required (two blocking P2 findings, F1 and F2, and two P3 findings,
+F3 and F4); all four were remediated as described below. S2 then passed final
+independent recertification and was committed and pushed by the human owner at
+`6265564e05c15efea0e4b65abe05ee5fa7a2f1ec` (recorded at the owner's direction, O7;
+no separate signed approval artifact exists). Not wired, not deployed. Teacher Units remains closed:
 `teacherUnitsAvailable()` returns `false` and production still uses
 `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`. No key, signature, evidence, bucket, IAM,
 Rules, index, Hosting or deployment change. Authorized decisions: O1(a) (extend the
@@ -817,3 +819,144 @@ module), O3 (D8 history over the existing policy-transition semantics).
   history branch of `validateImmutableDuplicate`, validating the existing record is
   also implied by canonical equality with the validated proposal (the same pattern
   as the A3-1 release and evidence branches).
+
+### S3 - Composite release-authority verifier
+
+Status: implemented in the repository on top of `6265564`; uncommitted, not wired,
+not deployed. The independent certification reported two P3 findings (F1, F2); both
+are remediated as described below; **awaiting focused recertification** (not
+certified). Teacher Units
+remains closed: `teacherUnitsAvailable()` returns `false`, production still uses
+`UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and `PRODUCTION_AUTHORITY_REGISTRY` and
+`PRODUCTION_REVOCATION_LIST` are empty. No key, signature, evidence, bucket, IAM,
+Rules, index, Hosting, client, build or deployment change. No S1 or S2 source, A3-3
+enforcement or handler, `a3-release-authority.ts`, `index.ts` or canonical fixture
+changed.
+
+**Owner-authorized implementation decisions (S3 reconnaissance, O1 to O7).** Recorded
+at the human owner's direction; no separate signed approval artifact exists.
+
+- **O1.** A revocation list that is unrecognized for the runtime identity
+  (`listUnrecognized`) maps to `dispositionUnresolved`. A malformed revocation query
+  maps to `inputMismatch`. Both fail closed. No new reason is added.
+- **O2.** S1's specific `authorityUnrecognized` and `signatureUnverified` reasons are
+  preserved for all three signed documents, including the certification.
+- **O3.** All four evidence references (deployment approval, activation evidence,
+  activation approval, certification) are checked against the pinned revocation
+  list, including the unsigned activation evidence.
+- **O4.** S3 performs no runtime disposition lookup (R2, D5). Superseded approvals and
+  certifications remain valid at runtime unless pinned; **S6 must address superseded
+  approvals and certifications in the revocation procedure.**
+- **O5.** The S1 (`a3-signature.test.ts`) and S2 (`a3-certification-history.test.ts`)
+  import-allowlist tests each admit `teacherUnits/a3-composite-verifier.ts` only.
+  Independent S3 not-wired and production-reachability tests were added.
+- **O6.** Exceptions from `readEvidence` propagate unchanged from S3. **Mandatory
+  pre-wiring gate:** A3-3 `callVerifier` (`a3-enforcement.ts`) catches every verifier
+  exception and returns unverified `error`, so once a real verifier is wired an
+  SDK-retryable Firestore error or `policyUnavailable` raised inside `readEvidence`
+  would surface as `deploymentIneligible` instead of an SDK transaction rerun or
+  `policyUnavailable`. This fails closed but misclassifies a transient failure. It
+  must be resolved, with its own authorization and tests, before any verifier other
+  than `UNCONFIGURED` is wired. S3 does not modify A3-3.
+- **O7.** S2 status above records its final recertification and owner integration at
+  `6265564`.
+
+Confirmed: no runtime `issuedAt` age or ordering check (D6); no `endpointName` check
+(A3-2 provenance already binds the endpoint); no production verifier instance and no
+activation.
+
+- `platform/functions/src/teacherUnits/a3-composite-verifier.ts`:
+  `verifyReleaseAuthorityChain(chain, deps)` is the pure, synchronous core (the
+  Decision 4 input without `readEvidence`, plus the certification document or
+  `null`); S6 may reuse it for the checks tooling can run (D8 fix 3), never for A3-2
+  provenance. `createCompositeReleaseAuthorityVerifier(deps)` is the asynchronous
+  Decision 4 adapter. `deps` is exactly `{registry, revocationList}`, each branded by
+  `createAuthorityRegistry` / `createRevocationList`; there are no defaults and the
+  module exports no verifier instance. No Firestore, network, clock or cache.
+- **Algorithm** (first failure returns):
+  - V0 snapshot: every input field captured once from own data descriptors (no getter
+    runs; exact key set); documents and identity through canonical serialization
+    into deep-frozen private copies; the policy `Timestamp` must have exactly the SDK
+    prototype and exactly its own data fields `_seconds` and `_nanoseconds` (installed
+    `@google-cloud/firestore` 7.11.6), captured from their descriptors and rebuilt with
+    the SDK constructor (F1). Any failure: `inputMismatch`.
+  - V1 structure (`inputMismatch`): runtime identity pinned (cloud) or `demo-` with a
+    local profile (emulator); policy valid for that identity and `enabled`;
+    `releaseRef` is the policy's release and `validateReleaseReference` passes;
+    `deploymentApprovalRef` is the manifest's and `validateDeploymentBinding` passes;
+    `activationEvidenceRef` is the policy's and is activation evidence at its content
+    address; `activationApprovalRef` is the evidence's `authorizationEvidenceRef` and
+    is an activation approval at its content address; `validateActivationBinding`
+    passes using the approval statement's Hosting fingerprint **provisionally**.
+  - V2: the adapter calls `readEvidence` exactly once, for the approval statement's
+    `certificationEvidenceRef`, only after V1 passes. Exceptions propagate (O6).
+  - V3 revocation: the four references (O3); `revoked`, `dispositionUnresolved` (O1),
+    `inputMismatch`.
+  - V4, V5: deployment approval (`deploy-backend`) and activation approval
+    (`activate-teacher-units`) signatures through `verifyApprovalSignature`, S1
+    reasons preserved (O2).
+  - V6: certification missing, malformed, wrong kind or failing
+    `validateCertificationBinding` (release, Hosting, placement, enforcement,
+    contract, environment, self-reference): `certificationUnverified`.
+  - V7: certification signature (`certify-release`), S1 reasons preserved.
+  - V8: verdict built only from the signature-verified activation approval statement
+    and the content addresses of verified documents (so the Hosting fingerprint
+    enters a verdict only after V5), then parsed by `parseReleaseAuthorityVerdict`;
+    a parse that does not return `verified` is `error`.
+- **Tests.** `a3-composite-verifier.test.ts` (hermetic, synthetic Ed25519 keys
+  generated in-process): verified staging, production and emulator chains with exact
+  fields; pure core parity; empty production registry refusal; forged, flipped-bit,
+  malleated (S + L) and wrong-action signatures for each signed document; registry
+  and statement authority mismatches; cross-project and cross-environment replay;
+  each structural binding; all four revocation targets; unrecognized lists;
+  missing, malformed, substituted, mis-bound and self-referencing certifications;
+  accessors, stateful Proxies and caller mutation during `readEvidence`; exactly one
+  `readEvidence` call; exception propagation; no caching; dependency branding; and
+  the S3 not-wired, production-reachability (import graph from `index.ts`), build
+  exclusion and closed-gate checks. `a3-test-support.test.ts` gains an additive
+  signed-chain builder and test registry and revocation-list helpers (the existing
+  unsigned chain is unchanged). `teacher-units.emulator.test.ts` gains an additive
+  S3 block that injects the composite verifier through the existing handler factory
+  over real Firestore documents read by A3-3's own `readEvidence`.
+- **Mutation evidence** (scratch copy): removing each of the revocation check, each
+  signature check, the certification binding, the snapshot, `readEvidence`
+  propagation, read-after-structure ordering, final verdict parsing, the exact
+  `Timestamp` class check, dependency branding, the exact input key set, the
+  demo-only emulator identity, the deployment-approval reference binding, the
+  activation binding, or verdict sourcing from the snapshot, or importing S3 or S2
+  from `a3-enforcement.ts`, each fails at least one test. Surviving mutants are
+  redundant guards covered by the A3-1 validators or by construction: the
+  policy-enabled check, the release, activation-evidence and activation-approval
+  reference equalities, the null-certification guard, the cloud pin re-check and the
+  signer action re-check. They are kept as defense in depth. **Correction (F2):** an
+  earlier version of this list called the input data-property (accessor) guard
+  redundant. It is not: without it an `endpointName` accessor is captured as
+  `undefined` and the chain still verifies, because S3 deliberately does not validate
+  `endpointName` (A3-2 binds the endpoint). The guard is required and is now pinned by
+  a permanent regression test.
+- **Certification remediation (F1, F2; both P3).**
+  - F1 root cause: the policy snapshot required the exact SDK `Timestamp` prototype
+    but then read `seconds` and `nanoseconds` by property access. A genuine
+    `Timestamp` with an own `seconds` or `nanoseconds` accessor (or data property)
+    shadowing the prototype getter therefore ran caller code, and the chain could
+    return `verified`. Fix (S3 module only): the Timestamp's own properties are
+    captured with one descriptor read and must be exactly the enumerable data fields
+    `_seconds` and `_nanoseconds`; their values are passed to the SDK constructor,
+    which re-validates the ranges. No getter runs. The approved timestamp contract,
+    the shared A3-1 validators and S1/S2 are unchanged. An SDK that changes this
+    private shape fails closed.
+  - F2: a permanent test proves an `endpointName` accessor is refused by the adapter
+    and the core with `inputMismatch` and is never invoked.
+  - Tests: `a3-composite-verifier.test.ts` "policy timestamp (certification F1)" and
+    "input accessor guard (certification F2)". Targeted scratch mutations, each killed
+    by a permanent test returning `verified` where `inputMismatch` is required (no
+    compile-failure counted): the exact pre-fix getter read; reading the SDK fields by
+    property access; dropping the exact own-shape check; relaxing the exact prototype
+    check to `instanceof`; removing the prototype check; removing the data-property
+    guard (killed by the F2 test).
+- **Remaining dependencies.** S4 (nine-endpoint observer, D10 allowlist, gates G1, G2,
+  G4), S5 (IAM and route review, G3), S6 (operator CLI: create-only registration, CAS
+  with history, freshness, shutdown, the R2 revocation procedure including superseded
+  approvals and certifications (O4), report retrieval and independence review),
+  D12 (policy-controlled build), D13 (enabled Hosting format), the O6 pre-wiring gate,
+  separately authorized wiring, and A3-7 integrated certification.

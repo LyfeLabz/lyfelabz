@@ -400,7 +400,10 @@ describe("not wired (S1)", () => {
   it("no non-test source module outside S1 and S2 imports the registry, signature, curve or revocation modules", () => {
     const root = resolve(__dirname, "..");
     const S1 = new Set(["teacherUnits/a3-signature.ts", "teacherUnits/a3-authority-registry.ts", "teacherUnits/a3-ed25519.ts",
-      "teacherUnits/a3-revocation-list.ts"]);
+      "teacherUnits/a3-revocation-list.ts",
+      // A3-6 S3 (owner decision O5): the unwired composite verifier; its own not-wired and
+      // production-reachability tests live in a3-composite-verifier.test.ts.
+      "teacherUnits/a3-composite-verifier.ts"]);
     const files: string[] = [];
     const walk = (dir: string): void => { for (const name of readdirSync(dir)) {
       const path = join(dir, name);

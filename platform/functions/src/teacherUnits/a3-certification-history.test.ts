@@ -444,6 +444,8 @@ describe("not wired (S2)", () => {
     for (const file of files) {
       const name = relative(root, file);
       if (name === "teacherUnits/a3-bindings.ts" || name === "teacherUnits/a3-validation.ts" || name === "teacherUnits/a3-signature.ts") continue;
+      // A3-6 S3 (owner decision O5): the unwired composite verifier (see a3-composite-verifier.test.ts).
+      if (name === "teacherUnits/a3-composite-verifier.ts") continue;
       expect([name, S2.test(readFileSync(file, "utf8"))]).toEqual([name, false]);
     }
   });

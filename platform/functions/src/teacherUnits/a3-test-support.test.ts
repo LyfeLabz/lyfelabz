@@ -5,17 +5,23 @@
 // internally coherent enabled policy chain from the shared A3-1 fixtures and
 // provides injected test verifiers. Synthetic records and test verdicts have no
 // operational authority; production wiring never sees them.
+import { generateKeyPairSync, sign } from "node:crypto";
+import type { KeyObject } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { Timestamp } from "firebase-admin/firestore";
 
 import type { ExpectedEnvironment } from "./a3-contracts";
+import { createAuthorityRegistry, ed25519KeyId } from "./a3-authority-registry";
+import type { AuthorityAction, AuthorityRegistry } from "./a3-authority-registry";
 import * as B from "./a3-bindings";
-import { contentDigest, evidenceRef } from "./a3-canonical";
+import { approvalSigningBytes, contentDigest, evidenceRef } from "./a3-canonical";
 import type { TeacherUnitsEnforcement } from "./a3-enforcement";
 import type { MutationCompatibilityV1 } from "./a3-protocol";
 import type { ReleaseAuthorityVerdict, ReleaseAuthorityVerifier } from "./a3-release-authority";
+import { createRevocationList } from "./a3-revocation-list";
+import type { RevocationList } from "./a3-revocation-list";
 import type { RuntimeIdentity } from "./a3-runtime-identity";
 import type { RuntimeProvenanceResult } from "./a3-runtime-provenance";
 
@@ -131,6 +137,133 @@ export function buildEnabledChain(expected: ExpectedEnvironment, placementFinger
 export function closedPolicy(expected: ExpectedEnvironment, placementFingerprint: string): Record<string, any> {
   return { ...clone(valid.closedPolicy), environment: expected.environment, projectId: expected.projectId,
     projectNumber: expected.projectNumber, placementFingerprint, updatedAt: new Timestamp(1767323046, 0) };
+}
+
+// ---------- A3-6 S3 signed chains (TEST-ONLY keys) ----------
+
+export type TestSigningKey = { privateKey: KeyObject; publicKeyBase64: string; keyId: string };
+export type ChainSigningKeys = Readonly<Record<"deploy" | "certify" | "activate", TestSigningKey>>;
+const ACTIONS: Readonly<Record<keyof ChainSigningKeys, AuthorityAction>> =
+  { deploy: "deploy-backend", certify: "certify-release", activate: "activate-teacher-units" };
+
+/** Fresh synthetic Ed25519 key generated in this test process; never persisted. */
+export function testSigningKey(): TestSigningKey {
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const raw = publicKey.export({ format: "der", type: "spki" }).subarray(12);
+  return { privateKey, publicKeyBase64: raw.toString("base64"), keyId: ed25519KeyId(raw) };
+}
+export function chainSigningKeys(): ChainSigningKeys {
+  return { deploy: testSigningKey(), certify: testSigningKey(), activate: testSigningKey() };
+}
+
+/** Registry with one entry per action for `expected`, matching the fixture authority. */
+export function testAuthorityRegistry(expected: ExpectedEnvironment, keys: ChainSigningKeys,
+  overrides: Partial<Record<keyof ChainSigningKeys, Record<string, unknown>>> = {}): AuthorityRegistry {
+  const entries = (Object.keys(ACTIONS) as Array<keyof ChainSigningKeys>).map(name => ({
+    schemaVersion: 1, environment: expected.environment, projectId: expected.projectId, projectNumber: expected.projectNumber,
+    keyId: keys[name].keyId, publicKeyBase64: keys[name].publicKeyBase64, action: ACTIONS[name],
+    authorityId: "test-authority", approverSubject: "test-human", approvalSystemId: "test-system", ...overrides[name],
+  })).sort((a, b) => (a.keyId < b.keyId ? -1 : 1));
+  const result = createAuthorityRegistry(entries);
+  if (!result.ok) throw new Error(`test registry: ${result.issue.path} ${result.issue.reason}`);
+  return result.value;
+}
+
+/** Pinned deny list bound to `expected` (any order in; canonical order out). */
+export function testRevocationList(expected: ExpectedEnvironment, refs: string[]): RevocationList {
+  const identity = { environment: expected.environment, projectId: expected.projectId, projectNumber: expected.projectNumber };
+  const result = createRevocationList([...refs].sort().map(revokedEvidenceRef => ({ schemaVersion: 1, ...identity, revokedEvidenceRef })), identity);
+  if (!result.ok) throw new Error(`test revocation list: ${result.issue.path} ${result.issue.reason}`);
+  return result.value;
+}
+
+/** Recomputes the statement digest and signs the statement in place. */
+export function signDocument(document: Record<string, any>, key: TestSigningKey): Record<string, any> {
+  const { statement, source } = document.payload;
+  source.statementObject.sha256 = contentDigest(statement);
+  source.signerKeyId = key.keyId;
+  source.signatureBase64 = sign(null, approvalSigningBytes(statement), key.privateKey).toString("base64");
+  return document;
+}
+
+export type SignedEnabledChain = EnabledChain & { readonly certification: Record<string, any>; readonly keys: ChainSigningKeys };
+
+/** Coherent chain whose deployment approval, certification and activation approval are
+ * really signed with `keys`, and whose certification document exists. */
+export type SignedChainOptions = {
+  generation?: number; hostingCandidateFingerprint?: string;
+  /** Edits a statement before it is signed (the signature stays valid). */
+  edit?: Partial<Record<keyof ChainSigningKeys, (statement: Record<string, any>) => void>>;
+  /** Alters a signed document before its content address is taken (refs stay coherent). */
+  tamper?: Partial<Record<keyof ChainSigningKeys, (document: Record<string, any>) => void>>;
+};
+export function buildSignedEnabledChain(expected: ExpectedEnvironment, placementFingerprint: string, keys: ChainSigningKeys,
+  options: SignedChainOptions = {}): SignedEnabledChain {
+  const prepare = (name: keyof ChainSigningKeys, document: Record<string, any>): void => {
+    options.edit?.[name]?.(document.payload.statement);
+    signDocument(document, keys[name]);
+    options.tamper?.[name]?.(document);
+  };
+  const env = { environment: expected.environment, projectId: expected.projectId, projectNumber: expected.projectNumber };
+  const generation = options.generation ?? 3;
+  const hosting = options.hostingCandidateFingerprint ?? "c".repeat(64);
+
+  const approval = clone(valid.deploymentApproval);
+  approval.payload.statement = { ...approval.payload.statement, ...env,
+    candidate: { ...approval.payload.statement.candidate, placementFingerprint } };
+  prepare("deploy", approval);
+  const deploymentApprovalRef = evidenceRef(approval.payload);
+
+  const base = buildEnabledChain(expected, placementFingerprint, { generation, hostingCandidateFingerprint: hosting });
+  // The shared fixture's cloud resources name the staging project; a production chain
+  // renames them so the unchanged A3-1 endpoint resource checks bind to production.
+  let baseManifest = clone(base.documents[base.releaseRef].manifest);
+  if (expected.environment === "production") {
+    baseManifest = JSON.parse(JSON.stringify(baseManifest).replace(/lyfelabz-staging/g, expected.projectId)
+      .replace(/293337283840/g, expected.projectNumber));
+  }
+  const manifest = { ...baseManifest, deploymentApprovalEvidenceRef: deploymentApprovalRef };
+  const release = { schemaVersion: 1, manifest };
+  const releaseId = contentDigest(manifest);
+  const releaseRef = `teacherUnitsBackendReleases/${releaseId}`;
+
+  const certification = clone(valid.releaseCertification);
+  certification.payload.statement = { ...certification.payload.statement, ...env, backendReleaseId: releaseId,
+    hostingCandidateFingerprint: hosting, placementFingerprint };
+  prepare("certify", certification);
+  const certificationEvidenceRef = evidenceRef(certification.payload);
+
+  const policyInstanceId = valid.enabledPolicy.policyInstanceId as string;
+  const activationApproval = clone(valid.activationApproval);
+  activationApproval.payload.statement = { ...activationApproval.payload.statement, ...env, policyInstanceId,
+    enabledGeneration: generation, backendReleaseId: releaseId, placementFingerprint,
+    hostingCandidateFingerprint: hosting, certificationEvidenceRef };
+  prepare("activate", activationApproval);
+  const activationApprovalRef = evidenceRef(activationApproval.payload);
+
+  const activationEvidence = clone(valid.activationEvidence);
+  activationEvidence.payload = { ...activationEvidence.payload, ...env, policyInstanceId, enabledGeneration: generation,
+    backendReleaseId: releaseId, placementFingerprint, hostingCandidateFingerprint: hosting,
+    certificationEvidenceRef, authorizationEvidenceRef: activationApprovalRef };
+  const activationEvidenceRef = evidenceRef(activationEvidence.payload);
+
+  const policy = { ...clone(valid.enabledPolicy), ...env, generation, placementFingerprint,
+    backendReleaseEligibility: { releaseId }, activationEvidenceRef, updatedAt: new Timestamp(1767323046, 0) };
+  return {
+    policy,
+    documents: {
+      [releaseRef]: release,
+      [deploymentApprovalRef]: approval,
+      [certificationEvidenceRef]: certification,
+      [activationEvidenceRef]: activationEvidence,
+      [activationApprovalRef]: activationApproval,
+    },
+    certification, keys,
+    releaseId, releaseRef, deploymentApprovalRef, activationEvidenceRef, activationApprovalRef, certificationEvidenceRef,
+    hostingCandidateFingerprint: hosting,
+    compatibility: { schemaVersion: 1, clientContractVersion: "teacher-units-v2", policyInstanceId,
+      policyGeneration: generation, backendReleaseId: releaseId, placementFingerprint },
+  };
 }
 
 /** TEST-ONLY verifier returning a verdict consistent with `chain`. */

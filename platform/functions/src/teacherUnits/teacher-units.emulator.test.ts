@@ -24,11 +24,18 @@ import type { MutationCompatibilityV1 } from "./a3-protocol";
 import { validateCapabilityResponse } from "./a3-protocol";
 import { UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER } from "./a3-release-authority";
 import { isResolvedRuntimeIdentity, resolveRuntimeIdentity, type RuntimeIdentity } from "./a3-runtime-identity";
+import { PRODUCTION_AUTHORITY_REGISTRY } from "./a3-authority-registry";
+import { createCompositeReleaseAuthorityVerifier, type CompositeVerifierDependencies } from "./a3-composite-verifier";
+import type { ReleaseAuthorityVerdict } from "./a3-release-authority";
 import {
   buildEnabledChain,
+  buildSignedEnabledChain,
+  chainSigningKeys,
   closedPolicy,
   emulatorExpectation,
   matchedProvenance,
+  testAuthorityRegistry,
+  testRevocationList,
   testVerifier,
   type EnabledChain,
 } from "./a3-test-support.test";
@@ -2001,6 +2008,100 @@ d("A3-3 enforcement (emulator)", () => {
     await seedEnabledPolicy();
     const replay = await create(w, w.teacher, { grade: "7", title: "Unconfirmed", idempotencyKey });
     expect(replay).toMatchObject({ replayed: true, unit: { unitId: ids[0] } });
+  });
+
+  // A3-6 S3: the composite verifier injected through the test factory, over real
+  // Firestore policy, release and evidence documents read by A3-3's own readEvidence.
+  // Synthetic test keys only; production exports are unchanged (asserted above).
+  describe("A3-6 S3 composite verifier (test keys only)", () => {
+    const KEYS = chainSigningKeys();
+    const SIGNED = buildSignedEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT, KEYS);
+    const REGISTRY = testAuthorityRegistry(EXPECTED, KEYS);
+    const emptyList = () => testRevocationList(EXPECTED, []);
+    function recording(deps: CompositeVerifierDependencies) {
+      const inner = createCompositeReleaseAuthorityVerifier(deps);
+      const verdicts: ReleaseAuthorityVerdict[] = [];
+      return { verdicts, verifier: { verify: async (input: Parameters<typeof inner.verify>[0]) => {
+        const verdict = await inner.verify(input); verdicts.push(verdict); return verdict;
+      } } };
+    }
+    const composite = (deps: CompositeVerifierDependencies) => {
+      const r = recording(deps);
+      return { ...r, handlers: handlersFor(emulatorEnforcement({ verifier: r.verifier, provenance: () => matchedProvenance(SIGNED.releaseId) })) };
+    };
+    const compat = SIGNED.compatibility;
+    async function expectRefusedEverywhere(handlers: ReturnType<typeof handlersFor>, unitId: string): Promise<void> {
+      const requests: [keyof ReturnType<typeof handlersFor>, Record<string, unknown>][] = [
+        ["create", { grade: "7", title: "S3", idempotencyKey: freshKey(), expectedSchoolId: w.schoolId, compatibility: compat }],
+        ["get", { unitId }], ["list", {}],
+        ["update", { unitId, expectedRevision: 1, title: "Renamed", compatibility: compat }],
+        ["archive", { unitId, expectedRevision: 1, compatibility: compat }],
+        ["setResources", { unitId, expectedRevision: 1, resourceIds: [A3_LESSON], compatibility: compat }],
+        ["reorder", { grade: "7", units: [{ unitId, expectedRevision: 1 }], compatibility: compat }],
+      ];
+      for (const [name, data] of requests) await expectCode(handlers[name](req(w, w.teacher, data)), "teacherUnits.deploymentIneligible");
+      expect((await handlers.capabilities(req(w, w.teacher, DISCOVERY))).teacherUnits.availability).toMatchObject({ state: "unverified", deploymentEligible: false });
+    }
+
+    // The outer beforeEach seeds the unsigned A3-3 chain (used by createUnit); each test
+    // then replaces the policy with the signed chain before exercising the composite.
+    it("a fully signed chain verifies through real transactional reads; management and discovery work", async () => {
+      await seedEnabledPolicy(SIGNED);
+      const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
+      const discovery = await handlers.capabilities(req(w, w.teacher, DISCOVERY));
+      expect(discovery.teacherUnits.availability).toEqual({ state: "enabled", policyInstanceId: compat.policyInstanceId,
+        policyGeneration: compat.policyGeneration, backendReleaseId: SIGNED.releaseId, deploymentEligible: true });
+      const created = await handlers.create(req(w, w.teacher, { grade: "7", title: "Signed", idempotencyKey: freshKey(),
+        expectedSchoolId: w.schoolId, compatibility: compat }));
+      const unitId = created.unit.unitId;
+      expect(await handlers.get(req(w, w.teacher, { unitId }))).toMatchObject({ unit: { unitId, title: "Signed" } });
+      expect((await handlers.list(req(w, w.teacher, {}))).units.map((u: { unitId: string }) => u.unitId)).toContain(unitId);
+      await handlers.update(req(w, w.teacher, { unitId, expectedRevision: 1, title: "Signed 2", compatibility: compat }));
+      expect(await unitData(unitId)).toMatchObject({ title: "Signed 2", revision: 2 });
+      expect(verdicts.length).toBeGreaterThanOrEqual(5);
+      for (const verdict of verdicts) expect(verdict).toMatchObject({ verdict: "verified", certificationEvidenceRef: SIGNED.certificationEvidenceRef });
+    });
+
+    it.each(["deploymentApprovalRef", "activationEvidenceRef", "activationApprovalRef", "certificationEvidenceRef"] as const)(
+      "a pinned revocation of %s refuses every management operation without writing", async target => {
+        const unit = await createUnit(w);
+        await seedEnabledPolicy(SIGNED);
+        const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: testRevocationList(EXPECTED, [SIGNED[target]]) });
+        await expectRefusedEverywhere(handlers, unit.unitId);
+        expect(new Set(verdicts.map(v => v.verdict === "unverified" ? v.reason : "verified"))).toEqual(new Set(["revoked"]));
+        expect(await unitData(unit.unitId)).toMatchObject({ title: "Earth Systems", revision: 1 });
+        expect(await auditsFor(unit.unitId)).toHaveLength(1);
+      });
+
+    it("a missing certification document is certificationUnverified and refuses", async () => {
+      const unit = await createUnit(w);
+      await seedEnabledPolicy(SIGNED);
+      await db.doc(SIGNED.certificationEvidenceRef).delete();
+      const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
+      await expectRefusedEverywhere(handlers, unit.unitId);
+      expect(new Set(verdicts.map(v => v.verdict === "unverified" ? v.reason : "verified"))).toEqual(new Set(["certificationUnverified"]));
+    });
+
+    it("an invalid document at the certification address propagates from readEvidence and refuses", async () => {
+      const unit = await createUnit(w);
+      await seedEnabledPolicy(SIGNED);
+      await db.doc(SIGNED.certificationEvidenceRef).set(SIGNED.documents[SIGNED.activationApprovalRef]);
+      const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
+      await expectRefusedEverywhere(handlers, unit.unitId);
+      // The adapter rethrew A3-3's readEvidence error, so no verdict was recorded (A3-3 maps it to unverified "error").
+      expect(verdicts).toEqual([]);
+    });
+
+    it("the empty production registry and an environment-mismatched list both refuse", async () => {
+      const unit = await createUnit(w);
+      await seedEnabledPolicy(SIGNED);
+      const empty = composite({ registry: PRODUCTION_AUTHORITY_REGISTRY, revocationList: emptyList() });
+      await expectRefusedEverywhere(empty.handlers, unit.unitId);
+      expect(new Set(empty.verdicts.map(v => v.verdict === "unverified" ? v.reason : "verified"))).toEqual(new Set(["authorityUnrecognized"]));
+      const otherList = composite({ registry: REGISTRY, revocationList: testRevocationList(emulatorExpectation("demo-other"), []) });
+      await expectRefusedEverywhere(otherList.handlers, unit.unitId);
+      expect(new Set(otherList.verdicts.map(v => v.verdict === "unverified" ? v.reason : "verified"))).toEqual(new Set(["dispositionUnresolved"]));
+    });
   });
 
   function actorOf(uid: string = w.teacher, schoolId: string = w.schoolId): TeacherUnitActor {
