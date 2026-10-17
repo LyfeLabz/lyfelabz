@@ -412,7 +412,9 @@ function verifyPrepared(prepared, project, candidate, now = new Date().toISOStri
 }
 module.exports = { PROJECT_NUMBERS, REQUIRED_FUNCTIONS, LIMITS, MAX_AGE_MS, MAX_PREPARE_AGE_MS, canonical, fingerprint, localCandidate,
   releaseIntent, hostingCandidate, releaseCandidate, list, normalizeLocalIndexes, normalizeRemoteIndexes, tokenFromGcloud, readApi, archiveRuntime, inspectBackend,
-  assertFresh, assertCompatible, verifyBackend, receipt, verifyPrepared };
+  assertFresh, assertCompatible, verifyBackend, receipt, verifyPrepared,
+  // Export-only (A3-6 S4 reuse); behavior unchanged.
+  resource, onlyKeys };
 
 // Standalone inventory does not build or deploy, and does not certify readiness.
 async function main(argv = process.argv.slice(2)) {

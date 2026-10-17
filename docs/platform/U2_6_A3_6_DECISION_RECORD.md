@@ -822,10 +822,11 @@ module), O3 (D8 history over the existing policy-transition semantics).
 
 ### S3 - Composite release-authority verifier
 
-Status: implemented in the repository on top of `6265564`; uncommitted, not wired,
-not deployed. The independent certification reported two P3 findings (F1, F2); both
-are remediated as described below; **awaiting focused recertification** (not
-certified). Teacher Units
+Status: implemented on top of `6265564`. The independent certification reported two
+P3 findings (F1, F2); both were remediated as described below. S3 then passed focused
+independent recertification and was integrated on main by the human owner at
+`c67d8b4bbf19f60fbec5e9a6c56a82fb6d52c600` (recorded at the owner's direction, S4 O8).
+Not wired and not deployed. Teacher Units
 remains closed: `teacherUnitsAvailable()` returns `false`, production still uses
 `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and `PRODUCTION_AUTHORITY_REGISTRY` and
 `PRODUCTION_REVOCATION_LIST` are empty. No key, signature, evidence, bucket, IAM,
@@ -960,3 +961,224 @@ activation.
   approvals and certifications (O4), report retrieval and independence review),
   D12 (policy-controlled build), D13 (enabled Hosting format), the O6 pre-wiring gate,
   separately authorized wiring, and A3-7 integrated certification.
+
+### S4 - Nine-endpoint provider observer
+
+Status: implemented in the repository on top of `c67d8b4`; uncommitted, not
+deployed, never run against a real project. The independent certification reported
+four findings (F1 to F4); all are remediated as described below. Focused
+recertification then reported four further findings (A to D), also remediated below.
+**Awaiting targeted recertification** (not certified). Verified only against synthetic fixtures (O5); no response was
+recorded from staging or production, so this is implementation verification, not
+provider verification. Teacher Units remains closed: `teacherUnitsAvailable()`
+returns `false`, production uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the
+production registry and revocation list are empty. No S1, S2, S3, A3-3, A3-4, A3-5,
+RAP, publisher, Rules, index, Hosting, Functions source, build-profile, IAM or
+infrastructure change.
+
+**Owner-approved implementation decisions (S4 reconnaissance, O1 to O8).** Recorded at
+the human owner's direction; no separate signed approval artifact exists.
+
+- **O1.** The observer emits a private observation record. Each endpoint is the A3-1
+  `CloudEndpointConfigurationV1` shape **without** `invocation`; S5 owns
+  `InvocationAccessV1` and `accessReviewReceipt`. No placeholder is emitted. The
+  observed Cloud Run access flags (`invokerIamDisabled`, `defaultUriDisabled`,
+  `iapEnabled`, `customAudiences`) are recorded in a separate `provider.accessForS5`
+  block for S5 review, never interpreted.
+- **O2.** `scripts/hosting-release/backend-state.cjs` gains an export-only addition of
+  `resource` and `onlyKeys` (`timestamp` was exported initially and withdrawn in the
+  F4 remediation). A1 behavior, its eight-endpoint inventory
+  and its tests are unchanged.
+- **O3.** CommonJS under `scripts/teacher-units-release/`, using the compiled A3
+  protocol, validation and canonical modules. Not part of the deployed Functions
+  payload and not reachable from `index.ts`.
+- **O4.** Every observed environment variable must equal the approved plan exactly;
+  an unplanned variable refuses (gate G1 open). No allowlist is defined. Refusals
+  name a variable, never its value.
+- **O5.** Synthetic fixtures only, labelled `SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`.
+- **O6.** Platform CI runs the S4 fixture tests after the Functions build, with no
+  credentials and no provider calls.
+- **O7.** A minimal deployment-plan comparison contract (below). Plan generation,
+  signing, registration and release authority remain S6.
+- **O8.** S3 status corrected above.
+
+**Files.** `scripts/teacher-units-release/provider-observation.cjs`,
+`provider-observation.test.cjs`, `fixtures/synthetic-provider.cjs`; export-only change
+to `scripts/hosting-release/backend-state.cjs`; `.github/workflows/platform-ci.yml`.
+
+**Provider sources.** Field sets come from the Cloud Functions v2 and Cloud Run v2
+message definitions in Google Cloud SDK 583.0.0 (`generated_clients/apis/cloudfunctions/v2`,
+`run/v2`). Any field outside those sets refuses. Reads (GET only, through A1
+`readApi` and `list`): Firebase project, Firestore database, Functions v2 LIST and
+per-endpoint GET, Cloud Run v2 service and revision GET, the generation-pinned source
+archive, the Rules release and ruleset, and Firestore indexes and fields. Endpoint
+metadata, the Rules release, the index snapshot and the Functions inventory are each
+read twice and must be unchanged; the whole observation must finish within the A1
+five-minute deadline.
+
+**Normalization (Cloud Run revision is authoritative for execution).** Identity is pinned
+to the A3 project pins; resource names using the project number are bound to the
+pinned project ID. Refusals include: not GEN_2 ACTIVE nodejs22 in us-central1;
+missing, duplicate, cross-region or unknown `teacherUnits*` endpoints; any traffic
+split or extra route, including a zero-percent tagged route; Functions and Cloud Run
+revision or service-account disagreement; reconciling, unready or deleting resources;
+an image not pinned by digest; a source archive not matching the pinned generation;
+endpoints running different application payloads; more than one container, sidecars,
+`sourceCode`, sandbox, encryption key, service mesh, node selector, binary
+authorization, SSH, service-level scaling overrides, worker pools, event triggers;
+non-secret volume types; secret versions that are `latest`, an alias or absent; an
+absent or ambiguous runtime update policy (G2); absent CPU, memory, timeout,
+concurrency or execution environment. Proto3 JSON omitted scalars are read as their
+documented zero values (instance minimum 0, absent maximum null, empty maps).
+
+**Plan contract `lyfelabz.teacherUnitsA3DeploymentPlan` v1.** A `ContentObjectV1`
+attachment whose bytes must hash to its `sha256` and be exactly `canonicalJSON` of a
+plan with fields: environment identity, `region`, `databaseId`, `deployCommand` (exactly
+`firebase deploy --only functions:<nine sorted names> --project <id>`), `candidate`
+(`runtimePayloadFingerprint`, `functionsArtifactFingerprint`, `placementFingerprint`),
+`rules.sourceHash`, `readyIndexesConfigurationHash`, `sourceArchive` (see the
+archive distinction below), and nine sorted endpoints each with the complete A3-1
+`execution` block, the `build` block without `source`, and the `runtimeProfile`
+(F1 remediation). Comparison is exact; every difference refuses. CPU
+and memory admissibility here means explicitly observed values and execution
+environment equal to the approved plan on a Ready revision; no provider limit table
+is asserted.
+
+**Verification (implementation only).** Initially 25 fixture tests (34 after the
+F1 to F4 remediation), including
+`validateEndpoint` acceptance of each observed endpoint once a test-only invocation
+block is added, A1 eight-endpoint rejection, GET-only transport through A1 `readApi`,
+determinism, and A1, S4 and A3-2 fingerprint equality on synthetic and on the real
+compiled Functions artifact. A scratch mutation pass removing 13 individual guards was
+killed by the suite each time.
+
+**Certification remediation (F1 to F4).** The independent certification demonstrated
+four defects. Each is remediated in the S4 files only; A1 behavior, S1 to S3, A3-3 to
+A3-5 and every canonical fixture are unchanged.
+
+- **F1 - incomplete comparison.** Root cause: the plan compared only the A3-1
+  `execution` and `build` blocks, and accepted provider objects were key-checked only
+  at the top level, so `cpuIdle`, `startupCpuBoost`, the Cloud Run CPU and concurrency
+  utilization thresholds, session affinity, the termination grace period, the
+  container port and an unknown nested `startupProbe` field all still returned
+  `matched: true`. Fix: every accepted field is now classified as (A) normalized into
+  the observed configuration and compared against the plan, (B) refused, or
+  (C) metadata recorded but not compared. (A) is a per-endpoint `runtimeProfile`
+  holding the revision execution environment, session affinity, grace period,
+  annotations, utilization thresholds, launch stage, and container CPU idle, startup
+  boost, ports, startup, liveness and readiness probes and `buildInfo.functionTarget`;
+  the service launch stage, threat detection, annotations and scaling; and the
+  Functions `buildpackStack`, `dockerRegistry` and the complete declared
+  `serviceConfig` (except its service, revision and URI identity fields, which are
+  bound elsewhere). (B) adds `buildInfo.sourceLocation`, template
+  `healthCheckDisabled`, and non-numeric secret versions in the Functions declaration.
+  (C) is labels, `buildId`, the source token, descriptions, URIs, etags, UIDs,
+  creators, clients and status-only fields (`scalingStatus`, conditions other than
+  readiness); each is still type- and field-checked. Every nested object (probes,
+  ports, conditions, scaling, binary authorization, build info, Functions secret and
+  VPC entries, the service template) is checked against its documented field set; an
+  absent field is `null`, never an inferred default. The Cloud Run service `template`
+  must normalize to exactly the serving revision. Fractional numbers are carried as
+  exact decimal text because A3 canonical JSON admits only safe integers.
+- **F2 - observation-wide consistency.** Root cause: each endpoint was bracketed
+  only around its own source retrieval, so an early endpoint could change after its
+  second read. Fix: after the Rules, index and inventory checks, a final pass re-reads
+  the Functions, Cloud Run service and revision resources of all nine endpoints and
+  refuses any difference from the captured snapshots, including a vanished resource
+  or a failed read. Provider APIs offer no global transactional snapshot: this narrows
+  but does not eliminate time-of-check/time-of-use races. A change after the final
+  pass, or one reverted between reads, is not detected.
+- **F3 - source generation.** Root cause: a declared `storageSource.generation`
+  was ignored, so generation 999 was accepted against a different resolved
+  generation. Fix: a declared generation must be a canonical int64 equal to the
+  resolved generation; a missing or malformed resolved generation and empty bucket or
+  object names refuse. A1 archive retrieval is unchanged.
+- **F4 - timestamps.** Root cause: the A1 helper (`Date.parse`) accepts impossible
+  dates and arbitrary formats. Fix: an S4-local validator accepts only Google JSON
+  Timestamps (RFC 3339, `Z`, 0, 3, 6 or 9 fractional digits) whose calendar fields
+  round-trip. It covers function, Cloud Run service and revision create and update
+  times, condition transition times, the Rules release and the observation clock.
+  Ordering is checked only within one resource (create no later than update) and
+  against the observation clock (nothing is in the future). No build resource is
+  read, so no build timestamp exists to validate. The A1 helper is unchanged; the
+  earlier export of `timestamp` from A1 was withdrawn as no longer needed.
+- **Archive distinction (owner decision).** Four concepts remain distinct: the
+  runtime payload fingerprint (canonical runtime files without the build record),
+  the Functions artifact fingerprint (the normalized artifact inventory), the
+  placement fingerprint and the source archive hash (exact uploaded bytes, recorded
+  per endpoint and in `sourceArchiveHashes`). Different archive bytes can carry the
+  same runtime payload and are not refused for that alone. The plan's `sourceArchive`
+  is `{policy: "unbound"}` (hash recorded, not approved) or
+  `{policy: "exact", sha256}` (every endpoint must match). Runtime equivalence is never
+  claimed as archive reproducibility; G4 stays open. No fingerprint definition changed.
+- **Regressions and mutations.** Permanent tests reproduce each certification
+  counterexample (the seven F1 fields plus an unknown nested probe field, the early
+  endpoint traffic change, generation 999 and invalid timestamps). Compile-safe scratch
+  mutations of nested validation, plan completeness, final revalidation, generation
+  agreement, timestamp parsing, template equality and archive binding were each killed
+  by a behavioral test failure. Two survivors were equivalent: renaming a profile key
+  (the same data is still compared) and the hour-range check (an hour of 24 already
+  fails the calendar round trip).
+
+**Second focused remediation (A to D).** F1 to F4 corrections and their regressions are
+unchanged.
+
+- **A - Cloud Run base image.** Root cause: `baseImageUri` fed only the
+  `runtimeUpdatePolicy`, which is taken from the serving revision, so a template that
+  named a different base image still matched. Fix: `baseImageUri` (or `null` when
+  absent) is part of the normalized container profile, so it is in both the
+  template-versus-revision equality and the plan comparison.
+- **B - update policy shape.** Root cause: `typeof [] === "object"`, so `[]` passed as
+  an empty `AutomaticUpdatePolicy`. Fix: both policies must be plain JSON objects
+  (prototype `Object.prototype`, not null, not an array); automatic must be exactly
+  `{}` and on-deploy exactly `{runtimeVersion: <nonempty string>}`.
+- **C - Rules creation timestamps.** Root cause: only the release `updateTime` was
+  validated. Fix: the release `createTime` and `updateTime` (update required) and the
+  ruleset `createTime` use the strict S4 validator, are not in the future, and the
+  release `createTime` is no later than its `updateTime`. No ordering is asserted
+  between the ruleset and the release.
+- **D - disabled Rules release.** Root cause: the release object was not
+  field-checked, and `disabled` (a documented `Release` boolean in Firebase Rules v1)
+  was ignored. Fix: the release is checked against its documented fields; `disabled`
+  must be absent or a boolean, and `true` refuses. An enabled or absent flag stays
+  eligible.
+- **Bounded field review.** Sources: Cloud Functions v2, Cloud Run v2, Firebase Rules
+  v1 and Firestore Admin v1 messages in Google Cloud SDK 583.0.0. One further bypass
+  was demonstrated and fixed: the Firestore database response was checked only for
+  `name` and `type`, so a database with `deleteTime` set or
+  `firestoreDataAccessMode: DATA_ACCESS_MODE_DISABLED` was accepted. It is now checked
+  against its documented fields; `deleteTime` and disabled native data access refuse,
+  and `createTime` and `updateTime` are strict. The ruleset is now field-checked:
+  `attachmentPoint` refuses when present (its meaning for `cloud.firestore` is
+  unverified), a source language other than `FIREBASE_RULES` refuses, and file and
+  metadata objects are field-checked. Remaining accepted-but-uncompared fields, each
+  justified as metadata: database encryption, edition, location, retention, tags and
+  similar storage settings (they do not affect whether these Rules and endpoints are
+  served); the ruleset file `fingerprint` (the content hash is computed
+  independently); labels, IDs, etags, URIs, creators and clients; status-only Cloud
+  Run conditions and scaling status; and the index TTL state (A1 records only TTL
+  presence, and TTL does not affect access). The Cloud Run `invokerIamDisabled`,
+  `defaultUriDisabled`, `iapEnabled` and `customAudiences` flags remain recorded for
+  S5 and are not interpreted in S4 (O1).
+- **Regressions and mutations.** Permanent tests reproduce each counterexample (the
+  template base image, `automaticUpdatePolicy: []`, malformed, future and misordered
+  Rules creation times, `disabled: true`) and the database bypass. All five new tests
+  fail against the pre-remediation module. Targeted scratch mutations of each
+  correction were killed by a behavioral test failure. One equivalent survivor:
+  removing the explicit array check from the plain-object test, because the prototype
+  check already rejects arrays.
+
+**Unresolved [U].** G1 (platform-injected variables), G2 (update policy actually
+reported), G4 (deploy-time rebuild reproducibility) and the following provider facts
+need a separately authorized real observation: whether deployed revision images are
+digest-pinned, whether `executionEnvironment`, `buildConfig.serviceAccount` and
+`buildConfig.dockerRepository` are reported, the Cloud Run `traffic` form written by
+Firebase deploys, and whether Cloud Run returns `buildConfig` on these services. Each
+currently refuses when absent or present respectively, so a live run may refuse until
+they are resolved. The Functions `serviceConfig` values are compared verbatim against
+the plan (F1) but are not cross-converted against Cloud Run, because their unit
+conventions are unverified.
+
+**Remaining dependencies.** S5 (IAM and route review, `invocation`, G3), S6 (plan
+generation, operator CLI, registration, freshness at enable, revocation), D12, D13,
+the S3 O6 pre-wiring gate, a separately authorized staging observation, and A3-7.

@@ -17,6 +17,10 @@ on:
       - 'app/package-lock.json'
       - 'index.html'
       - 'scripts/unit-placement/**'
+      # A3-6 S4 provider observer and the A1 helpers it reuses.
+      - 'scripts/teacher-units-release/**'
+      - 'scripts/hosting-release/backend-state.cjs'
+      - 'scripts/hosting-release/contract.cjs'
   push:
     branches: [main]
     paths:
@@ -34,6 +38,10 @@ on:
       - 'app/package-lock.json'
       - 'index.html'
       - 'scripts/unit-placement/**'
+      # A3-6 S4 provider observer and the A1 helpers it reuses.
+      - 'scripts/teacher-units-release/**'
+      - 'scripts/hosting-release/backend-state.cjs'
+      - 'scripts/hosting-release/contract.cjs'
 
 jobs:
   functions:
@@ -80,6 +88,10 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      # A3-6 S4: provider observer over synthetic fixtures only. No
+      # credentials and no provider calls. Uses the compiled lib from Build.
+      - name: A3-6 S4 provider observer (fixtures)
+        run: node --test ../../scripts/teacher-units-release/provider-observation.test.cjs
 
   firestore-rules:
     name: Firestore Rules tests
