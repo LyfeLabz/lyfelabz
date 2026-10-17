@@ -276,3 +276,83 @@ test('history report over an export: repeated generations are reported, never au
   await refused(['history', 'report', '--project', F.PROJECT, '--records', 'records.json'], /history records structure invalid/, { cwd: scratch({ 'records.json': forged }) });
   await refused(['history', 'report', '--project', 'lyfelabz-prod'], /reads only an emulator/);
 });
+
+// --- A3-6 S6b: offline, non-authorizing evidence assembly ----------------------
+const EP = require('./evidence-package.cjs');
+const P6 = require('./fixtures/synthetic-package.cjs');
+const S6B_NOW = '2026-10-16T12:30:00.000Z';
+// The CLI checks the repository's own Hosting config, so the synthetic receipt is built against it.
+async function s6bFiles({ project = P6.STAGING, provenance } = {}) {
+  const keys = P6.testKeys();
+  const ev = await P6.buildEvidence({ project, keys, provenance, root: path.resolve(__dirname, '../..') });
+  const release = EP.assembleRelease(ev.base);
+  const chain = P6.chainFor(ev, release.releaseId).inputs;
+  const b = ev.base, canon = v => K.canonicalJSON(v);
+  const files = { 'plan.json': b.plan.bytes, 'plan-object.json': canon(b.plan.object), 'expected.json': b.expected.bytes,
+    'expected-object.json': canon(b.expected.object), 'approval.json': canon(b.deploymentApproval.document), 'approval-statement.json': b.deploymentApproval.statementBytes,
+    'observation.json': canon(b.observation), 'receipt.json': b.receipt.bytes, 'receipt-object.json': canon(b.receipt.object),
+    'cert.json': canon(chain.certification.document), 'cert-statement.json': chain.certification.statementBytes, 'report.json': chain.certification.reportBytes,
+    'act.json': canon(chain.activationApproval.document), 'act-statement.json': chain.activationApproval.statementBytes, 'evidence.json': canon(chain.activationEvidence),
+    'registry.json': canon(P6.registryEntries(project, keys)), 'revocations.json': '[]' };
+  return { ev, release, chain, keys, cwd: scratch(files) };
+}
+const s6bReleaseArgs = project => ['--project', project, '--plan', 'plan.json', '--plan-object', 'plan-object.json', '--expected', 'expected.json',
+  '--expected-object', 'expected-object.json', '--approval', 'approval.json', '--approval-statement', 'approval-statement.json',
+  '--observation', 'observation.json', '--receipt', 'receipt.json', '--receipt-object', 'receipt-object.json'];
+const s6bChainArgs = ['--certification', 'cert.json', '--certification-statement', 'cert-statement.json', '--certification-report', 'report.json',
+  '--activation-approval', 'act.json', '--activation-approval-statement', 'act-statement.json', '--activation-evidence', 'evidence.json'];
+const s6bAuthorityArgs = ['--registry', 'registry.json', '--revocations', 'revocations.json'];
+
+test('S6b release assemble: pure derivation, exclusive output, no authority', async () => {
+  const f = await s6bFiles();
+  const r = await cli(['release', 'assemble', ...s6bReleaseArgs(P6.STAGING), '--out', 'release.json'], { cwd: f.cwd, now: S6B_NOW });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.json.result.releaseId, f.release.releaseId);
+  assert.match(r.json.result.authorization, /^none: candidate backend release/);
+  assert.equal(fs.readFileSync(path.join(f.cwd, 'release.json')).equals(f.release.bytes), true);
+  await refused(['release', 'assemble', ...s6bReleaseArgs(P6.STAGING), '--out', 'release.json'], /never overwritten/, { cwd: f.cwd, now: S6B_NOW });
+  await refused(['release', 'assemble', ...s6bReleaseArgs(P6.STAGING), ...s6bAuthorityArgs, '--out', 'r2.json'], /not accepted|only release inputs/, { cwd: f.cwd, now: S6B_NOW });
+  await refused(['release', 'assemble', ...s6bReleaseArgs('lyfelabz-prod'), '--out', 'r3.json'], /identity|mismatch/, { cwd: f.cwd, now: S6B_NOW });
+});
+
+test('S6b package assemble and verify: round trip, forged packages refuse, nothing authorizes', async () => {
+  const f = await s6bFiles();
+  const a = await cli(['package', 'assemble', ...s6bReleaseArgs(P6.STAGING), ...s6bChainArgs, ...s6bAuthorityArgs, '--out', 'package.json'], { cwd: f.cwd, now: S6B_NOW });
+  assert.equal(a.code, 0, a.stderr);
+  const result = a.json.result;
+  assert.equal(result.providerVerified, false); assert.equal(result.releaseAuthorized, false); assert.equal(result.activationReady, false);
+  assert.equal(result.evidenceClass, 'synthetic');
+  assert.ok(result.checks.includes('deploymentApproval.signature: synthetic-passed'));
+  assert.ok(result.checks.includes('buildRecord.deployed: not-observed'));
+  assert.equal(result.checks.some(c => /\.(signature|revocation): passed$/.test(c)), false);
+  const v = await cli(['package', 'verify', ...s6bReleaseArgs(P6.STAGING), ...s6bChainArgs, ...s6bAuthorityArgs, '--package', 'package.json'], { cwd: f.cwd, now: '2027-01-01T00:00:00.000Z' });
+  assert.equal(v.code, 0, v.stderr);
+  assert.equal(v.json.result.sha256, result.sha256);
+  const pkg = JSON.parse(fs.readFileSync(path.join(f.cwd, 'package.json'), 'utf8'));
+  pkg.checks.find(c => c.check === 'deploymentApproval.signature').status = 'passed';
+  fs.writeFileSync(path.join(f.cwd, 'forged.json'), K.canonicalJSON(pkg));
+  await refused(['package', 'verify', ...s6bReleaseArgs(P6.STAGING), ...s6bChainArgs, ...s6bAuthorityArgs, '--package', 'forged.json'], /does not match the evidence/, { cwd: f.cwd });
+  await refused(['package', 'verify', ...s6bReleaseArgs(P6.STAGING), ...s6bChainArgs, '--package', 'package.json'], /does not match the evidence/, { cwd: f.cwd });
+  await refused(['package', 'verify', ...s6bReleaseArgs(P6.STAGING), ...s6bChainArgs, ...s6bAuthorityArgs, '--evaluated-at', S6B_NOW, '--package', 'package.json'], /not accepted/, { cwd: f.cwd });
+  await refused(['package', 'assemble', ...s6bReleaseArgs(P6.STAGING), ...s6bChainArgs, ...s6bAuthorityArgs, '--out', 'package.json'], /never overwritten/, { cwd: f.cwd, now: S6B_NOW });
+});
+
+test('S6b commands: cloud projects only, no --execute, paired inputs, production authority pinned', async () => {
+  const f = await s6bFiles();
+  for (const command of [['release', 'assemble'], ['package', 'assemble'], ['package', 'verify']]) {
+    await refused([...command, '--project', 'demo-a3-s6b'], /applies only to lyfelabz-staging or lyfelabz-prod/);
+    await refused([...command, '--project', P6.STAGING, '--execute'], /--execute is not accepted/);
+    await refused([...command, '--project', P6.STAGING, '--confirm', 'a'.repeat(64)], /--confirm is not accepted/);
+    await refused([...command, '--plan', 'plan.json'], /explicit --project is required/, { cwd: f.cwd });
+  }
+  const pair = s6bReleaseArgs(P6.STAGING).filter(x => x !== '--approval-statement' && x !== 'approval-statement.json');
+  await refused(['release', 'assemble', ...pair, '--out', 'x.json'], /must be given together/, { cwd: f.cwd });
+  await refused(['package', 'assemble', ...s6bReleaseArgs(P6.STAGING), '--registry', 'registry.json', '--out', 'x.json'], /must be given together/, { cwd: f.cwd, now: S6B_NOW });
+  await refused(['package', 'assemble', ...s6bReleaseArgs(P6.STAGING), '--certification-report', 'report.json', '--out', 'x.json'], /requires --certification/, { cwd: f.cwd, now: S6B_NOW });
+  const p = await s6bFiles({ project: 'lyfelabz-prod' });
+  await refused(['package', 'assemble', ...s6bReleaseArgs('lyfelabz-prod'), ...s6bAuthorityArgs, '--out', 'x.json'], /artifact-pinned registry/, { cwd: p.cwd, now: S6B_NOW });
+  const prod = await cli(['package', 'assemble', ...s6bReleaseArgs('lyfelabz-prod'), ...s6bChainArgs, '--out', 'p.json'], { cwd: p.cwd, now: S6B_NOW });
+  assert.equal(prod.code, 0, prod.stderr);
+  assert.ok(prod.json.result.checks.includes('deploymentApproval.signature: failed'));
+  assert.equal(fs.existsSync(path.join(f.cwd, 'x.json')), false);
+});

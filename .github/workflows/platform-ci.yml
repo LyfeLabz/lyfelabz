@@ -98,6 +98,10 @@ jobs:
         run: node --test ../../scripts/teacher-units-release/access-review.test.cjs
       - name: A3-6 S6a operator tooling (offline fixtures)
         run: node --test ../../scripts/teacher-units-release/cli.test.cjs ../../scripts/teacher-units-release/freshness.test.cjs ../../scripts/teacher-units-release/statements.test.cjs
+      # A3-6 S6b: offline, non-authorizing evidence assembly over synthetic fixtures only.
+      # No credentials, no provider calls, no emulator.
+      - name: A3-6 S6b evidence assembly (offline fixtures)
+        run: node --test ../../scripts/teacher-units-release/evidence-package.test.cjs
       # S6a writers run only against the Firestore emulator for a demo- project, using the
       # same Java and pinned firebase-tools setup as the Rules job. No credentials.
       - name: Set up Java (Firestore emulator for A3-6 S6a)

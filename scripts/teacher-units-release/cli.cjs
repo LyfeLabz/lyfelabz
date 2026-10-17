@@ -22,6 +22,7 @@ const AR = require('./access-review.cjs');
 const ST = require('./statements.cjs');
 const RG = require('./registration.cjs');
 const CAS = require('./availability-cas.cjs');
+const EP = require('./evidence-package.cjs');
 
 const LIB = path.resolve(__dirname, '../../platform/functions/lib/teacherUnits');
 const K = require(path.join(LIB, 'a3-canonical.js'));
@@ -36,6 +37,12 @@ function refuse(message) { throw new Refusal(`[a3-operator-cli] REFUSED: ${messa
 const CLOUD = Object.freeze({ 'lyfelabz-prod': 'production', 'lyfelabz-staging': 'staging' });
 const AMBIENT_PROJECT = Object.freeze(['GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT', 'CLOUDSDK_CORE_PROJECT']);
 const EMULATOR_VARIABLES = Object.freeze(['FIRESTORE_EMULATOR_HOST', 'FIREBASE_AUTH_EMULATOR_HOST', 'FUNCTIONS_EMULATOR']);
+
+// A3-6 S6b evidence inputs (files). Statement bytes are the exact canonical bytes.
+const RELEASE_FLAGS = Object.freeze(['plan', 'plan-object', 'expected', 'expected-object', 'approval', 'approval-statement', 'observation',
+  'receipt', 'receipt-object', 'evaluated-at']);
+const PACKAGE_FLAGS = Object.freeze(['certification', 'certification-statement', 'certification-report', 'activation-approval',
+  'activation-approval-statement', 'activation-evidence', 'registry', 'revocations']);
 
 // command -> allowed flags (value flags and boolean flags). --project is always required.
 // Only mutating commands accept --execute and --confirm; any other command refuses them.
@@ -52,6 +59,10 @@ const COMMANDS = Object.freeze({
   'policy prepare': { values: ['release-id', 'placement-fingerprint', 'operator-subject', 'reason', 'confirm'], booleans: ['execute'], mutates: true },
   'policy enable': { values: ['activation-evidence', 'registry', 'revocations', 'local-profile', 'operator-subject', 'reason', 'confirm'], booleans: ['execute'], mutates: true },
   'policy shutdown': { values: ['operator-subject', 'reason', 'confirm'], booleans: ['execute', 'clear-release', 'keep-release'], mutates: true },
+  // A3-6 S6b: offline, read-only, non-authorizing evidence assembly. No --execute.
+  'release assemble': { values: [...RELEASE_FLAGS, 'out'], cloudOnly: true },
+  'package assemble': { values: [...RELEASE_FLAGS, ...PACKAGE_FLAGS, 'out'], cloudOnly: true },
+  'package verify': { values: [...RELEASE_FLAGS.filter(f => f !== 'evaluated-at'), ...PACKAGE_FLAGS, 'package'], cloudOnly: true },
 });
 
 function parse(argv) {
@@ -148,6 +159,31 @@ async function withEmulator(target, env, run) {
   try { return await run(db); } finally { await close(); }
 }
 
+/** S6b inputs from files. Optional components are absent unless their flag is given;
+ * a partial signed component (document without statement bytes) refuses. */
+function evidenceInputs(target, flags, io, { verify = false } = {}) {
+  const pair = (doc, bytes, d) => {
+    if ((flags[doc] === undefined) !== (flags[bytes] === undefined)) refuse(`--${doc} and --${bytes} must be given together (${d})`);
+    return flags[doc] === undefined ? undefined : { document: io.json(flags[doc], doc), statementBytes: io.file(flags[bytes], bytes) };
+  };
+  const inputs = { project: target.project,
+    plan: { object: io.json(required(flags, 'plan-object'), 'plan-object'), bytes: io.file(required(flags, 'plan'), 'plan') },
+    expected: { object: io.json(required(flags, 'expected-object'), 'expected-object'), bytes: io.file(required(flags, 'expected'), 'expected') },
+    deploymentApproval: pair('approval', 'approval-statement', 'deployment approval') || refuse('--approval and --approval-statement are required'),
+    observation: io.json(required(flags, 'observation'), 'observation'),
+    receipt: { object: io.json(required(flags, 'receipt-object'), 'receipt-object'), bytes: io.file(required(flags, 'receipt'), 'receipt') } };
+  if (!verify && flags['evaluated-at'] !== undefined) inputs.evaluatedAt = flags['evaluated-at'];
+  const certification = pair('certification', 'certification-statement', 'certification');
+  if (certification) inputs.certification = flags['certification-report'] === undefined ? certification : { ...certification, reportBytes: io.file(flags['certification-report'], 'certification-report') };
+  else if (flags['certification-report'] !== undefined) refuse('--certification-report requires --certification');
+  const activation = pair('activation-approval', 'activation-approval-statement', 'activation approval');
+  if (activation) inputs.activationApproval = activation;
+  if (flags['activation-evidence'] !== undefined) inputs.activationEvidence = io.json(flags['activation-evidence'], 'activation-evidence');
+  if ((flags.registry === undefined) !== (flags.revocations === undefined)) refuse('--registry and --revocations must be given together');
+  if (flags.registry !== undefined) inputs.authority = { registryEntries: io.json(flags.registry, 'registry'), revocationEntries: io.json(flags.revocations, 'revocations') };
+  return inputs;
+}
+
 async function run({ command, flags }, target, ctx) {
   const io = reader(ctx.cwd), now = ctx.now;
   switch (command) {
@@ -195,6 +231,24 @@ async function run({ command, flags }, target, ctx) {
       if (flags.records !== undefined) return CAS.reportHistoryRecords(io.json(flags.records, 'records'), target.expected);
       if (target.cloud) refuse('history report reads only an emulator; pass --records <export> for offline review');
       return withEmulator(target, ctx.env, db => CAS.readHistory({ db, expected: target.expected, env: ctx.env }));
+    }
+    case 'release assemble': {
+      const inputs = evidenceInputs(target, flags, io);
+      for (const key of ['certification', 'activationApproval', 'activationEvidence', 'authority']) if (inputs[key] !== undefined) refuse('release assemble takes only release inputs');
+      const release = EP.assembleRelease(inputs);
+      writeNew(ctx.cwd, required(flags, 'out'), 'out', release.bytes);
+      return { ref: release.ref, releaseId: release.releaseId, evaluatedAt: release.evaluatedAt, authorization: release.authorization };
+    }
+    case 'package assemble': {
+      const assembled = EP.assembleEvidencePackage({ ...evidenceInputs(target, flags, io), assembledAt: now() });
+      writeNew(ctx.cwd, required(flags, 'out'), 'out', assembled.bytes);
+      return { sha256: assembled.sha256, release: { ref: assembled.release.ref, releaseId: assembled.release.releaseId },
+        evidenceClass: assembled.package.evidenceClass, checks: assembled.package.checks.map(c => `${c.check}: ${c.status}`),
+        providerVerified: false, releaseAuthorized: false, activationReady: false, authorization: assembled.authorization };
+    }
+    case 'package verify': {
+      const verified = EP.verifyEvidencePackage(io.file(required(flags, 'package'), 'package'), evidenceInputs(target, flags, io, { verify: true }));
+      return { verified: true, sha256: verified.sha256, scope: verified.scope, authorization: verified.authorization };
     }
     case 'register': {
       const expected = withLocalProfile(target, flags, io);

@@ -1188,10 +1188,12 @@ the S3 O6 pre-wiring gate, a separately authorized staging observation, and A3-7
 
 ### S5 - IAM and route review (fixture-based, level A)
 
-Status: implemented in the repository on top of `8c7cc55`; uncommitted, not deployed,
-never run against a real project. The independent certification failed with findings
-F1 to F6; all are remediated as described below. **Awaiting targeted recertification.**
-Verified only
+Status: **certified and integrated on main (`99e480e`)**, on top of `8c7cc55`; not
+deployed, never run against a real project. The independent certification failed with
+findings F1 to F6; all are remediated as described below, and the targeted
+recertification passed before integration (commit `99e480e`, "Integrate certified A3-6
+S5 access review"). Status corrected in S6b at the owner's direction (S6b-D4); this line
+previously read "awaiting targeted recertification". Verified only
 against synthetic fixtures labelled `SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`; this is
 implementation verification, not provider verification, and gate G3 stays open.
 Teacher Units remains closed: `teacherUnitsAvailable()` returns `false`, production
@@ -1385,8 +1387,12 @@ freshness at enable, revocation); D12, D13; the S3 O6 pre-wiring gate; A3-7.
 
 ### S6a - Offline operator tooling core, emulator-only writers
 
-Status: implemented in the repository on top of `99e480e`; uncommitted, not deployed,
-never run against a real project. **Awaiting independent certification.** Verified only
+Status: **certified and integrated on main (`abe0cb5`)**, on top of `99e480e`; not
+deployed, never run against a real project. Independently certified on October 17, 2026
+after remediation of findings F1 to F3, then integrated by the human owner (commit
+`abe0cb5`, "Add certified A3-6 S6a operator tooling"). Status corrected in S6b at the
+owner's direction (S6b-D4); this line previously read "awaiting independent
+certification". Verified only
 against synthetic fixtures (`SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`) and the Firestore
 emulator for a `demo-` project. Teacher Units remains closed: `teacherUnitsAvailable()`
 returns `false`, production uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the
@@ -1554,3 +1560,149 @@ buckets do not exist); release and plan assembly (S6b); live read-only observati
 revocation and supersede preparation (S6d); any staging or production write, signing,
 registration or transition (S6e, separately authorized); D12, D13; the S3 O6 pre-wiring
 gate; gates G1 to G5; A3-7. The CI emulator step has not yet run in GitHub Actions.
+
+### S6b - Offline release evidence assembly (non-authorizing)
+
+Status: implemented in the repository on top of `4273ab5` (S6a integrated at `abe0cb5`);
+uncommitted, not deployed, never run against a real project. **Awaiting independent
+certification.** Verified only against synthetic fixtures (`SYNTHETIC FIXTURE - NOT
+PROVIDER-VERIFIED`). Teacher Units remains closed: `teacherUnitsAvailable()` returns
+`false`, production uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the production
+registry and revocation list are empty. No S1 to S5, A3-1 to A3-5, RAP, publisher, Rules,
+index, Hosting, Functions source, build-profile, IAM, Storage, KMS or infrastructure
+change; the only S6a change is additive CLI commands (S6b-D3). S6c to S6e are not
+implemented.
+
+**Owner decisions (S6b reconnaissance).** Recorded at the human owner's direction; no
+separate signed approval artifact exists.
+
+- **S6b-D1.** The S4 and S5 checks run at a recorded historical `evaluatedAt`, defaulting
+  to the S5 review end. Freshness is evaluated separately at `assembledAt`. A historical
+  observation is never described as currently activation-valid.
+- **S6b-D2.** A structurally valid package may be assembled when signature, revocation or
+  freshness checks fail, are absent or are unverifiable. Each such condition is recorded;
+  a failed or unknown authority check is never recorded as passed.
+- **S6b-D3.** Strictly additive changes to the certified S6a `cli.cjs` and its tests.
+- **S6b-D4.** The stale S5 and S6a status lines above are corrected.
+
+**Files.** `scripts/teacher-units-release/evidence-package.cjs`,
+`evidence-package.test.cjs`, `fixtures/synthetic-package.cjs`; additive changes to
+`cli.cjs` and `cli.test.cjs`; `.github/workflows/platform-ci.yml` (one offline step);
+this record. CommonJS over the compiled A3 modules (canonical, validation, bindings,
+signature, authority registry, revocation list) and the S4, S5 and S6a exports, none
+modified. Not reachable from `index.ts`; not in the deployed Functions payload.
+
+**Release assembly (`assembleRelease`, pure).** Inputs: the S4 plan (object and bytes),
+the S5 expected access (object and bytes), the signed deployment approval with its exact
+statement bytes, the S4 observation and the S5 receipt (object and bytes). Every input is
+read once through canonical serialization (accessors and non-plain values refuse), and an
+unknown input key or a missing input refuses; no observation is ever inferred. Checks, in
+order: explicit `lyfelabz-prod` or `lyfelabz-staging` identity (project, environment,
+number, region); approval statement bytes canonical at the statement object hash and equal
+to the document statement; approval `candidate.deploymentPlan` exactly the plan content
+object, and its three fingerprints equal to the plan candidate; expected-access runtime
+service account and ingress equal to the plan for all nine endpoints (the binding S5 leaves
+to S6); S4 `compareObservationToPlan` and S5 `composeEndpoints` (which re-applies
+`assertAccessReview`, including the observation fingerprint, plan hash and expected-access
+hash bindings) at `evaluatedAt`; nine sorted endpoints; plan, expected and observed service
+accounts agreeing. The manifest takes `sourceSha`, `sourceTree`, the fingerprints, the
+deployment mode, the enforcement and contract versions from the approval candidate, the
+endpoints from S5 composition, and the Rules and index hashes from the observation; the
+deployment approval reference is its content address. `validateBackendRelease`,
+`validateDeploymentBinding` and `validateReleaseReference` must pass. Output: the release
+document, its canonical bytes, its `releaseId` and
+`authorization: "none: candidate backend release document; ..."`.
+
+**Package `lyfelabz.teacherUnitsA3EvidencePackage` v1.** Canonical JSON with fixed
+literals that the schema admits in no other form: `authorization` ("none: candidate
+evidence package; not an approval, certification, registration or activation"),
+`providerVerified: false`, `accessReviewLevel: "A-structural"`, `releaseAuthorized: false`,
+`activationReady: false`. It records identity; `evidenceClass` (`synthetic` when the S5
+receipt declares `synthetic-fixture`, otherwise `operator-supplied-unverified`; never
+provider-verified, and the declared provenance is carried with the note that a declaration
+is not proof); `evaluatedAt` and `assembledAt`; the authority source and the SHA-256 of any
+synthetic registry and revocation input; the release reference; each component's role,
+kind, content address and supplied-byte SHA-256 (plan, expected access, observation and its
+A1 fingerprint, receipt, deployment approval and statement bytes, release, and when
+supplied the certification, certification report, activation approval and activation
+evidence); an ordered check list (`passed`, `synthetic-passed`, `failed`, `absent`,
+`unverifiable`, `not-observed`, `deferred`); and a fixed list of unresolved gates (D9, D12,
+D13, G1 to G5, O6, S6c, S6d, S6e, A3-7).
+
+- Optional components refuse on any binding or hash failure: the certification must bind
+  this release, placement, enforcement and contract version; supplied report bytes must
+  hash to `certificationReport.sha256` (absent bytes are recorded `absent`, never passed);
+  an activation approval requires the certification it names and must pass
+  `validateCertificationBinding`; activation evidence requires its approval and must equal
+  what S6a `prepareActivationEvidence` rebuilds. `validateActivationBinding` and the S3
+  chain need an enabled policy and are recorded `deferred` (S6a enable, S6c).
+- **Authority.** Production uses only the pinned registry and revocation list and refuses
+  caller-supplied authority, so every production signature is recorded `failed`
+  (`authorityUnrecognized`). Staging has no pinned registry: signature and revocation
+  checks are `unverifiable`. Explicit synthetic test authority is accepted only for staging
+  and only for synthetic evidence; its results are `synthetic-passed`, never `passed`.
+  Interpretation for review: the instruction to permit explicit registry inputs for `demo`
+  is met this way because S4 and S5 accept only cloud identities, so no `demo-` package can
+  exist; the S6b commands are therefore cloud-project only.
+- **Freshness.** `observation.freshness.historical` records that the S4 and S5 windows were
+  satisfied at `evaluatedAt`. `observation.freshness.current` applies the five-minute window
+  at `assembledAt`; even when it passes, its detail states that enable still requires a fresh
+  S6c observation. Approval and certification freshness use S6a `assertStatementFresh` at
+  `assembledAt` (24 hours for approvals, no limit for certification, future refused) and
+  are recorded. An observation, receipt or `evaluatedAt` later than `assembledAt` refuses.
+- **D12 and D13.** `buildRecord.deployed` is always `not-observed`: S4 does not read the
+  deployed `a3-runtime-build.json`, and `sourceSha` and `sourceTree` come from the approval
+  candidate, not from the deployed artifact. `hostingCandidate` is always `deferred`. The
+  synthetic source SHA, tree, Hosting fingerprint and report exist only in
+  `fixtures/synthetic-package.cjs`.
+
+**Verification (`verifyEvidencePackage`).** Checks canonical bytes and the fixed schema
+(unknown keys, literals, statuses and the unresolved list), refuses a supplied `assembledAt`
+or `evaluatedAt` and any project other than the package's, then re-derives the whole package
+from the supplied evidence at the package's own instants and requires byte-exact equality.
+No recorded check, status, class or literal is trusted: a resealed package with an edited
+status, class, authority source, component hash or release ID refuses, as does verification
+with different authority inputs or evidence.
+
+**CLI (S6b-D3).** `release assemble`, `package assemble` and `package verify`, each offline
+and read-only, cloud projects only, using the existing explicit `--project`, target
+resolution, strict readers and exclusive output files. None accepts `--execute` or
+`--confirm`. Signed components take a document and its statement bytes together; the
+registry and revocation files go together; `package verify` takes no `--evaluated-at`.
+`package assemble` uses the tooling clock as `assembledAt`. Existing S6a commands are
+unchanged.
+
+**Verification.** Offline: `evidence-package.test.cjs` 26 tests; `cli.test.cjs` 18 (15
+existing plus 3 S6b). The matrix covers cross-project and cross-environment components,
+swapped and noncanonical plan and expected-access bytes, altered certification report
+bytes, noncanonical and substituted statement bytes, wrong release IDs, mismatched service
+accounts, eight, extra and reordered endpoints, tampered observation and resealed receipt
+fingerprints, stale, future and malformed instants, forged readiness, level, class and
+check claims (resealed), declared `provider-get` provenance over synthetic data, revoked,
+unknown, wrong-action and zero signatures, missing and mismatched certification
+dependencies, missing evidence, unknown keys and accessor inputs, network-free execution
+(trapped `fetch`, `http` and `https`), a static scan, and exclusive CLI output. Behavioral
+mutation (scratch backup, in place, restored and hash-checked): 43 mutants. 22 are killed
+behaviorally (an unsafe input becomes accepted or a recorded status changes, and a test
+fails). 13 are killed only by a refusal message: each guard is layered, and another layer
+still refuses (S5 refuses a service-account or plan mismatch; S5 re-runs the S4 plan
+comparison; re-derivation refuses forged literals and unresolved lists; identity and input
+checks refuse under the verify-project and unknown-package-input guards; the CLI pairing
+guards fall through to required-flag refusals; the activation-needs-certification guard
+falls through to a non-REFUSED TypeError, which still fails closed). 8 survive and are
+redundant by construction or by a certified layer: expected-versus-plan ingress and the two
+composed-endpoint checks (S4 plus S5 imply them transitively), `validateDeploymentBinding`
+(the manifest is built from the candidate), statement equality (the A3-1 statement digest
+check plus the hash check imply it), the signed-identity check (the A3-1 validators bind
+identity), and the future-versus-`assembledAt` and `evaluatedAt`-order guards, which imply
+each other (removing both together is killed behaviorally). The certification-only release
+and placement guards were initially a coverage gap (killed only by a message or surviving);
+a permanent certification-only test now kills both behaviorally.
+
+**Unresolved and remaining.** Everything in the package's unresolved list: D9 storage
+retrieval, D12 deployed build record, D13 Hosting candidate, G1 to G5, the O6 pre-wiring
+gate, S6c live observation and fresh enable observation, S6d revocation and supersede,
+S6e any staging or production signing, registration or transition, and A3-7. The new CI step
+has not yet run in GitHub Actions. `TEACHER_UNITS.md` still describes S4 as awaiting
+recertification and S5 and S6 as deferred; it is outside the S6b file inventory and is
+unchanged.
