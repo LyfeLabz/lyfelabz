@@ -13,9 +13,13 @@
 // --confirm digest the dry run printed, and they refuse every cloud project, including
 // staging and production, before any I/O. The CLI holds no key, never signs, never
 // calls KMS and makes no provider request. Nothing it prints is authority.
+//
+// A3-6 S6c adds `observe plan` (offline), `observe capture` (read-only provider GET
+// capture, only with an explicit --live) and `observe verify` (offline replay). The
+// capture transport lives in provider-capture.cjs; a capture is never authority.
 const fs = require('node:fs');
 const path = require('node:path');
-const { randomUUID } = require('node:crypto');
+const { randomUUID, createHash } = require('node:crypto');
 const { PROJECT_NUMBERS } = require('../hosting-release/backend-state.cjs');
 const O = require('./provider-observation.cjs');
 const AR = require('./access-review.cjs');
@@ -23,6 +27,7 @@ const ST = require('./statements.cjs');
 const RG = require('./registration.cjs');
 const CAS = require('./availability-cas.cjs');
 const EP = require('./evidence-package.cjs');
+const PC = require('./provider-capture.cjs');
 
 const LIB = path.resolve(__dirname, '../../platform/functions/lib/teacherUnits');
 const K = require(path.join(LIB, 'a3-canonical.js'));
@@ -44,6 +49,9 @@ const RELEASE_FLAGS = Object.freeze(['plan', 'plan-object', 'expected', 'expecte
 const PACKAGE_FLAGS = Object.freeze(['certification', 'certification-statement', 'certification-report', 'activation-approval',
   'activation-approval-statement', 'activation-evidence', 'registry', 'revocations']);
 
+// A3-6 S6c capture inputs (files): the S4 plan and S5 expected access, bytes and objects.
+const OBSERVE_FLAGS = Object.freeze(['plan', 'plan-object', 'expected', 'expected-object']);
+
 // command -> allowed flags (value flags and boolean flags). --project is always required.
 // Only mutating commands accept --execute and --confirm; any other command refuses them.
 const COMMANDS = Object.freeze({
@@ -63,6 +71,10 @@ const COMMANDS = Object.freeze({
   'release assemble': { values: [...RELEASE_FLAGS, 'out'], cloudOnly: true },
   'package assemble': { values: [...RELEASE_FLAGS, ...PACKAGE_FLAGS, 'out'], cloudOnly: true },
   'package verify': { values: [...RELEASE_FLAGS.filter(f => f !== 'evaluated-at'), ...PACKAGE_FLAGS, 'package'], cloudOnly: true },
+  // A3-6 S6c: read-only provider observation. No --execute or --confirm; capture needs --live.
+  'observe plan': { values: [], cloudOnly: true },
+  'observe capture': { values: [...OBSERVE_FLAGS, 'principal', 'out'], booleans: ['live'], cloudOnly: true },
+  'observe verify': { values: [...OBSERVE_FLAGS, 'capture'], cloudOnly: true },
 });
 
 function parse(argv) {
@@ -184,6 +196,12 @@ function evidenceInputs(target, flags, io, { verify = false } = {}) {
   return inputs;
 }
 
+/** S6c plan and expected-access inputs, read and hash-checked before any request. */
+function observeInputs(flags, io) {
+  return { deploymentPlan: { object: io.json(required(flags, 'plan-object'), 'plan-object'), bytes: io.file(required(flags, 'plan'), 'plan') },
+    expected: { object: io.json(required(flags, 'expected-object'), 'expected-object'), bytes: io.file(required(flags, 'expected'), 'expected') } };
+}
+
 async function run({ command, flags }, target, ctx) {
   const io = reader(ctx.cwd), now = ctx.now;
   switch (command) {
@@ -250,6 +268,28 @@ async function run({ command, flags }, target, ctx) {
       const verified = EP.verifyEvidencePackage(io.file(required(flags, 'package'), 'package'), evidenceInputs(target, flags, io, { verify: true }));
       return { verified: true, sha256: verified.sha256, scope: verified.scope, authorization: verified.authorization };
     }
+    case 'observe plan':
+      return PC.capturePlan(target.project);
+    case 'observe capture': {
+      if (flags.live !== true) refuse('observe capture makes provider requests only with an explicit --live; use observe plan to see the reads');
+      const out = path.resolve(ctx.cwd, required(flags, 'out'));
+      if (fs.existsSync(out)) refuse('--out already exists (existing output is never overwritten)');
+      const capture = { project: target.project, ...observeInputs(flags, io), evidenceClass: 'operator-captured-unattested', principal: flags.principal };
+      PC.checkCaptureInputs({ ...capture, hostingRoot: ctx.hostingRoot });
+      // Only now, after every local check, is a credential obtained. A failed read refuses; nothing falls back.
+      const exchange = ctx.exchange || PC.createLiveExchange({ token: PC.liveAccessToken() });
+      const captured = await PC.captureA3Provider({ ...capture, exchange, clock: now, hostingRoot: ctx.hostingRoot });
+      try { fs.mkdirSync(out); } catch { refuse('--out could not be created (existing output is never overwritten)'); }
+      for (const [key, file] of Object.entries(PC.FILES)) writeNew(out, file, 'out', captured.bytes[key]);
+      return { out: flags.out, bundleSha256: createHash('sha256').update(captured.bytes.bundle).digest('hex'),
+        evidenceClass: captured.bundle.evidenceClass, window: captured.bundle.window, reads: captured.bundle.reads, surfaces: captured.bundle.surfaces,
+        providerVerified: false, releaseAuthorized: false, activationReady: false, freshness: captured.bundle.freshness, authorization: captured.bundle.authority };
+    }
+    case 'observe verify': {
+      const dir = required(flags, 'capture');
+      const files = Object.fromEntries(Object.entries(PC.FILES).map(([key, file]) => [key, io.file(path.join(dir, file), 'capture')]));
+      return PC.verifyCapture({ project: target.project, files, ...observeInputs(flags, io), hostingRoot: ctx.hostingRoot });
+    }
     case 'register': {
       const expected = withLocalProfile(target, flags, io);
       const deps = authorityFor(target, flags, io);
@@ -292,7 +332,8 @@ async function run({ command, flags }, target, ctx) {
 /** Returns the exit code. `ctx` is injectable for tests; defaults are the process. */
 async function main(argv, ctx = {}) {
   const context = { env: ctx.env || process.env, cwd: ctx.cwd || process.cwd(), stdout: ctx.stdout || process.stdout,
-    stderr: ctx.stderr || process.stderr, now: ctx.now || (() => new Date().toISOString()), workflowRunId: ctx.workflowRunId || randomUUID() };
+    stderr: ctx.stderr || process.stderr, now: ctx.now || (() => new Date().toISOString()), workflowRunId: ctx.workflowRunId || randomUUID(),
+    exchange: ctx.exchange, hostingRoot: ctx.hostingRoot };
   try {
     const parsed = parse(argv);
     if (parsed.spec.mutates && Boolean(parsed.flags.execute) !== (parsed.flags.confirm !== undefined)) refuse('--execute and --confirm <digest> must be given together');

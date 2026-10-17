@@ -356,3 +356,163 @@ test('S6b commands: cloud projects only, no --execute, paired inputs, production
   assert.ok(prod.json.result.checks.includes('deploymentApproval.signature: failed'));
   assert.equal(fs.existsSync(path.join(f.cwd, 'x.json')), false);
 });
+
+// --- A3-6 S6c: observe plan, capture and verify (synthetic exchange injected; no credentials) ---
+const { buildCapture } = require('./fixtures/synthetic-capture.cjs');
+const http = require('node:http');
+const https = require('node:https');
+async function observeCli(argv, { cwd, exchange, hostingRoot, env = {} } = {}) {
+  const out = [], err = [];
+  const code = await C.main(argv, { env, cwd, exchange, hostingRoot, now: observeCli.clock || (() => F.NOW), stdout: { write: s => out.push(s) }, stderr: { write: s => err.push(s) } });
+  return { code, stderr: err.join(''), json: code === 0 ? JSON.parse(out.join('')) : null };
+}
+async function observeSetup() {
+  const c = await buildCapture();
+  const cwd = scratch({ 'plan.json': c.deploymentPlan.bytes, 'plan-object.json': c.deploymentPlan.object, 'expected.json': c.expected.bytes, 'expected-object.json': c.expected.object });
+  let calls = 0;
+  const exchange = async url => { calls++; return c.exchange(url); };
+  return { c, cwd, exchange, calls: () => calls };
+}
+const INPUTS = ['--plan', 'plan.json', '--plan-object', 'plan-object.json', '--expected', 'expected.json', '--expected-object', 'expected-object.json'];
+async function withoutNetwork(run) {
+  const calls = [], saved = { fetch: globalThis.fetch, http: http.request, https: https.request };
+  const trap = name => () => { calls.push(name); throw new Error('network attempted'); };
+  globalThis.fetch = trap('fetch'); http.request = trap('http'); https.request = trap('https');
+  try { return { value: await run(), calls }; } finally { globalThis.fetch = saved.fetch; http.request = saved.http; https.request = saved.https; }
+}
+
+test('S6c observe plan: offline, cloud projects only, no credentials', async () => {
+  const { value, calls } = await withoutNetwork(() => observeCli(['observe', 'plan', '--project', 'lyfelabz-staging'], { cwd: scratch() }));
+  assert.deepEqual(calls, []);
+  assert.equal(value.code, 0, value.stderr);
+  assert.equal(value.json.result.method, 'GET only');
+  assert.match(value.json.result.credentials, /reads no credentials/);
+  assert.equal((await observeCli(['observe', 'plan', '--project', 'demo-a3'], { cwd: scratch() })).code, 1);
+  assert.match((await observeCli(['observe', 'plan'], { cwd: scratch() })).stderr, /explicit --project is required/);
+  assert.match((await observeCli(['observe', 'plan', '--project', 'lyfelabz-staging'], { cwd: scratch(), env: { GOOGLE_CLOUD_PROJECT: 'lyfelabz-prod' } })).stderr, /ambiguous project/);
+});
+
+test('S6c observe capture: requires --live, refuses --execute and --confirm, and never overwrites output', async () => {
+  const s = await observeSetup();
+  const base = ['observe', 'capture', '--project', 'lyfelabz-staging', ...INPUTS];
+  const noLive = await observeCli([...base, '--out', 'cap'], { cwd: s.cwd, exchange: s.exchange, hostingRoot: s.c.hostingRoot });
+  assert.match(noLive.stderr, /only with an explicit --live/);
+  assert.match((await observeCli([...base, '--out', 'cap', '--live', '--execute'], { cwd: s.cwd, exchange: s.exchange })).stderr, /--execute is not accepted/);
+  assert.match((await observeCli([...base, '--out', 'cap', '--live', '--confirm', 'a'.repeat(64)], { cwd: s.cwd, exchange: s.exchange })).stderr, /--confirm is not accepted/);
+  assert.match((await observeCli(['observe', 'capture', '--project', 'demo-a3', ...INPUTS, '--out', 'cap', '--live'], { cwd: s.cwd, exchange: s.exchange })).stderr, /only to lyfelabz-staging or lyfelabz-prod/);
+  fs.mkdirSync(path.join(s.cwd, 'existing'));
+  fs.writeFileSync(path.join(s.cwd, 'existing', 'capture.json'), 'keep');
+  assert.match((await observeCli([...base, '--out', 'existing', '--live'], { cwd: s.cwd, exchange: s.exchange })).stderr, /already exists/);
+  assert.equal(fs.readFileSync(path.join(s.cwd, 'existing', 'capture.json'), 'utf8'), 'keep');
+  assert.match((await observeCli([...base, '--out', 'cap', '--live', '--principal', 'Not An Email'], { cwd: s.cwd, exchange: s.exchange, hostingRoot: s.c.hostingRoot })).stderr, /--principal/);
+  assert.equal(s.calls(), 0, 'no provider read happens before every local check passes');
+  assert.equal(fs.existsSync(path.join(s.cwd, 'cap')), false);
+});
+
+test('S6c observe capture then verify: unattested, non-authorizing, replayed offline; tampering refuses', async () => {
+  const s = await observeSetup();
+  let n = 0; observeCli.clock = () => new Date(Date.parse('2026-10-16T12:10:00.000Z') + n++).toISOString();
+  try {
+    const captured = await observeCli(['observe', 'capture', '--project', 'lyfelabz-staging', ...INPUTS, '--out', 'cap', '--live', '--principal', 'operator@example.org'],
+      { cwd: s.cwd, exchange: s.exchange, hostingRoot: s.c.hostingRoot });
+    assert.equal(captured.code, 0, captured.stderr);
+    const result = captured.json.result;
+    assert.equal(result.evidenceClass, 'operator-captured-unattested');
+    for (const key of ['providerVerified', 'releaseAuthorized', 'activationReady']) assert.equal(result[key], false);
+    assert.match(result.freshness, /^historical/);
+    assert.deepEqual(fs.readdirSync(path.join(s.cwd, 'cap')).sort(), ['capture.json', 'observation.json', 'receipt.json', 'surface-report.json', 'transcript.json']);
+    const reads = s.calls();
+    const verifyArgs = ['observe', 'verify', '--project', 'lyfelabz-staging', ...INPUTS, '--capture', 'cap'];
+    const { value, calls } = await withoutNetwork(() => observeCli(verifyArgs, { cwd: s.cwd, hostingRoot: s.c.hostingRoot }));
+    assert.deepEqual(calls, []);
+    assert.equal(value.code, 0, value.stderr);
+    assert.equal(value.json.result.providerVerified, false);
+    assert.equal(s.calls(), reads, 'verify makes no exchange');
+    assert.match((await observeCli([...verifyArgs, '--live'], { cwd: s.cwd })).stderr, /--live is not accepted/);
+    assert.match((await observeCli(['observe', 'verify', '--project', 'lyfelabz-prod', ...INPUTS, '--capture', 'cap'], { cwd: s.cwd, hostingRoot: s.c.hostingRoot })).stderr, /REFUSED/);
+    const bundlePath = path.join(s.cwd, 'cap', 'capture.json');
+    const bundle = JSON.parse(fs.readFileSync(bundlePath, 'utf8')); bundle.providerVerified = true;
+    fs.writeFileSync(bundlePath, K.canonicalJSON(bundle));
+    assert.match((await observeCli(verifyArgs, { cwd: s.cwd, hostingRoot: s.c.hostingRoot })).stderr, /capture\.json differs/);
+    // A second capture to the same directory refuses and leaves the files alone.
+    const before = fs.readFileSync(bundlePath);
+    assert.match((await observeCli(['observe', 'capture', '--project', 'lyfelabz-staging', ...INPUTS, '--out', 'cap', '--live'], { cwd: s.cwd, exchange: s.exchange })).stderr, /already exists/);
+    assert.equal(fs.readFileSync(bundlePath).equals(before), true);
+  } finally { observeCli.clock = undefined; }
+});
+
+test('S6c observe capture: a failed read refuses with no output and no fallback', async () => {
+  const s = await observeSetup();
+  const failing = async url => { if (url.includes('firebaserules')) throw new Error('ECONNRESET'); return s.exchange(url); };
+  let n = 0; observeCli.clock = () => new Date(Date.parse('2026-10-16T12:10:00.000Z') + n++).toISOString();
+  try {
+    const r = await observeCli(['observe', 'capture', '--project', 'lyfelabz-staging', ...INPUTS, '--out', 'cap', '--live'], { cwd: s.cwd, exchange: failing, hostingRoot: s.c.hostingRoot });
+    assert.equal(r.code, 1);
+    assert.match(r.stderr, /provider read failed/);
+    assert.equal(fs.existsSync(path.join(s.cwd, 'cap')), false);
+  } finally { observeCli.clock = undefined; }
+});
+
+test('S6c observe capture: the live path obtains a credential only after every local check, then uses the live exchange', async () => {
+  const PCm = require('./provider-capture.cjs');
+  const s = await observeSetup();
+  const saved = { token: PCm.liveAccessToken, live: PCm.createLiveExchange };
+  const events = [];
+  PCm.liveAccessToken = () => { events.push('token'); return 'ya29.SYNTHETIC-TOKEN'; };
+  PCm.createLiveExchange = ({ token }) => { events.push(`exchange:${token === 'ya29.SYNTHETIC-TOKEN'}`); return s.exchange; };
+  let n = 0; observeCli.clock = () => new Date(Date.parse('2026-10-16T12:10:00.000Z') + n++).toISOString();
+  try {
+    const base = ['observe', 'capture', '--project', 'lyfelabz-staging', ...INPUTS, '--live'];
+    assert.match((await observeCli([...base, '--out', 'a', '--principal', 'bad'], { cwd: s.cwd })).stderr, /--principal/);
+    fs.writeFileSync(path.join(s.cwd, 'plan.json'), Buffer.concat([s.c.deploymentPlan.bytes, Buffer.from(' ')]));
+    assert.match((await observeCli([...base, '--out', 'a'], { cwd: s.cwd })).stderr, /REFUSED/);
+    assert.match((await observeCli(['observe', 'capture', '--project', 'lyfelabz-prod', ...INPUTS, '--live', '--out', 'a'], { cwd: s.cwd })).stderr, /REFUSED/);
+    assert.deepEqual(events, [], 'no credential for an invalid capture');
+    fs.writeFileSync(path.join(s.cwd, 'plan.json'), s.c.deploymentPlan.bytes);
+    const ok = await observeCli([...base, '--out', 'a'], { cwd: s.cwd, hostingRoot: s.c.hostingRoot });
+    assert.equal(ok.code, 0, ok.stderr);
+    assert.deepEqual(events, ['token', 'exchange:true']);
+    assert.equal(ok.json.result.evidenceClass, 'operator-captured-unattested');
+    assert.equal(fs.readFileSync(path.join(s.cwd, 'a', 'transcript.json')).includes('ya29.SYNTHETIC-TOKEN'), false);
+  } finally { PCm.liveAccessToken = saved.token; PCm.createLiveExchange = saved.live; observeCli.clock = undefined; }
+});
+
+test('S6c F3: every locally detectable preflight failure refuses with zero credential retrievals and zero provider reads', async () => {
+  const PCm = require('./provider-capture.cjs');
+  const s = await observeSetup();
+  const saved = { token: PCm.liveAccessToken, live: PCm.createLiveExchange };
+  let tokens = 0, reads = 0;
+  PCm.liveAccessToken = () => { tokens++; return 'ya29.SYNTHETIC-TOKEN'; };
+  PCm.createLiveExchange = () => async url => { reads++; return s.exchange(url); };
+  const os = require('node:os');
+  const root = files => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'lyfelabz-s6c-cli-f3-')); files(d); return d; };
+  let n = 0; observeCli.clock = () => new Date(Date.parse('2026-10-16T12:10:00.000Z') + n++).toISOString();
+  try {
+    const args = (out, extra = [], project = 'lyfelabz-staging') => ['observe', 'capture', '--project', project, ...INPUTS, '--live', '--out', out, ...extra];
+    const failures = [
+      [args('a'), root(() => {}), /unreadable/],
+      [args('b'), root(d => fs.mkdirSync(path.join(d, 'firebase.staging.json'))), /unreadable/],
+      [args('c'), root(d => fs.writeFileSync(path.join(d, 'firebase.staging.json'), '{')), /not strict JSON/],
+      [args('d', ['--principal', 'Bad Principal']), s.c.hostingRoot, /--principal/],
+      [args('e', [], 'demo-a3'), s.c.hostingRoot, /only to lyfelabz-staging or lyfelabz-prod/],
+      [['observe', 'capture', ...INPUTS, '--live', '--out', 'f'], s.c.hostingRoot, /explicit --project/],
+    ];
+    for (const [argv, hostingRoot, pattern] of failures) {
+      const r = await observeCli(argv, { cwd: s.cwd, hostingRoot });
+      assert.equal(r.code, 1);
+      assert.match(r.stderr, pattern);
+    }
+    fs.writeFileSync(path.join(s.cwd, 'bad-plan.json'), Buffer.concat([s.c.deploymentPlan.bytes, Buffer.from(' ')]));
+    fs.writeFileSync(path.join(s.cwd, 'bad-expected.json'), '{}');
+    for (const swap of [['plan.json', 'bad-plan.json'], ['expected.json', 'bad-expected.json'], ['plan-object.json', 'missing.json']]) {
+      const argv = args('g').map(a => (a === swap[0] ? swap[1] : a));
+      assert.equal((await observeCli(argv, { cwd: s.cwd, hostingRoot: s.c.hostingRoot })).code, 1, swap.join(' -> '));
+    }
+    assert.equal(tokens, 0, 'no credential retrieval');
+    assert.equal(reads, 0, 'no provider read');
+    const ok = await observeCli(args('ok'), { cwd: s.cwd, hostingRoot: s.c.hostingRoot });
+    assert.equal(ok.code, 0, ok.stderr);
+    assert.equal(tokens, 1);
+    assert.ok(reads > 100);
+  } finally { PCm.liveAccessToken = saved.token; PCm.createLiveExchange = saved.live; observeCli.clock = undefined; }
+});

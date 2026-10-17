@@ -1563,9 +1563,12 @@ gate; gates G1 to G5; A3-7. The CI emulator step has not yet run in GitHub Actio
 
 ### S6b - Offline release evidence assembly (non-authorizing)
 
-Status: implemented in the repository on top of `4273ab5` (S6a integrated at `abe0cb5`);
-uncommitted, not deployed, never run against a real project. **Awaiting independent
-certification.** Verified only against synthetic fixtures (`SYNTHETIC FIXTURE - NOT
+Status: **certified and integrated on main (`b7a629d`)**, on top of `4273ab5` (S6a
+integrated at `abe0cb5`); not deployed, never run against a real project. Independently
+certified on October 17, 2026, then integrated by the human owner (commit `b7a629d`, "Add
+certified A3-6 S6b release evidence assembly"). Status corrected in S6c at the owner's
+direction (S6c-D3); this line previously read "uncommitted ... awaiting independent
+certification". Verified only against synthetic fixtures (`SYNTHETIC FIXTURE - NOT
 PROVIDER-VERIFIED`). Teacher Units remains closed: `teacherUnitsAvailable()` returns
 `false`, production uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the production
 registry and revocation list are empty. No S1 to S5, A3-1 to A3-5, RAP, publisher, Rules,
@@ -1706,3 +1709,257 @@ S6e any staging or production signing, registration or transition, and A3-7. The
 has not yet run in GitHub Actions. `TEACHER_UNITS.md` still describes S4 as awaiting
 recertification and S5 and S6 as deferred; it is outside the S6b file inventory and is
 unchanged.
+
+### S6c - Read-only provider observation (capture and replay, non-authorizing)
+
+Status: implemented in the repository on top of `b7a629d` (S6b integrated); uncommitted,
+not deployed, never run against a real project, and no live capture has been performed.
+**Awaiting independent certification.** Verified only against injected synthetic exchanges
+(`SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`). Teacher Units remains closed:
+`teacherUnitsAvailable()` returns `false`, production uses
+`UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the production registry and revocation list
+are empty. No S1 to S6b implementation, A3-1 to A3-5, RAP, publisher, Rules, index, Hosting,
+Functions source or entry point, build-profile, IAM, Storage, KMS or infrastructure change;
+the only S6a/S6b change is additive CLI commands (S6b-D3 precedent).
+
+**Owner decisions (S6c authorization).** Recorded at the human owner's direction; no
+separate signed approval artifact exists.
+
+- **S6c-D1.** GET-only. Resource Manager `getIamPolicy` (a POST) is not implemented;
+  inherited project, folder and organization IAM are recorded `not-observed`. Neither G3
+  nor a level B access review is claimed.
+- **S6c-D2.** Read-only observation of deployed Hosting releases and rewrites, Cloud Run
+  domain mappings, serverless NEGs and their backend services, and the deployed A3 runtime
+  build record. A 403, 404, disabled API, incomplete listing or ambiguous response is never
+  read as absence.
+- **S6c-D3.** The stale S6b status line above and the stale S4 to S6 status in
+  `TEACHER_UNITS.md` are corrected.
+- **S6c-D4.** The capture architecture is implemented and tested offline only; no live
+  provider capture is authorized in this slice.
+
+**Files.** `scripts/teacher-units-release/provider-capture.cjs`, `surface-observation.cjs`,
+`provider-capture.test.cjs`, `surface-observation.test.cjs`, `fixtures/synthetic-capture.cjs`;
+additive changes to `cli.cjs` and `cli.test.cjs`; `.github/workflows/platform-ci.yml` (one
+offline step); this record; `TEACHER_UNITS.md`. CommonJS over the compiled A3 modules
+(canonical, runtime artifact) and the S4 and S5 exports and A1 helpers, none modified. Not
+reachable from `index.ts`; not in the deployed Functions payload.
+
+**Capture (`captureA3Provider`).** One recording transport and one clock serve the certified
+S4 `observeA3Backend`, the certified S5 `reviewA3Access` and the S6c surface observer, in
+that order. The plan and expected access are hash-checked (S4 `readPlan`, S5
+`readExpectedAccess`) before any request. Every request must be `https` to an allowlisted
+Google API host (Firebase, Firestore, Cloud Functions, Cloud Run and its `us-central1`
+regional host, Storage, Firebase Rules, Firebase Hosting, Compute) with no credentials, port
+or fragment in the URL and no custom method other than `getIamPolicy`. The transport records,
+for each read in order: the exact URL, method `GET`, mode (`json`, `binary`, `probe`), HTTP
+status, the response bytes (Base64) and their SHA-256, and request and completion times; and
+every clock reading S4, S5 and S6c take. One monotonic clock enforces the A1 five-minute
+window from the capture start across the whole capture, before and after each read and at
+completion; a backwards or malformed reading refuses. For S4 and S5 a non-2xx response
+refuses (their certified contract); for S6c surfaces it is recorded. A failed exchange
+refuses the capture; nothing falls back to fixture data. Nothing is written by the module.
+
+**Transcript `lyfelabz.teacherUnitsA3ProviderTranscript` v1.** Canonical JSON holding fixed
+`authority` and `attestation` literals, `evidenceClass`, explicit identity (environment,
+project, number, region), the principal, the deployment plan and expected-access SHA-256,
+the window, and the events. Credentials, the Authorization header and tokens are never
+recorded (test-enforced, including the Base64 form).
+
+**Provenance.** `synthetic` (injected fixtures; S5 provenance `synthetic-fixture`) or
+`operator-captured-unattested` (the CLI live path; S5 provenance `provider-get`). Neither
+establishes provider origin: replay proves consistency with the captured bytes only, and TLS
+origin cannot be proven after the fact. The principal is `not-recorded` or
+`operator-declared-unverified` (a `--principal` email), never verified and never
+authorization. A consistent relabel of synthetic bytes as unattested reaches only
+`operator-captured-unattested`, which S6b classes `operator-supplied-unverified`.
+
+**Bundle `lyfelabz.teacherUnitsA3ProviderCapture` v1** (`capture.json`) binds the SHA-256
+of `transcript.json`, `observation.json`, `receipt.json` and `surface-report.json`, the S4
+observation fingerprint, the window, read counts and surface statuses, with fixed literals
+`providerVerified: false`, `releaseAuthorized: false`, `activationReady: false`,
+`accessReviewLevel: "A-structural"`, `levelB: "not-claimed"`, the G3-open statement, the
+historical freshness statement, and the unresolved list (D9, D12, D13, G1 to G5, O6, S6d,
+S6e, A3-7, inherited IAM).
+
+**Verification (`verifyCapture`, offline).** Strict transcript schema (exact keys, `GET`
+only, allowlisted URLs, canonical Base64, canonical bytes), identity and plan bindings, then
+a replay transport feeds the recorded responses and clock readings, in order, into the same
+unchanged S4, S5 and S6c code. Each replayed request must match the next event's URL, method
+and mode; each body must match its hash; a missing, extra or reordered event refuses. Every
+file must equal the re-derived bytes exactly, so no recorded label, status, hash, timestamp
+or literal is trusted. Verification is historical: it applies no current freshness and is
+never a fresh observation for enable (D6 fix 1). The S5 local Hosting check is re-run against
+the current repository file, so a changed local Hosting file refuses replay.
+
+**Surfaces (`surface-observation.cjs`).** Statuses: `observed-absent`, `observed-present`,
+`incomplete`, `unreadable`, `not-observed`, `inconsistent`. Listings follow pagination with a
+bounded page count; a repeated token, an unreachable location or scope, an unexpected
+warning, an unknown field where meaning matters, or a malformed entry is `incomplete`; any
+non-200 is `unreadable`.
+- Hosting: every site listed for the project (expected sites recorded from
+  `DOMAIN_AND_HOSTING_CONTRACT.md`; the alias file is never read), every channel including
+  preview channels, `FINALIZED` versions only. Any rewrite to `function` or `run` is
+  `observed-present` and blocking, as S5 already refuses locally.
+- Cloud Run domain mappings (`us-central1` v1 API): a mapping whose `routeName` is a Teacher
+  Units service is present and blocking.
+- Serverless NEGs and backend services (Compute aggregated lists): a NEG naming a Teacher
+  Units Cloud Run service or function, or using a URL mask or serverless deployment that can
+  route to it, is present and blocking, as is any backend service using such a NEG.
+- Build record: from the generation-pinned archive bytes S4 already captured. The bytes must
+  hash to the observed archive hash, the archive's artifact fingerprint must equal the
+  observation, the record bytes must equal the archive inventory hash, be canonical,
+  pass the A3 runtime build schema and match the observed payload and placement
+  fingerprints. The actual `deploymentMode` is recorded; `policyControlled` is `true` only for
+  an observed `policy-controlled` record, which is blocking because D12 is deferred. Uncaptured
+  archive bytes are `not-observed`.
+- Inherited IAM: always `not-observed` (S6c-D1).
+
+Findings are recorded in `blocking`; they do not refuse the capture, so the evidence of an
+exposure is kept. A surface report is never an access review and never resolves G3.
+
+**CLI (additive).** `observe plan` (offline; lists the GET surfaces and expected read
+permissions [U]; reads no credentials). `observe capture --live` (cloud projects only;
+refuses without `--live`; no `--execute` or `--confirm`; an existing `--out` refuses before
+any request or credential; the token is obtained through A1 `tokenFromGcloud` only after
+every local check; writes the five files exclusively into a new directory; class
+`operator-captured-unattested`). `observe verify` (offline replay). Existing commands are
+unchanged.
+
+**Verification.** Offline: `provider-capture.test.cjs` 18, `surface-observation.test.cjs`
+10, `cli.test.cjs` 23 (18 existing plus 5 S6c). Behavioral mutation (in place with
+hash-checked restore; 53 mutants over the three S6c-touched modules): 50 behavioral kills,
+2 message-only (layered: the plan and expected-access binding, refused underneath by the
+re-derived receipt; the capture class set, refused underneath by S5's provenance check),
+1 equivalent survivor (the record-bytes hash check: the bytes come from the same archive
+whose inventory produced the hash). Two initial survivors (repeated pagination token, archive
+artifact fingerprint) gained permanent behavioral tests.
+
+**Certification correction (Sol FAIL: F1, F2, F3).** Within the same 10 files; no S1 to
+S6b, A3-1 to A3-5, Rules, index or configuration change. Each finding was reproduced before
+the fix (offline): F1, `{}` and `{unexpected: 1}` as HTTP 200 for Hosting sites, domain
+mappings and Compute each gave `observed-absent`; F2, a Teacher Units domain mapping on page
+one followed by HTTP 403 on page two gave `unreadable` with an empty `blocking` list; F3, a
+missing local Hosting configuration was refused only after 95 provider reads.
+
+- **F1 - strict successful shapes.** Every listing page must be a plain object whose keys are
+  all documented for that listing (an undocumented key is `incomplete`) and must carry its
+  collection explicitly as a list (Hosting `sites` and `channels`, domain mapping `items`,
+  the Compute aggregated `items` map); an omitted or malformed collection is `incomplete`,
+  never empty. Interpretation for review: because proto3 JSON omits empty repeated fields, a
+  genuinely empty listing that omits its collection is recorded `incomplete` (fail closed).
+  A pagination token must be a nonempty string; any other value is `incomplete`. A channel
+  must carry a release with a version and config; a version that is not `FINALIZED`, an
+  unexpected domain mapping list `kind`, a malformed aggregated scope, and every malformed
+  entry are `incomplete`. Optional repeated fields inside a validated resource (version
+  `rewrites`, backend service `backends`, `unreachable(s)`) may be omitted but must be lists
+  when present. `observed-absent` is reached only when every page was valid and pagination
+  ended. An incomplete sites listing records `missingExpectedSites: null`.
+- **F2 - findings survive failures.** Listings now return every entry already observed with
+  their status: a later failed, malformed or repeated page, and a malformed sibling entry
+  (each entry is normalized on its own), no longer discard earlier entries. Sites from a
+  partial listing are still inspected; a malformed rewrite no longer discards the other
+  rewrites of its version; NEG findings are kept when the backend-service listing fails.
+  Each surface reports coverage in `status` (the worst listing status) and what was seen in
+  `exposure` (`observed-present`, `none-observed-in-partial-coverage`, `none`); a finding stays
+  in `findings` and `blocking` whatever the coverage. Replay re-derives the same findings and
+  the bundle's blocking count.
+- **F3 - local preflight.** `checkCaptureInputs` now also runs the certified S5
+  `checkLocalHosting` for the environment's Hosting file (unchanged; S5 still re-checks it
+  during the review). The capture runs it before starting the transport, and the CLI runs it
+  with the same Hosting root before obtaining a credential. Target, evidence class,
+  principal, plan and expected access were already checked there.
+
+Correction tests: `provider-capture.test.cjs` 19 (+1), `surface-observation.test.cjs` 15
+(+5), `cli.test.cjs` 24 (+1). They cover HTTP 200 with missing or malformed collections,
+channels, releases, rewrites, mappings, scopes and resources; missing and invalid
+pagination; valid complete empty listings; a dangerous mapping before a 403, a malformed
+page or a repeated token; a dangerous rewrite before malformed pagination, malformed
+siblings and a failed later sites page; a dangerous NEG before an unreadable or malformed
+backend-service listing; replay and bundle verification keeping the blocking finding; and
+missing, unreadable (a directory) and malformed Hosting configuration, invalid plan,
+expected access, target, class and principal, each with zero clock readings, zero provider
+reads and, through the CLI, zero credential retrievals, followed by an honest capture and
+replay. Targeted behavioral mutation: 19 mutants (F1 9, F2 6 plus the version status, F3
+3), all killed behaviorally. The original 53-mutant set, re-anchored where code moved: 51
+behavioral, 1 message-only (plan and expected-access binding, refused underneath by the
+re-derived receipt), 1 equivalent (record-bytes hash); the capture class set is now killed
+behaviorally.
+
+**Second certification correction (Sol FAIL: F1-A to F1-C, F2-A to F2-C).** Within
+`surface-observation.cjs` and its tests; F3 and the first F1 and F2 corrections are unchanged.
+Reproduced first on the unchanged bytes: a NEG with `cloudRun.service: 42`, a NEG with
+`cloudRun: {}` and a Compute list with the wrong `kind` each gave `observed-absent`; a
+dangerous domain mapping beside malformed `unreachable`, a dangerous NEG beside malformed
+`unreachables` and a dangerous rewrite in a release without `name` each gave `incomplete`
+with no blocking finding.
+
+Root causes (shared, not per case): (1) collection metadata was validated inside the
+collection extractor, so a metadata error threw and discarded every entry on the page
+(F2-A, F2-B); (2) entry normalizers were all-or-nothing, so missing nonessential metadata
+discarded an already-established target (F2-C); (3) nested targets were tested only for a
+match, so a malformed or empty target was silently not dangerous and therefore absent
+(F1-A, F1-B); (4) list `kind` was admitted but never compared (F1-C).
+
+Invariant correction. The listing layer now separates (1) identity and target, (2)
+completeness and metadata, and (3) confirmed exposure. Page metadata (`kind`, unreachable
+locations, warnings, list metadata, undocumented fields) is validated apart from the
+collection and recorded as an issue; it never removes entries. Each entry is normalized on
+its own; its nonessential metadata (names, selfLinks, release and version names, release
+type, version status, entry `kind`) is recorded as an issue and returned as `null`, never
+fatal. An entry is dropped only when its target cannot be established (no release, version
+or config; no valid domain mapping route; a malformed entry object). Serverless NEG targets
+(`cloudRun`, `cloudFunction`, `appEngine`, `serverlessDeployment`) must be plain objects
+with documented fields, each a nonempty string, naming a resource or a URL mask; a
+malformed, empty or undocumented target is an issue and never an invented exposure. A NEG
+carrying a target is evaluated even when its endpoint type is missing or inconsistent (an
+issue), and a dangerous NEG without a selfLink stays blocking (it cannot be linked to a
+backend service). Backend-service backends are read one by one. Compute list `kind` must be
+`compute#networkEndpointGroupAggregatedList` or `compute#backendServiceAggregatedList`, and
+the domain mapping list `DomainMappingList`; an absent kind is an issue. Findings are
+computed from every established target whatever the coverage, and `observed-absent` still
+requires no issue at all. The omitted-collection fail-closed rule is unchanged.
+
+Tests: `surface-observation.test.cjs` 25 (+10): the six exact cases; a matrix over Hosting,
+domain mappings, NEGs and backend services combining a valid dangerous entry with each of a
+malformed sibling, malformed collection metadata, a wrong list kind, missing entry metadata,
+a failed subsequent page, a malformed nested target, a valid but incomplete response and a
+malformed pagination token, asserting both partial coverage and the retained finding in the
+surface and in `blocking`; negative controls (malformed targets never become exposures,
+undocumented target fields are incomplete, ordinary valid resources and explicit empty
+listings stay `observed-absent`); a NEG missing selfLink or endpoint type; a listing with
+the right kind but no collection; and a full capture plus offline replay keeping four
+findings under metadata failures. Two existing tests had fixture data that the stricter rules
+now correctly reject (a domain mapping page without `kind`; a `serverlessDeployment` target
+naming no resource); their data was corrected, not their assertions.
+
+Targeted behavioral mutation of the invariants (in place, hash-checked restore): 23 mutants,
+21 behavioral kills, 0 message-only, 2 equivalent as layers, 0 surviving defects. The two
+layered mutants are separating metadata from the collection and making metadata lists
+non-fatal: each alone is caught by the other layer (no output changes), and the two removed
+together reintroduce F2-A and F2-B and are killed behaviorally. Earlier mutants whose anchors
+moved were re-anchored to the new code: 8 more, all behavioral (one, the required aggregated
+items map, first survived because the kind check masked it, and gained a permanent test).
+The rest of the original set and the first correction set are unchanged in result.
+
+**Third certification correction (whitespace-only targets).** Reproduced first:
+`cloudRun: {service: " "}` gave `observed-absent`, and `cloudRun: {urlMask: " "}` gave a
+fabricated Teacher Units exposure, both reproduced identically by replay. Root cause: target
+strings were checked for type and nonzero length only. Correction in `surface-observation.cjs`:
+one `nonblank` rule (a string whose trimmed length is positive) now governs every NEG target
+field (`cloudRun`, `cloudFunction`, `appEngine`, `serverlessDeployment`) and the `text`
+helper used for target identity (Hosting `run.serviceId` and `function`, domain mapping
+`routeName`, rewrite patterns, site names). A blank or wrong-typed value is an issue, never
+converted, never a target; valid strings are kept exactly. Nonessential metadata rules are
+unchanged. Tests: `surface-observation.test.cjs` 27 (+2), covering space, tab, newline,
+mixed whitespace, empty, numeric, null, array and object values for service, URL mask,
+function and deployment resource, blank Hosting run targets and domain mapping routes,
+valid dangerous and harmless controls, a dangerous NEG beside a blank-target sibling, and
+both original reproductions through full capture and offline replay. Targeted mutation: 3
+mutants (trim removed everywhere, from NEG targets only, from `text` only), all killed
+behaviorally.
+
+**Unresolved [U].** Every provider shape for Hosting v1beta1 channels, Cloud Run v1 domain
+mappings and Compute aggregated lists is as documented, not observed; a live difference is
+recorded `incomplete`. Read permissions in `observe plan` are expected, not verified.
+Inherited IAM, organization policy and network reachability are not observed. G1 to G5 stay
+open. A live capture needs separate authorization and an operator credential.
