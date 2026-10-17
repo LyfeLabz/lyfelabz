@@ -78,10 +78,98 @@ export function isEmulatorHost(win: Window | undefined = typeof window === "unde
   return host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
 }
 
+// Isolated local emulator override.
+//
+// An emulator host may opt into a different emulator project and ports by
+// defining `window.__lyfelabzEmulatorOverride` before any app bundle loads
+// (for example from a locally served replacement of
+// assets/lyfelabz-firebase-config.js kept outside the repository). The
+// override is honored only on an emulator host; every other host ignores it,
+// so production and staging behavior cannot change. When present it must be
+// complete and valid: a `demo-*` project id plus loopback host and port for
+// Auth, Firestore, and Functions. Anything else throws, so the page never
+// initializes Firebase at all rather than mixing emulator and production
+// services. No override keeps the historical emulator defaults.
+
+export type EmulatorEndpoint = { readonly host: string; readonly port: number };
+
+export type EmulatorEndpoints = {
+  readonly projectId: string;
+  readonly auth: EmulatorEndpoint;
+  readonly firestore: EmulatorEndpoint;
+  readonly functions: EmulatorEndpoint;
+};
+
+// Matches platform/firebase/firebase.json.
+export const DEFAULT_EMULATOR_ENDPOINTS: EmulatorEndpoints = {
+  projectId: PROJECT_ID,
+  auth: { host: "127.0.0.1", port: 9099 },
+  firestore: { host: "127.0.0.1", port: 8080 },
+  functions: { host: "127.0.0.1", port: 5001 },
+};
+
+const DEMO_PROJECT_ID = /^demo-[a-z0-9][a-z0-9-]{0,24}[a-z0-9]$/;
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost"]);
+const SERVICES = ["auth", "firestore", "functions"] as const;
+
+type WindowWithOverride = Window & { __lyfelabzEmulatorOverride?: unknown };
+
+function invalidOverride(reason: string): never {
+  throw new Error(`Invalid __lyfelabzEmulatorOverride: ${reason}`);
+}
+
+export function parseEmulatorOverride(raw: unknown): EmulatorEndpoints {
+  if (raw === null || typeof raw !== "object") invalidOverride("must be an object");
+  const value = raw as Record<string, unknown>;
+  const projectId = value.projectId;
+  if (typeof projectId !== "string" || !DEMO_PROJECT_ID.test(projectId)) {
+    invalidOverride("projectId must be a demo-* project id");
+  }
+  const endpoints: Record<string, EmulatorEndpoint> = {};
+  const ports = new Set<number>();
+  for (const service of SERVICES) {
+    const entry = value[service];
+    if (entry === null || typeof entry !== "object") invalidOverride(`${service} is required`);
+    const { host, port } = entry as Record<string, unknown>;
+    if (typeof host !== "string" || !LOOPBACK_HOSTS.has(host)) {
+      invalidOverride(`${service}.host must be 127.0.0.1 or localhost`);
+    }
+    if (typeof port !== "number" || !Number.isInteger(port) || port < 1024 || port > 65535) {
+      invalidOverride(`${service}.port must be an integer from 1024 to 65535`);
+    }
+    if (ports.has(port)) invalidOverride(`${service}.port duplicates another service`);
+    ports.add(port);
+    endpoints[service] = { host, port };
+  }
+  return {
+    projectId,
+    auth: endpoints.auth,
+    firestore: endpoints.firestore,
+    functions: endpoints.functions,
+  };
+}
+
+// The single source for every emulator connection. Returns null on a
+// non-emulator host (production config applies, override ignored).
+export function getEmulatorEndpoints(
+  win: Window | undefined = typeof window === "undefined" ? undefined : window,
+): EmulatorEndpoints | null {
+  if (!win || !isEmulatorHost(win)) return null;
+  const raw = (win as WindowWithOverride).__lyfelabzEmulatorOverride;
+  if (raw === undefined) return DEFAULT_EMULATOR_ENDPOINTS;
+  return parseEmulatorOverride(raw);
+}
+
 export function getFirebaseClientConfig(
   win: Window | undefined = typeof window === "undefined" ? undefined : window,
 ): FirebaseClientConfig {
-  if (!win || isEmulatorHost(win)) return EMULATOR_CONFIG;
+  if (!win) return EMULATOR_CONFIG;
+  const endpoints = getEmulatorEndpoints(win);
+  if (endpoints !== null) {
+    return endpoints === DEFAULT_EMULATOR_ENDPOINTS
+      ? EMULATOR_CONFIG
+      : { ...EMULATOR_CONFIG, projectId: endpoints.projectId };
+  }
   const injected = (win as WindowWithConfig).__lyfelabzFirebaseConfig;
   if (injected && typeof injected === "object") {
     return {

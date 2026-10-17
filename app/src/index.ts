@@ -45,6 +45,7 @@ import {
   getFirebaseFirestore,
   signOut,
 } from "./firebase";
+import { getEmulatorEndpoints } from "./firebase-config";
 import { dispatch } from "./router/router";
 import { createRouteTable } from "./router/routes";
 import { renderLoadingSurface } from "./router/surfaces";
@@ -527,13 +528,14 @@ async function run(): Promise<void> {
                 const { getFunctions, connectFunctionsEmulator } =
                   await import("firebase/functions");
                 const functions = getFunctions();
-                if (
-                  typeof window !== "undefined" &&
-                  (window.location.hostname === "localhost" ||
-                    window.location.hostname === "127.0.0.1")
-                ) {
+                const emulators = getEmulatorEndpoints();
+                if (emulators !== null) {
                   try {
-                    connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+                    connectFunctionsEmulator(
+                      functions,
+                      emulators.functions.host,
+                      emulators.functions.port,
+                    );
                   } catch {
                     // already connected
                   }
@@ -662,13 +664,14 @@ async function run(): Promise<void> {
       "firebase/functions"
     );
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }
@@ -711,13 +714,14 @@ async function run(): Promise<void> {
         "firebase/functions"
       );
       const functions = getFunctions(auth.app, "us-central1");
-      if (
-        typeof window !== "undefined" &&
-        (window.location.hostname === "localhost" ||
-          window.location.hostname === "127.0.0.1")
-      ) {
+      const emulators = getEmulatorEndpoints();
+      if (emulators !== null) {
         try {
-          connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+          connectFunctionsEmulator(
+            functions,
+            emulators.functions.host,
+            emulators.functions.port,
+          );
         } catch {
           // already connected
         }
@@ -1016,13 +1020,14 @@ async function run(): Promise<void> {
     const { getFunctions, httpsCallable, connectFunctionsEmulator } =
       await import("firebase/functions");
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }
@@ -1042,13 +1047,14 @@ async function run(): Promise<void> {
     const { getFunctions, httpsCallable, connectFunctionsEmulator } =
       await import("firebase/functions");
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }
@@ -1076,13 +1082,14 @@ async function run(): Promise<void> {
     const { getFunctions, httpsCallable, connectFunctionsEmulator } =
       await import("firebase/functions");
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }
@@ -1120,13 +1127,14 @@ async function run(): Promise<void> {
     const { getFunctions, httpsCallable, connectFunctionsEmulator } =
       await import("firebase/functions");
     const functions = getFunctions();
-    if (
-      typeof window !== "undefined" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1")
-    ) {
+    const emulators = getEmulatorEndpoints();
+    if (emulators !== null) {
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(
+          functions,
+          emulators.functions.host,
+          emulators.functions.port,
+        );
       } catch {
         // already connected
       }

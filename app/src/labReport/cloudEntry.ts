@@ -2,7 +2,7 @@ import { getApps, initializeApp } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
-import { getFirebaseClientConfig, isEmulatorHost } from "../firebase-config";
+import { getEmulatorEndpoints, getFirebaseClientConfig } from "../firebase-config";
 import {
   LAB_REPORT_CLOUD_READY_EVENT,
   createLabReportCloudTransport,
@@ -24,14 +24,17 @@ async function install(win: WindowWithCloud): Promise<void> {
   const app = getApps()[0] ?? initializeApp(getFirebaseClientConfig(win));
   const auth = getAuth(app);
   const functions = getFunctions(app);
-  if (isEmulatorHost(win)) {
+  const emulators = getEmulatorEndpoints(win);
+  if (emulators !== null) {
     try {
-      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+      connectAuthEmulator(auth, `http://${emulators.auth.host}:${emulators.auth.port}`, {
+        disableWarnings: true,
+      });
     } catch {
       // Already connected.
     }
     try {
-      connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+      connectFunctionsEmulator(functions, emulators.functions.host, emulators.functions.port);
     } catch {
       // Already connected.
     }
