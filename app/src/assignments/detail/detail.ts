@@ -62,6 +62,9 @@ import {
   type QuestionSummary,
 } from "./question-summary";
 import { createDetailFetchCache, type DetailFetchCache } from "./fetch-cache";
+import { mountGradeImprovementPills } from "../gradeImprovements/roster-pill";
+import { readGradeImprovementsSeam } from "../gradeImprovements/session";
+import type { GradeImprovementsSeam } from "../gradeImprovements/types";
 import type {
   AssignmentDetailClassSwitcher,
   ClassSwitchOption,
@@ -192,6 +195,9 @@ export type AssignmentDetailDeps = {
   // an empty map), so the pre-Sprint-30A.2 roster is unchanged when the
   // seam is not supplied.
   readonly gradePassback?: AssignmentGradePassbackSeam;
+  // Grade Improvements V1: optional seam for the roster's "Update Grade"
+  // pill. Absent: the session-installed seam is used (null renders no pill).
+  readonly gradeImprovements?: GradeImprovementsSeam | null;
   // Student Progress & Assignment Membership Phase A, Slice 3: optional
   // student-navigation seam. When supplied, every roster row's student
   // name (Completed, In Progress, and Not Started alike) becomes a
@@ -1207,6 +1213,9 @@ function renderReady(
       onSelectStudent,
       shared.currentForFamily,
       deps.rosterSort,
+      deps.gradeImprovements === undefined
+        ? readGradeImprovementsSeam()
+        : deps.gradeImprovements,
     );
   }
 
@@ -1275,6 +1284,7 @@ async function renderRosterPanel(
     metadata: AssignmentDetailMetadata,
   ) => Promise<CurrentForFamily> | null,
   rosterSort?: RosterSortPreference,
+  gradeImprovements: GradeImprovementsSeam | null = null,
 ): Promise<void> {
   const doc = host.ownerDocument;
   host.textContent = "";
@@ -1482,6 +1492,12 @@ async function renderRosterPanel(
     onSelectStudent,
     sortOrder,
   );
+
+  // Grade Improvements V1: best-effort "Update Grade" pills on Completed
+  // rows, added after the roster is in place (never blocks or alters it).
+  if (gradeImprovements !== null) {
+    void mountGradeImprovementPills(groupsHost, metadata.assignmentId, gradeImprovements);
+  }
 
   const reconciliation = reconcileCounts({
     summary,

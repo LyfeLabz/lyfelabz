@@ -98,6 +98,9 @@ import {
   type RosterSortPreference,
 } from "../../teacherPreferences/rosterSort";
 import { createRosterSortPreference } from "../../teacherPreferences/rosterSortStorage";
+import { decorateStudentDetailGradeHistory } from "../../assignments/gradeImprovements/student-history";
+import { readGradeImprovementsSeam } from "../../assignments/gradeImprovements/session";
+import type { GradeImprovementsSeam } from "../../assignments/gradeImprovements/types";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
 // the authenticated teacher. See SPRINT_6B_SPECIFICATION.md §6.
@@ -4539,6 +4542,8 @@ function renderStudentDetailSurface(
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
   loadAttemptDetail: (() => AttemptGetForTeacherCallable | null) | null = null,
   rosterSort: RosterSortPreference | null = null,
+  // Grade Improvements V1: the session-installed seam (null renders nothing).
+  gradeImprovements: GradeImprovementsSeam | null = readGradeImprovementsSeam(),
 ): void {
   const detail = doc.createElement("div");
   detail.className = "shell-student-detail";
@@ -4729,6 +4734,26 @@ function renderStudentDetailSurface(
           return;
         }
         body.appendChild(list);
+        // Grade Improvements V1: per-occurrence grade-update status and
+        // history beneath each card's score tiles. Best-effort; a card whose
+        // occurrences have no history is left exactly as rendered.
+        if (gradeImprovements !== null) {
+          const occurrencesByCard = new Map<string, ReadonlyArray<string>>();
+          for (const group of expected.groups ?? []) {
+            const cardId = group.operationalAssignmentId ?? group.assignmentIds[0];
+            if (cardId !== undefined) occurrencesByCard.set(cardId, group.assignmentIds);
+          }
+          void decorateStudentDetailGradeHistory(list, {
+            classId,
+            studentId,
+            seam: gradeImprovements,
+            occurrencesForCard: (cardId) => occurrencesByCard.get(cardId) ?? [cardId],
+            occurrenceLabel: (assignmentId) => {
+              const ms = registryPublishedAt(registry, assignmentId);
+              return ms === null ? null : `Assigned ${formatAttemptDate(ms)}`;
+            },
+          });
+        }
       });
     })
     .catch(() => {

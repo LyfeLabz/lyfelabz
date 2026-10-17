@@ -4052,6 +4052,45 @@
     font-size: 0.88rem;
     font-variant-numeric: tabular-nums;
   }
+  /* Grade Improvements V1: "Update Grade" pill. The calm amber attention
+     tint already used for draft / needs-setup status pills, as a compact
+     button: noticeable, never an alarm. */
+  /* Only when some row has a pill, every row gains the same fixed fourth
+     track so the score and attempt columns stay aligned across rows. A
+     roster with no pending improvement keeps its three columns. */
+  .shell-assignment-detail-roster-has-grade-updates .shell-assignment-detail-roster-row {
+    grid-template-columns: minmax(0, 1fr) 4.5rem 7.5rem 6.75rem;
+  }
+  .shell-assignment-detail-roster-grade-update {
+    grid-column: 4;
+    justify-self: start;
+    padding: 0.12rem 0.6rem;
+    border-radius: var(--tw-radius-pill);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+    background: rgba(176, 122, 26, 0.14);
+    color: #7a5210;
+    border: 1px solid rgba(122, 82, 16, 0.30);
+    cursor: pointer;
+  }
+  .shell-assignment-detail-roster-grade-update:hover {
+    background: rgba(176, 122, 26, 0.22);
+  }
+  .shell-assignment-detail-roster-grade-update:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring);
+  }
+  @media (pointer: coarse) {
+    .shell-assignment-detail-roster-grade-update { min-height: 44px; }
+  }
+  .shell-grade-update-error {
+    margin: 0.25rem 0 0.5rem 0;
+    color: #a33a3a;
+    font-size: 0.9rem;
+  }
   /* Sprint 30 roster sort: the compact, shared "Sort" control above both
      student rosters (Students list and an assignment's Roster). Same quiet
      select treatment as the other small workspace selects. */
@@ -5069,6 +5108,74 @@
     color: var(--tw-ink-muted);
     font-size: 0.9rem;
   }
+  /* Grade Improvements V1: discreet grade-update status beneath a card's
+     score tiles. The history control reuses the Show Your Thinking
+     disclosure grammar; Undo is a quiet teal text action. */
+  .shell-student-detail-grade-update { margin: 0.5rem 0 0 0; }
+  .shell-student-detail-grade-update-status {
+    margin: 0;
+    color: var(--tw-ink-soft);
+    font-size: 0.88rem;
+  }
+  .shell-student-detail-grade-update-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 1rem;
+  }
+  .shell-student-detail-grade-update-toggle,
+  .shell-student-detail-grade-update-undo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0.2rem 0 0 0;
+    padding: 0.15rem 0;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--tw-ink-soft, #3a4653);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    min-height: 28px;
+  }
+  .shell-student-detail-grade-update-toggle::after {
+    content: "\203A";
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--tw-ink-muted, #566472);
+    transition: transform 0.15s ease;
+  }
+  .shell-student-detail-grade-update-toggle[aria-expanded="true"]::after {
+    transform: rotate(90deg);
+  }
+  .shell-student-detail-grade-update-undo { color: var(--tw-nav-edge); }
+  .shell-student-detail-grade-update-toggle:hover,
+  .shell-student-detail-grade-update-toggle:focus-visible {
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-student-detail-grade-update-undo:hover,
+  .shell-student-detail-grade-update-undo:focus-visible {
+    text-decoration: underline;
+  }
+  .shell-student-detail-grade-update-toggle:focus-visible,
+  .shell-student-detail-grade-update-undo:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  @media (pointer: coarse) {
+    .shell-student-detail-grade-update-toggle,
+    .shell-student-detail-grade-update-undo { min-height: 44px; }
+  }
+  .shell-student-detail-grade-update-history[hidden] { display: none; }
+  .shell-student-detail-grade-update-history {
+    margin: 0.3rem 0 0 0;
+    padding: 0 0 0 1.1rem;
+    color: var(--tw-ink-soft);
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
   .shell-snapshot-region { margin: 0.5rem 0 0 0; }
   .shell-snapshot-empty {
     color: var(--tw-ink-muted);
@@ -5495,6 +5602,10 @@
       text-align: left;
     }
     .shell-assignment-detail-roster-attempts { grid-column: 2; }
+    .shell-assignment-detail-roster-has-grade-updates .shell-assignment-detail-roster-row {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+    .shell-assignment-detail-roster-grade-update { grid-column: 1 / -1; justify-self: start; }
     .shell-assignment-detail-roster-grade-retry { grid-column: 1 / -1; }
     .shell-assignment-detail-roster-group,
     .shell-assignment-detail-roster-group-tinted {

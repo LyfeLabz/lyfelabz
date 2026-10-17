@@ -19,6 +19,8 @@ import {
 } from "./classes/updateClassColor";
 import { createReadGradePassbackStatuses } from "./lms/gradePassbackStatuses";
 import { createFirebaseGradePassbackRetry } from "./lms/gradePassbackRetry";
+import { installGradeImprovementsSeam } from "./assignments/gradeImprovements/session";
+import { createGradeImprovementsCallables } from "./assignments/gradeImprovements/wire";
 import {
   createFirebaseCreateClass,
   type CreateClass,
@@ -775,6 +777,7 @@ async function run(): Promise<void> {
       studentAssignmentsForClass =
         createAssessmentStudentAssignmentsForClassCallable(functions);
       attemptGetForTeacher = createAttemptGetForTeacherCallable(functions);
+      installGradeImprovementsSeam(createGradeImprovementsCallables(functions));
       createClass = createFirebaseCreateClass(functions);
       lmsCreateClass = createFirebaseLmsCreateClass(functions);
       activateClass = createFirebaseActivateClass(functions);
@@ -853,6 +856,7 @@ async function run(): Promise<void> {
       attemptsListForClass = null;
       studentAssignmentsForClass = null;
       attemptGetForTeacher = null;
+      installGradeImprovementsSeam(null);
       createClass = null;
       lmsCreateClass = null;
       activateClass = null;
@@ -876,6 +880,7 @@ async function run(): Promise<void> {
       attemptsListForClass = null;
       studentAssignmentsForClass = null;
       attemptGetForTeacher = null;
+      installGradeImprovementsSeam(null);
       createClass = null;
       lmsCreateClass = null;
       activateClass = null;
