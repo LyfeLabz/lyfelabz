@@ -516,3 +516,135 @@ test('S6c F3: every locally detectable preflight failure refuses with zero crede
     assert.ok(reads > 100);
   } finally { PCm.liveAccessToken = saved.token; PCm.createLiveExchange = saved.live; observeCli.clock = undefined; }
 });
+
+// --- A3-6 S6d revocation commands (offline, non-authorizing) --------------------
+const RVX = require('./fixtures/synthetic-revocation.cjs');
+const RVP = require('./revocation-procedure.cjs');
+
+async function revocationSetup() {
+  const s = await RVX.buildRevocation();
+  // Supersede a certification of a variant release (backendReleaseId binds the whole manifest) by another certification.
+  const old = RVX.certifiedVariant(s), next = RVX.certifiedVariant(s, { suffix: 'new' });
+  const d = RVX.disposition({ action: 'supersede', target: old.target.ref, replacement: next.target.ref, key: s.keys.dispose });
+  const variant = old.release;
+  // Sol's P2 reproduction: a deployment-approval target with a substituted, unsigned manifest.
+  const revoke = RVX.disposition({ action: 'revoke', target: s.ev.deployment.ref, key: s.keys.dispose });
+  const c = await buildCapture();
+  const capture = await PC6.captureA3Provider({ ...c, evidenceClass: 'synthetic' });
+  const files = { 'disposition.json': d.document, 'disposition-statement.json': d.statementBytes, 'target.json': old.target.document,
+    'replacement.json': next.target.document, 'dispositions.json': [], 'releases.json': [variant.document],
+    'revoke.json': revoke.document, 'revoke-statement.json': revoke.statementBytes, 'deployment.json': s.ev.deployment.document,
+    'genuine-releases.json': [s.release.document], 'substituted-releases.json': [RVX.releaseVariant(s.release).document],
+    'registry.json': s.authority.registryEntries, 'revocations.json': [],
+    'plan.json': c.deploymentPlan.bytes, 'plan-object.json': c.deploymentPlan.object, 'expected.json': c.expected.bytes, 'expected-object.json': c.expected.object };
+  for (const [key, file] of Object.entries(PC6.FILES)) files[`cap/${file}`] = capture.bytes[key];
+  return { s, c, cwd: scratch(files) };
+}
+const PC6 = require('./provider-capture.cjs');
+const REV = ['--disposition', 'disposition.json', '--disposition-statement', 'disposition-statement.json', '--target', 'target.json', '--replacement', 'replacement.json',
+  '--dispositions', 'dispositions.json', '--releases', 'releases.json', '--registry', 'registry.json', '--revocations', 'revocations.json'];
+
+test('S6d revocation prepare, verify and rollout-check: offline, exclusive output, never authorizing', async () => {
+  const { c, cwd } = await revocationSetup();
+  try {
+    const now = RVX.PREPARED;
+    const { value: prepared, calls } = await withoutNetwork(() => cli(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV, '--out', 'rplan.json'], { cwd, now }));
+    assert.deepEqual(calls, []);
+    assert.equal(prepared.code, 0, prepared.stderr);
+    const r = prepared.json.result;
+    for (const key of ['revocationEffective', 'releaseAuthorized', 'activationReady']) assert.equal(r[key], false);
+    assert.equal(r.planClass, RVP.PLAN_CLASSES.synthetic);
+    assert.match(r.disposition.effect, /does not revoke its target/);
+    assert.equal(r.procedure.status, RVP.PROCEDURE_STATUS);
+    const before = fs.readFileSync(path.join(cwd, 'rplan.json'));
+    assert.equal(K.sha256Bytes(before), r.sha256);
+    // Output collision: never overwritten.
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV, '--out', 'rplan.json'], /could not be created/, { cwd, now });
+    assert.equal(fs.readFileSync(path.join(cwd, 'rplan.json')).equals(before), true);
+
+    const verified = await cli(['revocation', 'verify', '--project', 'lyfelabz-staging', ...REV, '--revocation-plan', 'rplan.json'], { cwd, now: '2026-10-16T12:00:00.000Z' });
+    assert.equal(verified.code, 0, verified.stderr);
+    assert.equal(verified.json.result.verified, true);
+    assert.equal(verified.json.result.currentFreshness.status, 'within-window');
+    // After the D6 window: still verified historically; current freshness reported separately, never authorization.
+    const late = await cli(['revocation', 'verify', '--project', 'lyfelabz-staging', ...REV, '--revocation-plan', 'rplan.json'], { cwd, now: '2026-10-17T12:00:00.000Z' });
+    assert.equal(late.code, 0, late.stderr);
+    assert.match(late.json.result.verification, /^historical/);
+    assert.equal(late.json.result.currentFreshness.status, 'outside-window');
+    assert.equal(late.json.result.releaseAuthorized, false);
+
+    // Without the original plan inputs, rollout-check refuses before reading the capture.
+    await refused(['revocation', 'rollout-check', '--project', 'lyfelabz-staging', '--revocation-plan', 'rplan.json', '--capture', 'cap', ...INPUTS, '--out', 'rollout.json'],
+      /--disposition is required/, { cwd, now });
+    assert.equal(fs.existsSync(path.join(cwd, 'rollout.json')), false);
+    const rollout = ['revocation', 'rollout-check', '--project', 'lyfelabz-staging', ...REV, '--revocation-plan', 'rplan.json', '--capture', 'cap',
+      ...INPUTS, '--out', 'rollout.json'];
+    const out = []; const err = [];
+    const code = await C.main(rollout, { env: {}, cwd, hostingRoot: c.hostingRoot, now: () => now, stdout: { write: x => out.push(x) }, stderr: { write: x => err.push(x) } });
+    assert.equal(code, 0, err.join(''));
+    const result = JSON.parse(out.join('')).result;
+    assert.equal(result.rolloutComparison, 'passed');
+    for (const key of ['revocationComplete', 'revocationEffective', 'releaseAuthorized', 'activationReady']) assert.equal(result[key], false);
+    assert.equal(result.oldRevisionsDeleted, 'not-observed');
+    assert.match(result.deployedRevocationList, /^not-observed/);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(cwd, 'rollout.json'), 'utf8')).revocationComplete, false);
+    const again = await C.main(rollout, { env: {}, cwd, hostingRoot: c.hostingRoot, now: () => now, stdout: { write() {} }, stderr: { write: x => err.push(x) } });
+    assert.equal(again, 1);
+    assert.match(err.join(''), /could not be created/);
+  } finally { c.cleanup(); }
+});
+
+test('S6d revocation commands: explicit cloud project, no --execute, paired authority, unknown flags refuse', async () => {
+  const { c, cwd } = await revocationSetup();
+  try {
+    await refused(['revocation', 'prepare', ...REV, '--out', 'x.json'], /explicit --project/, { cwd });
+    await refused(['revocation', 'prepare', '--project', 'demo-a3', ...REV, '--out', 'x.json'], /applies only to lyfelabz-staging or lyfelabz-prod/, { cwd });
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV, '--out', 'x.json'], /ambiguous project/, { cwd, env: { GOOGLE_CLOUD_PROJECT: 'lyfelabz-prod' } });
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV, '--out', 'x.json', '--execute'], /--execute is not accepted/, { cwd });
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV, '--out', 'x.json', '--confirm', 'a'.repeat(64)], /--confirm is not accepted/, { cwd });
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV, '--out', 'x.json', '--bogus', '1'], /--bogus is not accepted/, { cwd });
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV, 'stray'], /unexpected argument/, { cwd });
+    await refused(['revocation', 'revoke', '--project', 'lyfelabz-staging'], /unknown command/, { cwd });
+    const noRevocations = REV.slice(0, -2);
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...noRevocations, '--out', 'x.json'], /must be given together/, { cwd });
+    const noAuthority = REV.slice(0, -4);
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...noAuthority, '--out', 'x.json'], /unverifiable: no artifact-pinned staging/, { cwd, now: RVX.PREPARED });
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-prod', ...REV, '--out', 'x.json'], /identity mismatch/, { cwd, now: RVX.PREPARED });
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV.filter((v, i, a) => v !== '--dispositions' && a[i - 1] !== '--dispositions'), '--out', 'x.json'], /--dispositions is required/, { cwd });
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...REV.map(v => (v === 'releases.json' ? 'missing.json' : v)), '--out', 'x.json'], /--releases file is unreadable/, { cwd });
+    await refused(['revocation', 'rollout-check', '--project', 'lyfelabz-staging', ...REV, '--revocation-plan', 'none.json', '--capture', 'cap', ...INPUTS, '--out', 'r.json'], /--revocation-plan file is unreadable/, { cwd });
+    assert.equal(fs.existsSync(path.join(cwd, 'x.json')), false);
+    assert.equal(fs.existsSync(path.join(cwd, 'r.json')), false);
+  } finally { c.cleanup(); }
+});
+
+test('S6d P2 through the CLI: a substituted deployment-target manifest refuses before any output or replay', async () => {
+  const { c, cwd } = await revocationSetup();
+  try {
+    const base = ['--disposition', 'revoke.json', '--disposition-statement', 'revoke-statement.json', '--target', 'deployment.json', '--dispositions', 'dispositions.json',
+      '--registry', 'registry.json', '--revocations', 'revocations.json'];
+    const now = RVX.PREPARED;
+    await refused(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...base, '--releases', 'substituted-releases.json', '--out', 'p2.json'],
+      /deployment binding invalid at \$: candidate runtimePayloadFingerprint mismatch/, { cwd, now });
+    assert.equal(fs.existsSync(path.join(cwd, 'p2.json')), false);
+    const genuine = await cli(['revocation', 'prepare', '--project', 'lyfelabz-staging', ...base, '--releases', 'genuine-releases.json', '--out', 'p2.json'], { cwd, now });
+    assert.equal(genuine.code, 0, genuine.stderr);
+    const PCm = require('./provider-capture.cjs'), replay = PCm.verifyCapture;
+    let replays = 0;
+    PCm.verifyCapture = async (...a) => { replays++; return replay(...a); };
+    try {
+      const args = rel => ['revocation', 'rollout-check', '--project', 'lyfelabz-staging', ...base, '--releases', rel, '--revocation-plan', 'p2.json', '--capture', 'cap', ...INPUTS, '--out', 'p2-rollout.json'];
+      const err = [];
+      const code = await C.main(args('substituted-releases.json'), { env: {}, cwd, hostingRoot: c.hostingRoot, now: () => now, stdout: { write() {} }, stderr: { write: x => err.push(x) } });
+      assert.equal(code, 1);
+      assert.match(err.join(''), /deployment binding invalid/);
+      assert.equal(replays, 0);
+      assert.equal(fs.existsSync(path.join(cwd, 'p2-rollout.json')), false);
+      const out = [];
+      assert.equal(await C.main(args('genuine-releases.json'), { env: {}, cwd, hostingRoot: c.hostingRoot, now: () => now, stdout: { write: x => out.push(x) }, stderr: { write: x => err.push(x) } }), 0, err.join(''));
+      const result = JSON.parse(out.join('')).result;
+      assert.equal(result.rolloutComparison, 'failed');
+      for (const key of ['revocationComplete', 'revocationEffective', 'releaseAuthorized', 'activationReady']) assert.equal(result[key], false);
+    } finally { PCm.verifyCapture = replay; }
+  } finally { c.cleanup(); }
+});

@@ -1712,9 +1712,12 @@ unchanged.
 
 ### S6c - Read-only provider observation (capture and replay, non-authorizing)
 
-Status: implemented in the repository on top of `b7a629d` (S6b integrated); uncommitted,
-not deployed, never run against a real project, and no live capture has been performed.
-**Awaiting independent certification.** Verified only against injected synthetic exchanges
+Status: **certified and integrated on main (`5e8f147`)**, on top of `b7a629d` (S6b
+integrated); not deployed, never run against a real project, and no live capture has been
+performed. Independently certified after the three certification corrections below, then
+integrated by the human owner (commit `5e8f147`, "Add certified A3-6 S6c provider
+observation tooling"). Status corrected in S6d at the owner's direction (S6d-D4); this line
+previously read "uncommitted ... Awaiting independent certification". Verified only against injected synthetic exchanges
 (`SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`). Teacher Units remains closed:
 `teacherUnitsAvailable()` returns `false`, production uses
 `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the production registry and revocation list
@@ -1963,3 +1966,238 @@ mappings and Compute aggregated lists is as documented, not observed; a live dif
 recorded `incomplete`. Read permissions in `observe plan` are expected, not verified.
 Inherited IAM, organization policy and network reachability are not observed. G1 to G5 stay
 open. A live capture needs separate authorization and an operator credential.
+
+### S6d - Offline revocation and supersede preparation (non-authorizing)
+
+Status: implemented in the repository on top of `5e8f147` (S6c integrated); uncommitted,
+not deployed, never run against a real project. **Awaiting independent certification.**
+Verified only against synthetic fixtures (`SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`).
+Teacher Units remains closed: `teacherUnitsAvailable()` returns `false`, production uses
+`UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the production registry and revocation list
+are empty. No S1 to S6c implementation, A3-1 to A3-5, RAP, publisher, revocation-list or
+registry source, Rules, index, Hosting, Functions source or entry point, build-profile, IAM,
+Storage, KMS or infrastructure change; the only S6a to S6c change is additive CLI commands
+(S6b-D3 precedent). Nothing was pinned, signed, registered, shut down, redeployed or deleted.
+
+**Owner decisions (S6d authorization).** Recorded at the human owner's direction; no
+separate signed approval artifact exists.
+
+- **S6d-D1.** A supersede disposition alone has no runtime revocation effect. An R2 plan for
+  a supersede proposes pinning the target approval or certification, exactly as for a
+  revoke. Preparing a plan never pins or revokes anything.
+- **S6d-D2.** No staging authority is provisioned. Staging supports synthetic validation and
+  explicit unverifiable status only; a signature is never reported verified when the
+  required authority is unavailable.
+- **S6d-D3.** Registry key removal is deferred entirely.
+- **S6d-D4.** The stale S6c status lines (above and in `TEACHER_UNITS.md`) are corrected.
+- **S6d-D5.** A non-authorizing offline rollout comparison is included. It never reports
+  revocation complete, release authorized or activation ready.
+
+**Files.** `scripts/teacher-units-release/revocation-procedure.cjs`,
+`revocation-procedure.test.cjs`, `fixtures/synthetic-revocation.cjs`; additive changes to
+`cli.cjs` and `cli.test.cjs`; `.github/workflows/platform-ci.yml` (one offline step); this
+record; `TEACHER_UNITS.md`. CommonJS over the compiled A3 modules (canonical, validation,
+bindings, signature, authority registry, revocation list) and the S4, S6a and S6c exports,
+none modified. Not reachable from `index.ts`; not in the deployed Functions payload.
+
+**Plan (`prepareRevocationPlan`, pure).** Inputs: the explicit project; the signed
+disposition with its exact statement bytes; the target document; the replacement document
+(supersede only, refused for revoke); every known disposition as an explicit list (it may
+be empty); the revoked backend release documents (at least one); synthetic test authority
+(staging only); and the tooling clock as `preparedAt`. Checks, all refusing: identity of
+every document; canonical statement bytes at the statement object hash and equal to the
+document statement; target and replacement documents at the disposition's references and of
+a disposable kind; `validateDispositionBinding` (same kind, same identity, revoke has no
+replacement); D6 freshness at `preparedAt` (24 hours, future refused); the S1 signature
+against the pinned registry, or synthetic authority for staging; no other known disposition
+for the same target, no known revoke of the replacement, no known duplicate and no
+supersession cycle across the known set and the new disposition; neither target nor
+replacement already pinned in the base list (a no-op cannot change the artifact, R2
+requirement 1); the proposed next list (base entries plus the target, sorted) passes
+`createRevocationList` and has a different digest; each release is bound to the target and
+none is listed twice. Binding (P2 correction): a certification or activation approval target
+signs `backendReleaseId`, the content address of the whole manifest, so the release must be
+exactly that manifest; a deployment approval target signs only its candidate, so the release
+must pass the canonical `validateDeploymentBinding` (approval reference, identity,
+`sourceSha`, `sourceTree`, runtime payload, Functions artifact and placement fingerprints,
+enforcement version, deployment mode, client contract). Each plan release records which
+binding applies (`binding`, a fixed value).
+
+**Authority (S6d-D2).** Production uses only the pinned registry and the compiled
+`PRODUCTION_REVOCATION_LIST` and refuses caller-supplied authority. Because the pinned
+registry is empty (unconfigured), a production signature is recorded `unverifiable` and the
+plan class is `unverifiable-draft`; a nonempty pinned registry would verify, and a failed
+verification refuses. Staging has no pinned registry or list: without synthetic authority
+preparation refuses (`unverifiable`), because no base list exists to propose against; with
+it the signature is `synthetic-passed` and the class `synthetic-draft`, never `passed`. The
+production base records the SHA-256 of `a3-revocation-list.ts`, so a plan names the list
+source it was prepared against.
+
+**Plan `lyfelabz.teacherUnitsA3RevocationPlan` v1.** Canonical JSON with fixed literals the
+schema admits in no other form: `authorization` ("none: candidate revocation plan; ..."),
+`revocationEffective: false`, `releaseAuthorized: false`, `activationReady: false`, the
+fixed audit-only `effect` for the disposition action, `proposed.status` ("proposed only: not
+pinned, not shipped") with `proposed.pin` equal to the target, the fixed five-step R2
+procedure marked "descriptive only: S6d executed none of these steps", and a fixed
+unresolved list. It records the identity, class, `preparedAt`, the disposition, target and
+replacement, the authority source, the base (source, source SHA-256, entries SHA-256,
+count), the proposed entries and their SHA-256, the known disposition references, each
+revoked release's revisions and artifact fingerprints, and an ordered check list.
+
+**Verification (`verifyRevocationPlan`).** Checks canonical bytes and the fixed schema,
+refuses a supplied `preparedAt` and any other project, then re-derives the plan at its own
+`preparedAt` from the supplied evidence and the CURRENT base list and requires byte-exact
+equality. A changed base list (stale plan), disposition, target, replacement, authority,
+release, source fingerprint, class, check or literal refuses, resealed or not. A clock before
+`preparedAt`, or a missing or malformed clock, refuses.
+
+**Freshness (pre-certification correction).** D6 fix 1 bounds freshness only at
+registration and at enable (items 1 and 3), refuses future `issuedAt` (item 4) and sets no
+runtime or historical expiry. S6d therefore separates four things. (1) Validity of the
+signed disposition and its binding: signature, statement bytes and
+`validateDispositionBinding`, re-checked on every verification. (2) Preparation freshness:
+S6a `assertStatementFresh` at `preparedAt` (more than 24 hours refuses, exactly 24 hours
+passes, future refuses); preparing a plan is treated as the registration-stage check.
+(3) Historical verification: re-derivation at the plan's own `preparedAt`, which re-applies
+(2) there and never at the current clock, so an old disposition is never renewed; a plan
+verifies after its window, indefinitely. (4) Current eligibility: `currentFreshness`
+(`within-window` or `outside-window`, same 24-hour bound) at the verifying clock, reported
+separately; `outside-window` says a registration now would refuse and a new signed
+disposition is required, and neither value is authorization. This replaces the earlier
+universal 24-hour expiry of verification, which D6 does not support. No conflict with a
+canonical contract was found.
+
+**Rollout comparison (`checkRollout`).** Inputs: the plan bytes, the revoked release
+plan inputs (the same inputs as `revocation verify`, including the current base list and
+authority evidence), the verifying clock, the five S6c capture files and the deployment plan
+and expected access for replay. Correction: the plan is first verified by the same
+`verifyRevocationPlan` (full re-derivation, byte equality, base-list binding, disposition,
+target, replacement and authority evidence, fixed claims); there is no second verifier, and
+no capture is replayed or compared unless it succeeds. The revoked releases come from the
+re-derived plan. Previously rollout-check checked only the plan schema and re-derived the
+release list. The report records `planVerification` (the fixed historical statement) and
+`currentFreshness` separately. The capture is verified by
+the unchanged S6c `verifyCapture` replay (a tampered or resealed capture refuses). The
+comparison records findings for: not exactly the nine sorted endpoints; not exactly one
+route per endpoint; partial traffic; a tagged route; an alternate routed revision; a
+revoked revision serving or routed; a revoked runtime payload or Functions artifact
+fingerprint serving; a capture that started at or before `preparedAt`. Report
+`lyfelabz.teacherUnitsA3RevocationRolloutReport` v1 carries `rolloutComparison` (`passed`
+only with no finding) and fixed literals: `revocationComplete`, `revocationEffective`,
+`releaseAuthorized`, `activationReady` and `providerVerified` all `false`,
+`oldRevisionsDeleted: "not-observed"`, `deployedRevocationList: "not-observed: a different
+revision and artifact fingerprint do not establish that the deployed artifact contains the
+proposed pinned list"`, and `providerOrigin` `unverifiable`. The evidence class is the
+capture's (`synthetic` or `operator-captured-unattested`) and is never raised.
+
+**CLI (additive).** `revocation prepare` (`--out`), `revocation verify`
+(`--revocation-plan`) and `revocation rollout-check` (`--revocation-plan`, the same plan-input flags as
+`revocation verify`, `--capture`, the S6c plan and expected-access flags, `--out`): offline, read-only, cloud
+projects only, explicit `--project` with the existing ambient-identity refusals, unknown
+flags refuse, no `--execute`, `--confirm` or `--live`, `--registry` and `--revocations` only
+together, exclusive output files. Existing commands are unchanged.
+
+**What S6d proves offline, and what it does not.** Offline: identity, signature (where
+authority exists), freshness, binding, conflicts and cycles within the supplied set, the
+artifact change of the proposed list, staleness against the current list, plan integrity,
+replay consistency of a capture and the revision and fingerprint comparison. Not established:
+completeness of the known disposition set (D9); provider origin of a capture; that the
+deployed artifact contains the proposed list; deletion of old revisions; anything between
+shutdown and redeploy (the D1-B P1 window); inherited IAM. These need S6e or later live,
+separately authorized work.
+
+**Verification.** Offline: `revocation-procedure.test.cjs` 23 tests; `cli.test.cjs` 26 (24
+existing plus 2 S6d). The matrix covers revoke with and without a supplied or smuggled
+replacement; valid and invalid supersede (missing, mismatched and cross-kind replacement);
+wrong target kind, document and identity; deployment approval, certification and activation
+approval targets with bound and unbound releases; stale and future dispositions; wrong-key and
+zero signatures; staging without authority; production with the empty pinned registry
+(`unverifiable`, never passed) and refused supplied authority; already-pinned target and
+replacement; conflicting dispositions, a revoked replacement, duplicates and a supersession
+cycle; missing releases, known dispositions and statement bytes; stale base list, changed
+authority, disposition, target, replacement, releases and list source; resealed plans with
+edited literals, classes, checks or content; staleness and a clock before `preparedAt`;
+rollout pass, revoked revision and artifact still serving, revision-only and artifact-only
+matches, a capture older than the plan, tampered observation and bundle, wrong project,
+mismatched releases, missing capture files, resealed plan literals; pure comparison of
+eight and ten endpoints, partial traffic, tagged, extra and alternate routes and a routed
+revoked revision; trapped `fetch`, `http`, `https` and credential retrieval with zero calls;
+a static scan (no fetch, request, SDK, signing, key, token, file write, alias file, child
+process, fixture or clock); and through the CLI explicit project, ambient refusal, cloud
+only, no `--execute` or `--confirm`, unknown and stray arguments, paired authority, missing
+and unreadable inputs and exclusive output. Behavioral mutation (in place with hash-checked
+restore): 53 mutants. 39 behavioral kills. 7 message-only, each layered (target already
+pinned and the `notRevoked` requirement; target and replacement reference checks, refused
+underneath by `validateDispositionBinding`; empty release list, refused underneath as
+unbound; verify project, refused underneath by identity validation; plan canonical bytes and
+rollout plan identity, refused by re-derivation or the release binding). 7 equivalent
+survivors: known-disposition identity (the A3-1 validator binds identity), non-`notRevoked`
+status (only `revoked` or `notRevoked` is reachable for a list built for this identity and
+validated references), the unchanged-digest guard (the target is never already pinned, so an
+entry is always added), the next-list validation (built from a validated list plus one
+validated, unique reference), statement-bytes equality (implied by the hash check and the
+A3-1 statement digest rule, as in S6a), rollout capture identity (bound by S6c replay) and the
+rollout report literal check (the report is built from the same constants). Four initial
+survivors (plan effect, procedure, unresolved and proposed status in the rollout path, which
+then did not re-derive the plan) gained permanent behavioral tests.
+
+Correction tests: preparation 1 ms inside, exactly at and 1 ms outside 24 hours and 1 ms
+before issue; historical verification inside, at, 1 ms after and one year after the window
+(verified, `outside-window` reported, nothing authorizing); a plan prepared at the edge
+verified days later; resealed `preparedAt` values refuse; missing and malformed clocks
+refuse; rollout-check refusing missing plan inputs, a cross-project input set, a missing or
+early clock, an altered or partial disposition, altered or missing target, a smuggled
+replacement, changed, absent or stale authority and base list, missing and conflicting known
+dispositions, and resealed plan content, each with zero capture replays; rollout after the
+window still passing with freshness reported; and through the CLI the late verify and a
+rollout-check without plan inputs refusing before any output. Targeted mutation of the two
+corrected boundaries: 14 mutants, 11 behavioral kills, 1 message-only (the plan-inputs
+project check; verification refuses the identity underneath), 2 equivalent (the future
+refusal inside `currentFreshness`, unreachable because verification already refuses
+`preparedAt` after the clock and preparation refuses `issuedAt` after `preparedAt`; the report
+`planVerification` literal check, built from the same constant). Mutants that reintroduce a
+universal expiry, renew at the current clock, skip plan verification or drop the reported
+freshness are all killed behaviorally.
+
+**Certification correction (Sol FAIL: P2, comparison integrity).** Reproduced first on the
+unchanged bytes: with one signed revoke disposition, one deployment approval target, one
+authority and one S6c capture, the genuine release gave `rolloutComparison: failed`, while a
+substituted manifest with renamed revisions and replaced fingerprints gave `passed`;
+`validateDeploymentBinding` rejected the substitute (`candidate runtimePayloadFingerprint
+mismatch`). Root cause: for a deployment approval target the release was bound only by
+`manifest.deploymentApprovalEvidenceRef`, an unsigned field, so its revisions and fingerprints
+(the comparison values) were operator-supplied; recomputing the release's own content address
+proved nothing. Correction: the canonical certified `validateDeploymentBinding` (A3-1, the
+same validator S6b release assembly uses) is required for every deployment-target release
+before any of its values enter a plan, and therefore before rollout comparison and capture
+replay; no second validator was added. Limitation for review, not a block: a deployment
+approval candidate does not contain revision identities (the S4 plan has none), so for a
+deployment target the revisions remain unsigned and the plan records them as unbound. They
+cannot turn a failed comparison into passed: a revoked revision that still serves runs the
+revoked artifact, whose fingerprints are now bound, and the artifact finding remains (tested).
+Signed revision binding exists only through a certification or activation approval target.
+
+Correction tests: `revocation-procedure.test.cjs` 24 (+1), `cli.test.cjs` 27 (+1). They cover
+the genuine release accepted and honestly failing; Sol's substitute refused at preparation, in
+rollout-check (plan inputs substituted) and through the CLI, each with zero capture replays
+and no output; a resealed plan carrying the substitute's recomputed, internally consistent
+release ID and values refused; an edited or swapped `binding` value refused; fingerprint-only
+and source-only substitutions refused; another approval reference, another project, empty
+and null manifests refused; a substituted manifest for a certification target refused as
+unbound; a revision-only substitute that binds but leaves the comparison `failed`; a signed
+(certified) variant still passing; and every fixed non-authorizing report field unchanged.
+Fixtures and earlier tests that compared against unsigned variant manifests now certify the
+variant (`certifiedVariant`), because those passing comparisons were themselves the defect.
+Targeted mutation of the new boundary: 8 mutants, 6 behavioral kills (skipping the binding,
+reverting to the reference-only check, ignoring its result, trusting a recomputed digest for a
+certification target, taking the deployment branch for every target, mislabelling the
+binding), 2 message-only, each layered (binding against an approval whose candidate copies the
+release values: the validator's own content-address check of the approval refuses; the plan
+binding value check: re-derivation refuses), 0 surviving.
+
+**Unresolved and remaining.** Pinning the proposed entries in `PRODUCTION_REVOCATION_LIST`
+(a separately authorized code change), shutdown, redeploy, live capture, old-revision
+deletion and any cloud registration (S6e); registry key removal (S6d-D3); D9 storage
+retrieval; G1 to G5; O6; A3-7. The certified S6b package and S6c bundle unresolved lists
+still name S6d as not implemented; they are fixed literals of certified modules and are
+unchanged. The new CI step has not yet run in GitHub Actions.

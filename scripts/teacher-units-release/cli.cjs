@@ -17,6 +17,10 @@
 // A3-6 S6c adds `observe plan` (offline), `observe capture` (read-only provider GET
 // capture, only with an explicit --live) and `observe verify` (offline replay). The
 // capture transport lives in provider-capture.cjs; a capture is never authority.
+//
+// A3-6 S6d adds `revocation prepare`, `revocation verify` and `revocation rollout-check`:
+// offline, read-only, non-authorizing R2 preparation (revocation-procedure.cjs). They
+// pin, revoke, shut down, redeploy and delete nothing.
 const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
@@ -28,6 +32,7 @@ const RG = require('./registration.cjs');
 const CAS = require('./availability-cas.cjs');
 const EP = require('./evidence-package.cjs');
 const PC = require('./provider-capture.cjs');
+const RV = require('./revocation-procedure.cjs');
 
 const LIB = path.resolve(__dirname, '../../platform/functions/lib/teacherUnits');
 const K = require(path.join(LIB, 'a3-canonical.js'));
@@ -52,6 +57,9 @@ const PACKAGE_FLAGS = Object.freeze(['certification', 'certification-statement',
 // A3-6 S6c capture inputs (files): the S4 plan and S5 expected access, bytes and objects.
 const OBSERVE_FLAGS = Object.freeze(['plan', 'plan-object', 'expected', 'expected-object']);
 
+// A3-6 S6d revocation inputs (files). Releases and known dispositions are JSON lists.
+const REVOCATION_FLAGS = Object.freeze(['disposition', 'disposition-statement', 'target', 'replacement', 'dispositions', 'releases', 'registry', 'revocations']);
+
 // command -> allowed flags (value flags and boolean flags). --project is always required.
 // Only mutating commands accept --execute and --confirm; any other command refuses them.
 const COMMANDS = Object.freeze({
@@ -75,6 +83,10 @@ const COMMANDS = Object.freeze({
   'observe plan': { values: [], cloudOnly: true },
   'observe capture': { values: [...OBSERVE_FLAGS, 'principal', 'out'], booleans: ['live'], cloudOnly: true },
   'observe verify': { values: [...OBSERVE_FLAGS, 'capture'], cloudOnly: true },
+  // A3-6 S6d: offline, read-only, non-authorizing revocation preparation. No --execute.
+  'revocation prepare': { values: [...REVOCATION_FLAGS, 'out'], cloudOnly: true },
+  'revocation verify': { values: [...REVOCATION_FLAGS, 'revocation-plan'], cloudOnly: true },
+  'revocation rollout-check': { values: [...REVOCATION_FLAGS, ...OBSERVE_FLAGS, 'revocation-plan', 'capture', 'out'], cloudOnly: true },
 });
 
 function parse(argv) {
@@ -202,6 +214,19 @@ function observeInputs(flags, io) {
     expected: { object: io.json(required(flags, 'expected-object'), 'expected-object'), bytes: io.file(required(flags, 'expected'), 'expected') } };
 }
 
+/** S6d plan inputs from files. Synthetic test authority is a registry and revocation pair. */
+function revocationInputs(target, flags, io) {
+  const list = (flag, d) => { const v = io.json(required(flags, flag), flag); if (!Array.isArray(v)) refuse(`--${flag} must be a JSON list of ${d}`); return v; };
+  const inputs = { project: target.project,
+    disposition: { document: io.json(required(flags, 'disposition'), 'disposition'), statementBytes: io.file(required(flags, 'disposition-statement'), 'disposition-statement') },
+    target: io.json(required(flags, 'target'), 'target'), knownDispositions: list('dispositions', 'known disposition documents'),
+    revokedReleases: list('releases', 'revoked backend release documents') };
+  if (flags.replacement !== undefined) inputs.replacement = io.json(flags.replacement, 'replacement');
+  if ((flags.registry === undefined) !== (flags.revocations === undefined)) refuse('--registry and --revocations must be given together');
+  if (flags.registry !== undefined) inputs.authority = { registryEntries: io.json(flags.registry, 'registry'), revocationEntries: io.json(flags.revocations, 'revocations') };
+  return inputs;
+}
+
 async function run({ command, flags }, target, ctx) {
   const io = reader(ctx.cwd), now = ctx.now;
   switch (command) {
@@ -289,6 +314,32 @@ async function run({ command, flags }, target, ctx) {
       const dir = required(flags, 'capture');
       const files = Object.fromEntries(Object.entries(PC.FILES).map(([key, file]) => [key, io.file(path.join(dir, file), 'capture')]));
       return PC.verifyCapture({ project: target.project, files, ...observeInputs(flags, io), hostingRoot: ctx.hostingRoot });
+    }
+    case 'revocation prepare': {
+      const prepared = RV.prepareRevocationPlan({ ...revocationInputs(target, flags, io), preparedAt: now() });
+      writeNew(ctx.cwd, required(flags, 'out'), 'out', prepared.bytes);
+      const p = prepared.plan;
+      return { sha256: prepared.sha256, planClass: p.planClass, disposition: p.disposition, proposedPin: p.proposed.pin,
+        checks: p.checks.map(c => `${c.check}: ${c.status}`), procedure: p.procedure, revocationEffective: false, releaseAuthorized: false,
+        activationReady: false, authorization: prepared.authorization };
+    }
+    case 'revocation verify': {
+      const verified = RV.verifyRevocationPlan(io.file(required(flags, 'revocation-plan'), 'revocation-plan'), revocationInputs(target, flags, io), now());
+      return { verified: true, verification: verified.verification, currentFreshness: verified.currentFreshness, sha256: verified.sha256,
+        planClass: verified.planClass, scope: verified.scope, revocationEffective: false,
+        releaseAuthorized: false, activationReady: false, authorization: verified.authorization };
+    }
+    case 'revocation rollout-check': {
+      const dir = required(flags, 'capture');
+      const capture = Object.fromEntries(Object.entries(PC.FILES).map(([key, file]) => [key, io.file(path.join(dir, file), 'capture')]));
+      const checked = await RV.checkRollout({ project: target.project, planBytes: io.file(required(flags, 'revocation-plan'), 'revocation-plan'),
+        planInputs: revocationInputs(target, flags, io), now: now(), capture, ...observeInputs(flags, io), ...(ctx.hostingRoot === undefined ? {} : { hostingRoot: ctx.hostingRoot }) });
+      writeNew(ctx.cwd, required(flags, 'out'), 'out', checked.bytes);
+      const r = checked.report;
+      return { sha256: checked.sha256, planVerification: r.planVerification, currentFreshness: r.currentFreshness,
+        rolloutComparison: r.rolloutComparison, findings: r.findings, evidenceClass: r.evidenceClass,
+        deployedRevocationList: r.deployedRevocationList, providerOrigin: r.providerOrigin, oldRevisionsDeleted: r.oldRevisionsDeleted,
+        revocationComplete: false, revocationEffective: false, releaseAuthorized: false, activationReady: false, authorization: checked.authorization };
     }
     case 'register': {
       const expected = withLocalProfile(target, flags, io);

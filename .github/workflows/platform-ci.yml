@@ -106,6 +106,10 @@ jobs:
       # No credentials, no provider calls, no live capture.
       - name: A3-6 S6c provider capture (offline fixtures)
         run: node --test ../../scripts/teacher-units-release/provider-capture.test.cjs ../../scripts/teacher-units-release/surface-observation.test.cjs
+      # A3-6 S6d: offline, non-authorizing revocation preparation and rollout comparison over
+      # synthetic fixtures only. No credentials, no provider calls, no signing, no emulator.
+      - name: A3-6 S6d revocation preparation (offline fixtures)
+        run: node --test ../../scripts/teacher-units-release/revocation-procedure.test.cjs
       # S6a writers run only against the Firestore emulator for a demo- project, using the
       # same Java and pinned firebase-tools setup as the Rules job. No credentials.
       - name: Set up Java (Firestore emulator for A3-6 S6a)
