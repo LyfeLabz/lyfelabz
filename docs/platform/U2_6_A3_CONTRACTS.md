@@ -166,6 +166,14 @@ created before the transactional policy compare-and-set; a failed compare-and-se
 leaves unused evidence, never permission for a different generation. Canonical
 Hosting identity is the digest of the complete existing A1 hostingCandidate, not
 only its file maps. Supplied activation validation requires that expected digest.
+"Complete A1 hostingCandidate" means the Hosting-only `hostingCandidate()` field set
+covering both sites (app and marketing), never the teacher-units `localCandidate`, which
+adds Functions runtime files, Rules and indexes; Functions identity is bound through
+`backendReleaseId`. The derivation, A1 hashing and a structural enabled-candidate check
+(clean source, Hosting and Functions source SHA and placement equality) are defined
+offline in `scripts/hosting-release/hosting-identity.cjs` (D13 Part A, non-operational).
+A candidate fingerprint is not deployed-byte verification, signed certification or
+activation; operational adoption needs separate authorization.
 Certification and approval references must be distinct. Certification assertions
 and certification-kind/source verification remain later writer/certification gates;
 no unapproved certification payload schema is invented here. Unsupported evidence

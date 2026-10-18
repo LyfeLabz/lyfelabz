@@ -51,6 +51,7 @@ const HOSTING_TEST_FILES = Object.freeze([
   'scripts/hosting-release/pair.test.cjs',
   'scripts/hosting-release/release.test.cjs',
   'scripts/hosting-release/backend-state.test.cjs',
+  'scripts/hosting-release/hosting-identity.test.cjs',
   'scripts/unit-placement/check-parity.test.cjs'
 ]);
 

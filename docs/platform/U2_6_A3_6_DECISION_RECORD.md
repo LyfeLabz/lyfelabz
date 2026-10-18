@@ -498,6 +498,38 @@ shared with every other function.
      operational decision, using synthetic fingerprints.
   4. [H] Defining the format for operational use, and any A1 or client-gate change,
      need separate authorization.
+- [A] **D13 Part A (offline, non-operational contract, owner-authorized).** Owner
+  decisions: Hosting identity is the Hosting-only candidate, not the combined
+  `localCandidate`; the two-site (app and marketing) A1 scope is kept; enabled activation
+  validation requires `teacherUnitsAvailability: 'enabled'`; S6b does not consume the
+  derived fingerprint yet; schema design and offline tests only.
+  1. `scripts/hosting-release/hosting-identity.cjs` (pure, no I/O) validates the exact A1
+     `hostingCandidate()` field set (`releaseIntent`, `source {sha, dirty}`,
+     `hostingArtifactFingerprint`, `placementFingerprint`, `applicationBuildFingerprint`,
+     `teacherUnitsAvailability` `closed | enabled`, `availabilityEvidence`), derives
+     `hostingCandidateFingerprint`, and structurally checks a synthetic enabled candidate
+     against its Functions identity (`sourceSha`, `placementFingerprint`).
+  2. Hashing is the existing A1 algorithm (`backend-state.cjs` `fingerprint`): recursively
+     sorted object keys, `JSON.stringify`, UTF-8, SHA-256 lowercase hex, no domain prefix.
+     Strict validation runs first: plain objects of the exact key set, strings and booleans
+     only; unknown keys, missing or null fields, arrays, getters, symbols and unsupported
+     values refuse. The candidate contains no arrays. The digest covers every candidate
+     field. Fixed vectors are in `hosting-identity.test.cjs`.
+  3. Enabled activation validation requires `enabled`, `teacher-units` intent, a clean
+     source, exact Hosting and Functions source SHA equality and equal placement. A closed
+     candidate refuses. A pass is structural only (`deployable`, `certified`, `authorized`
+     and `available` are all `false`); it is not deployment approval, certification,
+     activation or availability.
+  4. Not changed: `build-application.cjs`, `backend-state.cjs`, `releaseAvailability.ts`,
+     the client gate, Functions A3 code, Rules, indexes, registries, Firebase
+     configurations, CI, S6b, S6c, S6d and S6f. No release, deployment or activation path
+     requires the module (tested). The only other change is one line in `prepare.cjs`
+     `HOSTING_TEST_FILES`, which the existing suite-registration guard requires, so Hosting
+     `prepare` runs the test suite; it does not load the module into any release decision. Every produced Hosting candidate is still closed.
+  5. [U] Deployed Hosting bytes are not verified by this module; the fingerprint names a
+     local candidate (source-input hashes plus built file hashes), not what Hosting serves.
+     D13 remains open: an enabled builder, A1 acceptance of enabled candidates, deployed-byte
+     observation, S6b binding and operational adoption each need separate authorization.
 
 ### D14 - Where tooling runs and approval system identity
 
