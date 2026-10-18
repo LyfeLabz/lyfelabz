@@ -8,6 +8,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const zlib = require('node:zlib');
 const test = require('node:test');
+const { EventEmitter } = require('node:events');
+const { PassThrough } = require('node:stream');
+const { spawnSync } = require('node:child_process');
 
 const E = require('./hosting-executor.cjs');
 const { replayCapture, replayCaptureHistorical, PROVIDER_API } = require('./hosting-capture.cjs');
@@ -124,6 +127,10 @@ function refused(result, stage, reason) {
   assert.equal(result.refusal.stage, stage);
   assert.match(result.refusal.reason, reason);
   assert.equal(result.replay, null);
+  assert.equal(result.transcript, null);
+  assert.match(result.refusal.code, /^E_[A-Z_]+$/);
+  assert.equal(result.failureEvidence.complete, false);
+  assertFlags(result.failureEvidence);
 }
 
 test('fake-transport capture of both staging sites replays through the unchanged Part D contract', async () => {
@@ -168,8 +175,8 @@ test('gzip edge responses are decoded before hashing; raw-byte diagnostics stay 
 });
 
 test('encoding failures refuse', async () => {
-  refused((await run({ edgeHeaders: { 'content-encoding': 'br' } })).result, 'capture', /unsupported or unrequested Content-Encoding br/);
-  refused((await run({ edgeHeaders: { 'content-encoding': 'gzip' } })).result, 'capture', /unsupported or unrequested Content-Encoding gzip/);
+  refused((await run({ edgeHeaders: { 'content-encoding': 'br' } })).result, 'capture', /unsupported or unrequested Content-Encoding/);
+  refused((await run({ edgeHeaders: { 'content-encoding': 'gzip' } })).result, 'capture', /unsupported or unrequested Content-Encoding/);
   refused((await run({ intercept: r => r.surface === 'edge' && { status: 200, url: r.url, redirectCount: 0, headers: { 'content-encoding': 'gzip' }, body: Buffer.from('not gzip') } },
     { edgeAcceptEncoding: 'gzip' })).result, 'capture', /undecodable or oversized gzip/);
   refused((await run({ intercept: r => r.surface === 'provider' && { ...json(r.url, {}), headers: { 'content-type': 'text/html' } } })).result, 'capture', /not application\/json/);
@@ -187,25 +194,25 @@ test('a wrong decoded edge hash refuses through the unchanged Part B byte compar
 });
 
 test('redirects, non-200, size violations and timeouts refuse without retry', async () => {
-  refused((await run({ intercept: r => r.surface === 'edge' && { status: 301, url: r.url, redirectCount: 0, headers: { location: '/' }, body: Buffer.alloc(0) } })).result, 'capture', /edge redirect refused/);
-  refused((await run({ intercept: r => r.surface === 'edge' && { status: 200, url: r.url, redirectCount: 1, headers: {}, body: Buffer.alloc(0) } })).result, 'capture', /edge redirect refused/);
+  refused((await run({ intercept: r => r.surface === 'edge' && { status: 301, url: r.url, redirectCount: 0, headers: { location: '/' }, body: Buffer.alloc(0) } })).result, 'capture', /redirect refused/);
+  refused((await run({ intercept: r => r.surface === 'edge' && { status: 200, url: r.url, redirectCount: 1, headers: {}, body: Buffer.alloc(0) } })).result, 'capture', /redirect refused/);
   // A provider request answered from an edge origin, and an edge request answered by the provider.
-  refused((await run({ intercept: r => r.surface === 'provider' && { ...json(r.url, {}), url: `${E.ORIGINS.app}/` } })).result, 'capture', /provider response URL differs/);
+  refused((await run({ intercept: r => r.surface === 'provider' && { ...json(r.url, {}), url: `${E.ORIGINS.app}/` } })).result, 'capture', /response URL differs/);
   refused((await run({ intercept: r => r.surface === 'edge' && { status: 200, url: `${PROVIDER_API}projects/lyfelabz-staging/sites/lyfelabz-staging/channels/live`, redirectCount: 0, headers: {}, body: Buffer.alloc(0) } })).result,
-    'capture', /edge response URL differs/);
-  for (const [status, kind] of [[401, 'unauthenticated'], [403, 'permission-denied'], [404, 'not-found'], [429, 'rate-limited'], [500, 'server-error'], [503, 'server-error']]) {
+    'capture', /response URL differs/);
+  for (const status of [401, 403, 404, 429, 500, 503]) {
     const { result, fake } = await run({ intercept: r => r.surface === 'provider' && { ...json(r.url, {}), status } });
-    refused(result, 'capture', new RegExp(`provider HTTP ${status} \\(${kind}\\); no retry`));
+    refused(result, 'capture', /HTTP error; no retry/);
     assert.equal(fake.requests.length, 1, 'no retry');
   }
   refused((await run({ intercept: r => r.surface === 'edge' && { status: 200, url: r.url, redirectCount: 0, headers: {}, body: Buffer.alloc(E.EDGE_MAX_BYTES + 1) } })).result, 'capture', /edge response exceeds/);
   refused((await run({ intercept: r => r.surface === 'provider' && { ...json(r.url, {}), body: Buffer.alloc(E.PROVIDER_MAX_BYTES + 1) } })).result, 'capture', /provider response exceeds/);
   refused((await run({ intercept: r => r.surface === 'edge' && { status: 200, url: r.url, redirectCount: 0, headers: { 'content-length': '999' }, body: Buffer.from('x') } })).result, 'capture', /Content-Length differs/);
   const { result, fake } = await run({ intercept: r => r.surface === 'edge' && new Promise(() => {}) }, { timeoutMs: 20, concurrency: 1 });
-  refused(result, 'capture', /edge request timeout after 20 ms; no retry/);
+  refused(result, 'capture', /request timeout; no retry/);
   assert.equal(fake.requests.filter(r => r.surface === 'edge').length, 1);
   assert.equal(fake.requests[fake.requests.length - 1].signal.aborted, true);
-  refused((await run({ intercept: () => { throw new Error('socket hang up'); } })).result, 'capture', /provider transport failure: socket hang up/);
+  refused((await run({ intercept: () => { throw new Error('socket hang up'); } })).result, 'capture', /transport failure \(details redacted\)/);
 });
 
 test('provider pagination failures refuse', async () => {
@@ -214,7 +221,7 @@ test('provider pagination failures refuse', async () => {
   refused((await run({ files: (t, token, url) => json(url, { files: [], nextPageToken: 7 }) })).result, 'capture', /malformed continuation token/);
   refused((await run({ files: (t, token, url) => json(url, { files: [], nextPageToken: 'x'.repeat(2049) }) })).result, 'capture', /malformed continuation token/);
   // Incomplete manifest: the last page omits files; the unchanged Part C contract refuses.
-  refused((await run({ files: (t, token, url, entries) => json(url, { files: entries.slice(0, 1) }) })).result, 'replay', /provider file count 1 is not the version fileCount 4/);
+  refused((await run({ files: (t, token, url, entries) => json(url, { files: entries.slice(0, 1) }) })).result, 'replay', /provider file count differs/);
   refused((await run({ channel: t => { const b = channelBody(t); b.release.version.name = `sites/${E.SITES[t]}/versions/NOT-HEX`; return b; } })).result, 'capture', /names no valid version/);
 });
 
@@ -286,7 +293,7 @@ test('capture input cannot carry provenance; window and clock limits hold', asyn
   // Over five minutes stops the capture.
   refused((await run({ step: 30000 })).result, 'capture', /observation window exceeds five minutes/);
   let t = 100;
-  refused((await run({}, { clock: () => (t -= 1) })).result, 'capture', /monotonic clock moved backwards/);
+  refused((await run({}, { clock: () => (t -= 1) })).result, 'capture', /invalid monotonic clock/);
   // Without a marker no provider request carries an authorization header at all.
   const { fake: f2, result } = await run({}, { syntheticAuthorizationMarker: null });
   assert.equal(result.capture.credentialCategory, 'none');
@@ -309,14 +316,15 @@ test('executor output cannot be relabelled as live or offline evidence', async (
   assert.throws(() => replayCapture({ planInput, transcript, candidate, localGzip, receipt: null, now: transcript.completedAt }), /credential-like material/);
 });
 
-test('source has no network adapter, credential, environment or subprocess access', () => {
+test('source has only fixture connectors and no authentication, environment, socket or subprocess capability', () => {
   const source = fs.readFileSync(path.join(__dirname, 'hosting-executor.cjs'), 'utf8');
-  for (const forbidden of [/require\('node:(fs|http|https|http2|net|tls|dns|child_process|os|worker_threads)'\)/, /\bfetch\b/, /process\.env/, /Date\.now/,
+  for (const forbidden of [/require\('node:(fs|http|https|http2|dns|child_process|os|worker_threads)'\)/, /\bfetch\b/, /process\.env/, /Date\.now/,
     /execFile|spawn|execSync/, /gcloud|tokenFromGcloud|liveAccessToken|createLiveExchange|readApi/, /GOOGLE_APPLICATION_CREDENTIALS|google-auth|googleapis'|iamcredentials|generateAccessToken|impersonat/i,
     /'offline-record'|'live-staging-capture'|'live-capture'/, /readFileSync|writeFileSync|firebase-tools|firebase deploy/, /Bearer/])
     assert.doesNotMatch(source, forbidden, String(forbidden));
+  assert.doesNotMatch(source, /net\.connect|tls\.connect|new (?:Socket|TLSSocket)|require\.main|process\.argv/);
   assert.deepEqual(Object.keys(E).sort(), ['EDGE_MAX_BYTES', 'LIVE_TRANSPORT', 'ORIGINS', 'PROJECT', 'PROJECT_NUMBER', 'PROVENANCE', 'PROVIDER_MAX_BYTES',
-    'RESULT_KIND', 'SITES', 'assertEdgeUrl', 'assertProviderUrl', 'createExecutor']);
+    'RESULT_KIND', 'SAFETY_LIMITS', 'SITES', 'OAUTH_SCOPE', 'assertEdgeUrl', 'assertProviderUrl', 'createExecutor', 'createFixtureHttpsTransport', 'dryRun'].sort());
 });
 
 test('no release, deployment, activation or Functions path consumes this module', () => {
@@ -343,4 +351,268 @@ test('no release, deployment, activation or Functions path consumes this module'
   // The Part C and Part D suites name this module only in their own no-consumer allowlists.
   assert.deepEqual(consumers.sort(), ['scripts/hosting-release/hosting-capture.test.cjs', 'scripts/hosting-release/hosting-executor.cjs',
     'scripts/hosting-release/hosting-executor.test.cjs', 'scripts/hosting-release/provider-manifest.test.cjs']);
+});
+
+const EXPECTED_IDENTITY = Object.freeze({ project: E.PROJECT,
+  serviceAccountEmail: 'hosting-observer@lyfelabz-staging.iam.gserviceaccount.com', accountId: '123456789012345678901' });
+const START = Date.parse('2026-10-18T12:00:00.000Z');
+function credential(overrides = {}) {
+  return { kind: 'synthetic-credential', marker: MARKER, ...EXPECTED_IDENTITY, verifiedAccountId: EXPECTED_IDENTITY.accountId,
+    scope: E.OAUTH_SCOPE, expiresAt: new Date(START + 600000).toISOString(), ...overrides };
+}
+function streamingFixture(fake = fakeTransport(), edit = () => {}) {
+  const requests = [], streams = [];
+  let destroyed = 0;
+  const fixtureRequest = (options, callback) => {
+    const req = new EventEmitter();
+    requests.push(options);
+    req.destroy = () => { destroyed++; };
+    req.end = () => queueMicrotask(async () => {
+      try {
+        const url = `https://${options.hostname}${options.path}`;
+        const surface = options.hostname === 'firebasehosting.googleapis.com' ? 'provider' : 'edge';
+        const spec = await fake.transport({ surface, method: options.method, url, headers: options.headers });
+        const res = new PassThrough(); streams.push(res);
+        res.statusCode = spec.status;
+        res.rawHeaders = Object.entries(spec.headers).flat();
+        res.socket = { authorized: true, encrypted: true, remoteAddress: '8.8.8.8', getPeerCertificate: () => ({ subjectaltname: `DNS:${options.hostname}` }) };
+        const behavior = edit({ options, req, res, spec, surface, streams });
+        callback(res);
+        if (behavior !== 'pending') res.end(spec.body);
+      } catch (error) { req.emit('error', error); }
+    });
+    return req;
+  };
+  return { requests, streams, destroyed: () => destroyed,
+    transport: E.createFixtureHttpsTransport({ fixtureRequest, fixtureResolve: async () => ['8.8.8.8'] }) };
+}
+async function streamCapture(edit, overrides = {}) {
+  const fixture = streamingFixture(fakeTransport(), edit);
+  const result = await E.createExecutor({ transport: fixture.transport, clock: () => 0, wallStartMs: START,
+    concurrency: 3, syntheticAuthorizationMarker: MARKER, ...overrides }).capture(setup());
+  return { fixture, result };
+}
+
+test('dry run verifies staging and local prerequisites without invoking any broker or connector', () => {
+  const s = setup();
+  const result = E.dryRun({ ...s, expectedIdentity: EXPECTED_IDENTITY });
+  assert.equal(result.mode, 'dry-run');
+  assert.equal(result.minimumRequests, 12);
+  assert.equal(result.liveExecutionEnabled, false);
+  assert.equal(result.trustedLiveProvenance, false);
+  assertFlags(result);
+  for (const change of [
+    x => { x.expectedIdentity.project = 'lyfelabz-prod'; },
+    x => { x.expectedIdentity.accountId = E.PROJECT_NUMBER; },
+    x => { x.expectedIdentity.serviceAccountEmail = 'operator@example.com'; },
+    x => { x.planInput.project = 'lyfelabz-prod'; },
+    x => { x.planInput.trusted.sites.app = 'other'; },
+    x => { x.planInput.trusted.origins.app = 'https://example.com'; },
+    x => { x.localGzip.app.files['/index.html'].sha256 = 'f'.repeat(64); },
+    x => { x.candidate.teacherUnitsAvailability = 'enabled'; },
+    x => { x.localGzip.app.profile.calibration = {}; },
+    x => { x.localGzip.app.files['/index.html'].extra = true; },
+    x => { x.planInput.pairBuild.files.app['../bad'] = 'f'.repeat(64); },
+    x => { x.execute = true; }
+  ]) {
+    const x = { ...setup(), expectedIdentity: { ...EXPECTED_IDENTITY } }; change(x);
+    assert.throws(() => E.dryRun(x));
+  }
+});
+
+test('fake broker pins project, account identifier, scope and expiry; no credential fallback', async () => {
+  const fake = fakeTransport(); let calls = 0;
+  const result = await E.createExecutor({ transport: fake.transport, clock: () => 0, wallStartMs: START, concurrency: 2,
+    expectedIdentity: EXPECTED_IDENTITY, fakeBroker: async request => { calls++; assert.deepEqual(request,
+      { ...EXPECTED_IDENTITY, scope: E.OAUTH_SCOPE, nowMs: START, mode: 'synthetic-only' }); return credential(); } }).capture(setup());
+  assert.equal(calls, 1); assert.equal(result.outcome, 'replayed'); assert.equal(result.capture.credentialCategory, 'fake-broker');
+  assertIsolation(fake.requests, result);
+  for (const overrides of [ { marker: 'Bearer ya29.secret' }, { project: 'lyfelabz-prod' }, { accountId: '999999999999' },
+    { verifiedAccountId: '999999999999' }, { scope: 'https://www.googleapis.com/auth/cloud-platform' },
+    { expiresAt: new Date(START + 299999).toISOString() }, { expiresAt: 'bad' }, { accessToken: 'ya29.secret' }, { kind: 'live' } ]) {
+    const f = fakeTransport();
+    const r = await E.createExecutor({ transport: f.transport, clock: () => 0, wallStartMs: START, concurrency: 1,
+      expectedIdentity: EXPECTED_IDENTITY, fakeBroker: async () => credential(overrides) }).capture(setup());
+    assert.equal(r.refusal.code, 'E_BROKER'); assert.equal(f.requests.length, 0); assertIsolation(f.requests, r);
+  }
+  assert.throws(() => E.createExecutor({ transport: fake.transport, clock: () => 0, wallStartMs: START, concurrency: 1,
+    expectedIdentity: EXPECTED_IDENTITY, fakeBroker: async () => credential(), syntheticAuthorizationMarker: MARKER }), /cannot fall back/);
+});
+
+test('fixture HTTPS options pin direct TLS, SNI, DNS and credential isolation despite proxy environment', async () => {
+  const old = process.env.HTTPS_PROXY;
+  process.env.HTTPS_PROXY = 'http://proxy.invalid:4444';
+  try {
+    const { fixture, result } = await streamCapture();
+    assert.equal(result.outcome, 'replayed', JSON.stringify(result.refusal));
+    for (const o of fixture.requests) {
+      assert.equal(o.protocol, 'https:'); assert.equal(o.port, 443); assert.equal(o.method, 'GET');
+      assert.equal(o.agent, false); assert.equal(o.proxy, false); assert.equal(o.followRedirects, false);
+      assert.equal(o.rejectUnauthorized, true); assert.equal(o.servername, o.hostname);
+      assert.equal(o.maxHeaderSize, E.SAFETY_LIMITS.headerBytes);
+      assert.equal(o.checkServerIdentity(o.hostname, { subjectaltname: 'DNS:wrong.invalid' }).code, 'ERR_TLS_CERT_ALTNAME_INVALID');
+      o.lookup(o.hostname, {}, (error, address, family) => { assert.ifError(error); assert.equal(address, '8.8.8.8'); assert.equal(family, 4); });
+      if (o.hostname !== 'firebasehosting.googleapis.com') assert.equal(o.headers.authorization, undefined);
+    }
+    assertIsolation([], result);
+  } finally { if (old === undefined) delete process.env.HTTPS_PROXY; else process.env.HTTPS_PROXY = old; }
+});
+
+test('fixture HTTPS refuses methods, hosts, production, arbitrary headers and nonpublic DNS before connection', async () => {
+  let connected = 0;
+  const base = { method: 'GET', surface: 'provider', url: `${PROVIDER_API}projects/${E.PROJECT}/sites/${E.SITES.app}/channels/live`,
+    headers: { accept: 'application/json', 'accept-encoding': 'identity' }, maxBytes: E.PROVIDER_MAX_BYTES, signal: new AbortController().signal };
+  for (const edit of [r => { r.method = 'POST'; }, r => { r.url = 'https://example.com/'; },
+    r => { r.url = 'https://lyfelabz-prod.web.app/'; },
+    r => { r.surface = 'edge'; r.url = E.ORIGINS.app + '/?arbitrary=x'; r.headers = { accept: '*/*', 'accept-encoding': 'identity' }; r.maxBytes = E.EDGE_MAX_BYTES; }, r => { r.headers.cookie = 'secret'; },
+    r => { r.headers.authorization = 'Bearer ya29.secret'; }]) {
+    const transport = E.createFixtureHttpsTransport({ fixtureRequest: () => { connected++; }, fixtureResolve: async () => ['8.8.8.8'] });
+    const request = { ...base, headers: { ...base.headers } }; edit(request);
+    await assert.rejects(transport(request));
+  }
+  for (const address of ['127.0.0.1', '169.254.169.254', '10.0.0.1', '172.16.0.1', '192.168.1.1', '100.64.0.1', '::1', '224.0.0.1']) {
+    const transport = E.createFixtureHttpsTransport({ fixtureRequest: () => { connected++; }, fixtureResolve: async () => [address] });
+    await assert.rejects(transport(base), error => error.code === 'E_DNS');
+  }
+  assert.equal(connected, 0);
+  assert.throws(() => E.createFixtureHttpsTransport({}));
+});
+
+test('TLS certificate and hostname failures stop before response bytes are accepted', async () => {
+  for (const edit of [({ res }) => { res.socket.authorized = false; },
+    ({ res }) => { res.socket.remoteAddress = '127.0.0.1'; },
+    ({ res }) => { res.socket.encrypted = false; },
+    ({ req }) => { req.emit('error', Object.assign(new Error('ya29.TLS-SECRET'), { code: 'CERT_HAS_EXPIRED' })); },
+    ({ res }) => { res.socket.getPeerCertificate = () => ({ subjectaltname: 'DNS:wrong.invalid' }); }]) {
+    const { fixture, result } = await streamCapture(edit);
+    assert.equal(result.refusal.code, 'E_TLS'); assert.equal(fixture.requests.length, 1);
+    assert.equal(result.failureEvidence.receivedBytes, 0); assert.equal(result.transcript, null);
+  }
+});
+
+test('redirects stop at the first response and response headers are bounded and unambiguous', async () => {
+  const redirected = await streamCapture(({ res }) => { res.statusCode = 302; res.rawHeaders.push('Location', 'https://lyfelabz-prod.web.app'); });
+  assert.equal(redirected.result.refusal.code, 'E_REDIRECT'); assert.equal(redirected.fixture.requests.length, 1);
+  for (const headers of [['X-Large', 'a'.repeat(E.SAFETY_LIMITS.headerBytes)], ['Content-Type', 'text/html'], ['Bad', 'x\r\nsecret']]) {
+    const { result } = await streamCapture(({ res }) => { res.rawHeaders.push(...headers); });
+    assert.equal(result.refusal.code, 'E_HEADERS'); assert.equal(result.transcript, null);
+  }
+});
+
+test('streaming provider and edge byte limits stop before buffering the oversized body', async () => {
+  for (const surface of ['provider', 'edge']) {
+    const { result, fixture } = await streamCapture(ctx => {
+      if (ctx.surface !== surface) return;
+      ctx.spec.body = Buffer.alloc((surface === 'provider' ? E.PROVIDER_MAX_BYTES : E.EDGE_MAX_BYTES) + 1);
+      ctx.res.rawHeaders = [];
+    });
+    assert.equal(result.refusal.code, 'E_SIZE'); assert.equal(result.transcript, null); assert.ok(fixture.destroyed() > 0);
+  }
+});
+
+test('aggregate wire bytes, decoded bytes and gzip expansion are bounded', async () => {
+  const huge = zlib.gzipSync(Buffer.alloc(E.EDGE_MAX_BYTES + 1));
+  const expanded = await run({ intercept: r => r.surface === 'edge' && { status: 200, url: r.url, redirectCount: 0,
+    headers: { 'content-encoding': 'gzip' }, body: huge } }, { edgeAcceptEncoding: 'gzip' });
+  assert.equal(expanded.result.refusal.code, 'E_DECOMPRESSION');
+  const block = Buffer.alloc(E.EDGE_MAX_BYTES);
+  const streaming = await streamCapture(ctx => { if (ctx.surface === 'edge') { ctx.spec.body = block; ctx.res.rawHeaders = []; } }, { concurrency: 1 });
+  assert.equal(streaming.result.refusal.code, 'E_AGGREGATE');
+  for (const gzip of [false, true]) {
+    const body = gzip ? zlib.gzipSync(block) : block;
+    const result = await run({ intercept: r => r.surface === 'edge' && { status: 200, url: r.url, redirectCount: 0,
+      headers: gzip ? { 'content-encoding': 'gzip' } : {}, body } }, { edgeAcceptEncoding: gzip ? 'gzip' : 'identity', concurrency: 1 });
+    assert.equal(result.result.refusal.code, 'E_AGGREGATE');
+  }
+});
+
+test('provider JSON rejects malformed UTF-8, duplicate decoded keys and excessive nesting', async () => {
+  for (const [body, code] of [[Buffer.from([0xc3, 0x28]), 'E_UTF8'],
+    [Buffer.from('{"name":1,"name":2}'), 'E_DUPLICATE_JSON'],
+    [Buffer.from('{"name":1,"na\\u006de":2}'), 'E_DUPLICATE_JSON'],
+    [Buffer.from('{"x":{"a":1,"a":2}}'), 'E_DUPLICATE_JSON'],
+    [Buffer.from('{"x":' + '['.repeat(70) + '0' + ']'.repeat(70) + '}'), 'E_JSON'],
+    [Buffer.from('{"x":1e999}'), 'E_JSON']]) {
+    const { result } = await run({ intercept: r => r.surface === 'provider' && { ...json(r.url, {}), body } });
+    assert.equal(result.refusal.code, code); assert.equal(result.requests.before, 1);
+  }
+});
+
+test('strict pagination rejects malformed cursors, excessive pages and aggregate entries', async () => {
+  for (const token of ['space token', '?url=https://example.com', 'x\n', '%2f']) {
+    const { result, fake } = await run({ files: (t, p, url) => json(url, { files: [], nextPageToken: token }) });
+    assert.equal(result.refusal.code, 'E_PAGINATION'); assert.equal(fake.requests.length, 3);
+  }
+  const pages = await run({ files: (t, p, url) => json(url, { files: [], nextPageToken: `page${p === null ? 1 : Number(p.slice(4)) + 1}` }) }, { clock: () => 0 });
+  assert.equal(pages.result.refusal.code, 'E_PAGES'); assert.equal(pages.result.requests.manifest, E.SAFETY_LIMITS.pages);
+  const entries = await run({ files: (t, p, url) => json(url, { files: Array(E.SAFETY_LIMITS.fileEntries + 1).fill({}) }) });
+  assert.equal(entries.result.refusal.code, 'E_ENTRIES');
+  const identity = await run({ channel: t => { const b = channelBody(t); b.release.version.name = 'sites/other/versions/abc'; return b; } });
+  assert.equal(identity.result.refusal.code, 'E_IDENTITY'); assert.equal(identity.result.requests.manifest, 0);
+});
+
+test('absolute remaining deadline cancels a pending request and rejects its late response', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const fake = fakeTransport(); let now = 0, late, signal;
+  const transport = async request => {
+    if (request.url.endsWith('/channels/live')) {
+      now = 299999;
+      return fake.transport(request);
+    }
+    signal = request.signal;
+    return new Promise(resolve => { late = () => resolve(json(request.url, {})); });
+  };
+  const pending = E.createExecutor({ transport, clock: () => now, wallStartMs: START, concurrency: 2 }).capture(setup());
+  for (let i = 0; i < 20; i++) await Promise.resolve();
+  t.mock.timers.tick(1);
+  const result = await pending;
+  assert.equal(result.refusal.code, 'E_DEADLINE'); assert.equal(signal.aborted, true);
+  const snapshot = JSON.stringify(result); late(); await Promise.resolve();
+  assert.equal(JSON.stringify(result), snapshot); assert.equal(result.transcript, null);
+});
+
+test('failure aborts concurrent fixture requests and preserves only redacted completed exchange digests', async () => {
+  let edgeCount = 0;
+  const { fixture, result } = await streamCapture(({ res, surface, spec }) => {
+    if (surface !== 'edge') return;
+    edgeCount++;
+    if (edgeCount === 1) { res.statusCode = 503; spec.body = Buffer.from('Bearer ya29.RESPONSE-SECRET'); }
+    else return 'pending';
+  });
+  assert.equal(result.outcome, 'refused'); assert.equal(result.transcript, null);
+  assert.equal(result.failureEvidence.complete, false);
+  assert.ok(result.failureEvidence.completedExchanges.length >= 6);
+  assert.ok(fixture.requests.filter(r => r.hostname !== 'firebasehosting.googleapis.com').slice(1).every(r => r.signal.aborted));
+  assert.ok(fixture.streams.every(r => r.destroyed));
+  assert.doesNotMatch(JSON.stringify(result), /RESPONSE-SECRET|synthetic-marker:|"cookie"|"authorization"|pageToken|"body"/i);
+  assertFlags(result.failureEvidence);
+  const injected = await run({ intercept: () => { throw new Error('[hosting-executor] Bearer ya29.ERROR-SECRET'); } });
+  assert.equal(injected.result.refusal.code, 'E_TRANSPORT');
+  assert.doesNotMatch(JSON.stringify(injected.result), /ERROR-SECRET|Bearer/);
+});
+
+test('module import and dry-run have no external-network or authentication side effects', () => {
+  const probe = `const net=require('node:net'),tls=require('node:tls'),https=require('node:https'),http=require('node:http');
+    for(const [m,k] of [[net,'connect'],[net,'createConnection'],[tls,'connect'],[https,'request'],[https,'get'],[http,'request'],[http,'get']])
+      m[k]=()=>{throw Error('external request attempted')};
+    global.fetch=()=>{throw Error('external request attempted')};
+    const Module=require('node:module'),load=Module._load;
+    Module._load=function(id,...args){if(/google-auth|googleapis|firebase-admin/.test(id))throw Error('authentication module loaded');return load.call(this,id,...args)};
+    const e=require('./scripts/hosting-release/hosting-executor.cjs');
+    if(e.LIVE_TRANSPORT!=='not-implemented')throw Error('live enabled');`;
+  const child = spawnSync(process.execPath, ['-e', probe], { cwd: ROOT, env: {}, encoding: 'utf8' });
+  assert.equal(child.status, 0, child.stderr);
+});
+
+
+test('absolute capture timer cancels a hung fake broker before any request', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let now = 0;
+  const fake = fakeTransport();
+  const pending = E.createExecutor({ transport: fake.transport, clock: () => now, wallStartMs: START, concurrency: 1,
+    expectedIdentity: EXPECTED_IDENTITY, fakeBroker: () => new Promise(() => {}) }).capture(setup());
+  now = 300000; t.mock.timers.tick(300000);
+  const result = await pending;
+  assert.equal(result.refusal.code, 'E_DEADLINE'); assert.equal(result.timing.elapsedMs, 300000);
+  assert.equal(fake.requests.length, 0); assert.equal(result.transcript, null);
 });

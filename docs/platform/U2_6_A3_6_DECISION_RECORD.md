@@ -856,7 +856,59 @@ shared with every other function.
      required expected principal (never Firebase CLI login or ambient gcloud or ADC credentials);
      the live network adapter (provider-only token attachment, no proxy, no redirects); the
      trusted live provenance pathway and its transcript integrity; and one staging observation.
-  9. Status: implemented in the repository, uncommitted, not independently certified.
+  9. Status: integrated on main (`f2b0d0a`), not independently certified.
+
+- [A] **D13 Part G2 (bounded offline adapter preparation, owner-authorized).** Local
+  implementation and offline tests only. Teacher Units stays CLOSED. No IAM,
+  credentials, token minting, Firebase requests, deployment, commit or activation.
+  1. The existing executor remains synthetic and single-use. A fixture-only HTTPS
+     factory requires injected request and resolver doubles, with no default network
+     connector. It pins staging GET resources and origins, direct transport (no proxy
+     or agent discovery), explicit SNI, certificate and hostname checks, a pinned public
+     IPv4 lookup, no redirect following, streaming byte/header limits and aggregate
+     limits. IPv6 and private/special addresses refuse. No HTTP client or socket is constructed.
+  2. The fake broker contract pins the staging project, explicit service-account email
+     and numeric account ID, exact `firebase.readonly` scope, verified account ID and
+     expiry covering the capture window. Only `synthetic-credential` records and
+     non-secret synthetic markers are admitted. No arbitrary token field, ambient
+     discovery, operator fallback or real authentication implementation exists.
+  3. The five-minute window has an absolute cancellation timer, monotonic checks before
+     and after requests, remaining-window request deadlines and cancellation of remaining
+     requests after failure. Late results cannot enter exchanges. Provider JSON uses
+     fatal UTF-8, bounded depth and decoded duplicate-key rejection. Page-token grammar,
+     loops, maximum pages and aggregate entries/bytes are enforced before continuation.
+  4. Failure results have stable codes, fixed redacted messages, counts/timing and a
+     separate incomplete failure artifact containing completed-exchange digests only.
+     Failed captures expose no successful transcript. No body, header, cursor or raw
+     transport error is copied into failure evidence. No local/cloud evidence writer
+     is added. Every authority flag remains false.
+  5. `dryRun` is a pure operator API: validate explicit staging identities and closed
+     candidate/local gzip prerequisites; return the request plan, count bounds, expected
+     identity and missing operational prerequisites. It invokes no broker or transport.
+     There is no CLI execution flag, environment switch or live entry point.
+  6. The private trusted-live boundary is explicitly disabled. No fixture can issue a
+     trusted-live handle. Supplied live labels still refuse under unchanged Part D
+     strict/historical replay and unchanged Part B/C sources. Digests detect changes,
+     not authenticity. A future private live pathway and independently protected
+     evidence anchor remain separately authorized work; no certification signing exists.
+  7. File scope: executor and its suite, Part D replay tests, this record,
+     `TEACHER_UNITS.md` and `D13_STAGING_OBSERVATION_RUNBOOK.md`. No production consumer,
+     Functions, Rules/indexes, registry, Firebase configuration, CI or S6 module changes.
+  8. Future work: real broker and identity/scope verification, controlled private network
+     connector, protected evidence provenance, IAM review/setup and one explicitly
+     authorized read-only staging observation. No repeated offline certification loop
+     can substitute for those provider facts. G1 to G5 and operational D13 remain open.
+  9. Local verification (Node 24.15.0): full registered Hosting tests 267 pass,
+     zero fail, one optional externally started Hosting-emulator test skipped (no
+     emulator URL). Included: 123 D13 tests, with 27 executor, 18 replay and all
+     24 Part E loopback benchmark tests passing. S6 offline tests 259 pass;
+     application verification 209 suites / 7884 tests pass; Functions 184 suites /
+     5472 tests pass, lint/typecheck/build pass and the build record is closed-only.
+     Tests ran under an OS sandbox allowing localhost and denying external network
+     traffic and cloud credential-file reads. Diff checks and the six-file em dash
+     sweep pass. No live Firebase, IAM, credential or activation operation occurred.
+  10. G2 status: implemented locally, uncommitted, not independently certified.
+      Offline verification grants no live authorization.
 
 ### D14 - Where tooling runs and approval system identity
 

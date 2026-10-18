@@ -399,3 +399,21 @@ test('no release, deployment, activation or Functions path consumes this module'
     'scripts/hosting-release/hosting-deployment.test.cjs', 'scripts/hosting-release/hosting-executor.cjs', 'scripts/hosting-release/hosting-executor.test.cjs',
     'scripts/hosting-release/provider-manifest.test.cjs']);
 });
+
+test('recomputed transcript digests cannot authenticate supplied live labels or renew offline history', () => {
+  for (const kind of ['synthetic-fixture', 'offline-record']) {
+    const i = input(); i.transcript.provenance.kind = kind;
+    const originalDigest = fingerprint(i.transcript);
+    const historical = C.replayCaptureHistorical({ planInput: i.planInput, transcript: i.transcript, candidate: i.candidate,
+      localGzip: i.localGzip, receipt: i.receipt, replayedAt: '2027-01-01T00:00:00.000Z' });
+    assert.equal(historical.currentNow, false);
+    assert.equal(historical.renewsFreshness, false);
+    assert.equal(historical.freshAtCertification, 'not-established');
+    assert.equal(historical.provenance, kind);
+    i.transcript.provenance.kind = 'live-staging-capture';
+    assert.notEqual(fingerprint(i.transcript), originalDigest);
+    assert.throws(() => C.replayCapture(i), /cannot be asserted by a supplied transcript/);
+    assert.throws(() => C.replayCaptureHistorical({ planInput: i.planInput, transcript: i.transcript, candidate: i.candidate,
+      localGzip: i.localGzip, receipt: i.receipt, replayedAt: '2027-01-01T00:00:00.000Z' }), /cannot be asserted by a supplied transcript/);
+  }
+});
