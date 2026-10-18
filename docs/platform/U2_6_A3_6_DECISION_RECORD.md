@@ -530,6 +530,49 @@ shared with every other function.
      local candidate (source-input hashes plus built file hashes), not what Hosting serves.
      D13 remains open: an enabled builder, A1 acceptance of enabled candidates, deployed-byte
      observation, S6b binding and operational adoption each need separate authorization.
+- [A] **D13 Part B (offline, non-operational observation contract, owner-authorized).**
+  Owner decisions: future operational certification combines public-edge byte
+  verification with provider deployment-version evidence; version identity is observed
+  before and after public-byte verification; closed-versus-enabled bundle classification is
+  deferred; A1 fingerprint behavior (including ignored files) is unchanged; observations
+  are no older than five minutes; Firebase provider file hashes are never assumed to equal
+  local SHA-256 hashes.
+  1. `scripts/hosting-release/hosting-deployment.cjs` (pure: no network, filesystem,
+     environment or clock; `now` is an input) verifies explicitly supplied offline records:
+     the Part A candidate, a pair-build projection (`kind`, `schemaVersion` 3,
+     `releaseIntent`, `source`, `unitPlacement.fingerprint`, `files`), the expected project
+     and two sites, the existing ignore and redirect rules per target, and an observation
+     (`lyfelabz.hostingDeploymentObservation` v1) with provenance, a start and completion
+     time and, per site, the site name, version metadata before, public-edge served hashes,
+     version metadata after and an optional provider version-file manifest. The schema is
+     documented in the module header. Unknown, missing or undefined fields, getters,
+     symbols, non-plain objects, extra array properties and malformed values refuse.
+  2. Rules: the candidate fingerprint is rebuilt with Part A; the source is clean; pair-build
+     intent, source and placement equal the candidate and `fingerprint(files)` reproduces
+     `hostingArtifactFingerprint`; both expected sites, distinct, under the expected project
+     or project number; version name, status, release time and message identical before and
+     after; status `FINALIZED` (the S6c semantics); message `release <sha>`; timestamps
+     ordered start, before, served, after, completion; at most five minutes old and never
+     later than `now` (clock-skew allowance zero); served paths exactly the non-ignored,
+     non-redirected pair files (certify's rule), each SHA-256 equal, with no duplicate,
+     missing, extra or redirected path; provenance `synthetic-fixture` or `offline-record`
+     only (no live-capture kind exists).
+  3. The provider manifest, when present, is structural: `hashEncoding: 'provider-reported'`,
+     unique `/<file>` paths exactly equal to the non-ignored pair files, 64-hex hashes,
+     inside the observation window. It is never compared with local hashes;
+     `providerFileBinding` is always `unresolved`, even when values happen to match.
+  4. The result (scope `observation-consistency`) reports the reconstructed fingerprint, the
+     observation fingerprint, byte and version consistency, manifest `present`, `absent` or
+     `partial`, binding `unresolved` and fixed limitations; `deployable`, `certified`,
+     `authorized` and `available` are `false`. It is not provider-backed certification.
+  5. Not changed: certify, release, backend-state, build-application, the client gate,
+     Functions A3 code, Rules, indexes, registries, Firebase configurations, CI, S6b to S6f.
+     No release, deployment or activation path requires the module (tested). `prepare.cjs`
+     gains one `HOSTING_TEST_FILES` line, and the Part A no-consumer guard now allows this
+     verifier, its only consumer.
+  6. [U] Still open: capturing real observations (version re-read in certify, the provider
+     versions files list), reconciling provider hashes with local bytes, bundle
+     classification, an enabled builder and S6b binding each need separate authorization.
 
 ### D14 - Where tooling runs and approval system identity
 

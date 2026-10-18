@@ -147,5 +147,7 @@ test('no release, deployment, activation or Functions path consumes this module'
     }
   }
   for (const directory of ['scripts', 'app/scripts', 'app/src', 'platform', '.github']) walk(path.join(ROOT, directory));
-  assert.deepEqual(consumers.sort(), ['scripts/hosting-release/hosting-identity.cjs', 'scripts/hosting-release/hosting-identity.test.cjs']);
+  // D13 Part B reuses the fingerprint inside its own non-operational verifier and suite.
+  assert.deepEqual(consumers.sort(), ['scripts/hosting-release/hosting-deployment.cjs', 'scripts/hosting-release/hosting-deployment.test.cjs',
+    'scripts/hosting-release/hosting-identity.cjs', 'scripts/hosting-release/hosting-identity.test.cjs']);
 });
