@@ -8,7 +8,7 @@
 // Skips when the emulator host is absent.
 
 import { getApps, initializeApp } from "firebase-admin/app";
-import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { DocumentReference, FieldValue, Transaction, getFirestore } from "firebase-admin/firestore";
 import type { CallableRequest } from "firebase-functions/v2/https";
 
 import { log } from "../shared/logging/logger";
@@ -2090,6 +2090,94 @@ d("A3-3 enforcement (emulator)", () => {
       await expectRefusedEverywhere(handlers, unit.unitId);
       // The adapter rethrew A3-3's readEvidence error, so no verdict was recorded (A3-3 maps it to unverified "error").
       expect(verdicts).toEqual([]);
+    });
+
+    // O6: the callVerifier / readEvidence boundary under the installed SDK's own rerun
+    // loop. The fault is injected into the real Transaction.get for the certification
+    // address only, so the error object originates in A3-3's own txRead.
+    describe("O6 retryable readEvidence errors", () => {
+      const grpc = (code: number, message: string) => Object.assign(new Error(message), { code });
+      function faultCertificationReads(faults: (() => Error)[]): { reads: () => number } {
+        const original = Transaction.prototype.get;
+        let reads = 0;
+        jest.spyOn(Transaction.prototype, "get").mockImplementation(function (this: Transaction, ...args: unknown[]) {
+          const [ref] = args;
+          if (ref instanceof DocumentReference && ref.path === SIGNED.certificationEvidenceRef) {
+            reads += 1;
+            const fault = faults.shift();
+            if (fault) return Promise.reject(fault());
+          }
+          return (original as (...a: unknown[]) => Promise<unknown>).apply(this, args);
+        } as typeof original);
+        return { reads: () => reads };
+      }
+      afterEach(() => jest.restoreAllMocks());
+
+      it.each([
+        ["ABORTED", () => grpc(10, "Aborted due to cross-transaction contention.")],
+        ["UNAVAILABLE", () => grpc(14, "unavailable")],
+        ["INVALID_ARGUMENT transaction expired", () => grpc(3, "The referenced transaction has expired or is no longer valid.")],
+      ])("a %s certification read propagates, the SDK reruns, and the rerun reads fresh evidence", async (_label, fault) => {
+        const unit = await createUnit(w);
+        await seedEnabledPolicy(SIGNED);
+        const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
+        const injected = faultCertificationReads([fault]);
+        const listed = await handlers.list(req(w, w.teacher, {}));
+        expect(listed.units.map((u: { unitId: string }) => u.unitId)).toContain(unit.unitId);
+        // First attempt: the read failed and the adapter rethrew, so no verdict; the
+        // SDK rerun re-read the certification and verified it.
+        expect(injected.reads()).toBe(2);
+        expect(verdicts).toHaveLength(1);
+        expect(verdicts[0]).toMatchObject({ verdict: "verified", certificationEvidenceRef: SIGNED.certificationEvidenceRef });
+      });
+
+      it("a mutation rerun re-reads the certification and commits exactly once", async () => {
+        const unit = await createUnit(w);
+        await seedEnabledPolicy(SIGNED);
+        const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
+        const injected = faultCertificationReads([() => grpc(10, "aborted")]);
+        await handlers.update(req(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, title: "Rerun", compatibility: compat }));
+        const faulted = { reads: injected.reads(), verdicts: verdicts.length };
+        expect(await unitData(unit.unitId)).toMatchObject({ title: "Rerun", revision: 2 });
+        expect(await auditsFor(unit.unitId)).toHaveLength(2);
+        // Baseline: an unfaulted update (write attempt plus post-commit response read).
+        await handlers.update(req(w, w.teacher, { unitId: unit.unitId, expectedRevision: 2, title: "Clean", compatibility: compat }));
+        const clean = { reads: injected.reads() - faulted.reads, verdicts: verdicts.length - faulted.verdicts };
+        // The faulted update made exactly one extra certification read (the rerun) and
+        // no extra verdict (the failed attempt produced none).
+        expect(faulted.reads).toBe(clean.reads + 1);
+        expect(faulted.verdicts).toBe(clean.verdicts);
+        for (const verdict of verdicts) expect(verdict).toMatchObject({ verdict: "verified" });
+      });
+
+      it("a non-retryable certification read refuses as policyUnavailable without rerun or write", async () => {
+        const unit = await createUnit(w);
+        await seedEnabledPolicy(SIGNED);
+        const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
+        const injected = faultCertificationReads([() => grpc(7, "denied")]);
+        await expectCode(handlers.update(req(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, title: "No", compatibility: compat })),
+          "teacherUnits.policyUnavailable");
+        expect(injected.reads()).toBe(1);
+        expect(verdicts).toEqual([]);
+        expect(await unitData(unit.unitId)).toMatchObject({ title: "Earth Systems", revision: 1 });
+        expect(await auditsFor(unit.unitId)).toHaveLength(1);
+      });
+
+      it("a verifier-originated ABORTED-shaped error fails closed without an SDK rerun", async () => {
+        const unit = await createUnit(w);
+        await seedEnabledPolicy(SIGNED);
+        const inner = createCompositeReleaseAuthorityVerifier({ registry: REGISTRY, revocationList: emptyList() });
+        let calls = 0;
+        const verifier = { verify: async (input: Parameters<typeof inner.verify>[0]) => {
+          calls += 1; await inner.verify(input); throw grpc(10, "Aborted due to cross-transaction contention.");
+        } };
+        const handlers = handlersFor(emulatorEnforcement({ verifier, provenance: () => matchedProvenance(SIGNED.releaseId) }));
+        await expectRefusedEverywhere(handlers, unit.unitId);
+        // One verification per request (seven management requests plus discovery): no rerun.
+        expect(calls).toBe(8);
+        expect(await unitData(unit.unitId)).toMatchObject({ title: "Earth Systems", revision: 1 });
+        expect(await auditsFor(unit.unitId)).toHaveLength(1);
+      });
     });
 
     it("the empty production registry and an environment-mismatched list both refuse", async () => {

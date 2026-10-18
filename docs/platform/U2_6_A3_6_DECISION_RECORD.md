@@ -858,7 +858,8 @@ at the human owner's direction; no separate signed approval artifact exists.
   would surface as `deploymentIneligible` instead of an SDK transaction rerun or
   `policyUnavailable`. This fails closed but misclassifies a transient failure. It
   must be resolved, with its own authorization and tests, before any verifier other
-  than `UNCONFIGURED` is wired. S3 does not modify A3-3.
+  than `UNCONFIGURED` is wired. S3 does not modify A3-3. **Update:** the correction is implemented (see "O6 - A3-3
+  verifier exception boundary" below) and awaits independent certification.
 - **O7.** S2 status above records its final recertification and owner integration at
   `6265564`.
 
@@ -1969,8 +1970,12 @@ open. A live capture needs separate authorization and an operator credential.
 
 ### S6d - Offline revocation and supersede preparation (non-authorizing)
 
-Status: implemented in the repository on top of `5e8f147` (S6c integrated); uncommitted,
-not deployed, never run against a real project. **Awaiting independent certification.**
+Status: **certified and integrated on main (`38d068f`)**, on top of `5e8f147` (S6c
+integrated); not deployed, never run against a real project. Independently certified after
+the P2 certification correction below, then integrated by the human owner (commit
+`38d068f`, "Add certified A3-6 S6d revocation tooling"). Status corrected in O6 at the
+owner's direction; this line previously read "uncommitted ... Awaiting independent
+certification".
 Verified only against synthetic fixtures (`SYNTHETIC FIXTURE - NOT PROVIDER-VERIFIED`).
 Teacher Units remains closed: `teacherUnitsAvailable()` returns `false`, production uses
 `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, and the production registry and revocation list
@@ -2201,3 +2206,88 @@ deletion and any cloud registration (S6e); registry key removal (S6d-D3); D9 sto
 retrieval; G1 to G5; O6; A3-7. The certified S6b package and S6c bundle unresolved lists
 still name S6d as not implemented; they are fixed literals of certified modules and are
 unchanged. The new CI step has not yet run in GitHub Actions.
+
+### O6 - A3-3 verifier exception boundary (pre-wiring gate)
+
+Status: implemented in the repository on top of `38d068f` (S6d integrated); uncommitted,
+not deployed. **Awaiting independent certification.** Authorized by the human owner after
+the S6e reconnaissance, which found S6e cloud writers blocked by prerequisites (empty
+pinned registries, D9 storage, D12, D13, G1 to G5) and recommended O6 as the next
+operation. Teacher Units remains closed: `teacherUnitsAvailable()` returns `false`,
+production uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, the production registry and
+revocation list are empty, and S3 is not wired. No A3-1 contract, validator, binding or
+fixture, S1 to S6d module, `a3-release-authority.ts`, `index.ts`, Rules, index, Hosting,
+Firebase configuration, client gate, CI, build or release tooling change.
+
+**Root cause.** A3-3 `callVerifier` caught every verifier exception and returned
+unverified `error`. The verifier's `readEvidence` reads through A3-3 `txRead`, which
+propagates SDK-retryable errors unchanged and turns every other read failure into
+`policyUnavailable`; `evaluateAvailabilityInTransaction` rethrows exactly those two
+classes. Because `callVerifier` swallowed them first, a retryable error during the
+certification read became `deploymentIneligible` instead of an SDK rerun, and a
+non-retryable read failure became `deploymentIneligible` instead of `policyUnavailable`.
+Fail-closed, but misclassified. Unreachable in production today: the `UNCONFIGURED`
+verifier never reads or throws.
+
+**Correction** (`a3-enforcement.ts`, `callVerifier` and the `readEvidence` closure only).
+Inside each evaluation the closure reads through a local wrapper over `txRead` that adds
+any error object `txRead` throws to a per-attempt set and rethrows it unchanged.
+`callVerifier` receives that set; in its catch it rethrows the caught value only when the
+set contains that exact object (`Set.has`, identity) and the object is SDK-retryable
+(the existing `isSdkRetryableTransactionError`, parity-tested against SDK 7.11.6) or a
+`PlatformError` with code `teacherUnits.policyUnavailable`. Everything else, including a
+verifier-created error of any code, name, message or shape, a replacement thrown after
+the verifier caught a read failure, a wrapped error, the existing `invalid evidence`,
+`invalid release evidence` and `unsupported evidence reference` errors and malformed
+verdicts, remains unverified `error`. The original object is rethrown, so its identity
+and code reach the SDK and the existing outer classification. The set is created in every
+call of the eligibility check, so each SDK rerun starts empty, re-reads every document and
+re-runs the verifier; nothing is cached. No second retry classifier was added. The
+existing `policyUnavailable` contract (non-retryable policy or evidence read failure) is
+now honored for evidence the verifier reads; no conflict was found.
+
+Interpretation for review: a verifier that catches a read failure and returns a verdict
+is not escalated; A3-3 still requires that verdict to be `verified` and every binding to
+hold. The certified S3 adapter propagates `readEvidence` exceptions unchanged (S3 O6),
+so this case does not arise with it.
+
+**Tests.** `a3-enforcement-retry.test.ts` (+29 cases, 50 total): each SDK-retryable gRPC
+code (1, 2, 4, 8, 10, 13, 14, 16), an ABORTED contention message and the expired
+INVALID_ARGUMENT, raised by the certification read, propagate as the same object; a
+non-retryable read becomes `policyUnavailable` with the original as cause; each
+retryable shape and a `policyUnavailable` refusal created by the verifier is ineligible;
+an equal-shaped copy, a fresh `policyUnavailable` and a wrapped error substituted after a
+swallowed read (retryable and non-retryable) are ineligible; invalid and unsupported
+evidence are ineligible; an earlier attempt's error object rethrown in a later attempt is
+ineligible (per-attempt set); production enforcement uses `UNCONFIGURED`.
+`teacher-units.test.ts` (+5, 135 total): verifier-originated ABORTED, transaction-expired
+and `policyUnavailable`, and a replaced read failure, refuse `deploymentIneligible` on
+every management operation with no write and `unverified` discovery; a non-retryable
+certification read refuses `policyUnavailable` on every management operation with no
+write. `teacher-units.emulator.test.ts` (+6, S3 block): with the certified S3 composite
+verifier, real Firestore documents and the installed SDK's own rerun loop, a fault
+injected into the real `Transaction.get` for the certification address (ABORTED,
+UNAVAILABLE, expired INVALID_ARGUMENT) propagates, the SDK reruns, the rerun re-reads the
+certification and verifies (one verdict, two certification reads); an update faulted once
+commits exactly once with one extra certification read and no extra verdict compared with
+an unfaulted update; a non-retryable fault refuses `policyUnavailable` after one read
+with no verdict or write; a verifier-originated ABORTED-shaped error refuses every
+operation with one verification per request (no rerun) and no write.
+
+**Mutation evidence** (in place, hash-checked restore). Hermetic suites
+(`a3-enforcement-retry`, `teacher-units`): 8 compile-safe mutants, all killed
+behaviorally (an outcome assertion fails, not a message): removing the identity check
+(18 failures); replacing it with a code-and-message shape match (2); suppressing
+retryable propagation (11); suppressing `policyUnavailable` propagation (2); letting any
+retryable-shaped error escape (15); sharing the set across attempts (1); not recording
+read failures (13); reverting to the pre-O6 wrapper (13). The retryable and
+`policyUnavailable` suppressions are also killed in the emulator suite (4 and 1
+failures). No message-only kills and no equivalent survivors. A first form of the
+identity-removal mutant failed to compile (unused variable) and was not counted.
+
+**Remaining limitations.** Classification relies on `txRead` throwing only SDK-retryable
+errors or `policyUnavailable` (unchanged A3-3 behavior). Errors from `tx.get` are compared
+by identity, so a provider that rethrows a different object would fail closed. Reruns
+stay bounded by the SDK's `maxAttempts`; a persistent retryable fault exhausts them as
+any other A3-3 read does. Wiring a verifier still needs separate authorization, A3-7 and
+the remaining S6e prerequisites; O6 does not wire anything.

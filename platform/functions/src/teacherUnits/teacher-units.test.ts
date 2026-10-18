@@ -182,6 +182,7 @@ import {
   PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
   RUNTIME_PLACEMENT_FINGERPRINT,
   TEACHER_UNITS_POLICY_PATH,
+  a3Refusal,
   type TeacherUnitsEnforcement,
 } from "./a3-enforcement";
 import { validateCapabilityResponse } from "./a3-protocol";
@@ -1056,6 +1057,14 @@ describe("A3-3 availability states for management operations", () => {
     ["provenance for another release", { provenance: () => ({ runtimeConsistency: "matched", available: false, approvalVerification: "unverified", deploymentVerification: "unverified", releaseId: "e".repeat(64) }) }],
     ["provenance throws", { provenance: () => { throw new Error("artifact"); } }],
     ["verifier throws", { verifier: { verify: () => Promise.reject(new Error("verifier")) } }],
+    // O6: verifier-originated errors fail closed whatever their shape.
+    ["verifier throws a retryable-shaped ABORTED", { verifier: { verify: () => Promise.reject(Object.assign(new Error("aborted"), { code: 10 })) } }],
+    ["verifier throws a transaction-expired-shaped error", { verifier: { verify: () => Promise.reject(Object.assign(new Error("The referenced transaction has expired or is no longer valid."), { code: 3 })) } }],
+    ["verifier throws its own policyUnavailable", { verifier: { verify: () => Promise.reject(a3Refusal("teacherUnits.policyUnavailable")) } }],
+    ["verifier replaces a readEvidence failure", { verifier: { verify: async (input) => {
+      try { await input.readEvidence("teacherUnits/unsupported"); } catch { /* swallowed */ }
+      throw Object.assign(new Error("aborted"), { code: 10 });
+    } } }],
     ["verifier unverified", { verifier: { verify: () => Promise.resolve({ verdict: "unverified", reason: "revoked" }) } }],
     ["verdict with an extra field", { verifier: testVerifier(CHAIN, { approved: true }) }],
     ["verdict for another generation", { verifier: testVerifier(CHAIN, { enabledGeneration: 4 }) }],
@@ -1070,6 +1079,16 @@ describe("A3-3 availability states for management operations", () => {
     for (const op of MANAGEMENT) expect(await codeOf(handlers[op](req(TEACHER, managementRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
     expect(snapshotWrites()).toBe(before);
     expect((await handlers.capabilities(req(TEACHER, V2_DISCOVERY))).teacherUnits.availability.state).toBe("unverified");
+  });
+
+  it("O6: a non-retryable readEvidence failure reaches the canonical policyUnavailable refusal with no write", async () => {
+    const unitId = await seedUnit();
+    store.set(CHAIN.certificationEvidenceRef, { get data(): Record<string, any> { throw Object.assign(new Error("denied"), { code: 7 }); }, version: ++version });
+    const verifier = { verify: async (input: any) => { await input.readEvidence(CHAIN.certificationEvidenceRef); return testVerifier(CHAIN).verify(input); } };
+    const handlers = handlersFor(testEnforcement(IDENTITY, CHAIN, { verifier }));
+    const before = snapshotWrites();
+    for (const op of MANAGEMENT) expect(await codeOf(handlers[op](req(TEACHER, managementRequest(op, unitId))))).toBe("teacherUnits.policyUnavailable");
+    expect(snapshotWrites()).toBe(before);
   });
 
   it("never caches a positive decision: each request and attempt re-evaluates", async () => {

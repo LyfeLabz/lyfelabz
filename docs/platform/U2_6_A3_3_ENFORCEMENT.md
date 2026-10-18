@@ -90,6 +90,18 @@ installed SDK 7.11.6 `isRetryableTransactionError` set, including INVALID_ARGUME
 only for an expired transaction (parity-tested against the installed source).
 Reruns stay bounded by the SDK's own `maxAttempts`.
 
+Verifier boundary (A3-6 O6). The release-authority verifier's `readEvidence` reads
+through the same transactional read helper, so its failures are classified exactly as
+above. An exception from the verifier propagates only when it is the exact error
+object that A3-3's own `readEvidence` raised during the current attempt and that
+object is SDK-retryable or a `policyUnavailable` refusal; the SDK then reruns, or the
+request refuses `policyUnavailable`. Matching is by object identity, never by code,
+name, message or shape: an error the verifier creates itself, or one it substitutes
+after catching a read failure, is unverified `error` and refuses
+`deploymentIneligible`. The record of raised errors is created fresh in every
+attempt, and nothing read is cached across attempts. Under the production
+`UNCONFIGURED` verifier, which never reads or throws, behavior is unchanged.
+
 ## Emulator compatibility
 
 - `npm run test:emulator`: migrated. The real A3-2 resolver binds the shared client

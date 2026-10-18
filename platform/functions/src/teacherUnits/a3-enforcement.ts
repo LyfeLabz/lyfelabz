@@ -172,8 +172,15 @@ export type AvailabilityEvaluation =
   | Readonly<{ kind: "ineligible"; policy: C.TeacherUnitsAvailabilityPolicyV1 }>
   | Readonly<{ kind: "enabled"; policy: C.TeacherUnitsAvailabilityPolicyV1; releaseId: string }>;
 
-async function callVerifier(scope: A3Scope, input: Parameters<ReleaseAuthorityVerifier["verify"]>[0]): Promise<ReleaseAuthorityVerdict> {
-  try { return parseReleaseAuthorityVerdict(await scope.enforcement.verifier.verify(input)); } catch {
+// O6: an exception propagates only when it is the exact error object A3-3's own
+// readEvidence raised in this attempt and txRead classified it as SDK-retryable or
+// policyUnavailable. Identity, never shape: a verifier-originated or replaced error,
+// however it looks, fails closed as unverified `error`.
+async function callVerifier(scope: A3Scope, input: Parameters<ReleaseAuthorityVerifier["verify"]>[0],
+  readFailures: ReadonlySet<unknown>): Promise<ReleaseAuthorityVerdict> {
+  try { return parseReleaseAuthorityVerdict(await scope.enforcement.verifier.verify(input)); } catch (err) {
+    if (readFailures.has(err) &&
+        (sdkRetryable(err) || (err instanceof PlatformError && err.code === "teacherUnits.policyUnavailable"))) throw err;
     return Object.freeze({ verdict: "unverified", reason: "error" } as const);
   }
 }
@@ -205,15 +212,20 @@ async function enabledEligible(tx: Transaction, scope: A3Scope, policy: C.Teache
   try { provenance = scope.enforcement.provenance(identity, scope.endpoint, releaseRef, release, deploymentApproval); } catch { return false; }
   if (provenance.runtimeConsistency !== "matched" || provenance.releaseId !== releaseId) return false;
 
+  // Per attempt: a fresh set on every SDK rerun; no evidence is cached.
+  const readFailures = new Set<unknown>();
+  const read = async (ref: string): Promise<unknown> => {
+    try { return await txRead(tx, ref); } catch (err) { readFailures.add(err); throw err; }
+  };
   const readEvidence = async (ref: string): Promise<unknown> => {
     if (typeof ref === "string" && RELEASE_REF.test(ref)) {
-      const document = await txRead(tx, ref);
+      const document = await read(ref);
       if (document === undefined) return null;
       if (!validateReleaseReference(ref, document, identity).ok) throw new Error("invalid release evidence");
       return document;
     }
     if (typeof ref === "string" && EVIDENCE_REF.test(ref)) {
-      const document = await txRead(tx, ref);
+      const document = await read(ref);
       if (document === undefined) return null;
       if (!validateEvidenceReference(ref, document, identity).ok) throw new Error("invalid evidence");
       return document;
@@ -225,7 +237,7 @@ async function enabledEligible(tx: Transaction, scope: A3Scope, policy: C.Teache
     deploymentApprovalRef, deploymentApproval: deploymentApproval as C.DeploymentApprovalDocumentV1,
     activationEvidenceRef, activationEvidence: activationEvidence as C.ActivationEvidenceDocumentV1,
     activationApprovalRef, activationApproval: activationApproval as C.ActivationApprovalDocumentV1, readEvidence,
-  }));
+  }), readFailures);
   if (verdict.verdict !== "verified") return false;
   if (verdict.releaseId !== releaseId || verdict.deploymentApprovalRef !== deploymentApprovalRef ||
       verdict.activationEvidenceRef !== activationEvidenceRef || verdict.activationApprovalRef !== activationApprovalRef ||
