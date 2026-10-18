@@ -459,6 +459,30 @@ shared with every other function.
      build, from an isolated release checkout of the exact release commit.
   4. No request-time or runtime environment switch may select the profile.
   5. [H] No implementation, build change or client-gate change is authorized.
+- [A] **D12 implementation (offline, owner-authorized).** Owner decisions: explicit
+  environment-variable selection; no target-project field in the build record; S6c keeps
+  policy-controlled artifacts blocking until separately authorized; all release-authority,
+  provenance, deployment and activation boundaries preserved.
+  1. `write-a3-runtime-build.cjs` writes `closed-only` when `A3_BUILD_PROFILE` is unset or
+     empty. `policy-controlled` requires `A3_EXPECTED_SOURCE_SHA` (40 lowercase hex) equal
+     to HEAD, a clean tree including untracked files, resolvable HEAD and tree, and a
+     non-symlinked `node_modules`. Unknown values refuse; a requested controlled build is
+     never downgraded. Details: `U2_6_A3_2_RUNTIME_PROVENANCE.md`.
+  2. Any previous record is deleted before checks; the new one is written only after
+     every check, by rename. A refusal exits non-zero and leaves no record, so a stale
+     record cannot stand in for the requested build.
+  3. Record schema, fingerprints, `verifyRuntimeProvenance`, the A3-6 verifier, the
+     registries, Firebase configurations and CI are unchanged. S6c finding wording now
+     says policy-controlled artifacts remain blocking until separately authorized; its
+     acceptance criteria are unchanged.
+  4. Selectable is not provenance matched, which is not deployment approved, which is not
+     available. A3-2 can now report `matched` for a controlled artifact; that is still
+     `available: false` and grants nothing.
+  5. [U] Firebase CLI propagation of the operator environment into `predeploy` is
+     unverified (G4); the script cannot prove checkout isolation. The S6b
+     `buildRecord.deployed` check text still reads "D12 deferred"; it remains accurate in
+     that the deployed record is not read, and was left unchanged to avoid altering
+     derived package output. Teacher Units remains CLOSED; no deployment or activation.
 
 ### D13 - Enabled Hosting candidate format
 

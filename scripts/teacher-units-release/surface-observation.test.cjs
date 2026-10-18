@@ -184,7 +184,7 @@ test('build record: closed-only observed; invalid hashes, schemas and modes are 
   assert.equal(policy.buildRecord.status, 'observed-present');
   assert.deepEqual(policy.buildRecord.deploymentModes, ['policy-controlled']);
   assert.equal(policy.buildRecord.archives[0].policyControlled, true);
-  assert.match(policy.blocking[0], /no policy-controlled build profile exists \(D12 deferred\)/);
+  assert.match(policy.blocking[0], /policy-controlled artifacts remain blocking until separately authorized/);
 
   const cases = [
     [{ record: '{"synthetic":true}\n' }, 'inconsistent', /fails the A3 runtime build schema/],

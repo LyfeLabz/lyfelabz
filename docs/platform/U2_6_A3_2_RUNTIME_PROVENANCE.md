@@ -148,11 +148,49 @@ A policy-controlled record with sourceDirty=true refuses. This private local for
 adds no fields to A3-1 documents, manifests or public protocols. All build-record
 validation remains structure-only, operationally unverified.
 
-Normal `npm run build` adds a postbuild step that writes only `closed-only`, with
-Git HEAD/tree and actual dirty status. It accepts no policy-controlled profile or
-activation flag. The generated file is ignored compiler output, not a tracked
-release record. Source labels do not prove that compiled bytes came from that source.
-A future independently authorized build/approval workflow must establish that fact.
+Normal `npm run build` adds a postbuild step (`scripts/write-a3-runtime-build.cjs`)
+that writes `closed-only` with Git HEAD/tree and actual dirty status. The generated
+file is ignored compiler output, not a tracked release record. Source labels do not
+prove that compiled bytes came from that source. A future independently authorized
+build/approval workflow must establish that fact.
+
+**D12 build profile.** The postbuild step selects the mode from the build process
+environment, once, while the build runs:
+
+- `A3_BUILD_PROFILE` unset or empty: `closed-only`, unchanged behavior (a dirty tree is
+  recorded as `sourceDirty: true`, not refused; `A3_EXPECTED_SOURCE_SHA` is ignored).
+- `A3_BUILD_PROFILE=policy-controlled`: requires `A3_EXPECTED_SOURCE_SHA` set to exactly
+  40 lowercase hexadecimal characters equal to `git rev-parse HEAD`; a clean working tree
+  (`git status --porcelain --untracked-files=normal` empty, so tracked, staged and untracked
+  changes refuse); and `node_modules`, when present, not a symlink.
+- Any other value (including different case or whitespace) refuses. A requested
+  policy-controlled build is never downgraded to `closed-only`.
+- Git HEAD and tree must resolve for every profile; a directory that is not a checkout, or
+  a repository with no commit, refuses.
+
+The script deletes any existing `a3-runtime-build.json` before any check and writes the
+new record by temporary file and rename only after every check passes. A refused build
+exits non-zero (failing `predeploy`) and leaves no record, so `inspectRuntimeArtifact`
+refuses the artifact and no stale record from an earlier build can be read as the
+requested one. Residual: the rest of `lib/` from the same `tsc` run remains on disk, and a
+later ordinary build writes `closed-only` again.
+
+The record schema and fingerprint semantics are unchanged: the mode is in the record,
+so it changes `functionsArtifactFingerprint` but not `runtimePayloadFingerprint`. The
+compiled runtime never reads these variables; there is no runtime or request-time switch.
+Policy-controlled records bind the exact `sourceSha` and `sourceTree`. Reproducibility
+still requires building from an isolated checkout of the exact release commit with real
+installed dependencies (`CLAUDE.md`); the script checks only the clean-tree, exact-SHA
+and non-symlinked `node_modules` conditions and cannot prove checkout isolation, the
+integrity of installed dependencies or the toolchain. [U] Whether the Firebase CLI passes
+the operator's environment to `predeploy` is unverified (gate G4) and needs staging
+verification before it is relied on.
+
+Four separate states: **technically selectable** (this profile builds a
+policy-controlled artifact offline); **provenance matched** (`verifyRuntimeProvenance`
+returns `matched`, still `available: false`); **deployment approved** (a signed approval
+recognized by the A3-6 verifier, whose production registry is empty); **available**
+(activation, still not authorized). Each earlier state grants none of the later ones.
 
 Runtime default root is derived from the compiled module location. No cwd fallback,
 package-search heuristic or buildpack-path assumption is silently substituted.

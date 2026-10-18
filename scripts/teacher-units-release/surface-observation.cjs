@@ -335,8 +335,8 @@ function inspectArchive(source, bytes, observation) {
     return inconsistent('build record fingerprints differ from the observed artifact');
   }
   const findings = [];
-  // D12 is deferred: no policy-controlled profile exists, so one in the deployed artifact is unexplained.
-  if (record.deploymentMode !== 'closed-only') findings.push(`build record: deployment mode ${record.deploymentMode} observed, but no policy-controlled build profile exists (D12 deferred)`);
+  // D12 makes a policy-controlled build selectable, but none is authorized for deployment, so one stays blocking.
+  if (record.deploymentMode !== 'closed-only') findings.push(`build record: deployment mode ${record.deploymentMode} observed; policy-controlled artifacts remain blocking until separately authorized (D12 selection is not deployment authorization)`);
   return { ...entry, status: 'observed-present', reason: null, recordSha256: recordHash, deploymentMode: record.deploymentMode,
     policyControlled: record.deploymentMode === 'policy-controlled', sourceDirty: record.sourceDirty, record: JSON.parse(K.canonicalJSON(record)), findings };
 }
