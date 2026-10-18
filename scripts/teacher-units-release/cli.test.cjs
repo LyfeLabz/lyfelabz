@@ -648,3 +648,205 @@ test('S6d P2 through the CLI: a substituted deployment-target manifest refuses b
     } finally { PCm.verifyCapture = replay; }
   } finally { c.cleanup(); }
 });
+
+// --- A3-6 S6f: observe discover and discover-verify (synthetic exchange; no credentials) ---
+const SDm = require('./staging-discovery.cjs');
+const { buildDiscovery } = require('./fixtures/synthetic-discovery.cjs');
+const CANARY = 'ya29.S6F-CANARY-TOKEN-0b9e';
+async function discoverCli(argv, { cwd = scratch(), exchange, env = {}, clock } = {}) {
+  const out = [], err = [];
+  const code = await C.main(argv, { env, cwd, exchange, now: clock || (() => F.NOW), stdout: { write: s => out.push(s) }, stderr: { write: s => err.push(s) } });
+  return { code, stdout: out.join(''), stderr: err.join(''), json: code === 0 ? JSON.parse(out.join('')) : null };
+}
+/** Counts credential retrievals and live exchanges; the exchange serves the synthetic fixture. */
+function liveSpy(f) {
+  const PCm = require('./provider-capture.cjs');
+  const saved = { token: PCm.liveAccessToken, live: PCm.createLiveExchange };
+  const counts = { tokens: 0, reads: 0 };
+  PCm.liveAccessToken = () => { counts.tokens++; return CANARY; };
+  PCm.createLiveExchange = ({ token }) => { assert.equal(token, CANARY); return async (url, limit) => { counts.reads++; return f.exchange(url, limit); }; };
+  return { counts, restore: () => { PCm.liveAccessToken = saved.token; PCm.createLiveExchange = saved.live; } };
+}
+
+test('S6f observe discover: dry run by default, staging only, no credential, no request', async () => {
+  const f = buildDiscovery(); const spy = liveSpy(f);
+  try {
+    const { value, calls } = await withoutNetwork(() => discoverCli(['observe', 'discover', '--project', 'lyfelabz-staging']));
+    assert.equal(value.code, 0, value.stderr);
+    assert.deepEqual(calls, []);
+    assert.equal(value.json.result.dryRun, true);
+    assert.equal(value.json.result.plan.projectNumber, '293337283840');
+    await refused(['observe', 'discover', '--project', 'lyfelabz-staging', '--out', 'x'], /dry run/);
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lyfelabz-s6f-cli-'));
+    const cases = [
+      [['observe', 'discover', '--project', 'lyfelabz-prod', '--live', '--out', path.join(root, 'a')], {}, /applies only to lyfelabz-staging/],
+      [['observe', 'discover', '--project', 'lyfelabz-prod'], {}, /applies only to lyfelabz-staging/],
+      [['observe', 'discover-verify', '--project', 'lyfelabz-prod', '--discovery', root], {}, /applies only to lyfelabz-staging/],
+      [['observe', 'discover', '--project', 'demo-a3', '--live', '--out', path.join(root, 'b')], {}, /only to lyfelabz-staging or lyfelabz-prod/],
+      [['observe', 'discover', '--live', '--out', path.join(root, 'c')], {}, /explicit --project/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(root, 'd')], { GOOGLE_CLOUD_PROJECT: 'lyfelabz-prod' }, /ambiguous project/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(root, 'e')], { CLOUDSDK_CORE_PROJECT: 'lyfelabz-prod' }, /ambiguous project/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(root, 'g')], { FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080' }, /ambiguous environment/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(SDm.REPOSITORY_ROOT, 'no-such-s6f-parent', 'discovery-out')], {}, /inside the repository/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', root], {}, /already exists/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(root, 'h'), '--principal', 'Bad Principal'], {}, /--principal/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(root, 'i'), '--execute'], {}, /--execute is not accepted/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(root, 'j'), '--confirm', 'a'.repeat(64)], {}, /--confirm is not accepted/],
+      [['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(root, 'k'), '--plan', 'p.json'], {}, /--plan is not accepted/],
+      [['observe', 'discover-verify', '--project', 'lyfelabz-staging', '--discovery', root, '--live'], {}, /--live is not accepted/],
+    ];
+    for (const [argv, env, pattern] of cases) {
+      const r = await discoverCli(argv, { env });
+      assert.equal(r.code, 1, argv.join(' '));
+      assert.deepEqual(spy.counts, { tokens: 0, reads: 0 }, `no credential or read: ${argv.join(' ')}`);
+      assert.match(r.stderr, pattern);
+    }
+    assert.deepEqual(spy.counts, { tokens: 0, reads: 0 }, 'zero credential retrievals and zero provider reads');
+    assert.deepEqual(fs.readdirSync(root), [], 'no output was created');
+  } finally { spy.restore(); f.cleanup(); }
+});
+
+test('S6f observe discover --live then discover-verify: unattested, non-authorizing, sensitive bodies never printed; tampering refuses', async () => {
+  const f = buildDiscovery(); const spy = liveSpy(f);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lyfelabz-s6f-cli-'));
+  try {
+    const out = path.join(root, 'disc');
+    const r = await discoverCli(['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', out, '--principal', 'operator@example.org'], { clock: f.clock });
+    assert.equal(r.code, 0, r.stderr);
+    assert.deepEqual(spy.counts.tokens, 1);
+    assert.equal(r.json.result.evidenceClass, 'operator-discovered-unattested');
+    for (const k of ['certifiedEvidence', 'deploymentEvidence', 'providerVerified', 'planProduced', 'releaseAuthorized', 'activationReady']) assert.equal(r.json.result[k], false, k);
+    assert.equal(r.json.result.summary.endpointListing['observed-present'], 9);
+    assert.deepEqual(fs.readdirSync(out).sort(), ['discovery-report.json', 'discovery-transcript.json', 'discovery.json']);
+    assert.equal(r.stdout.includes('"body"'), false, 'raw provider bodies are never printed');
+    const again = await discoverCli(['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', out], { clock: f.clock });
+    assert.match(again.stderr, /already exists/);
+    assert.equal(spy.counts.tokens, 1, 'collision refused before a credential');
+    const { value, calls } = await withoutNetwork(() => discoverCli(['observe', 'discover-verify', '--project', 'lyfelabz-staging', '--discovery', out]));
+    assert.equal(value.code, 0, value.stderr); assert.deepEqual(calls, []);
+    assert.match(value.json.result.verified, /not authenticated/);
+    assert.equal(spy.counts.tokens, 1, 'verification reads no credential');
+    // Existing S6c observe verify refuses the discovery directory.
+    const capture = await observeSetup();
+    const asCapture = await discoverCli(['observe', 'verify', '--project', 'lyfelabz-staging', ...INPUTS, '--capture', out], { cwd: capture.cwd });
+    capture.c.cleanup();
+    assert.equal(asCapture.code, 1); assert.match(asCapture.stderr, /capture file is unreadable|capture files required/);
+    const bundle = path.join(out, 'discovery.json');
+    fs.chmodSync(bundle, 0o600);
+    const b = JSON.parse(fs.readFileSync(bundle, 'utf8')); b.releaseAuthorized = true;
+    fs.writeFileSync(bundle, K.canonicalJSON(b));
+    const tampered = await discoverCli(['observe', 'discover-verify', '--project', 'lyfelabz-staging', '--discovery', out]);
+    assert.equal(tampered.code, 1); assert.match(tampered.stderr, /discovery\.json differs/);
+  } finally { spy.restore(); f.cleanup(); fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test('S6f token canary: the real live exchange sends the token only in the header; it never reaches evidence, stdout or stderr', async () => {
+  const PCm = require('./provider-capture.cjs');
+  const f = buildDiscovery();
+  const saved = { token: PCm.liveAccessToken, fetch: globalThis.fetch };
+  let tokens = 0, headerOk = 0, requests = 0;
+  PCm.liveAccessToken = () => { tokens++; return CANARY; };
+  globalThis.fetch = async (url, init) => {
+    requests++;
+    assert.equal(init.method, 'GET'); assert.equal(init.redirect, 'error');
+    if (init.headers.Authorization === `Bearer ${CANARY}`) headerOk++;
+    const { status, bytes } = await f.exchange(url, Infinity);
+    return new Response(bytes, { status });
+  };
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lyfelabz-s6f-canary-'));
+  try {
+    const out = path.join(root, 'disc');
+    const r = await discoverCli(['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', out], { clock: f.clock });
+    assert.equal(r.code, 0, r.stderr);
+    assert.equal(tokens, 1); assert.ok(requests > 0); assert.equal(headerOk, requests);
+    const forms = [CANARY, Buffer.from(CANARY).toString('base64'), Buffer.from(CANARY).toString('base64url'), Buffer.from(`Bearer ${CANARY}`).toString('base64'), Buffer.from(CANARY).toString('hex')];
+    const texts = [r.stdout, r.stderr, ...fs.readdirSync(out).map(file => fs.readFileSync(path.join(out, file), 'latin1'))];
+    // Decoded bodies too: the token must not appear inside any recorded response.
+    const t = JSON.parse(fs.readFileSync(path.join(out, 'discovery-transcript.json'), 'utf8'));
+    texts.push(...t.events.filter(e => e.body).map(e => Buffer.from(e.body, 'base64').toString('latin1')));
+    for (const text of texts) for (const form of forms) assert.equal(text.includes(form), false, form);
+  } finally { PCm.liveAccessToken = saved.token; globalThis.fetch = saved.fetch; f.cleanup(); fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+// --- A3-6 S6f certification corrections (Sol F2 to F4) through the CLI ---
+test('S6f F2: a provider echoing the Authorization header (plain and encoded) through the real live exchange leaves no token in evidence or console', async () => {
+  const PCm = require('./provider-capture.cjs');
+  const f = buildDiscovery();
+  const saved = { token: PCm.liveAccessToken, fetch: globalThis.fetch };
+  // `/`, `+` and `=` force percent escapes; Sol's bypass used their lowercase hex form.
+  const token = `${CANARY}/+=${'Q7'.repeat(30)}`;
+  const lowerPct = t => encodeURIComponent(t).replace(/%[0-9A-F]{2}/g, m => m.toLowerCase());
+  const mixedPct = t => encodeURIComponent(t).replace(/%([0-9A-F])([0-9A-F])/g, (m, a, b) => `%${a}${b.toLowerCase()}`);
+  PCm.liveAccessToken = () => token;
+  let echoed = 0;
+  globalThis.fetch = async (url, init) => {
+    const header = init.headers.Authorization, t = header.slice('Bearer '.length), raw = Buffer.from(t);
+    if (url.includes('/functions') && !url.includes('/functions/') || url.includes(':getIamPolicy')) {
+      echoed++;
+      const body = `{"error":{"code":401,"status":"UNAUTHENTICATED","message":"invalid ${t} ${encodeURIComponent(t)} ${lowerPct(t)} ${mixedPct(t)} ${raw.toString('hex')} ${Buffer.from(header).toString('base64')}","details":[{"reason":"${t}"}]}}`;
+      return new Response(body, { status: 401 });
+    }
+    const { status, bytes } = await f.exchange(url, Infinity);
+    return new Response(bytes, { status });
+  };
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lyfelabz-s6f-echo-'));
+  try {
+    const out = path.join(root, 'disc');
+    const r = await discoverCli(['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', out], { clock: f.clock });
+    assert.equal(r.code, 0, r.stderr);
+    assert.ok(echoed > 0);
+    assert.equal(r.json.result.summary.endpointListing.unreadable, 9, 'an unreadable listing is never absence');
+    assert.equal(r.json.result.summary.sanitization.activeCredential, 'active-credential-removed-before-recording');
+    assert.ok(r.json.result.summary.sanitization.markersInRecordedEvidence > 0);
+    const t = JSON.parse(fs.readFileSync(path.join(out, 'discovery-transcript.json'), 'utf8'));
+    const texts = [r.stdout, r.stderr, ...fs.readdirSync(out).map(file => fs.readFileSync(path.join(out, file), 'latin1')),
+      ...t.events.filter(e => e.body).map(e => Buffer.from(e.body, 'base64').toString('latin1'))];
+    const raw = Buffer.from(token);
+    assert.notEqual(lowerPct(token), encodeURIComponent(token));
+    for (const form of [token, encodeURIComponent(token), lowerPct(token), mixedPct(token), raw.toString('hex'), raw.toString('base64'), raw.toString('base64url'), Buffer.from(`Bearer ${token}`).toString('base64'), token.slice(5, 40)]) {
+      for (const text of texts) assert.equal(text.includes(form), false, form);
+    }
+    const verified = await discoverCli(['observe', 'discover-verify', '--project', 'lyfelabz-staging', '--discovery', out]);
+    assert.equal(verified.code, 0, verified.stderr);
+  } finally { PCm.liveAccessToken = saved.token; globalThis.fetch = saved.fetch; f.cleanup(); fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test('S6f F3 and F4: verify refuses .incomplete aliases; a backwards clock refuses with no output', async () => {
+  const f = buildDiscovery(); const spy = liveSpy(f);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lyfelabz-s6f-f34-'));
+  try {
+    const out = path.join(root, 'disc');
+    assert.equal((await discoverCli(['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', out], { clock: f.clock })).code, 0);
+    fs.renameSync(out, `${out}.incomplete`);
+    fs.symlinkSync(`${out}.incomplete`, path.join(root, 'alias'));
+    for (const alias of [`${out}.incomplete/.`, `${out}.incomplete//`, path.join(root, 'alias'), 'alias']) {
+      const r = await discoverCli(['observe', 'discover-verify', '--project', 'lyfelabz-staging', '--discovery', alias], { cwd: root });
+      assert.equal(r.code, 1, alias); assert.match(r.stderr, /never a complete discovery/);
+    }
+    fs.renameSync(`${out}.incomplete`, out);
+    assert.equal((await discoverCli(['observe', 'discover-verify', '--project', 'lyfelabz-staging', '--discovery', `${out}//`])).code, 0, 'finalized control');
+    let n = 0;
+    const back = () => new Date(Date.parse('2026-10-16T12:10:00.000Z') + (n++ === 30 ? -5000 : n)).toISOString();
+    const rolled = path.join(root, 'rolled');
+    const r = await discoverCli(['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', rolled], { clock: back });
+    assert.equal(r.code, 1); assert.match(r.stderr, /moved backwards/);
+    assert.equal(fs.existsSync(rolled), false); assert.equal(fs.existsSync(`${rolled}.incomplete`), false);
+  } finally { spy.restore(); f.cleanup(); fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test('S6f F2: an error raised during a live discovery that carries the active token is redacted before it is printed', async () => {
+  const f = buildDiscovery(); const spy = liveSpy(f);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lyfelabz-s6f-err-'));
+  try {
+    let n = 0;
+    const lower = encodeURIComponent(`${CANARY}/x`).replace(/%[0-9A-F]{2}/g, m => m.toLowerCase());
+    // A failure after the credential is obtained whose message carries the token (raw and lowercase-percent forms).
+    const clock = () => { if (++n === 5) throw new Error(`clock failed near ${CANARY} and ${lower}`); return new Date(Date.parse('2026-10-16T12:10:00.000Z') + n).toISOString(); };
+    const r = await discoverCli(['observe', 'discover', '--project', 'lyfelabz-staging', '--live', '--out', path.join(root, 'd')], { clock });
+    assert.equal(r.code, 1);
+    assert.equal(spy.counts.tokens, 1);
+    assert.match(r.stderr, /clock failed near \[REDACTED-ACTIVE-CREDENTIAL\]/);
+    for (const text of [r.stderr, r.stdout]) for (const form of [CANARY, encodeURIComponent(CANARY), CANARY.slice(5)]) assert.equal(text.includes(form), false, form);
+    assert.equal(fs.existsSync(path.join(root, 'd')), false);
+  } finally { spy.restore(); f.cleanup(); fs.rmSync(root, { recursive: true, force: true }); }
+});

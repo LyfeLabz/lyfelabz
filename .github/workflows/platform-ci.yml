@@ -110,6 +110,10 @@ jobs:
       # synthetic fixtures only. No credentials, no provider calls, no signing, no emulator.
       - name: A3-6 S6d revocation preparation (offline fixtures)
         run: node --test ../../scripts/teacher-units-release/revocation-procedure.test.cjs
+      # A3-6 S6f: staging-only, non-authorizing discovery and offline replay over synthetic
+      # exchanges only. No credentials, no provider calls, no live discovery.
+      - name: A3-6 S6f staging discovery (offline fixtures)
+        run: node --test ../../scripts/teacher-units-release/staging-discovery.test.cjs
       # S6a writers run only against the Firestore emulator for a demo- project, using the
       # same Java and pinned firebase-tools setup as the Rules job. No credentials.
       - name: Set up Java (Firestore emulator for A3-6 S6a)

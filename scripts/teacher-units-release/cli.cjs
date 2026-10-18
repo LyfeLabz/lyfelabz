@@ -21,6 +21,11 @@
 // A3-6 S6d adds `revocation prepare`, `revocation verify` and `revocation rollout-check`:
 // offline, read-only, non-authorizing R2 preparation (revocation-procedure.cjs). They
 // pin, revoke, shut down, redeploy and delete nothing.
+//
+// A3-6 S6f adds `observe discover` (a dry run listing the reads unless --live is
+// given) and `observe discover-verify` (offline replay): a staging-only,
+// non-authorizing discovery that needs no deployment plan (staging-discovery.cjs).
+// Discovery output is never certified, deployment or capture evidence.
 const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
@@ -33,6 +38,7 @@ const CAS = require('./availability-cas.cjs');
 const EP = require('./evidence-package.cjs');
 const PC = require('./provider-capture.cjs');
 const RV = require('./revocation-procedure.cjs');
+const SD = require('./staging-discovery.cjs');
 
 const LIB = path.resolve(__dirname, '../../platform/functions/lib/teacherUnits');
 const K = require(path.join(LIB, 'a3-canonical.js'));
@@ -87,6 +93,9 @@ const COMMANDS = Object.freeze({
   'revocation prepare': { values: [...REVOCATION_FLAGS, 'out'], cloudOnly: true },
   'revocation verify': { values: [...REVOCATION_FLAGS, 'revocation-plan'], cloudOnly: true },
   'revocation rollout-check': { values: [...REVOCATION_FLAGS, ...OBSERVE_FLAGS, 'revocation-plan', 'capture', 'out'], cloudOnly: true },
+  // A3-6 S6f: staging-only, non-authorizing discovery. No --execute or --confirm; requests need --live.
+  'observe discover': { values: ['principal', 'out'], booleans: ['live'], cloudOnly: true, stagingOnly: true },
+  'observe discover-verify': { values: ['discovery'], cloudOnly: true, stagingOnly: true },
 });
 
 function parse(argv) {
@@ -315,6 +324,31 @@ async function run({ command, flags }, target, ctx) {
       const files = Object.fromEntries(Object.entries(PC.FILES).map(([key, file]) => [key, io.file(path.join(dir, file), 'capture')]));
       return PC.verifyCapture({ project: target.project, files, ...observeInputs(flags, io), hostingRoot: ctx.hostingRoot });
     }
+    case 'observe discover': {
+      SD.stagingOnly(target.project);
+      if (flags.live !== true) {
+        if (flags.out !== undefined || flags.principal !== undefined) refuse('--out and --principal apply only with --live; without --live observe discover is a dry run');
+        return { dryRun: true, plan: SD.discoveryPlan(target.project) };
+      }
+      // Every local check precedes the credential: output location, then the principal.
+      const out = SD.prepareOutput(required(flags, 'out'), { cwd: ctx.cwd });
+      if (flags.principal !== undefined && !/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]+$/.test(flags.principal)) refuse('--principal must be a lowercase account email (an operator declaration, never verified)');
+      // The token is passed to discovery only so that a provider echo of it is removed before recording.
+      const token = ctx.exchange ? undefined : PC.liveAccessToken();
+      const exchange = ctx.exchange || PC.createLiveExchange({ token });
+      let discovered;
+      try {
+        discovered = await SD.discover({ project: target.project, exchange, clock: now, evidenceClass: 'operator-discovered-unattested', principal: flags.principal, activeCredential: token });
+        SD.writeOutput(out, discovered.bytes);
+      } catch (error) { throw new Refusal(SD.redactText(error && error.message ? error.message : 'unexpected failure', token)); }
+      const b = discovered.bundle;
+      return { out: flags.out, bundleSha256: createHash('sha256').update(discovered.bytes.bundle).digest('hex'), evidenceClass: b.evidenceClass, window: b.window,
+        termination: b.termination, summary: b.summary, ...SD.CLAIMS, gates: b.gates, authorization: b.authority,
+        sensitivity: 'the transcript may hold environment values, source archives and IAM data; it is not printed' };
+    }
+    case 'observe discover-verify':
+      SD.stagingOnly(target.project);
+      return SD.verifyDiscovery({ project: target.project, files: SD.readOutput(required(flags, 'discovery'), { cwd: ctx.cwd }) });
     case 'revocation prepare': {
       const prepared = RV.prepareRevocationPlan({ ...revocationInputs(target, flags, io), preparedAt: now() });
       writeNew(ctx.cwd, required(flags, 'out'), 'out', prepared.bytes);
@@ -391,6 +425,7 @@ async function main(argv, ctx = {}) {
     const target = resolveTarget(parsed.flags.project, context.env);
     if (parsed.spec.mutates && target.cloud) refuse(`${parsed.command} is emulator-only in S6a; staging and production writes are not implemented`);
     if (parsed.spec.cloudOnly && !target.cloud) refuse(`${parsed.command} applies only to lyfelabz-staging or lyfelabz-prod`);
+    if (parsed.spec.stagingOnly && target.project !== 'lyfelabz-staging') refuse(`${parsed.command} applies only to lyfelabz-staging; production is never a discovery target`);
     const result = await run(parsed, target, context);
     context.stdout.write(`${JSON.stringify(printable({ command: parsed.command, project: target.project, workflowRunId: context.workflowRunId,
       approvalSystemId: ST.APPROVAL_SYSTEM_ID, result }), null, 2)}\n`);

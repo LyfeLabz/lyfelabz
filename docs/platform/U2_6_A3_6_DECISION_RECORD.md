@@ -2209,8 +2209,11 @@ unchanged. The new CI step has not yet run in GitHub Actions.
 
 ### O6 - A3-3 verifier exception boundary (pre-wiring gate)
 
-Status: implemented in the repository on top of `38d068f` (S6d integrated); uncommitted,
-not deployed. **Awaiting independent certification.** Authorized by the human owner after
+Status: **independently certified and integrated at
+`36670e5b61500455271b9764bea6fa68f89a520f`**, on top of `38d068f` (S6d integrated); not
+deployed. Status corrected in S6f at the owner's direction; this line previously read
+"implemented in the repository ...; uncommitted ... Awaiting independent certification".
+Authorized by the human owner after
 the S6e reconnaissance, which found S6e cloud writers blocked by prerequisites (empty
 pinned registries, D9 storage, D12, D13, G1 to G5) and recommended O6 as the next
 operation. Teacher Units remains closed: `teacherUnitsAvailable()` returns `false`,
@@ -2291,3 +2294,391 @@ by identity, so a provider that rethrows a different object would fail closed. R
 stay bounded by the SDK's `maxAttempts`; a persistent retryable fault exhausts them as
 any other A3-3 read does. Wiring a verifier still needs separate authorization, A3-7 and
 the remaining S6e prerequisites; O6 does not wire anything.
+
+### S6f - Staging discovery (non-authorizing prerequisite to S6e)
+
+Status: implemented in the repository on top of `36670e5` (O6 integrated); uncommitted, not
+deployed, never run against a real project. The independent certification (Sol 6.1) failed
+with findings F1 to F4; the corrections below are implemented. The recertification passed F1
+and F4 and failed F2 and F3; the second corrections below are implemented. The next
+recertification passed F1 to F4 and redaction provenance and failed the process-wide
+working-directory behavior of the F3 reader; the working-directory correction, the bounded file
+read and the final same-descriptor size check below are implemented. **Implementation complete;
+accepted by the human owner for continued development on the existing verification evidence.
+Independent certification is INCONCLUSIVE:** Sol verified the corrected file reader and found no
+remaining implementation defect, but its environment blocked fixture writes and emulator sockets,
+so its regression evidence is incomplete. The full regression (offline release tooling, Hosting
+release, parity, Functions and app builds and tests, the three emulator suites, and Node 20, 22 and
+24 for the offline and Hosting suites) was run by Claude, not independently. S6f is not
+independently certified. No live staging discovery and no Teacher Units activation are authorized.
+Authorized
+by the human owner after the staging discovery design reconnaissance, which found that the
+certified S6c capture cannot run without an approved deployment plan and expected access, and
+that both require facts only an observation can supply (G1 variables, G2 update policy, the full
+S4 execution and runtime profile, deployed fingerprints, Rules and index hashes, and the S5 IAM
+bindings). Teacher Units remains closed: `teacherUnitsAvailable()` returns `false`, production
+uses `UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER`, the production registry and revocation list are
+empty, and S3 is not wired. No S1 to S6d or O6 implementation, A3-1 to A3-5, RAP, publisher,
+Rules, index, Hosting, Functions source or entry point, build-profile, IAM, Storage, KMS or
+infrastructure change; the only certified-module change is additive CLI commands (S6b-D3
+precedent). The certified `observe capture` and `observe verify` are unchanged. The O6 status
+line above is corrected at the owner's direction; the certified S6b and S6c fixed unresolved
+lists are fixed literals and are not rewritten.
+
+**Files.** `scripts/teacher-units-release/staging-discovery.cjs`,
+`staging-discovery.test.cjs`, `fixtures/synthetic-discovery.cjs`; additive changes to
+`cli.cjs` and `cli.test.cjs`; `.github/workflows/platform-ci.yml` (one offline step); this
+record; `TEACHER_UNITS.md`. CommonJS over the certified S4 exports (`ENDPOINTS`,
+`normalizeEndpoint`, `payloadSummary`, `instant`), S5 `normalizePolicy`, S6c
+`assertAllowedUrl` and `STATUSES`, and A1 `archiveRuntime`, `normalizeRemoteIndexes`,
+`canonical`, `fingerprint` and `LIMITS`, none modified. The CLI live path uses the certified S6c
+`liveAccessToken` and `createLiveExchange` (GET only, redirects refused, bounded bodies, 30 s
+timeout). Not reachable from `index.ts`; not in the deployed Functions payload.
+
+**Staging only, enforced three times.** The CLI dispatch refuses any project other than
+`lyfelabz-staging` for both commands (after the existing explicit `--project`, ambient-project
+and emulator-variable refusals); the module refuses it again in `discover`, `verifyDiscovery`
+and `discoveryPlan`; and every request URL passes the S6c allowlist and then a staging guard:
+canonical form (`href` equal to the request), no `lyfelabz-prod` or `182791689935` raw or
+percent-decoded anywhere including query values, an exact staging path per host (project ID or
+the bound number 293337283840, region `us-central1`), an exact query allowlist (credential-bearing
+keys such as `access_token` and `key` refused by name, unknown and duplicate keys refused,
+required keys enforced), and source archives only from `gcf-v2-sources-293337283840-us-central1`
+(documented convention [U]) with a safe object path. Provider-derived names (function, service,
+revision, ruleset, source bucket and object) are validated before any URL is built; a name that
+fails is recorded `inconsistent` and never read. The session re-checks every URL before the
+request (a failure ends discovery with `guard-refusal`, keeping the evidence), and the recorder
+checks it once more.
+
+**Reads (GET only, about 82 for a healthy project).** Firebase project (an identity mismatch
+ends discovery), Firestore database, the Functions v2 listing (first pass), for each of the nine
+endpoints listed once in `us-central1` the Function, Cloud Run service and serving revision, the
+generation-pinned source archive (deduplicated), a second Function/service/revision pass, the
+Functions and Cloud Run `getIamPolicy` (version 3), the Rules release and ruleset, Firestore
+indexes and both field filters, and the Functions listing again (second pass). Hosting, domain
+mappings, serverless NEGs and backend services stay with S6c capture; inherited IAM is not
+observed (S6c-D1).
+
+**Classification.** Statuses are the S6c set: `observed-present`, `observed-absent`,
+`unreadable`, `incomplete`, `inconsistent`, `not-observed`. An endpoint is `observed-absent`
+only when both Functions passes are complete, valid and identical and it is not listed. A 401,
+403, 404, other non-2xx, transport failure, partial or malformed page, undocumented listing key,
+omitted collection, unreachable location, repeated or malformed pagination token, a listed name
+not bound to staging, or a listing that changed between passes is never absence. Non-2xx reads
+are `unreadable` with structured fields only: the HTTP status, a numeric `error.code`, an
+identifier-shaped `error.status` and identifier-shaped `details[].reason` values (others are
+counted, not copied); a provider message is recorded as present, never copied (F2). The kind
+(`unauthenticated`, `api-disabled`, `permission-denied`, `not-found`, `rate-limited` or
+`http-error`) is a best-effort reading of unattested provider fields. Extra
+`teacherUnits*` functions are reported and never read. Each endpoint carries non-authorizing
+diagnostics: the certified S4 `normalizeEndpoint` result (`accepted` with configuration and
+runtime-profile SHA-256 and artifact fingerprints, or `refused` with the S4 reason) and the S5
+`normalizePolicy` result for both policies; Cloud Run access flags are recorded, not
+interpreted. G1 observations are variable names only; G2 is the reported update policy.
+
+**Budget.** At most 400 provider reads; no read starts once less than 45 s (the 30 s exchange
+timeout plus margin) of the five-minute window remains; a read completing after the window ends
+discovery. Each termination (`read-limit`, `time-budget`, `window-exceeded`, `guard-refusal`,
+`identity-mismatch`) stops further requests, is recorded with its event position, marks what
+was not read `not-observed`, and the partial evidence is written. A backwards or malformed
+clock refuses with no output.
+
+**Evidence (three files).** `discovery-transcript.json`
+(`lyfelabz.teacherUnitsA3StagingDiscoveryTranscript` v1): identity, evidence class
+(`synthetic` or `operator-discovered-unattested`, never a capture class), declared principal,
+window, termination, and every event in order: clock readings, reads (URL, `GET`, mode `json` or
+`binary`, status, SHA-256, Base64 body of the sanitized recorded response, times) and
+transport failures (URL, mode, bounded refusal reason, times), plus a declared sanitization
+value (second correction, below). `discovery-report.json` (`...StagingDiscoveryReport`): derived statuses
+and diagnostics. `discovery.json` (`...StagingDiscovery`): the SHA-256 of both files and fixed
+claims `certifiedEvidence`, `deploymentEvidence`, `providerVerified`, `planProduced`,
+`releaseAuthorized` and `activationReady` all `false`, G1 to G5 `not-resolved`, and an
+unresolved list. No discovery file carries a certified kind; the S4, S5, S6b, S6c and S6d
+consumers refuse them (tested).
+
+**Verification (`observe discover-verify`, offline).** Strict transcript schema (exact keys,
+literals, staging identity, class, principal, every event URL through the staging guard, `GET`
+only, canonical Base64, failure reasons), canonical bytes, then exact replay through the same
+code: each replayed request must match the next event's type, URL, mode and method, each body
+must match its hash, transport failures are reproduced at their recorded positions, a missing,
+extra or reordered event refuses, and all three files must equal the re-derived bytes. No
+network, clock or credential is used. **Consistency is not authenticity:** a fully consistent
+forged transcript, with report and bundle regenerated from it, cannot be detected offline, and
+TLS origin cannot be proven after the fact. A verified discovery is historical and never
+authorizes anything.
+
+**Sensitive evidence.** The transcript may hold environment-variable values, source archives,
+IAM bindings and provider metadata. `--out` must be outside the repository working tree (checked
+lexically and after resolving symlinks), must not exist (nor `<out>.incomplete`), and its parent
+must exist. Files are written exclusively (`wx`, 0600) into a new 0700 `<out>.incomplete`
+directory, the bundle last, which is then renamed to `<out>`; verification refuses unfinished
+output through any alias (F3, below). Raw bodies are never printed; reports carry variable
+names, never values (tested with a value canary). The access token is obtained only after every
+local check, is used only in the request header by the certified live exchange, and is removed
+from every recorded response before hashing (F2, below); a non-refusal exchange error is
+recorded only as a generic host message. A token canary through the real live exchange is
+absent from stdout, stderr, all three files and every decoded body, in raw, Base64, Base64url,
+hex and `Bearer` Base64 forms, including when the provider echoes it.
+
+**CLI (additive).** `observe discover` is a dry run (read plan, no credential, no request) unless
+`--live` is given; with `--live` it needs `--out` and accepts `--principal`. `observe
+discover-verify --discovery <dir>` is offline. Both are staging only; neither accepts
+`--execute`, `--confirm` or the capture plan flags. Existing commands are unchanged.
+
+**Verification at first submission.** Offline: `staging-discovery.test.cjs` 27 tests, `cli.test.cjs` 30 (27
+existing plus 3 S6f). Cases: nine healthy, zero, five, an extra Teacher Units function; 401, 403
+and 404 listings; a disabled API; a missing revision; an oversized archive and a failed read as
+transport failures with continued discovery and replay; oversized JSON; undocumented listing
+keys, an omitted collection, an unknown function field (S4 refused); a repeated pagination
+token; listing and endpoint drift between passes; production service names, a listed production
+function, production-number and foreign source buckets, and a production pagination token
+(guard-refusal); a URL guard table; module, CLI, ambient-project and emulator-variable refusals
+with zero credential retrievals and zero reads; time budget, read limit and window overrun;
+tampered, resealed, reordered, re-statused, re-bodied, re-identified and re-claimed evidence;
+cross-consumer isolation; output inside the repository, through a symlink, colliding, with an
+`.incomplete` sibling or a missing parent; permissions; value and token canaries; network-free
+verification; a static scan.
+
+Behavioral mutation (in place with hash-checked restore; S6f module and CLI): 37 mutants, all
+killed. 31 behavioral. 4 message-only, each layered: the CLI staging dispatch (the module refuses
+first, before any credential), the transcript literal check (re-derivation refuses), the
+credential-query rejection (the query allowlist refuses) and the lexical repository check (the
+parent-missing or resolved-path check refuses). 1 killed only by the static scan and
+behaviorally equivalent (`wx` within a directory this run created exclusively), 1 killed by the
+explicit margin assertion. A first pass left five survivors: four were test gaps (production
+values in pagination tokens and object names, the session guard layer, event URL binding on
+replay, and a margin test that read the mutated constant) and gained permanent tests; one
+reported kill was produced only by a fixture timing flake (separately zipped synthetic archives
+differ in timestamps), which was corrected. One mutant run wrote synthetic output inside the
+repository through the disabled check; it was removed, and the test now uses a path whose parent
+does not exist.
+
+**Certification correction (Sol 6.1 FAIL: F1 to F4).** Within the eight S6f files only; no
+certified S4, S5, S6c or S6d module, A3-3 enforcement, configuration, Rules, index or app change.
+Each finding was reproduced first on the unchanged bytes.
+
+- **F1 - query allowlist bypass.** Reproduced: `toString`, `__proto__`, `hasOwnProperty` and
+  `%74oString` were accepted as query keys. Root cause: the allowlist was a plain object looked
+  up with `route.query[key]`, so inherited `Object.prototype` members were truthy rules. Fix: each
+  route's allowlist is a `Map` built from the literal's own keys, membership is `Map.has` on the
+  decoded key, required keys iterate the `Map`, and keys must also be identifier-shaped. Unknown,
+  inherited, encoded-inherited and duplicate (including encoded duplicate) keys refuse; credential
+  keys and production guards are unchanged. Other dynamic lookups in the S6f code were reviewed:
+  `EVENT_KEYS` uses `Object.hasOwn`, and the rest index fixed internal keys or read provider JSON by
+  fixed field names that no `Object.prototype` member shares.
+- **F2 - provider error echoes the credential.** Reproduced: a synthetic 403 whose message
+  contained a fake token put it into `discovery-report.json` and the decoded transcript. Root
+  cause: response bodies were recorded verbatim and the report copied the provider message. Fix:
+  the CLI passes the active token to discovery (`activeCredential`), and the recorder removes it
+  from every response body and failure reason before anything is hashed, recorded or parsed,
+  replacing each occurrence with `[REDACTED-ACTIVE-CREDENTIAL]` and recording a per-event count.
+  Supported encodings: raw, percent-encoded, JSON slash-escaped, lowercase and uppercase hex, and
+  standard and URL-safe Base64 at all three byte alignments (the token-only characters, so an
+  embedding in any larger Base64 value, such as `Bearer <token>` or an `Authorization` header, is
+  found). The report no longer copies free-text provider messages or non-identifier reasons. CLI
+  errors from the discovery are redacted for the token before printing. A credential shorter
+  than 16 characters or with whitespace refuses. Replay needs no token: it re-derives from the
+  redacted bytes, so determinism and tamper detection are unchanged (an edited redaction count
+  changes the re-derived report). **Limitation:** this protects the active token in the listed
+  encodings only; other secrets, or the token in other transformations, cannot be recognized, so
+  the raw transcript remains sensitive. A token-bearing archive is redacted like any body and is
+  then honestly unverifiable. Found while testing F2: the A1 unpacker's error text carries a random
+  temporary path, which made a corrupt-archive report non-replayable; absolute paths in that reason
+  are now replaced with `<path>`.
+- **F3 - unfinished directory alias.** Reproduced: an `.incomplete` directory verified through a
+  `/.` suffix, a `//` suffix and a symlink. Root cause: the check was a lexical regular expression
+  on the argument. Fix: `readOutput` resolves the canonical target with `realpath`, refuses any
+  resolved path with a component ending in `.incomplete`, requires a directory, opens each file
+  with `O_NOFOLLOW` and `O_NONBLOCK` and requires a regular file, then resolves again and refuses
+  if the path, device or inode changed while reading. Residual: a writer with access to the evidence
+  directory can still change file contents after the read; such a writer can forge consistent
+  evidence anyway.
+- **F4 - rollback protection test gap.** The contract (a backwards clock refuses with no output;
+  equal readings are allowed) is unchanged. Added tests: a backwards reading at several clock
+  positions refuses discovery with no evidence, through the module and the CLI; a non-decreasing
+  flat clock still verifies; resealed transcripts with an earlier request, completion, clock or
+  completion-at-start time refuse replay.
+
+Correction tests: `staging-discovery.test.cjs` 33 (+6), `cli.test.cjs` 32 (+2). Focused mutation in
+a separate temporary copy (scripts copied; the repository files' hashes verified unchanged
+afterwards): 24 mutants. 22 behavioral kills: F1 object-lookup revert and `Map` membership
+removed; F2 body redaction skipped, failure-reason redaction skipped, Base64 cores removed,
+aligned-only Base64, Base64url removed, hex removed, percent removed, JSON escape removed, message
+copied, reason shape removed, CLI token not passed, archive path normalization removed; F3
+lexical-only, basename-only, following file symlinks, regular-file check removed, post-read
+recheck removed, inode recheck removed; F4 rollback protection removed and equal readings refused.
+0 message-only, 0 static-only. 2 equivalent: the identifier-shape check on query keys (every
+declared key passes it, and the `Map` refuses every undeclared key) and the CLI error redaction
+(no current path places the token in a discovery error message; kept as defense in depth). 0
+surviving defects. A first focused pass left two further survivors that were test gaps (a canary
+whose Base64 had no `+` or `/`, and no non-regular-file case); the canary and a FIFO case were added.
+
+**Second certification correction (Sol 6.1 recertification: F1 and F4 passed; F2 and F3 FAIL).**
+Within the eight S6f files only; no certified module or other file changed. Both defects were
+reproduced first on the unchanged bytes.
+
+- **F2 - lowercase percent escapes.** Reproduced through the real CLI live path (synthetic token,
+  synthetic transport behind the certified live exchange): a 401 body carrying the token with
+  lowercase percent escapes (`%2f`) left it in the decoded transcript, the report recorded zero
+  redactions, and offline verification accepted the evidence. Root cause: the percent form was a
+  single exact string produced by `encodeURIComponent`, which emits uppercase hex. Fix: matching is
+  now per character of the token: the literal character, a percent escape with hex digits in any
+  case, or a JSON `\u00XX` escape in any case (and `\/` for a slash), in any mixture within one
+  occurrence; the hex encoding matches in any case; standard and URL-safe Base64 at all three
+  alignments are unchanged. The same matchers apply to response bodies, error bodies, failure
+  reasons and CLI error text. Mixed case within one escape cannot occur for this token: the
+  credential must be printable ASCII, whose first hex digit is always numeric, so mixed case means
+  differently cased escapes within one occurrence, which is covered. No other rewriting of provider
+  responses was added.
+- **F2 - redaction provenance.** Per-event redaction counts are removed: they were unattested
+  metadata that a balanced, resealed edit could change without detection, and a zero count proved
+  nothing. Four things are now distinguished in the code and in the evidence: (1) the original
+  provider response, which is never stored when it contained the token; (2) the sanitized
+  recorded response, the bytes the transcript hashes and replay uses; (3) operator-captured,
+  unattested evidence: the transcript carries a declared `sanitization`
+  (`active-credential-removed-before-recording` on the CLI live path, `not-applied` when no
+  credential was supplied), which replay cannot confirm, and nothing is provider-attested; (4)
+  offline integrity verification, which proves only consistency with the sanitized recorded bytes.
+  The report and bundle carry the declaration and a marker count re-derived from the recorded
+  bytes, labelled diagnostic only (a marker can be provider-originated, and zero markers prove
+  neither that scanning ran nor that nothing sensitive was present). Verification cannot reject
+  inconsistent sanitization metadata from sanitized bytes alone, because the original response is
+  not retained; this limitation is stated, not hidden. An edited declaration changes the
+  re-derived report and refuses unless the whole evidence set is regenerated (a consistent forgery,
+  which offline verification cannot detect).
+- **F3 - concurrent directory substitution.** Reproduced with a deterministic hook: verification
+  began on a finalized directory, the unfinished directory was swapped into its pathname at the
+  first file open and the original restored after the third, and the reader accepted the
+  substituted bytes, because each file was opened by pathname and the final `realpath`/`stat`
+  check saw the restored original. Fix: Node has no portable `openat`, so the reader binds once to
+  the directory itself by changing the process working directory to it (the working directory
+  holds the inode whatever later happens to the pathname), checks the bound directory's current
+  kernel path (native `realpath` of `.`, since Node caches `process.cwd()`) for an `.incomplete`
+  component, opens every file by relative name with `O_NOFOLLOW` and `O_NONBLOCK`, requires a
+  regular file, checks the bound directory's current path again after the reads, and restores the
+  previous working directory. A pathname swap or symlink therefore cannot change which directory
+  supplies the evidence. The read is synchronous (nothing else runs in the process meanwhile);
+  `process.chdir` is unavailable in worker threads, where the reader refuses. The previous
+  device/inode comparison was dead code under this binding and was removed. Trust model: the
+  evidence comes from the directory that carried a finalized name when it was bound and still does
+  after the reads; a local writer with access to that directory can still change its files, and
+  such a writer can forge consistent evidence anyway.
+
+Second correction tests: `staging-discovery.test.cjs` 35 (+2), `cli.test.cjs` 33 (+1), and the
+CLI live-path echo test now includes lowercase and mixed-case percent forms. F3 uses controlled
+`fs.openSync` and `process.chdir` hooks, not timing: Sol's substitute-and-restore interleaving, a
+substitution left in place, substitution at binding restored before the reads, symlink
+replacement of the pathname, a bound unfinished directory promoted to a finalized name during the
+reads, file replacement by a symlink and by a FIFO, nested and aliased unfinished paths, and the
+finalized control with offline replay. F1 and F4 reproduction cases were re-run unchanged.
+
+Focused mutation (separate temporary copy outside the repository; repository file hashes verified
+unchanged): 18 mutants. 17 behavioral kills: lowercase percent matching, JSON `\u` escapes, any-case
+hex, active-token propagation, provider-body redaction, failure-reason redaction, CLI error
+redaction (the token reaches stderr), the forced sanitization declaration; binding-time check,
+directory binding, final identity check, cached working directory, non-regular-file refusal,
+`O_NOFOLLOW`, working directory not restored; rollback protection (F4); the F1 object-lookup
+revert. 0 message-only. 1 equivalent: limiting each escape to all-uppercase or all-lowercase hex
+(mixed case within one escape cannot occur for a printable-ASCII credential). 0 meaningful
+survivors. In the previous round the CLI error-redaction mutant was reported equivalent; a test now
+raises an error carrying the token after the credential is obtained and kills it behaviorally.
+
+**Working-directory correction (Sol 6.1 recertification: F1 to F4 and provenance passed; FAIL on
+process-wide working directory).** Within the eight S6f files only. The second F3 reader changed the
+caller's working directory with `process.chdir`. Reproduced on the unchanged bytes: (A) renaming or
+removing the caller's directory during verification made the pathname-based restore fail with
+ENOENT and left the process in the evidence directory; (B) replacing the caller's pathname with a
+new directory restored the process into a different inode; (C) a worker thread blocked at the
+reader's first file open read `discovery.json` by a relative path from the evidence directory.
+
+Alternatives considered. (A) Descriptor-relative access: Node has no portable `openat`, and
+neither `/dev/fd/N/<name>` (macOS) nor a portable equivalent resolves a name beneath a directory
+descriptor here (`/proc/self/fd/N/<name>` is Linux only); rejected. (C) A private snapshot: copying
+reads by pathname, so a substitution during the copy selects the wrong source, which is the
+original defect; rejected. (B) An isolated helper process: chosen, because it keeps the proven
+directory binding (a working directory holds the bound inode) while confining it to a process that
+owns nothing else.
+
+Correction. `readOutput` never changes the caller's working directory and never consults it for an
+absolute path. It runs a fixed helper source (`HELPER_SOURCE`, a constant in the module) with
+`process.execPath -e`, exactly one validated absolute-path argument, `cwd` set to the filesystem
+root, an empty environment (so `NODE_OPTIONS` and every credential variable are absent), no shell,
+a 60 s timeout with SIGKILL, and a bounded output (three frames of at most 256 MiB each). The
+helper uses only `fs` and `path`, makes no request and reads no credential. It binds its own
+working directory to the target once, checks the bound directory's current kernel path for an
+`.incomplete` component before and after the reads, opens each file by relative name with
+`O_NOFOLLOW` and `O_NONBLOCK`, requires a regular file within the size bound, and writes
+length-prefixed frames. The parent accepts only exit status 0 with exactly three well-formed frames
+and no trailing bytes; every other outcome refuses (fail closed). Trust boundary: the evidence comes
+from the directory that carried a finalized name when the helper bound to it and still did after
+the reads; a local writer with access to that directory can still change its files, and such a
+writer can forge consistent evidence anyway.
+
+Tests (`staging-discovery.test.cjs` 37; `cli.test.cjs` 33). Deterministic interleavings run the
+identical helper source with a prefix that performs filesystem actions at the helper's Nth file
+open or at its working-directory change; there are no sleeps. Covered: the caller's directory
+renamed, removed and replaced with another inode during verification (the caller stays in its own
+inode, `process.chdir` is never called in the caller, evidence correct), and the production
+reader with the caller's directory already removed; a worker thread that the helper waits for
+mid-read, which sees the caller's directory and gets ENOENT for a relative evidence read; Sol's
+substitution with restoration, a substitution left in place, binding-time substitution, symlink
+replacement of the pathname, a bound unfinished directory promoted during the reads, a file replaced
+by a symlink and by a FIFO, nested and symlinked unfinished aliases, finalized controls with offline
+replay, a hostile `NODE_OPTIONS` and credential variable in the caller's environment that never
+reach the helper, and malformed or failing helper results. A static check binds the exported helper
+source to the module literal, forbids `process.chdir` outside it, permits one `spawnSync` of
+`process.execPath`, and limits the helper to `fs` and `path`.
+
+Focused mutation (separate temporary copy; repository hashes verified unchanged): 16 mutants. 15
+behavioral kills: directory-source binding removed, incomplete refusal removed, `O_NOFOLLOW`
+removed, non-regular refusal removed, binding-time check removed, final check removed, helper
+environment inherited, helper started in the caller's directory, caller `process.chdir`
+reintroduced, an in-process read reintroduced, trailing-frame check removed, rollback protection
+(F4), lowercase percent matching and active-token propagation (F2), the F1 object-lookup revert. 1
+message-only: accepting a failed helper exit status (the framing check still refuses, fail closed).
+0 static-only, 0 equivalent, 0 survivors.
+
+**Bounded file-read correction.** An independent probe that grew an evidence file between the
+helper's `fstat` size check and its read made the helper allocate 268,435,457 bytes before rejecting
+the file: the limit was checked only against the `fstat` size, and `readFileSync(fd)` then read to
+end of file whatever the file had become (the parent's frame and `maxBuffer` bounds still held, and
+no invalid evidence was accepted). Correction, in the helper only: a file larger than the limit at
+`fstat` refuses before any read; otherwise the file is read incrementally in chunks of at most 64 KiB,
+never requesting more than its `fstat` size plus one byte, so no read or buffer can exceed the limit
+plus one byte; any difference between the bytes read and the `fstat` size (growth or shrinkage)
+refuses (`changed size while it was read`). The helper still writes nothing on failure, the evidence
+format is unchanged, and the parent's checks are unchanged. Tests (`staging-discovery.test.cjs` 39):
+the same helper source with a 4 KiB limit substituted (the production constant is asserted to be
+256 MiB) and an in-helper instrumentation prefix covering a file exactly at the limit (accepted), one
+byte over (refused before any read, no output), 1 MiB growth after `fstat` for a small file and for a
+file at the limit (refused; the largest read request and helper allocation stay at most the limit plus
+one byte), truncation during the read (refused), malformed and truncated helper output, and valid
+evidence through the production reader with offline replay. Mutation (temporary copy outside the
+repository): reverting to the unbounded read, removing the per-read cap, and accepting a size change
+are each killed behaviorally; removing the pre-read oversize check is message-only (the post-read
+length check still refuses). Limitation: the limit applies per file; the aggregate remains bounded
+by three files and the parent's `maxBuffer`.
+
+**Final same-descriptor size check.** Independent review found that a size change after the last
+positive read and before acceptance (a late shrink or late growth) was accepted on Node 20 and 22:
+the bytes read were compared only with the initial `fstat` size. Correction, in the helper only: the
+sequence is now (1) initial `fstat` of the open descriptor (non-regular refuses; over the limit
+refuses before any read), (2) the bounded incremental read (at most the initial size plus one byte),
+(3) a final `fstat` of the SAME descriptor before acceptance; the bytes are accepted only when the
+bytes read, the initial size and the final size are all equal and the descriptor is still a
+regular file, otherwise the file refuses (`changed size while it was read`). Tests
+(`staging-discovery.test.cjs` 40): the production helper source with an in-helper hook that, at the
+first end-of-file read (after the last positive read, before acceptance), truncates or appends to the
+file; both refuse with no output, and an unchanged control is accepted with exact bytes. Both late
+cases are accepted by the previous implementation (verified in a temporary copy) and refused now.
+Limitation: size checks detect only size changes. A same-size rewrite of the bytes, or a change after
+the final check, is not detected; a local writer with access to the evidence directory can forge
+consistent evidence anyway, and offline verification still requires the bytes to re-derive exactly.
+
+**Not established; remaining.** Discovery is not provider-verified; the read permissions are
+expected, not verified; every provider shape is as documented, not observed; the source bucket
+convention is unverified; two passes narrow but do not eliminate races; G1 to G5, D9, D12, D13,
+live S6c capture, S6e and A3-7 remain open. **A live staging discovery requires separate,
+explicit owner authorization after independent certification and integration;** it uses an
+existing read-only staging credential chosen by the owner and makes no IAM change. Production
+discovery is not implemented. The new CI step has not yet run in GitHub Actions.
