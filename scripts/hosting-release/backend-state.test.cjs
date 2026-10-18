@@ -9,7 +9,7 @@ const { sha256 } = require('./contract.cjs');
 const { placementFingerprint } = require('../unit-placement/check-parity.cjs');
 const { PROJECT_NUMBERS, REQUIRED_FUNCTIONS, MAX_AGE_MS, canonical, fingerprint, normalizeLocalIndexes,
   normalizeRemoteIndexes, tokenFromGcloud, readApi, archiveRuntime, inspectBackend, assertFresh,
-  assertCompatible, verifyBackend, receipt, localCandidate, releaseIntent, hostingCandidate, releaseCandidate, verifyPrepared, list, LIMITS } = require('./backend-state.cjs');
+  assertCompatible, verifyBackend, receipt, localCandidate, releaseIntent, assertIntentForProject, hostingCandidate, releaseCandidate, verifyPrepared, list, LIMITS } = require('./backend-state.cjs');
 const { hostingPredeploy, verifyPreparedPair } = require('./build-pair.cjs');
 function buildFixture(root, intent) {
   const src = path.join(root,'app/src/teacherUnits');fs.mkdirSync(src,{recursive:true});
@@ -165,7 +165,7 @@ test('receipts serialize deterministically, preserve independent claims and iden
 async function hookFixture(intent = 'teacher-units') {
   const now = new Date().toISOString();
   const e = await observe(); e.startedAt = now; e.observedAt = now;
-  const c = intent === 'teacher-units' ? candidate : {releaseIntent:intent,source:candidate.source,hostingArtifactFingerprint:sha256('hosting'),placementFingerprint:artifact.placementFingerprint,teacherUnitsAvailability:'closed',availabilityEvidence:'build-contract-assertion',applicationBuildFingerprint:sha256('build')};
+  const c = intent === 'teacher-units' ? candidate : {releaseIntent:intent,source:candidate.source,hostingArtifactFingerprint:sha256('hosting'),placementFingerprint:artifact.placementFingerprint,teacherUnitsAvailability:intent === 'staging-ux-test' ? 'staging-ux-test' : 'closed',availabilityEvidence:'build-contract-assertion',applicationBuildFingerprint:sha256('build')};
   const surfaces = {app:{site:'lyfelabz-staging',baseline:{version:'aaa',releaseTime:now}},marketing:{site:'lyfelabz-staging-marketing',baseline:{version:'bbb',releaseTime:now}}};
   const prepared = {kind:'lyfelabz.hostingPreparedRelease',schemaVersion:3,releaseIntent:intent,project:'lyfelabz-staging',environment:'staging',source:c.source,candidate:c,preparedAt:now,surfaces,
     evidenceReceipt:receipt({phase:'prepared',intent,project:'lyfelabz-staging',candidate:c,evidence:intent === 'teacher-units' ? e : null,hosting:surfaces,recordedAt:now})};
@@ -393,4 +393,38 @@ test('hostname-conditional shadow refuses general preparation and predeploy befo
     await assert.rejects(hostingPredeploy({...f.args,verifyExisting:()=>hostingCandidate(pair,root)}),/unverifiable/);
     assert.equal(f.calls.length,0);
   }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+
+// Staging UX test intent (docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md): staging only.
+test('staging-ux-test intent is accepted only for the staging project',()=>{
+  assert.equal(assertIntentForProject('staging-ux-test','lyfelabz-staging'),'staging-ux-test');
+  assert.throws(()=>assertIntentForProject('staging-ux-test','lyfelabz-prod'),/only for the staging project/);
+  for(const intent of ['general','teacher-units'])assert.equal(assertIntentForProject(intent,'lyfelabz-prod'),intent);
+  assert.throws(()=>assertIntentForProject('STAGING-UX-TEST','lyfelabz-staging'),/explicit release intent/);
+});
+test('staging-ux-test candidate records origin-gated availability and never verifies as another intent',()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'staging-ux-candidate-'));
+  try {
+    const pair={releaseIntent:'staging-ux-test',source:candidate.source,files:{app:buildFixture(root,'staging-ux-test'),marketing:{}},unitPlacement:{fingerprint:artifact.placementFingerprint}};
+    const c=releaseCandidate(pair,root);assert.equal(c.teacherUnitsAvailability,'staging-ux-test');assert.equal(c.runtimeFiles,undefined);
+    // The same staging bundle relabelled general cannot pass the closed check.
+    assert.throws(()=>releaseCandidate({...pair,releaseIntent:'general'},root),/unverifiable|availability/);
+  }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('staging-ux-test receipts are staging only and bind their availability label',()=>{
+  const c={releaseIntent:'staging-ux-test',source:candidate.source,hostingArtifactFingerprint:sha256('hosting'),placementFingerprint:artifact.placementFingerprint,teacherUnitsAvailability:'staging-ux-test',availabilityEvidence:'build-contract-assertion',applicationBuildFingerprint:sha256('build')};
+  const args={phase:'prepared',intent:'staging-ux-test',candidate:c,hosting:{app:{},marketing:{}}};
+  assert.equal(receipt({...args,project:'lyfelabz-staging'}).teacherUnitsReadiness,'staging-ux-test-uncertified');
+  assert.throws(()=>receipt({...args,project:'lyfelabz-prod'}),/only for the staging project/);
+  assert.throws(()=>receipt({...args,project:'lyfelabz-staging',candidate:{...c,teacherUnitsAvailability:'closed'}}),/availability candidate evidence/);
+  assert.throws(()=>receipt({...args,project:'lyfelabz-staging',intent:'general',candidate:{...c,releaseIntent:'general'}}),/availability candidate evidence/);
+  assert.throws(()=>receipt({...args,project:'lyfelabz-staging',evidence:{}}),/cannot claim backend readiness/);
+});
+test('staging-ux-test predeploy runs for staging without backend reads, and refuses production before any effect',async()=>{
+  const f=await hookFixture('staging-ux-test');
+  const result=await hostingPredeploy({...f.args,verify:()=>assert.fail('must not read Teacher Units backend')});
+  assert.equal(result.backend,null);assert.deepEqual(f.calls,['build','hosting','hosting','record']);
+  const g=await hookFixture('staging-ux-test');
+  await assert.rejects(hostingPredeploy({...g.args,project:'lyfelabz-prod'}),/only for the staging project/);
+  assert.equal(g.calls.length,0);
 });

@@ -1,5 +1,9 @@
 'use strict';
-// One reviewed entry, one closed availability implementation, no activation switch.
+// One reviewed entry. Availability is a compiled substitution chosen only by the
+// explicit release intent: 'general' and 'teacher-units' are always closed; the
+// owner-approved 'staging-ux-test' intent (staging human UX testing only,
+// uncertified; docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md) opens only
+// on the staging origin. Release tooling refuses that intent for production.
 // Verification independently recompiles; evidence is not trusted on its own.
 const fs = require('node:fs');
 const path = require('node:path');
@@ -9,6 +13,13 @@ const { JSDOM } = require('jsdom');
 const ROOT = path.resolve(__dirname, '../..');
 const AVAILABILITY = 'app/src/teacherUnits/releaseAvailability.ts';
 const CLOSED_SOURCE = 'export function teacherUnitsAvailable(): boolean { return false; }\nexport function requireTeacherUnitsAvailable(): void { throw new Error("Teacher Units unavailable in this release"); }\n';
+const STAGING_UX_TEST_ORIGIN = 'https://lyfelabz-staging.web.app';
+const STAGING_UX_TEST_SOURCE = 'export function teacherUnitsAvailable(): boolean { return typeof location !== "undefined" && location.origin === "' + STAGING_UX_TEST_ORIGIN + '"; }\nexport function requireTeacherUnitsAvailable(): void { if (!teacherUnitsAvailable()) throw new Error("Teacher Units unavailable in this release"); }\n';
+const PROFILES = Object.freeze({
+  'general': Object.freeze({ policy: 'teacher-units-canonical-closed-v2', availability: 'closed', source: CLOSED_SOURCE }),
+  'teacher-units': Object.freeze({ policy: 'teacher-units-canonical-closed-v2', availability: 'closed', source: CLOSED_SOURCE }),
+  'staging-ux-test': Object.freeze({ policy: 'teacher-units-staging-ux-test-v1', availability: 'staging-ux-test', source: STAGING_UX_TEST_SOURCE }),
+});
 const NAMESPACE = 'teacher-units-availability-contract';
 const SOURCE_EXTENSIONS = Object.freeze(['.ts', '.json']);
 const OPTIONS = Object.freeze({ entryPoints: ['src/index.ts'], bundle: true, format: 'esm', target: 'es2022', outfile: 'dist/bundle.js', metafile: true, write: false, preserveSymlinks: true, resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.css', '.json'] });
@@ -20,7 +31,7 @@ function canonical(value) {
   return JSON.stringify(value);
 }
 function refuse(message) { throw new Error(`[application-build] REFUSED: ${message}`); }
-function intent(value) { if (!['general','teacher-units'].includes(value)) refuse('unknown release intent'); return value; }
+function intent(value) { if (!Object.prototype.hasOwnProperty.call(PROFILES, value)) refuse('unknown release intent'); return value; }
 // Inventory actual files (including untracked/hidden files), not Git or glob output.
 // Dependencies have their own JS/package resolution; this contract covers app/src.
 function checkSource(root = ROOT) {
@@ -57,6 +68,7 @@ function checkSource(root = ROOT) {
 }
 async function compile(root = ROOT, releaseIntent = 'general') {
   intent(releaseIntent);
+  const profile = PROFILES[releaseIntent];
   root = fs.realpathSync(root);
   const sourceContract = checkSource(root);
   const app = path.join(root, 'app');
@@ -105,7 +117,7 @@ async function compile(root = ROOT, releaseIntent = 'general') {
     });
     build.onLoad({ filter: /.*/, namespace: NAMESPACE }, args => {
       if (args.path !== AVAILABILITY) refuse('substituted canonical availability identity');
-      return { contents: CLOSED_SOURCE, loader: 'ts' };
+      return { contents: profile.source, loader: 'ts' };
     });
   }}] });
   const inputs = { 'app/index.html':hash(entryHtml) }; const graph = {};
@@ -123,10 +135,10 @@ async function compile(root = ROOT, releaseIntent = 'general') {
   const output = result.outputFiles;
   if (output.length !== 1 || output[0].path !== path.join(app, 'dist/bundle.js')) refuse('unexpected executable output');
   const bundle = Buffer.from(output[0].contents);
-  const evidence = { kind: 'lyfelabz.applicationBuild', schemaVersion: 2, policy: 'teacher-units-canonical-closed-v2', releaseIntent,
-    availability: 'closed', availabilityEvidence: 'build-contract-assertion', runtimeAvailability: 'not-certified',
+  const evidence = { kind: 'lyfelabz.applicationBuild', schemaVersion: 2, policy: profile.policy, releaseIntent,
+    availability: profile.availability, availabilityEvidence: 'build-contract-assertion', runtimeAvailability: 'not-certified',
     sourceContract, canonicalAvailability: { identity: AVAILABILITY, namespace: NAMESPACE, loader: 'ts',
-      sourceHash: inputs[AVAILABILITY], replacementHash: hash(CLOSED_SOURCE),
+      sourceHash: inputs[AVAILABILITY], replacementHash: hash(profile.source),
       resolvedImports: resolvedImports.sort((a,b) => Buffer.compare(Buffer.from(canonical(a)), Buffer.from(canonical(b)))) },
     entryScripts, entryPoint: 'app/src/index.ts', compiler: { name:'esbuild',version:esbuild.version,options:OPTIONS },
     builderHash:hash(fs.readFileSync(__filename)), inputs, graph,
@@ -144,7 +156,7 @@ async function verify(root = ROOT, releaseIntent = 'general') {
   intent(releaseIntent); let evidence, bundle;
   try { evidence=JSON.parse(fs.readFileSync(path.join(root,'app/dist/application-build.json'),'utf8')); bundle=fs.readFileSync(path.join(root,'app/dist/bundle.js')); }
   catch { refuse('missing or malformed availability build evidence/bundle'); }
-  if (evidence?.schemaVersion !== 2 || evidence.availabilityEvidence !== 'build-contract-assertion' || evidence.runtimeAvailability !== 'not-certified' || evidence.availability !== 'closed' || evidence.releaseIntent !== releaseIntent) refuse('unknown/enabled availability or mismatched release intent');
+  if (evidence?.schemaVersion !== 2 || evidence.availabilityEvidence !== 'build-contract-assertion' || evidence.runtimeAvailability !== 'not-certified' || evidence.availability !== PROFILES[releaseIntent].availability || evidence.policy !== PROFILES[releaseIntent].policy || evidence.releaseIntent !== releaseIntent) refuse('unknown/enabled availability or mismatched release intent');
   const rebuilt = await compile(root,releaseIntent);
   if (canonical(evidence) !== canonical(rebuilt.evidence) || hash(bundle) !== rebuilt.evidence.outputs['app/dist/bundle.js']) refuse('stale/substituted build evidence or modified bundle');
   return rebuilt.evidence;
@@ -152,9 +164,9 @@ async function verify(root = ROOT, releaseIntent = 'general') {
 async function main(argv) {
   if (argv.length === 1 && argv[0] === '--check-source') { checkSource(); return; }
   if (argv.length === 0) { await build(); return; }
-  if (argv.length !== 3 || !['--verify','--build'].includes(argv[0])) refuse('expected --build|--verify <repository-root> <general|teacher-units>');
+  if (argv.length !== 3 || !['--verify','--build'].includes(argv[0])) refuse('expected --build|--verify <repository-root> <general|teacher-units|staging-ux-test>');
   const evidence=await (argv[0] === '--verify' ? verify : build)(path.resolve(argv[1]),intent(argv[2]));
   process.stdout.write(canonical(evidence)+'\n');
 }
 if (require.main === module) main(process.argv.slice(2)).catch(error=>{console.error(error.message);process.exitCode=1;});
-module.exports = { compile, build, verify, canonical, hash, CLOSED_SOURCE, checkSource };
+module.exports = { compile, build, verify, canonical, hash, CLOSED_SOURCE, STAGING_UX_TEST_SOURCE, STAGING_UX_TEST_ORIGIN, checkSource };

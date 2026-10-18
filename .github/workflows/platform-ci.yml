@@ -114,6 +114,10 @@ jobs:
       # exchanges only. No credentials, no provider calls, no live discovery.
       - name: A3-6 S6f staging discovery (offline fixtures)
         run: node --test ../../scripts/teacher-units-release/staging-discovery.test.cjs
+      # Staging UX test policy tool (docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md):
+      # project pinning and transitions over in-memory fakes. No credentials, no provider calls.
+      - name: Staging UX test policy tool (in-memory fakes)
+        run: node --test ../../scripts/teacher-units-release/staging-ux-test-policy.test.cjs
       # S6a writers run only against the Firestore emulator for a demo- project, using the
       # same Java and pinned firebase-tools setup as the Rules job. No credentials.
       - name: Set up Java (Firestore emulator for A3-6 S6a)

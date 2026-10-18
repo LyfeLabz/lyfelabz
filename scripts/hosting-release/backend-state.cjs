@@ -17,9 +17,18 @@ const REQUIRED_FUNCTIONS = Object.freeze([
 const LIMITS = Object.freeze({ pages: 100, items: 10000, jsonBytes: 8 * 1024 * 1024,
   archiveBytes: 64 * 1024 * 1024, entries: 10000, fileBytes: 16 * 1024 * 1024, runtimeBytes: 64 * 1024 * 1024 });
 function releaseIntent(intent) {
-  if (!['general', 'teacher-units'].includes(intent)) refuse('explicit release intent required: general or teacher-units; unknown intent is never a fallback');
+  if (!['general', 'teacher-units', STAGING_UX_TEST_INTENT].includes(intent)) refuse('explicit release intent required: general, teacher-units or staging-ux-test; unknown intent is never a fallback');
   return intent;
 }
+// Staging UX test (docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md):
+// owner-approved for staging human UX testing only, uncertified. Never production.
+const STAGING_UX_TEST_INTENT = 'staging-ux-test';
+function assertIntentForProject(intent, project) {
+  releaseIntent(intent);
+  if (intent === STAGING_UX_TEST_INTENT && environmentForProject(project).name !== 'staging') refuse('staging-ux-test release intent is permitted only for the staging project');
+  return intent;
+}
+function expectedAvailability(intent) { return intent === STAGING_UX_TEST_INTENT ? 'staging-ux-test' : 'closed'; }
 function hostingCandidate(pair, root = repositoryRoot) {
   const intent = releaseIntent(pair?.releaseIntent);
   if (!pair?.source || typeof pair.source.dirty !== 'boolean' || !pair.files?.app || !pair.files?.marketing || !/^[a-f0-9]{40}$/.test(pair.source.sha || '') || !/^[a-f0-9]{64}$/.test(pair.unitPlacement?.fingerprint || '')) refuse('invalid local pair candidate');
@@ -30,11 +39,11 @@ function hostingCandidate(pair, root = repositoryRoot) {
     build = JSON.parse(execFileSync(process.execPath, [path.join(__dirname, '../../app/scripts/build-application.cjs'), '--verify', root, intent],
       { encoding:'utf8', stdio:['ignore','pipe','pipe'], timeout:120000, maxBuffer:8*1024*1024 }));
   } catch { refuse('missing, incompatible or unverifiable application availability/build evidence; rebuild the pair'); }
-  if (build.schemaVersion !== 2 || build.availabilityEvidence !== 'build-contract-assertion' || build.runtimeAvailability !== 'not-certified' || build.availability !== 'closed' || build.releaseIntent !== intent ||
+  if (build.schemaVersion !== 2 || build.availabilityEvidence !== 'build-contract-assertion' || build.runtimeAvailability !== 'not-certified' || build.availability !== expectedAvailability(intent) || build.releaseIntent !== intent ||
       pair.files.app['app/dist/bundle.js'] !== build.outputs?.['app/dist/bundle.js'] ||
       pair.files.app['app/index.html'] !== build.inputs?.['app/index.html']) refuse('enabled/unknown availability or Hosting bundle differs from controlled build');
   candidate.applicationBuildFingerprint = fingerprint(build);
-  candidate.teacherUnitsAvailability = 'closed';
+  candidate.teacherUnitsAvailability = expectedAvailability(intent);
   candidate.availabilityEvidence = 'build-contract-assertion';
   return candidate;
 }
@@ -370,9 +379,9 @@ async function verifyBackend({ project, pair, get, token, fetchImpl, run, unpack
   return { candidate, evidence, compatibility };
 }
 function receipt({ phase, project, intent, candidate, evidence, hosting, recordedAt = new Date().toISOString() }) {
-  releaseIntent(intent);
+  assertIntentForProject(intent, project);
   if (!['prepared','certified'].includes(phase) || candidate?.releaseIntent !== intent) refuse('unknown release receipt phase or mismatched intent');
-  if (candidate.availabilityEvidence !== 'build-contract-assertion' || candidate.teacherUnitsAvailability !== 'closed' || !/^[a-f0-9]{64}$/.test(candidate.applicationBuildFingerprint || '')) refuse('missing, unknown or enabled availability candidate evidence');
+  if (candidate.availabilityEvidence !== 'build-contract-assertion' || candidate.teacherUnitsAvailability !== expectedAvailability(intent) || !/^[a-f0-9]{64}$/.test(candidate.applicationBuildFingerprint || '')) refuse('missing, unknown or enabled availability candidate evidence');
   timestamp(recordedAt, 'receipt');
   let compatibility = null;
   if (intent === 'teacher-units') {
@@ -382,7 +391,7 @@ function receipt({ phase, project, intent, candidate, evidence, hosting, recorde
   if (!hosting?.app || !hosting?.marketing) refuse('missing paired Hosting evidence');
   return stable({ kind:'lyfelabz.releaseEvidenceReceipt', schemaVersion:2, phase, recordedAt,
     project, environment:environmentForProject(project).name, releaseIntent:intent, candidate,
-    teacherUnitsReadiness:intent === 'teacher-units' ? 'compatible-backend-observed' : 'not-evaluated',
+    teacherUnitsReadiness:intent === 'teacher-units' ? 'compatible-backend-observed' : intent === STAGING_UX_TEST_INTENT ? 'staging-ux-test-uncertified' : 'not-evaluated',
     backend:evidence || null, compatibility, hosting,
     authority:'historical observation only; Teacher Units checks retrieve current deployment evidence' });
 }
@@ -390,7 +399,7 @@ function receipt({ phase, project, intent, candidate, evidence, hosting, recorde
 // Neither a historical backend observation nor a baseline is current authority.
 function verifyPrepared(prepared, project, candidate, now = new Date().toISOString()) {
   const environment = environmentForProject(project);
-  const intent = releaseIntent(candidate?.releaseIntent);
+  const intent = assertIntentForProject(candidate?.releaseIntent, project);
   const r = prepared?.evidenceReceipt;
   if (prepared?.kind !== 'lyfelabz.hostingPreparedRelease' || prepared.schemaVersion !== 3 ||
       prepared.releaseIntent !== intent || prepared.project !== project || prepared.environment !== environment.name ||
@@ -411,7 +420,7 @@ function verifyPrepared(prepared, project, candidate, now = new Date().toISOStri
   }
 }
 module.exports = { PROJECT_NUMBERS, REQUIRED_FUNCTIONS, LIMITS, MAX_AGE_MS, MAX_PREPARE_AGE_MS, canonical, fingerprint, localCandidate,
-  releaseIntent, hostingCandidate, releaseCandidate, list, normalizeLocalIndexes, normalizeRemoteIndexes, tokenFromGcloud, readApi, archiveRuntime, inspectBackend,
+  releaseIntent, assertIntentForProject, STAGING_UX_TEST_INTENT, hostingCandidate, releaseCandidate, list, normalizeLocalIndexes, normalizeRemoteIndexes, tokenFromGcloud, readApi, archiveRuntime, inspectBackend,
   assertFresh, assertCompatible, verifyBackend, receipt, verifyPrepared,
   // Export-only (A3-6 S4 reuse); behavior unchanged.
   resource, onlyKeys };

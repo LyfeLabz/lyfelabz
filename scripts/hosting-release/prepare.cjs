@@ -40,7 +40,7 @@ const {
   shellQuote,
   writeRecord
 } = require('./release.cjs');
-const { verifyBackend, receipt, releaseCandidate, releaseIntent } = require('./backend-state.cjs');
+const { verifyBackend, receipt, releaseCandidate, releaseIntent, assertIntentForProject } = require('./backend-state.cjs');
 const { checkStagingConfig } = require('./staging-config.cjs');
 
 const HOSTING_TEST_FILES = Object.freeze([
@@ -80,7 +80,7 @@ function preflight({ project, intent, expectSha, allowDirty, offline }, { git = 
   readHostingTargets(readConfigFile('firebase.json'));
   readHostingTargets(readConfigFile('firebase.staging.json'));
   if (!checkStagingConfig().ok) throw new Error('[hosting-release] firebase.staging.json drifted from firebase.json; regenerate it');
-  releaseIntent(intent);
+  assertIntentForProject(intent, project);
   const sites = readTargetSites(project);
   return { contract, environment, source, sites, intent, message: releaseMessage(source.sha, source.dirty) };
 }
@@ -150,7 +150,7 @@ function summarize({ environment, source, message, built, surfaces, backend, int
     lines.push(`            routing config ${surface.routingChanges ? 'WOULD CHANGE' : 'unchanged'}; ${surface.bytes.changed.length} changed, ${surface.bytes.new.length} new, ${surface.bytes.unchanged} unchanged, ${surface.bytes.redirected} shadowed by redirects`);
     for (const file of [...surface.bytes.changed.map((f) => `changed ${f}`), ...surface.bytes.new.map((f) => `new     ${f}`)]) lines.push(`              ${file}`);
   }
-  if (surfaces && (intent === 'general' || backend)) {
+  if (surfaces && (intent !== 'teacher-units' || backend)) {
     lines.push('', backend ? 'Teacher Units backend compatibility observed; predeploy retrieves it again.' : 'General Hosting scope only; Teacher Units readiness NOT EVALUATED.',
       'Deploy (separately authorized; NOT atomic across the two sites):', `  ${shellQuote(deployCommand(environment, message))}`);
   } else {
@@ -163,7 +163,7 @@ function summarize({ environment, source, message, built, surfaces, backend, int
       lines.push(`  ${shellQuote(rollbackCommand(environment.project, surfaces[target].site, surfaces[target].baseline.version))}`);
     }
   }
-  if (surfaces && (intent === 'general' || backend)) lines.push('', `Then certify: node scripts/hosting-release/certify.cjs --project ${environment.project} --intent ${intent}`);
+  if (surfaces && (intent !== 'teacher-units' || backend)) lines.push('', `Then certify: node scripts/hosting-release/certify.cjs --project ${environment.project} --intent ${intent}`);
   return lines.join('\n');
 }
 
@@ -186,7 +186,7 @@ async function main(argv = process.argv.slice(2)) {
     kind: 'lyfelabz.hostingPreparedRelease',
     schemaVersion: 3,
     releaseIntent: gate.intent,
-    readiness: args.offline ? 'local-only-not-ready' : gate.intent === 'general' ? 'general-hosting-prepared' : 'teacher-units-backend-observed',
+    readiness: args.offline ? 'local-only-not-ready' : gate.intent === 'general' ? 'general-hosting-prepared' : gate.intent === 'staging-ux-test' ? 'staging-ux-test-hosting-prepared' : 'teacher-units-backend-observed',
     evidenceReceipt: args.offline ? null : receipt({ phase:'prepared', project:gate.environment.project, intent:gate.intent, candidate, evidence:backend?.evidence, hosting:surfaces }),
     candidate,
     preparedAt: new Date().toISOString(),

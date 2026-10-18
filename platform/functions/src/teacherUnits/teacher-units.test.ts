@@ -187,6 +187,7 @@ import {
 } from "./a3-enforcement";
 import { validateCapabilityResponse } from "./a3-protocol";
 import { UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER } from "./a3-release-authority";
+import { STAGING_UX_TEST_EVIDENCE_REF, STAGING_UX_TEST_RELEASE_ID } from "./a3-staging-ux-test";
 import { validateEvidenceReference } from "./a3-bindings";
 import { contentDigest, evidenceRef } from "./a3-canonical";
 import {
@@ -1382,5 +1383,152 @@ describe("A3-3 post-commit responseUnavailable", () => {
     expect(await codeOf(RAW.archive(req(TEACHER, managementRequest("archive", unitId))))).toBe("teacherUnits.availabilityClosed");
     seedEnabledPolicy();
     expect(await codeOf(RAW.update(req(TEACHER, { ...managementRequest("update", unitId), expectedRevision: 7 })))).toBe("teacherUnits.writeConflict");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Staging UX test mode (docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md).
+// Owner-approved for staging human UX testing only; uncertified.
+// ---------------------------------------------------------------------------
+
+describe("staging UX test marker policy", () => {
+  const STAGING_ENV = { environment: "staging", projectId: "lyfelabz-staging", projectNumber: "293337283840" } as const;
+  const PROD_ENV = { environment: "production", projectId: "lyfelabz-prod", projectNumber: "182791689935" } as const;
+  const STAGING_ID = stubIdentity(STAGING_ENV);
+  const PROD_ID = stubIdentity(PROD_ENV);
+  const markerPolicy = (env: Record<string, string>, extra: Record<string, unknown> = {}) => ({
+    ...CHAIN.policy, ...env, backendReleaseEligibility: { releaseId: STAGING_UX_TEST_RELEASE_ID },
+    activationEvidenceRef: STAGING_UX_TEST_EVIDENCE_REF, ...extra,
+  });
+  const MARKER_COMPAT = { ...COMPAT, backendReleaseId: STAGING_UX_TEST_RELEASE_ID };
+  const markerRequest = (op: Management, unitId: string) => {
+    const data = managementRequest(op, unitId);
+    return "compatibility" in data ? { ...data, compatibility: MARKER_COMPAT } : data;
+  };
+  // The marker path must never consult the verifier or provenance.
+  let verifierCalls = 0;
+  let provenanceCalls = 0;
+  const guarded = (identity: typeof STAGING_ID) => handlersFor(testEnforcement(identity, null, {
+    verifier: { verify: () => { verifierCalls++; return UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER.verify({} as never); } },
+    provenance: () => { provenanceCalls++; throw new Error("provenance must not be read"); },
+  }));
+  beforeEach(() => { verifierCalls = 0; provenanceCalls = 0; });
+
+  it("markers are fixed digests distinct from any synthetic chain", () => {
+    expect(STAGING_UX_TEST_RELEASE_ID).toMatch(/^[a-f0-9]{64}$/);
+    expect(STAGING_UX_TEST_EVIDENCE_REF).toMatch(/^teacherUnitsReleaseEvidence\/[a-f0-9]{64}$/);
+    expect(STAGING_UX_TEST_RELEASE_ID).not.toBe(CHAIN.releaseId);
+  });
+
+  it("enables discovery and the full teacher workflow in the staging identity, without verifier or provenance", async () => {
+    const unitId = await seedUnit();
+    setPolicy(markerPolicy(STAGING_ENV));
+    const staging = guarded(STAGING_ID);
+    const discovery = await staging.capabilities(req(TEACHER, V2_DISCOVERY));
+    expect(validateCapabilityResponse(discovery).ok).toBe(true);
+    expect(discovery).toMatchObject({
+      backend: { projectId: "lyfelabz-staging", environment: "staging" },
+      teacherUnits: { acceptedClientContractVersions: ["teacher-units-v2"],
+        availability: { state: "enabled", deploymentEligible: true, backendReleaseId: STAGING_UX_TEST_RELEASE_ID } },
+    });
+    const created = await staging.create(req(TEACHER, { ...markerRequest("create", unitId), idempotencyKey: "staging-ux-0001" }));
+    expect(created).toMatchObject({ replayed: false, unit: { title: "Earth", grade: "7", revision: 1 } });
+    expect((await staging.list(req(TEACHER, {}))).units).toHaveLength(2);
+    expect((await staging.get(req(TEACHER, { unitId }))).unit.unitId).toBe(unitId);
+    expect((await staging.update(req(TEACHER, markerRequest("update", unitId)))).unit).toMatchObject({ title: "Renamed", revision: 2 });
+    const resources = [UNIT_PLACEABLE_RESOURCE_ID_LIST[1], UNIT_PLACEABLE_RESOURCE_ID_LIST[0]];
+    expect((await staging.setResources(req(TEACHER, { ...markerRequest("setResources", unitId), expectedRevision: 2, resourceIds: resources })))
+      .unit).toMatchObject({ resourceIds: resources, revision: 3 });
+    const order = [{ unitId: created.unit.unitId, expectedRevision: 1 }, { unitId, expectedRevision: 3 }];
+    expect((await staging.reorder(req(TEACHER, { ...markerRequest("reorder", unitId), units: order }))).noop).toBe(false);
+    expect((await staging.archive(req(TEACHER, { ...markerRequest("archive", unitId), expectedRevision: 4 }))).unit.status).toBe("archived");
+    expect((await staging.restore(req(TEACHER, { ...markerRequest("restore", unitId), expectedRevision: 5 }))).unit.status).toBe("active");
+    expect(verifierCalls).toBe(0);
+    expect(provenanceCalls).toBe(0);
+  });
+
+  it("keeps ownership: another teacher in the same school cannot read or change the unit", async () => {
+    const unitId = await seedUnit();
+    setPolicy(markerPolicy(STAGING_ENV));
+    const staging = guarded(STAGING_ID);
+    const before = snapshotWrites();
+    expect(await codeOf(staging.get(req(OTHER, { unitId })))).toBe("teacherUnits.notFound");
+    expect(await codeOf(staging.update(req(OTHER, markerRequest("update", unitId))))).toBe("teacherUnits.notFound");
+    expect((await staging.list(req(OTHER, {}))).units).toEqual([]);
+    expect(snapshotWrites()).toBe(before);
+  });
+
+  it("refuses a student and an unauthenticated caller", async () => {
+    const unitId = await seedUnit();
+    setPolicy(markerPolicy(STAGING_ENV));
+    setUser("student-1", { status: "active", role: "student", schoolId: SCHOOL });
+    const staging = guarded(STAGING_ID);
+    const before = snapshotWrites();
+    for (const op of MANAGEMENT) {
+      expect(await codeOf(staging[op](req("student-1", markerRequest(op, unitId))))).not.toBe("resolved");
+      expect(await codeOf(staging[op]({ data: markerRequest(op, unitId) } as unknown as CallableRequest<unknown>))).not.toBe("resolved");
+    }
+    expect(snapshotWrites()).toBe(before);
+  });
+
+  it("is ineligible in the production identity (marker policy bound to production)", async () => {
+    const unitId = await seedUnit();
+    setPolicy(markerPolicy(PROD_ENV));
+    const production = guarded(PROD_ID);
+    const before = snapshotWrites();
+    for (const op of MANAGEMENT) {
+      expect(await codeOf(production[op](req(TEACHER, markerRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
+    }
+    const discovery = await production.capabilities(req(TEACHER, V2_DISCOVERY));
+    expect(discovery.teacherUnits.availability).toMatchObject({ state: "unverified", deploymentEligible: false });
+    expect(discovery.teacherUnits.acceptedClientContractVersions).toEqual([]);
+    expect(snapshotWrites()).toBe(before);
+    expect(verifierCalls).toBe(0);
+  });
+
+  it("is ineligible in an emulator identity, and a staging-bound policy is invalid for production", async () => {
+    const unitId = await seedUnit();
+    setPolicy(markerPolicy({ environment: EXPECTED.environment, projectId: EXPECTED.projectId, projectNumber: EXPECTED.projectNumber }));
+    const emulator = guarded(IDENTITY);
+    for (const op of MANAGEMENT) {
+      expect(await codeOf(emulator[op](req(TEACHER, markerRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
+    }
+    setPolicy(markerPolicy(STAGING_ENV));
+    const production = guarded(PROD_ID);
+    expect(await codeOf(production.list(req(TEACHER, {})))).toBe("teacherUnits.policyInvalid");
+  });
+
+  it.each([
+    ["only the release marker", { activationEvidenceRef: CHAIN.activationEvidenceRef }],
+    ["only the evidence marker", { backendReleaseEligibility: { releaseId: CHAIN.releaseId } }],
+  ])("takes the certified chain with %s, which the UNCONFIGURED verifier refuses", async (_label, extra) => {
+    const unitId = await seedUnit();
+    setPolicy(markerPolicy(STAGING_ENV, extra));
+    const staging = handlersFor(testEnforcement(STAGING_ID, null, { verifier: UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER }));
+    for (const op of ["get", "list", "update"] as const) {
+      expect(await codeOf(staging[op](req(TEACHER, markerRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
+    }
+  });
+
+  it("refuses a marker policy whose placement differs from the runtime", async () => {
+    const unitId = await seedUnit();
+    setPolicy(markerPolicy(STAGING_ENV, { placementFingerprint: "e".repeat(64) }));
+    const staging = guarded(STAGING_ID);
+    expect(await codeOf(staging.get(req(TEACHER, { unitId })))).toBe("teacherUnits.deploymentIneligible");
+  });
+
+  it("keeps the closed switch and envelope binding authoritative", async () => {
+    const unitId = await seedUnit();
+    const staging = guarded(STAGING_ID);
+    setPolicy({ ...markerPolicy(STAGING_ENV), mode: "closed", activationEvidenceRef: null });
+    expect(await codeOf(staging.get(req(TEACHER, { unitId })))).toBe("teacherUnits.availabilityClosed");
+    setPolicy(markerPolicy(STAGING_ENV));
+    expect(await codeOf(staging.update(req(TEACHER, managementRequest("update", unitId))))).toBe("teacherUnits.policyChanged");
+    expect(await codeOf(staging.update(req(TEACHER, { ...markerRequest("update", unitId),
+      compatibility: { ...MARKER_COMPAT, policyGeneration: 99 } })))).toBe("teacherUnits.policyChanged");
+  });
+
+  it("production wiring is unchanged: UNCONFIGURED verifier", () => {
+    expect(PRODUCTION_TEACHER_UNITS_ENFORCEMENT.verifier).toBe(UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER);
   });
 });

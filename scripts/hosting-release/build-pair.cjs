@@ -64,7 +64,9 @@ function buildPair({ intent, runBundleBuild = true, runFunctionsBuild = true, lo
   const unitPlacement = placementParity();
   require('./backend-state.cjs').releaseIntent(intent);
   if (runBundleBuild) {
-    // Same controlled builder used by npm app build; explicit intent changes evidence, never availability.
+    // Same controlled builder used by npm app build. Only the staging-only
+    // 'staging-ux-test' intent changes availability (origin-gated); tooling
+    // refuses that intent for production.
     execFileSync(process.execPath, [path.join(repositoryRoot, 'app/scripts/build-application.cjs'), '--build', repositoryRoot, intent], { cwd:repositoryRoot, stdio:['ignore','ignore','inherit'] });
   }
   if (intent === 'teacher-units' && runFunctionsBuild) {
@@ -118,12 +120,12 @@ async function hostingPredeploy({ project = process.env.GCLOUD_PROJECT, build = 
   read = file => JSON.parse(fs.readFileSync(file, 'utf8')), candidateFor = require('./backend-state.cjs').releaseCandidate,
   discover = require('./release.cjs').liveRelease, verifyExisting = verifyPreparedPair } = {}) {
   const {environmentForProject,readTargetSites} = require('./contract.cjs');
-  const {releaseIntent,verifyPrepared,assertFresh,assertCompatible,canonical} = require('./backend-state.cjs');
+  const {assertIntentForProject,verifyPrepared,assertFresh,assertCompatible,canonical} = require('./backend-state.cjs');
   environmentForProject(project);
   let prepared;
   try { prepared = read(path.join(recordDirectory, `prepare-${project}.json`)); }
   catch { throw new Error('[hosting-release] missing or malformed online prepare evidence; prepare with explicit --intent first'); }
-  const intent = releaseIntent(prepared?.releaseIntent);
+  const intent = assertIntentForProject(prepared?.releaseIntent, project);
   verifyPrepared(prepared, project, prepared.candidate);
   verifyExisting({prepared, project, read, candidateFor});
   const built = build({intent});
@@ -140,7 +142,7 @@ async function hostingPredeploy({ project = process.env.GCLOUD_PROJECT, build = 
     assertCompatible(candidate, backend.evidence);
   }
   const result = { releaseIntent:intent, candidate, hosting, backend,
-    teacherUnitsReadiness:backend ? 'compatible-backend-observed' : 'not-evaluated' };
+    teacherUnitsReadiness:backend ? 'compatible-backend-observed' : intent === 'staging-ux-test' ? 'staging-ux-test-uncertified' : 'not-evaluated' };
   write(`predeploy-${project}.json`, result);
   return result;
 }

@@ -9,7 +9,10 @@
  *
  * Production wiring uses the UNCONFIGURED release-authority verifier, so an
  * enabled policy always evaluates as ineligible and Teacher Units management
- * operations remain unavailable. A3-2 runtime consistency ("matched") is one
+ * operations remain unavailable. Sole exception (owner-approved, staging only,
+ * uncertified): an enabled staging UX test marker policy in the exact
+ * `lyfelabz-staging` runtime identity (a3-staging-ux-test.ts). A marker policy
+ * is ineligible everywhere else. A3-2 runtime consistency ("matched") is one
  * necessary input; its constant `available: false` is never read as a gate or
  * overridden here. */
 import type { Transaction } from "firebase-admin/firestore";
@@ -30,6 +33,7 @@ import { isResolvedRuntimeIdentity, resolveRuntimeIdentity } from "./a3-runtime-
 import type { RuntimeIdentity } from "./a3-runtime-identity";
 import { verifyRuntimeProvenance } from "./a3-runtime-provenance";
 import type { RuntimeProvenanceResult } from "./a3-runtime-provenance";
+import { isStagingUxTestPolicy, stagingUxTestEligible } from "./a3-staging-ux-test";
 import { UNIT_PLACEABLE_RESOURCE_ID_LIST } from "./unit-placeable-resources";
 
 export const TEACHER_UNITS_POLICY_PATH = "platformConfig/teacherUnitsAvailability";
@@ -259,7 +263,13 @@ export async function evaluateAvailabilityInTransaction(tx: Transaction, scope: 
   const policy = parsed.value;
   if (policy.mode === "closed") return { kind: "closed", policy };
   let eligible = false;
-  try { eligible = await enabledEligible(tx, scope, policy); } catch (err) {
+  try {
+    // Staging UX test markers never enter the certified chain; outside the exact
+    // staging identity they are ineligible.
+    eligible = isStagingUxTestPolicy(policy)
+      ? stagingUxTestEligible(scope.identity, policy, RUNTIME_PLACEMENT_FINGERPRINT)
+      : await enabledEligible(tx, scope, policy);
+  } catch (err) {
     if (sdkRetryable(err) || (err instanceof PlatformError && err.code === "teacherUnits.policyUnavailable")) throw err;
     eligible = false;
   }

@@ -281,7 +281,7 @@ function certificationFixture(intent = 'teacher-units') {
   for (const dir of Object.values(directories)) {fs.mkdirSync(dir);fs.writeFileSync(path.join(dir,'index.html'),'home');}
   const pair = {kind:'lyfelabz.hostingPairBuild',schemaVersion:3,releaseIntent:intent,source:{sha:SHA,dirty:false},files:{app:{'index.html':sha256('home')},marketing:{'index.html':sha256('home')}}};
   const runtimeFiles={'lib/index.js':sha256('runtime')};
-  const candidate={teacherUnitsAvailability:'closed',availabilityEvidence:'build-contract-assertion',applicationBuildFingerprint:sha256('build'),releaseIntent:intent,source:pair.source,hostingArtifactFingerprint:fingerprint(pair.files),functionsArtifactFingerprint:fingerprint(runtimeFiles),runtimeFiles,
+  const candidate={teacherUnitsAvailability:intent==='staging-ux-test'?'staging-ux-test':'closed',availabilityEvidence:'build-contract-assertion',applicationBuildFingerprint:sha256('build'),releaseIntent:intent,source:pair.source,hostingArtifactFingerprint:fingerprint(pair.files),functionsArtifactFingerprint:fingerprint(runtimeFiles),runtimeFiles,
     placementFingerprint:sha256('placement'),rulesSourceHash:sha256('rules'),indexes:{indexes:[],fieldOverrides:[]}};
   if(intent === 'general') {for(const key of ['functionsArtifactFingerprint','runtimeFiles','rulesSourceHash','indexes'])delete candidate[key];}
   pair.candidate=candidate;pair.backendCandidate=intent === 'teacher-units' ? candidate : undefined;
@@ -434,4 +434,18 @@ test('certification retrieves fresh backend only after potentially long Hosting 
     }});
     assert.equal(f.writes.length,1);
   }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+
+test('staging-ux-test is refused for production by prepare preflight and certify before any effect',async()=>{
+  const clean = () => ({ sha: SHA, dirty: false, changes: [] });
+  assert.throws(() => preflight({ intent:'staging-ux-test', project: 'lyfelabz-prod' }, { git: clean }), /only for the staging project/);
+  const f=certificationFixture('staging-ux-test');try {
+    await assert.rejects(certify({...f.args,project:'lyfelabz-prod'}),/only for the staging project/);
+    assert.equal(f.calls.length,0);assert.equal(f.writes.length,0);
+  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+  const g=certificationFixture('staging-ux-test');try {
+    const result=await certify({...g.args,backendVerify:()=>assert.fail('must not request Functions/Rules evidence')});
+    assert.equal(result.record.releaseIntent,'staging-ux-test');
+    assert.equal(result.record.evidenceReceipt.teacherUnitsReadiness,'staging-ux-test-uncertified');
+  }finally{fs.rmSync(g.root,{recursive:true,force:true});}
 });

@@ -32,6 +32,24 @@ for(const intent of ['general','teacher-units']) test(`${intent} controlled comp
   expect(first.canonicalAvailability.resolvedImports.length).toBeGreaterThan(0);
   expect(execute(fs.readFileSync(path.join(root,'app/dist/bundle.js'))).result).toBeNull();
 }));
+// Staging UX test intent (docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md): open only on the staging origin.
+test('staging-ux-test intent opens only on the exact staging origin, with distinct evidence',async()=>withFixture(IMPORT+' globalThis.result = teacherUnitsReleaseBoundary(() => "constructed" as never);',async root=>{
+  const first=await build(root,'staging-ux-test'); const second=await verify(root,'staging-ux-test');
+  expect(second).toEqual(first);
+  expect(first).toMatchObject({releaseIntent:'staging-ux-test',availability:'staging-ux-test',policy:'teacher-units-staging-ux-test-v1',runtimeAvailability:'not-certified'});
+  const bundle=fs.readFileSync(path.join(root,'app/dist/bundle.js')).toString();
+  const run=origin=>{const context=origin===undefined?{}:{location:{origin}};vm.runInNewContext(bundle,context);return context.result;};
+  expect(run('https://lyfelabz-staging.web.app')).toBe('constructed');
+  for(const origin of [undefined,'https://app.lyfelabz.com','https://lyfelabz-staging.firebaseapp.com','http://localhost:5000','https://lyfelabz-staging.web.app.evil.test']) expect([origin,run(origin)]).toEqual([origin,null]);
+  // Evidence from one intent never verifies as another.
+  await expect(verify(root,'general')).rejects.toThrow('REFUSED');
+  await build(root,'general'); await expect(verify(root,'staging-ux-test')).rejects.toThrow('REFUSED');
+}));
+test('a general build relabelled as staging-ux-test availability cannot verify',async()=>withFixture(SAFE,async root=>{
+  await build(root,'general'); const record=path.join(root,'app/dist/application-build.json');const evidence=JSON.parse(fs.readFileSync(record));
+  evidence.availability='staging-ux-test'; fs.writeFileSync(record,JSON.stringify(evidence));
+  await expect(verify(root,'general')).rejects.toThrow('REFUSED');
+}));
 // Known-pattern regressions invoke the authoritative boundary in actual emitted JS.
 for(const [label,condition] of [['commented false with effective typed true','/* const TEACHER_UNITS_GATE_OPEN = false; */ const TEACHER_UNITS_GATE_OPEN: boolean = true;'],['inverted condition','const TEACHER_UNITS_GATE_OPEN = !teacherUnitsAvailable();'],['unconditional construction','const TEACHER_UNITS_GATE_OPEN = true;']]) test(label,async()=>withFixture(IMPORT+condition+' globalThis.result = TEACHER_UNITS_GATE_OPEN ? teacherUnitsReleaseBoundary(() => { throw new Error("constructed"); }) : "unused";',async root=>{
   const {bundle}=await compile(root,'general');expect(execute(bundle).result).toBeNull();

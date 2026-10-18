@@ -21,7 +21,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { certifyPublicEntry } = require('../marketing-hosting/certify-delivery.cjs');
-const { verifyBackend, receipt, verifyPrepared, releaseIntent, releaseCandidate, canonical } = require('./backend-state.cjs');
+const { verifyBackend, receipt, verifyPrepared, assertIntentForProject, releaseCandidate, canonical } = require('./backend-state.cjs');
 const { pairRecordPath } = require('./build-pair.cjs');
 const {
   TARGETS,
@@ -64,7 +64,7 @@ function verifyLocalPair(record, directories) {
 async function certify({ project, intent, candidateFor = releaseCandidate, fetchImpl = fetch, run, backendVerify = verifyBackend, certifyEntry = certifyPublicEntry, log = console.log, readJson = readJsonIfPresent, write = writeRecord, directories: suppliedDirectories }) {
   const contract = loadContract();
   const environment = environmentForProject(project, contract);
-  releaseIntent(intent);
+  assertIntentForProject(intent, project);
   const config = readHostingTargets(readConfigFile(environment.config));
   const prodTargets = readHostingTargets(readConfigFile('firebase.json'));
   const directories = suppliedDirectories || { app: path.join(repositoryRoot, prodTargets.app.public), marketing: path.join(repositoryRoot, prodTargets.marketing.public) };
