@@ -628,12 +628,77 @@ shared with every other function.
   6. Not changed: certify, release, backend-state, build-application, the client gate,
      Functions A3 code, Rules, indexes, registries, Firebase configurations, CI, S6b to S6f.
      `prepare.cjs` gains one `HOSTING_TEST_FILES` line; the Part B no-consumer guard allows
-     the Part C suite's allowlist mention. Implemented in the repository, uncommitted, not
-     independently certified.
+     the Part C suite's allowlist mention. Integrated on main (`6f7c6f2`), not independently
+     certified.
   7. [U] Still open: the deploy-side compression profile is a recorded claim (no capture tool
      records it yet); live capture of releases, versions and file lists; edge-cache staleness
      after a release; timing of a full observation within five minutes; bundle
      classification; an enabled builder; S6b binding.
+- [A] **D13 Part D (offline capture planner, recorded-response replay and deploy receipt,
+  owner-authorized).** Owner decisions: (1) manifest self-calibration is corroborating
+  evidence only, never proof of deployment provenance; (2) a pre/post deployment receipt is
+  acceptable for offline design but is not cryptographic proof that the recorded profile
+  performed the deploy; (3) a future controlled deployment requires the Firebase Hosting hash
+  cache to be absent before deployment; (4) a single public-edge observation is a limited
+  observation, not proof of global CDN consistency; (5) explicit origin-to-site binding is
+  required; (6) catalog navigation and general functional checks stay outside the five-minute
+  identity-observation window.
+  1. `scripts/hosting-release/hosting-capture.cjs` (no network, filesystem, environment,
+     clock, subprocess or credential access; no HTTP executor). `planCapture` builds a
+     deterministic, frozen two-site plan from explicit inputs: project, expected Hosting
+     candidate fingerprint, pair build, routing, a cache-busting nonce, trusted configuration
+     (`.firebaserc` sites and contract origins as the caller read them) and the claimed
+     origin-to-site assignments. Each assignment must equal the trusted mapping; malformed
+     origins (exact lowercase `https://host` only), unexpected targets, sites or projects,
+     duplicate targets, sites or origins and ambiguous trusted configuration refuse. Site
+     identity is never inferred from a URL. The plan separates provider API GETs (only
+     `sites.channels.get` for the live channel and `sites.versions.files.list`, under
+     `firebasehosting.googleapis.com/v1beta1`) from public-origin GETs, in the phase order
+     before (both sites), manifest (complete pagination per site), edge (one cache-busted GET
+     per served path), after (both sites), and records the five-minute window with what falls
+     inside and outside it.
+  2. `replayCapture` consumes a supplied transcript (`lyfelabz.hostingCaptureTranscript` v1,
+     `synthetic-fixture` or `offline-record` only; no live-capture kind exists) bound to the
+     plan fingerprint. Each exchange must be the planned request: provider reads in plan
+     order, page `n + 1` requested with page `n`'s token, edge reads in any order inside the
+     edge phase, GET only, HTTP 200, no followed redirect (response URL equals the planned
+     origin, path and nonce), timestamps non-decreasing and inside the window. Missing,
+     extra, duplicate and reordered exchanges refuse; the window is refused when longer than
+     five minutes, stale, future or inverted. Live-channel responses must name the planned
+     site and project; int64 `fileCount` strings are accepted. The evidence is normalized into
+     a Part B observation schema 2 and verified by the unchanged Part B and Part C contracts,
+     which own release type, version stability, message, served-byte, manifest and binding
+     rules. The result separates plan validity, transcript completeness, origin-to-site
+     consistency, manifest completeness, local gzip binding (Part C semantics unchanged),
+     public-edge bytes (`single-observation`), release/version stability, receipt
+     consistency, hash-cache policy, compression evidence (`compatible`, `incompatible` or
+     `missing`) and per-site self-calibration (`consistent-with-local-profile` or
+     `inconsistent`, corroboration only, never changing the binding). `deploymentProvenanceEstablished`
+     and `servingEstablishedByManifest` are `false`; `deployable`, `certified`, `authorized`
+     and `available` are all `false`.
+  3. `scripts/hosting-release/deploy-receipt.cjs` (pure) validates a supplied pre/post
+     `lyfelabz.hostingDeployReceipt` v1 pair: source, candidate fingerprint, invocation id,
+     project and sites, Firebase CLI version and executable, Node executable, the Part C
+     compression profile (Node and zlib versions, gzip parameters, header OS byte, calibration
+     digests, validated by Part C `validateProfile`), hash-cache presence and digest,
+     timestamps and `operator` provenance. Source, invocation, candidate, project, sites, CLI,
+     Node and profile must be identical across the pair. A cache present before deployment
+     leaves the pair consistent and the policy `violated`. It never reads or deletes the
+     cache, never inspects the environment and never invokes Firebase CLI or Node. Replay
+     requires the post receipt to precede the observation window.
+  4. Not changed: certify, release, build-pair, backend-state, Parts A to C modules, the client
+     gate, Functions A3 code, Rules, indexes, registries, Firebase configurations, CI and S6b
+     to S6f. `prepare.cjs` gains two `HOSTING_TEST_FILES` lines. The Part B and Part C
+     no-consumer guards (`hosting-deployment.test.cjs`, `provider-manifest.test.cjs`) add only
+     the Part D files to their allowlists (owner-approved scope extension); no release,
+     deployment or activation path requires any D13 module (tested).
+  5. Status: implemented in the repository, uncommitted, not independently certified. Verified
+     against synthetic transcripts only; it has never observed a real project.
+  6. [U] Still open: an authorized read-only staging capture (transport, identity, IAM
+     confirmation that `firebasehosting.sites.get` covers channel and files reads, and
+     measured timing against the five-minute window), a capture mechanism that records the
+     receipt where the deploy runs, edge-cache staleness and multi-edge consistency, bundle
+     classification, an enabled builder and S6b binding.
 
 ### D14 - Where tooling runs and approval system identity
 

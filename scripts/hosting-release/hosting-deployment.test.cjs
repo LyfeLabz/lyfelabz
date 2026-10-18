@@ -326,6 +326,8 @@ test('no release, deployment, activation or Functions path consumes this module'
   }
   for (const directory of ['scripts', 'app/scripts', 'app/src', 'platform', '.github']) walk(path.join(ROOT, directory));
   // The Part A and Part C suites name this module only in their own no-consumer allowlists.
-  assert.deepEqual(consumers.sort(), ['scripts/hosting-release/hosting-deployment.cjs', 'scripts/hosting-release/hosting-deployment.test.cjs',
+  // The D13 Part D replay is the only consumer, and it is itself unconsumed.
+  assert.deepEqual(consumers.sort(), ['scripts/hosting-release/hosting-capture.cjs', 'scripts/hosting-release/hosting-capture.test.cjs',
+    'scripts/hosting-release/hosting-deployment.cjs', 'scripts/hosting-release/hosting-deployment.test.cjs',
     'scripts/hosting-release/hosting-identity.test.cjs', 'scripts/hosting-release/provider-manifest.test.cjs']);
 });

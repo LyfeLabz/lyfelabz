@@ -263,6 +263,9 @@ test('no release, deployment, activation or Functions path consumes this module'
   }
   for (const directory of ['scripts', 'app/scripts', 'app/src', 'platform', '.github']) walk(path.join(ROOT, directory));
   // The Part B verifier is the only consumer, and it is itself unconsumed.
-  assert.deepEqual(consumers.sort(), ['scripts/hosting-release/hosting-deployment.cjs', 'scripts/hosting-release/hosting-deployment.test.cjs',
+  // The D13 Part D replay and deploy-receipt validator reuse it; both are themselves unconsumed.
+  assert.deepEqual(consumers.sort(), ['scripts/hosting-release/deploy-receipt.cjs', 'scripts/hosting-release/deploy-receipt.test.cjs',
+    'scripts/hosting-release/hosting-capture.cjs', 'scripts/hosting-release/hosting-capture.test.cjs',
+    'scripts/hosting-release/hosting-deployment.cjs', 'scripts/hosting-release/hosting-deployment.test.cjs',
     'scripts/hosting-release/provider-manifest.cjs', 'scripts/hosting-release/provider-manifest.test.cjs']);
 });
