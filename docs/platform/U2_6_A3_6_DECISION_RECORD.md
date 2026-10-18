@@ -692,13 +692,86 @@ shared with every other function.
      no-consumer guards (`hosting-deployment.test.cjs`, `provider-manifest.test.cjs`) add only
      the Part D files to their allowlists (owner-approved scope extension); no release,
      deployment or activation path requires any D13 module (tested).
-  5. Status: implemented in the repository, uncommitted, not independently certified. Verified
-     against synthetic transcripts only; it has never observed a real project.
+  5. Status: integrated on main (`1872d6f`), not independently certified (this line previously
+     read "implemented in the repository, uncommitted"; corrected in Part E). Verified against
+     synthetic transcripts only; it has never observed a real project.
   6. [U] Still open: an authorized read-only staging capture (transport, identity, IAM
      confirmation that `firebasehosting.sites.get` covers channel and files reads, and
      measured timing against the five-minute window), a capture mechanism that records the
      receipt where the deploy runs, edge-cache staleness and multi-edge consistency, bundle
      classification, an enabled builder and S6b binding.
+- [A] **D13 Part E (offline capture benchmark, owner-authorized).** Owner decisions after the
+  Part E read-only reconnaissance: (1) a future live capture needs a distinct provenance
+  classification; (2) historical replay consistency stays separate from present-time
+  freshness; (3) future provider access uses a dedicated, verified read-only identity;
+  (4) selected HTTP response headers may become diagnostic evidence in a later schema;
+  (5) four minutes is a benchmark performance target, not a certification threshold; (6) five
+  minutes remains the hard observation-window limit; (7) no staging deployment or live
+  observation is authorized. Decisions 1 to 4 are deferred: the Part A to D contracts are
+  unchanged.
+  1. `scripts/hosting-release/capture-benchmark.cjs` drives the unchanged Part D `planCapture`
+     and `replayCapture` end to end: before reads, complete manifest pagination, public-edge
+     reads, after reads, transcript construction and replay. It starts its fixture server on
+     `127.0.0.1` with an ephemeral port and maps exactly the three planned logical origins (the
+     Firebase Hosting API origin and both staging origins) onto it; every other host, a port,
+     userinfo, non-`https` logical URLs, credential-bearing query keys and any header option
+     refuse before a request. It accepts no base URL, token, credential file, provenance option,
+     production origin or project other than `lyfelabz-staging` (the trusted sites and origins
+     must equal `.firebaserc` and the Hosting contract, tested). It sends no Authorization
+     header, follows no redirect (any 3xx refuses), uses a per-run explicit agent that reads no
+     proxy environment, and starts no subprocess. There is no live-provider mode.
+  2. Evidence is always `synthetic-fixture` (the existing Part D kind). The transcript keeps
+     the trusted logical URLs; the loopback substitution never appears in it, and relabelling
+     it `live-capture` is refused by the unchanged replay.
+  3. Orchestration: provider reads serialized in plan order; edge reads through a bounded
+     worker pool (concurrency 1 to 16; 4 and 8 tested), recorded in completion order so
+     timestamps never decrease; no retries (a non-200, timeout or redirect stops the capture).
+     A repeated page token ends pagination and the unchanged replay refuses the chain. Elapsed
+     time uses a monotonic clock; evidence timestamps are an explicit wall-clock start plus
+     monotonic elapsed time. The runner stops when the window passes five minutes, and replay
+     enforces the same limit with zero clock skew (unchanged). The result reports `target-met`
+     (under four minutes), `target-missed-within-limit` (four to five) or
+     `refused-window-exceeded`; `targetIsCertificationCondition` is `false`.
+  4. Encoding: provider reads request `identity`. Edge reads request `identity` or `gzip`; a
+     `gzip` response is decoded before SHA-256, an unlabelled response is hashed as received, and
+     an unrequested, unsupported (for example `br`) or undecodable encoding refuses. HTTP response
+     encoding is separate from Part C's provider-upload gzip hashes, which are unchanged. An HTTP
+     200 alone never establishes content identity: an SPA-fallback or mislabelled response is
+     refused by the Part B served-byte comparison.
+  5. Local measurements (Node 24.15.0, macOS, staging-shaped synthetic set: 243 app files with
+     7 redirected and 133 marketing files with 50 redirected, the counts of the 2026-10-17
+     staging certification; about 41 MB uploaded, 38.5 MB served; 2 ms fixture delay per edge
+     read): 325 requests (2 before, 2 manifest pages, 319 edge, 2 after); total about 295 ms at
+     concurrency 4 and about 190 ms at concurrency 8. These numbers characterize local
+     orchestration only and are not representative of provider API or CDN latency, rate limits
+     or global edge behavior.
+  6. Coverage (`capture-benchmark.test.cjs`, 24 tests): correct capture; staging scale at 4 and
+     8; multi-page manifests; gzip decoding; delayed responses; four-to-five-minute and
+     over-five-minute windows with a virtual clock; repeated and missing page tokens; mid-window
+     release change; a site lagging on an older release; `ROLLBACK` and `SITE_DISABLE`; a
+     missing edge file; SPA fallback; edge and provider redirects; HTTP 401, 403, 429, 500 and
+     503; request timeout; unlabelled, unrequested, unsupported and corrupt encodings; missing,
+     extra and duplicate exchanges; wrong origin assignment, project and site; external,
+     production and credential-bearing targets; source static checks; clean server shutdown and
+     loopback-only peers after every run; and a no-consumer guard.
+  7. A pass establishes plan completeness, local transport behavior, request sequencing,
+     response decoding, transcript consistency, replay compatibility and local timing only. It
+     does not establish live Firebase availability, provider IAM access, CDN consistency,
+     deployment provenance, certification, deployment authorization or availability; every
+     authority flag is `false`. The receipt is always absent (`compressionProfileEvidence:
+     missing`).
+  8. Not changed: Parts A to D modules, certify, release, build-pair, backend-state, the client
+     gate, Functions A3 code, Rules, indexes, registries, Firebase configurations, CI and S6b to
+     S6f. `prepare.cjs` gains one `HOSTING_TEST_FILES` line. The Part D and Part C no-consumer
+     guards (`hosting-capture.test.cjs`, owner-approved scope extension, and
+     `provider-manifest.test.cjs`) add only the benchmark files to their allowlists. Implemented
+     in the repository, uncommitted, not independently certified.
+  9. [U] Still open before an authorized live staging capture: a dedicated read-only identity
+     and its verified IAM permission (`firebasehosting.sites.get` assumed) and token scope; a
+     live executor and the distinct live provenance kind (decision 1); replay freshness
+     semantics (decision 2); response-header diagnostics (decision 4); measured provider and CDN
+     timing; deploy-side receipts from a controlled deployment; bundle classification, an
+     enabled builder and S6b binding.
 
 ### D14 - Where tooling runs and approval system identity
 

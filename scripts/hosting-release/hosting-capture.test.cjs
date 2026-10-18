@@ -306,6 +306,8 @@ test('no release, deployment, activation or Functions path consumes this module'
   }
   for (const directory of ['scripts', 'app/scripts', 'app/src', 'platform', '.github']) walk(path.join(ROOT, directory));
   // The Part B, Part C and receipt suites name this module only in their own no-consumer allowlists.
-  assert.deepEqual(consumers.sort(), ['scripts/hosting-release/deploy-receipt.test.cjs', 'scripts/hosting-release/hosting-capture.cjs', 'scripts/hosting-release/hosting-capture.test.cjs',
+  // The D13 Part E local benchmark drives the planner and replay; it is itself unconsumed.
+  assert.deepEqual(consumers.sort(), ['scripts/hosting-release/capture-benchmark.cjs', 'scripts/hosting-release/capture-benchmark.test.cjs',
+    'scripts/hosting-release/deploy-receipt.test.cjs', 'scripts/hosting-release/hosting-capture.cjs', 'scripts/hosting-release/hosting-capture.test.cjs',
     'scripts/hosting-release/hosting-deployment.test.cjs', 'scripts/hosting-release/provider-manifest.test.cjs']);
 });
