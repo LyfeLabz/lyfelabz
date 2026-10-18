@@ -214,3 +214,105 @@ Prohibited during observation: IAM/API changes, keys, deployment/upload/release 
 channel/version mutation, cache deletion, production requests, Functions invocations,
 Firestore/Storage operations, release signing/registration, policy transitions,
 certification or activation. G1 to G5 and remaining D13 work are not closed by this run.
+
+## D13 G4 offline credential-broker contract
+
+Status: implemented locally, uncommitted, not independently certified. Teacher
+Units remains CLOSED. This slice authorizes no credential access, token minting,
+IAM/API changes, cloud requests, deployment or activation. G3 reconnaissance
+verified G2 integration at `76764c9aa5b4757f85c249154c1fbd0119af61dd`.
+
+`hosting-credential-broker.cjs` exports `buildMintRequest(identity)` and
+`createFixtureBroker({identity, operator, clock, fixtures})`. No production
+adapter, operational CLI, executor integration or live switch exists. The existing
+executor and strict/historical replay contracts are unchanged.
+
+Identity is exactly `{project, projectNumber, serviceAccountEmail, accountId}`.
+Project and number are the staging pins above; email is exactly the proposed
+`hosting-observer@lyfelabz-staging.iam.gserviceaccount.com`. No real immutable ID
+is known or supplied by this implementation. An explicit numeric ID is mandatory
+and cannot equal the project number. Test IDs are invented synthetic values only.
+Email alone never suffices, including after account deletion/recreation.
+
+The pure builder constructs only the pinned IAM Credentials POST, using the
+immutable ID in `projects/-/serviceAccounts/{accountId}:generateAccessToken`,
+`scope: ["https://www.googleapis.com/auth/firebase.readonly"]` and
+`lifetime: "600s"`. Delegates, override endpoints, alternate scope/lifetime,
+unknown fields and credential inputs refuse. The request contains no credential.
+The API's documented response is `{accessToken, expireTime}`; it contains no
+principal assertion. Its authenticated association will require a future private
+connector and cannot be established by this fixture contract.
+
+The fixture flow separates explicitly selected operator identity, target account
+metadata, mint request/response association, inspection, and credential capability.
+Operator is `{sourceId, subject}` and must match the fixture response. Target
+metadata must match project ID, email and immutable ID, with `disabled: false`.
+Each dependency receives an immutable request and must return that same request
+reference with its body. This detects response mix-ups, not malicious injected code.
+Every result is `synthetic-fixture`, with no trusted-live provenance and all four
+authority flags false. No supplied label upgrades that evidence.
+
+Only `synthetic-operator:<label>` and `synthetic-hosting:<label>` markers are
+accepted. Operator markers reach only target-metadata and mint fixtures. Hosting
+markers reach only inspection and the provider fixture. The fixed inspection
+request is POST `https://oauth2.googleapis.com/tokeninfo`; a future connector must
+place the token in the Authorization header, never a URL. The private capability
+permits only the two staging sites' project-ID-prefixed channel/files GETs, with
+validated pageToken continuation. It accepts no caller headers, edge request,
+production resource or arbitrary endpoint. It returns only a sanitized synthetic
+acknowledgment, never a provider body. There is no marker getter, evidence writer,
+credential discovery, retry or refresh. Serialization exposes no marker.
+
+The inspection validator implements the documented service-account access-token
+profile: required `azp` and `aud` both equal the immutable ID; exact singleton
+scope; required `exp` and `expires_in`. It does not substitute user-token `sub`,
+v1 `issued_to`/`audience`, email or caller labels. Email is optional and must match
+if present; optional verification/access-type fields must not contradict the
+selected profile. No extra scope is requested to obtain email.
+
+Mint expiry must fit the 600-second issuance interval. The offline timestamp
+parser deliberately accepts canonical millisecond UTC timestamps only, a narrower
+subset than the API's RFC 3339 format. Inspection whole-second values are checked
+against mint expiry and request timing, allowing less than one second of rounding.
+Effective expiry is the earliest conservative bound. Acquisition requires at least
+300 seconds plus a 30-second safety margin remaining. Wall and monotonic clocks
+are injected; backwards motion or disagreement refuses. Acquisition has a shared
+30-second cancellation deadline. First provider dispatch rechecks the full window
+plus margin; concurrent capability use refuses. Capability calls are bounded, refuse expiry or
+cancellation, and close permanently on failure. Token lifetime never changes the
+five-minute observation freshness contract.
+
+Errors expose fixed codes/messages only. Failed acquisition releases no capability;
+late responses cannot change a refused result. Callback code is untrusted fixture
+code and is outside the contract's no-network guarantee; tests and verification
+must block external traffic and credential-file reads independently.
+
+Authoritative references:
+
+- [generateAccessToken](https://docs.cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateAccessToken)
+- [Service-account access-token field meanings](https://docs.cloud.google.com/docs/authentication/token-types)
+- [Google authentication-library token inspection](https://raw.githubusercontent.com/googleapis/google-auth-library-nodejs/main/src/auth/oauth2client.ts)
+
+Unresolved before operational use: approved immutable ID and operator source;
+account/API/IAM setup and effective-access audit; actual tokeninfo field availability
+with the singleton scope; real Viewer success for both GET methods; reviewed private
+production dependencies and live evidence boundary. Missing metadata must stop
+validation without scope expansion or fallback. Tokeninfo is online corroboration,
+not a signed archival attestation. Fixture verification establishes none of these
+provider facts. No live provenance handles, signing or evidence storage are added.
+
+
+G4 local verification (Node 24.15.0): focused broker tests 49/49; full registered
+Hosting suites 316 pass, zero fail, one optional externally started Hosting-emulator
+test skipped (no emulator URL); D13 suites are included in that run. Part E's
+separate loopback run passes 24/24. S6 offline suites pass 259/259. Application
+verification passes all gates and 209 suites / 7884 tests, with a nonfatal Jest
+worker-teardown warning. Functions pass 184 suites / 5472 tests, lint, typecheck
+and build; the resulting ignored runtime record is `closed-only`. Tests ran with
+an empty credential environment under an OS sandbox allowing loopback and denying
+external networking and known cloud credential directories. The first Hosting run
+was blocked by a sandbox loopback-bind rule; after correcting that test restriction,
+the full run passed as above. The skipped emulator test is not counted as passing.
+Final source/diff review, no-consumer check, diff whitespace check and the five-file
+em dash sweep pass. No cloud or real credential operation occurred. This is local
+verification, not independent certification or authorization for live operation.

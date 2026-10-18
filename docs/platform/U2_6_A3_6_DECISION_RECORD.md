@@ -910,6 +910,44 @@ shared with every other function.
   10. G2 status: implemented locally, uncommitted, not independently certified.
       Offline verification grants no live authorization.
 
+- [A] **D13 Part G4 (standalone offline credential-broker contract,
+  owner-authorized).** G3 reconnaissance verified G2 at `76764c9aa5b4757f85c249154c1fbd0119af61dd`
+  on clean main matching local origin/main; the G2 "uncommitted" status above is
+  historical wording, not the current Git integration state.
+  1. New `hosting-credential-broker.cjs`: pure fixed mint-request builder plus an
+     injected fixture broker. Target pins staging project/number, exact proposed
+     observer email and an explicitly supplied immutable account ID. The real ID
+     remains unknown; test IDs are synthetic only. No email-only fallback.
+  2. Distinct operator verification, target metadata, mint-response association,
+     service-account tokeninfo validation and private synthetic credential capability.
+     Exact firebase.readonly scope and 600-second lifetime; no delegates or overrides.
+     Operator and Hosting markers have separate destinations; real bearer tokens
+     refuse. No production dependency boundary is implemented.
+  3. Tokeninfo azp/aud must match the account ID, scope must be exact, and expiry
+     must conservatively agree with minting. Optional email cannot replace the ID.
+     At least five minutes plus a 30-second safety margin remains at issuance of
+     the capability. Clocks, timeout and abort are checked; errors are fixed and
+     secret-free. Detailed accepted metadata/timestamp profile and public sources
+     are in `D13_STAGING_OBSERVATION_RUNBOOK.md`.
+  4. Results remain synthetic, all authority flags false. No live provenance handle,
+     signing, evidence persistence, executor integration, operational CLI, networking,
+     credential discovery, automatic retry or refresh. Parts B/C/D/F/G2 are unchanged.
+  5. Exact five-file scope: new broker and suite, prepare.cjs test registration only,
+     this record and the staging runbook. No production consumer or protected S6 change.
+  6. Status: implemented locally, uncommitted, not independently certified. Actual
+     IAM/API access, token metadata with the approved scope, verified account identity,
+     a controlled production dependency boundary and authorized minimal staging GET
+     validation remain future gates. Teacher Units stays CLOSED.
+  7. Verification: broker 49 pass; full Hosting suites 316 pass, zero fail, one
+     optional Hosting-emulator test skipped; separate Part E benchmark 24 pass;
+     S6 offline 259 pass; application verification 209 suites / 7884 tests pass
+     (nonfatal worker-teardown warning); Functions 184 suites / 5472 tests, lint,
+     typecheck and build pass, with closed-only output. External network and known
+     credential directories were denied by an OS sandbox; only loopback was allowed.
+     The initial sandbox loopback-bind restriction was corrected before the passing
+     Hosting run. No-consumer, final diff, whitespace and em dash checks pass. No
+     real credentials, cloud requests, IAM changes, deployment or activation.
+
 ### D14 - Where tooling runs and approval system identity
 
 - [O] CI with workload identity federation: rejected for now; current CI runs only
