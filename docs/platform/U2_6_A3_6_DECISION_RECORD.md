@@ -570,9 +570,70 @@ shared with every other function.
      No release, deployment or activation path requires the module (tested). `prepare.cjs`
      gains one `HOSTING_TEST_FILES` line, and the Part A no-consumer guard now allows this
      verifier, its only consumer.
-  6. [U] Still open: capturing real observations (version re-read in certify, the provider
+  6. Status: integrated on main (`00a638e`), not independently certified. Observation schema 1
+     is superseded by D13 Part C (schema 2) and is refused, not reinterpreted.
+  7. [U] Still open: capturing real observations (version re-read in certify, the provider
      versions files list), reconciling provider hashes with local bytes, bundle
      classification, an enabled builder and S6b binding each need separate authorization.
+- [A] **D13 Part C (offline provider manifest binding, owner-authorized).** Owner
+  decisions: a locally reproduced gzip SHA-256 may establish a conditional
+  content-to-provider-manifest match; the match is non-authorizing and does not establish
+  which release is served; Node, zlib, gzip level and compression parameters are recorded;
+  the five-minute limit covers the complete observation window; release identity (name and
+  type `DEPLOY`) must be stable; no live staging capture (separately authorized).
+  1. Provider semantics (Firebase Hosting REST v1beta1 discovery, revision 20261011, and
+     firebase-tools 15.22.4 and 13.35.1 `uploader.js`): `versions.files.list` pages
+     `{ files, nextPageToken }`; a VersionFile is `{ path, hash, status }` with path `/` plus
+     the public-relative POSIX path and status `EXPECTED` or `ACTIVE`; the hash is SHA-256
+     hex of the gzip-compressed file (`zlib.createGzip({ level: 9 })`); a FINALIZED version
+     can no longer change and `fileCount` is set at finalization. The gzip header OS byte is
+     0x13 under Node on macOS and 0x03 on Linux, so the same file yields different provider
+     hashes by deploy platform.
+  2. `scripts/hosting-release/provider-manifest.cjs` (no network or filesystem):
+     `normalizeProviderManifest` requires explicit project, project number, site and version;
+     a FINALIZED version; a continuation-token chain from a `null` first request to a last
+     page without a token (missing, reordered, repeated or malformed tokens refuse); unique
+     `/`-prefixed canonical paths; lowercase 64-hex hashes; `ACTIVE` status; a unique count
+     equal to `fileCount`; `synthetic-fixture` or `offline-record` provenance only.
+     `compressionProfile` records Node, zlib, implementation, the firebase-tools reference,
+     gzip parameters (level 9, windowBits 15, memLevel 8, strategy 0), header bytes
+     (mtime, XFL, OS) and calibration digests over five fixed vectors. `localGzipManifest`
+     hashes supplied bytes (raw SHA-256 and gzip SHA-256); it never uses modification times
+     or the Firebase hash cache.
+  3. `bindProviderManifest` refuses incomplete or ambiguous evidence (manifest or local set
+     not exactly the uploaded set). It returns `unreproducible` when the deploy profile is
+     absent or any parameter, header byte or calibration digest differs (version strings are
+     recorded, never decisive), `mismatch` when profiles are byte-compatible but a hash
+     differs, and `bound` only when every uploaded file matches. `servingEstablished` is
+     always `false`.
+  4. `hosting-deployment.cjs` observation schema 2: each version record adds `releaseName`
+     (live channel or site release, same site and project), `releaseType` (`DEPLOY` only;
+     `ROLLBACK` and `SITE_DISABLE` refuse) and `fileCount`; every field is stable before and
+     after public-byte observation on both sites; each site requires the complete provider
+     manifest (inside the window, same provenance kind) and local gzip evidence whose raw
+     SHA-256 equals the pair-build bytes; the observation carries `deployCompressionProfile`
+     (`null` is `unreproducible`); local profiles must be identical across sites. The
+     provider-uploaded set (non-ignored files, redirected paths included) is validated
+     separately from the public-edge served set. The result reports
+     `providerFileManifest: 'complete'`, the per-site and overall binding (any `mismatch`,
+     else any `unreproducible`, else `bound`), `servingEstablishedByManifest: false`, and
+     `deployable`, `certified`, `authorized`, `available` all `false`.
+  5. Identity layers kept distinct: (1) local artifact identity (pair-build SHA-256);
+     (2) canonical Hosting candidate identity (Part A fingerprint); (3) provider file-manifest
+     identity (this binding, content-to-version only); (4) public-edge byte observation
+     (Part B served hashes, the only evidence of what is served, with release metadata);
+     (5) signed certification (S2/S6e, not produced); (6) deployment authorization (owner, not
+     granted); (7) runtime availability (client gate and Functions, closed). No layer implies
+     a later one.
+  6. Not changed: certify, release, backend-state, build-application, the client gate,
+     Functions A3 code, Rules, indexes, registries, Firebase configurations, CI, S6b to S6f.
+     `prepare.cjs` gains one `HOSTING_TEST_FILES` line; the Part B no-consumer guard allows
+     the Part C suite's allowlist mention. Implemented in the repository, uncommitted, not
+     independently certified.
+  7. [U] Still open: the deploy-side compression profile is a recorded claim (no capture tool
+     records it yet); live capture of releases, versions and file lists; edge-cache staleness
+     after a release; timing of a full observation within five minutes; bundle
+     classification; an enabled builder; S6b binding.
 
 ### D14 - Where tooling runs and approval system identity
 
@@ -2396,8 +2457,9 @@ the remaining S6e prerequisites; O6 does not wire anything.
 
 ### S6f - Staging discovery (non-authorizing prerequisite to S6e)
 
-Status: implemented in the repository on top of `36670e5` (O6 integrated); uncommitted, not
-deployed, never run against a real project. The independent certification (Sol 6.1) failed
+Status: implemented on top of `36670e5` (O6 integrated) and integrated on main (`3bfad46`); not
+deployed, never run against a real project (this line previously read "implemented in the repository
+...; uncommitted"). The independent certification (Sol 6.1) failed
 with findings F1 to F4; the corrections below are implemented. The recertification passed F1
 and F4 and failed F2 and F3; the second corrections below are implemented. The next
 recertification passed F1 to F4 and redaction provenance and failed the process-wide

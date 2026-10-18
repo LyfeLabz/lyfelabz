@@ -1,6 +1,7 @@
 'use strict';
 
-// D13 Part B: offline Hosting deployment observation verifier. All observations are synthetic.
+// D13 Part B and Part C: offline Hosting deployment observation verifier (observation
+// schema 2). All observations are synthetic.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -9,6 +10,7 @@ const test = require('node:test');
 const D = require('./hosting-deployment.cjs');
 const { hostingCandidateFingerprint } = require('./hosting-identity.cjs');
 const { fingerprint } = require('./backend-state.cjs');
+const { localGzipManifest, gzipSha256, PROVIDER_SOURCE } = require('./provider-manifest.cjs');
 
 const ROOT = path.resolve(__dirname, '../..');
 const SHA = '1'.repeat(40);
@@ -18,31 +20,48 @@ const h = c => c.repeat(64);
 const VERSION_APP = 'sites/lyfelabz-staging/versions/abc123';
 const VERSION_MARKETING = 'projects/lyfelabz-staging/sites/lyfelabz-staging-marketing/versions/def456';
 
+const RELEASE_APP = 'projects/lyfelabz-staging/sites/lyfelabz-staging/channels/live/releases/r-app-1';
+const RELEASE_MARKETING = 'sites/lyfelabz-staging-marketing/releases/r-marketing-1';
+const BYTES = {
+  app: { 'index.html': '<p>home</p>\n', 'app/dist/bundle.js': 'console.log(1);\n', 'old.html': 'old\n', 'notes.md': '# notes\n', 'firebase-debug.log': 'debug\n' },
+  marketing: { 'index.html': '<p>home</p>\n', 'about/index.html': '<p>about</p>\n' }
+};
+const UPLOADED = { app: ['app/dist/bundle.js', 'index.html', 'old.html'], marketing: ['about/index.html', 'index.html'] };
+const sha = text => require('node:crypto').createHash('sha256').update(text).digest('hex');
 function files() {
-  return {
-    app: { 'index.html': h('1'), 'app/dist/bundle.js': h('2'), 'old.html': h('3'), 'notes.md': h('4'), 'firebase-debug.log': h('5') },
-    marketing: { 'index.html': h('1'), 'about/index.html': h('6') }
-  };
+  const out = {};
+  for (const [target, map] of Object.entries(BYTES)) out[target] = Object.fromEntries(Object.entries(map).map(([p, t]) => [p, sha(t)]));
+  return out;
+}
+function localGzip(target) {
+  return JSON.parse(JSON.stringify(localGzipManifest(Object.fromEntries(UPLOADED[target].map(p => [p, Buffer.from(BYTES[target][p])])))));
 }
 function candidate(overrides = {}) {
   return { releaseIntent: 'general', source: { sha: SHA, dirty: false }, hostingArtifactFingerprint: fingerprint(files()),
     placementFingerprint: PLACEMENT, applicationBuildFingerprint: h('d'), teacherUnitsAvailability: 'closed',
     availabilityEvidence: 'build-contract-assertion', ...overrides };
 }
-function version(name, at, overrides = {}) {
-  return { observedAt: at, versionName: name, versionStatus: 'FINALIZED', releaseTime: '2026-10-18T11:00:00.000Z', message: `release ${SHA}`, ...overrides };
+function version(target, at, overrides = {}) {
+  return { observedAt: at, releaseName: target === 'app' ? RELEASE_APP : RELEASE_MARKETING, releaseType: 'DEPLOY',
+    releaseTime: '2026-10-18T11:00:00.000Z', message: `release ${SHA}`, versionName: target === 'app' ? VERSION_APP : VERSION_MARKETING,
+    versionStatus: 'FINALIZED', fileCount: UPLOADED[target].length, ...overrides };
+}
+function providerManifest(target, hashOf = p => gzipSha256(Buffer.from(BYTES[target][p]))) {
+  const entries = UPLOADED[target].map(p => ({ path: `/${p}`, hash: hashOf(p), status: 'ACTIVE' }));
+  return { provenance: { kind: 'synthetic-fixture', tool: 'hosting-deployment.test', source: PROVIDER_SOURCE, observedAt: '2026-10-18T12:03:30.000Z' },
+    pages: [{ requestPageToken: null, response: { files: entries.slice(0, 1), nextPageToken: `${target}-page-2` } },
+      { requestPageToken: `${target}-page-2`, response: { files: entries.slice(1) } }] };
 }
 function site(target) {
   const f = files()[target];
-  const name = target === 'app' ? VERSION_APP : VERSION_MARKETING;
   const served = target === 'app' ? ['app/dist/bundle.js', 'index.html'] : ['about/index.html', 'index.html'];
-  const deployed = target === 'app' ? ['app/dist/bundle.js', 'index.html', 'old.html'] : served;
   return {
     site: `projects/lyfelabz-staging/sites/${target === 'app' ? 'lyfelabz-staging' : 'lyfelabz-staging-marketing'}`,
-    versionBefore: version(name, '2026-10-18T12:01:00.000Z'),
+    versionBefore: version(target, '2026-10-18T12:01:00.000Z'),
     served: { observedAt: '2026-10-18T12:02:00.000Z', files: served.map(p => ({ path: p, sha256: f[p] })) },
-    versionAfter: version(name, '2026-10-18T12:03:00.000Z'),
-    providerFiles: { observedAt: '2026-10-18T12:03:30.000Z', hashEncoding: 'provider-reported', files: deployed.map(p => ({ path: `/${p}`, hash: h('e') })) }
+    versionAfter: version(target, '2026-10-18T12:03:00.000Z'),
+    providerManifest: providerManifest(target),
+    localGzip: localGzip(target)
   };
 }
 function input() {
@@ -55,9 +74,10 @@ function input() {
       app: { ignore: ['**/*.md'], redirects: [{ source: '/old.html', destination: '/', type: 301 }] },
       marketing: { ignore: [], redirects: [{ regex: '^/legacy/.*$', destination: '/', type: 302 }] }
     },
-    observation: { kind: 'lyfelabz.hostingDeploymentObservation', schemaVersion: 1, project: 'lyfelabz-staging',
+    observation: { kind: 'lyfelabz.hostingDeploymentObservation', schemaVersion: 2, project: 'lyfelabz-staging',
       startedAt: '2026-10-18T12:00:30.000Z', completedAt: '2026-10-18T12:04:00.000Z',
       provenance: { kind: 'synthetic-fixture', tool: 'hosting-deployment.test', versionSource: 'hosting-live-channel', byteSource: 'public-edge-cache-busted-get' },
+      deployCompressionProfile: localGzip('app').profile,
       sites: { app: site('app'), marketing: site('marketing') } },
     now: NOW
   };
@@ -75,13 +95,18 @@ test('valid synthetic two-site observation is consistent and grants nothing', ()
   assert.equal(result.observationFingerprint, fingerprint(i.observation));
   assert.equal(result.candidateFingerprintReconstructed, true);
   assert.equal(result.localAndPublicBytesConsistent, true);
+  assert.equal(result.observationSchemaVersion, 2);
   assert.equal(result.providerVersionMetadataStable, true);
-  assert.equal(result.providerFileManifest, 'present');
-  assert.equal(result.providerFileBinding, 'unresolved');
-  assert.deepEqual(result.sites.app, { site: 'projects/lyfelabz-staging/sites/lyfelabz-staging', versionName: VERSION_APP, servedPaths: 2, redirectedPaths: 1, providerFileManifest: 'present' });
+  assert.equal(result.providerReleaseIdentityStable, true);
+  assert.equal(result.providerFileManifest, 'complete');
+  assert.equal(result.providerFileBinding, 'bound');
+  assert.equal(result.servingEstablishedByManifest, false);
+  assert.deepEqual(result.sites.app, { site: 'projects/lyfelabz-staging/sites/lyfelabz-staging', releaseName: RELEASE_APP, versionName: VERSION_APP,
+    fileCount: 3, servedPaths: 2, uploadedPaths: 3, redirectedPaths: 1, providerFileManifest: 'complete',
+    providerFileBinding: 'bound', providerFileBindingReason: null, mismatchedPaths: [] });
   for (const flag of ['deployable', 'certified', 'authorized', 'available']) assert.equal(result[flag], false);
   assert.ok(Object.isFrozen(result) && Object.isFrozen(result.sites) && Object.isFrozen(result.sites.app) && Object.isFrozen(result.limitations));
-  assert.ok(result.limitations.some(l => /provider-byte binding is unresolved/.test(l)));
+  assert.ok(result.limitations.some(l => /does not establish which version is currently served/.test(l)));
   assert.doesNotMatch(JSON.stringify(result), /"(certified|verified)"\s*:\s*true|provider-backed-certified/);
 });
 
@@ -93,18 +118,42 @@ test('deterministic result and candidate fingerprint reconstruction', () => {
   refuses(i => { i.pairBuild.files.marketing['extra.html'] = h('7'); }, /do not reproduce/);
 });
 
-test('absent provider manifest is reported, binding stays unresolved', () => {
-  const i = input(); i.observation.sites.app.providerFiles = null; i.observation.sites.marketing.providerFiles = null;
-  const r = D.verifyHostingDeploymentObservation(i);
-  assert.equal(r.providerFileManifest, 'absent'); assert.equal(r.providerFileBinding, 'unresolved');
-  const partial = input(); partial.observation.sites.marketing.providerFiles = null;
-  assert.equal(D.verifyHostingDeploymentObservation(partial).providerFileManifest, 'partial');
+test('schema 1 (Part B) observations are refused, never reinterpreted', () => {
+  refuses(i => { i.observation.schemaVersion = 1; }, /schema 1 \(D13 Part B\) is superseded/);
+  refuses(i => { i.observation.schemaVersion = 3; }, /unsupported observation kind or schema/);
+  refuses(i => { const o = i.observation.sites.app; o.providerFiles = null; delete o.providerManifest; delete o.localGzip; }, /unknown observation.sites.app field: providerFiles/);
+  refuses(i => { delete i.observation.deployCompressionProfile; }, /missing observation field: deployCompressionProfile/);
 });
 
-test('provider hashes equal to local SHA-256 are still not a binding', () => {
-  const i = input();
-  i.observation.sites.marketing.providerFiles.files = [{ path: '/about/index.html', hash: h('6') }, { path: '/index.html', hash: h('1') }];
-  assert.equal(D.verifyHostingDeploymentObservation(i).providerFileBinding, 'unresolved');
+test('binding outcomes: mismatch and unreproducible are reported, never bound', () => {
+  // Provider hashes equal to the raw SHA-256 (not the gzip SHA-256) are a reproducible mismatch.
+  const raw = input(); raw.observation.sites.marketing.providerManifest = providerManifest('marketing', p => files().marketing[p]);
+  const r = D.verifyHostingDeploymentObservation(raw);
+  assert.equal(r.providerFileBinding, 'mismatch');
+  assert.deepEqual(r.sites.marketing.mismatchedPaths, ['/about/index.html', '/index.html']);
+  assert.equal(r.sites.app.providerFileBinding, 'bound');
+  for (const flag of ['deployable', 'certified', 'authorized', 'available']) assert.equal(r[flag], false);
+  const none = input(); none.observation.deployCompressionProfile = null;
+  const u = D.verifyHostingDeploymentObservation(none);
+  assert.equal(u.providerFileBinding, 'unreproducible');
+  assert.equal(u.sites.app.providerFileBindingReason, 'deploy compression profile was not recorded');
+  const os = input(); os.observation.deployCompressionProfile.header.os = os.observation.deployCompressionProfile.header.os === 19 ? 3 : 19;
+  assert.equal(D.verifyHostingDeploymentObservation(os).providerFileBinding, 'unreproducible');
+  const both = input(); both.observation.deployCompressionProfile = null;
+  both.observation.sites.marketing.providerManifest = providerManifest('marketing', p => files().marketing[p]);
+  assert.equal(D.verifyHostingDeploymentObservation(both).providerFileBinding, 'unreproducible');
+});
+
+test('provider-uploaded files are validated separately from public-edge served files', () => {
+  // The redirected old.html is uploaded (in the manifest) but not served.
+  const r = D.verifyHostingDeploymentObservation(input());
+  assert.equal(r.sites.app.uploadedPaths, 3); assert.equal(r.sites.app.servedPaths, 2);
+  const UP = UPLOADED.app;
+  refuses(i => { i.observation.sites.app.providerManifest.pages[1].response.files = i.observation.sites.app.providerManifest.pages[1].response.files.filter(f => f.path !== '/old.html');
+    i.observation.sites.app.versionBefore.fileCount = i.observation.sites.app.versionAfter.fileCount = 2; }, /provider manifest missing: \/old.html/);
+  refuses(i => { i.observation.sites.app.providerManifest.pages[1].response.files.push({ path: '/notes.md', hash: h('e'), status: 'ACTIVE' });
+    i.observation.sites.app.versionBefore.fileCount = i.observation.sites.app.versionAfter.fileCount = 4; }, /provider manifest unexpected: \/notes.md/);
+  assert.deepEqual(UP, ['app/dist/bundle.js', 'index.html', 'old.html']);
 });
 
 test('site representation and identity', () => {
@@ -125,6 +174,16 @@ test('version stability, status and release message', () => {
   refuses(i => { i.observation.sites.app.versionAfter.versionName = 'sites/lyfelabz-staging/versions/abc124'; }, /versionName changed/);
   refuses(i => { i.observation.sites.marketing.versionAfter.releaseTime = '2026-10-18T11:30:00.000Z'; }, /releaseTime changed/);
   refuses(i => { i.observation.sites.app.versionAfter.message = 'release other'; }, /message changed/);
+  refuses(i => { i.observation.sites.app.versionAfter.releaseName = 'sites/lyfelabz-staging/releases/r-app-2'; }, /releaseName changed/);
+  refuses(i => { i.observation.sites.marketing.versionAfter.fileCount = 3; }, /fileCount changed/);
+  for (const type of ['ROLLBACK', 'SITE_DISABLE', 'TYPE_UNSPECIFIED', 'deploy'])
+    refuses(i => { for (const k of ['versionBefore', 'versionAfter']) i.observation.sites.app[k].releaseType = type; }, new RegExp(`release type ${type} is not DEPLOY`));
+  refuses(i => { i.observation.sites.app.versionAfter.releaseType = 'ROLLBACK'; }, /release type ROLLBACK is not DEPLOY/);
+  refuses(i => { delete i.observation.sites.app.versionBefore.releaseName; }, /missing app versionBefore field: releaseName/);
+  refuses(i => { for (const k of ['versionBefore', 'versionAfter']) i.observation.sites.app[k].releaseName = 'sites/lyfelabz-staging/channels/preview/releases/r1'; }, /malformed app versionBefore release name/);
+  refuses(i => { for (const k of ['versionBefore', 'versionAfter']) i.observation.sites.app[k].releaseName = 'sites/lyfelabz-prod/releases/r1'; }, /release belongs to another site/);
+  refuses(i => { for (const k of ['versionBefore', 'versionAfter']) i.observation.sites.app[k].releaseName = 'projects/lyfelabz-prod/sites/lyfelabz-staging/releases/r1'; }, /release belongs to another site or project/);
+  refuses(i => { for (const k of ['versionBefore', 'versionAfter']) i.observation.sites.app[k].fileCount = -1; }, /malformed app versionBefore file count/);
   for (const status of ['CREATED', 'DELETED', 'finalized', 'ABANDONED'])
     refuses(i => { i.observation.sites.app.versionBefore.versionStatus = status; i.observation.sites.app.versionAfter.versionStatus = status; }, /is not FINALIZED/);
   for (const message of [`release ${SHA} uncommitted`, `release ${'2'.repeat(40)}`, ''])
@@ -185,17 +244,27 @@ test('provenance', () => {
   refuses(i => { i.observation.provenance.signedBy = 'x'; }, /unknown observation.provenance field/);
 });
 
-test('provider manifest evidence is structurally validated', () => {
-  refuses(i => { i.observation.sites.app.providerFiles.hashEncoding = 'sha256'; }, /unsupported app provider hash encoding/);
-  refuses(i => { i.observation.sites.app.providerFiles.files.pop(); }, /provider files missing/);
-  refuses(i => { i.observation.sites.app.providerFiles.files.push({ path: '/notes.md', hash: h('e') }); }, /provider files unexpected: \/notes.md/);
-  refuses(i => { i.observation.sites.app.providerFiles.files.push({ path: '/index.html', hash: h('e') }); }, /duplicate app provider files path/);
-  refuses(i => { i.observation.sites.app.providerFiles.files[0].path = 'index.html'; }, /malformed app provider files/);
-  refuses(i => { i.observation.sites.app.providerFiles.files[0].hash = 'E'.repeat(64); }, /malformed app provider files\[0\].hash/);
-  refuses(i => { i.observation.sites.app.providerFiles.observedAt = '2026-10-18T12:04:30.000Z'; }, /outside the observation window/);
-  refuses(i => { i.observation.sites.app.providerFiles.status = 'ok'; }, /unknown app providerFiles field/);
-  refuses(i => { i.observation.sites.app.providerFiles = []; }, /providerFiles must be a plain object/);
-  refuses(i => { delete i.observation.sites.app.providerFiles; }, /missing observation.sites.app field: providerFiles/);
+test('provider manifest evidence is complete, ACTIVE and bound to this version and window', () => {
+  const pages = i => i.observation.sites.app.providerManifest.pages;
+  refuses(i => { pages(i).pop(); }, /last page has a continuation token/);
+  refuses(i => { pages(i).shift(); }, /does not continue the previous page/);
+  refuses(i => { pages(i)[1].response.files.push({ path: '/index.html', hash: h('e'), status: 'ACTIVE' }); }, /duplicate provider path/);
+  refuses(i => { pages(i)[0].response.files[0].status = 'EXPECTED'; }, /is not ACTIVE/);
+  refuses(i => { pages(i)[0].response.files[0].path = 'app/dist/bundle.js'; }, /malformed pages\[0\].response.files\[0\].path/);
+  refuses(i => { pages(i)[0].response.files[0].hash = 'E'.repeat(64); }, /malformed pages\[0\].response.files\[0\].hash/);
+  refuses(i => { for (const k of ['versionBefore', 'versionAfter']) i.observation.sites.app[k].fileCount = 4; }, /file count 3 is not the version fileCount 4/);
+  refuses(i => { i.observation.sites.app.providerManifest.provenance.observedAt = '2026-10-18T12:04:30.000Z'; }, /outside the observation window/);
+  refuses(i => { i.observation.sites.app.providerManifest.provenance.kind = 'offline-record'; }, /provenance differs from the observation provenance/);
+  refuses(i => { i.observation.sites.app.providerManifest.extra = 1; }, /unknown app providerManifest field/);
+  refuses(i => { i.observation.sites.app.providerManifest = null; }, /providerManifest must be a plain object/);
+});
+
+test('local gzip evidence must be for the pair-build bytes', () => {
+  refuses(i => { i.observation.sites.app.localGzip.files['/index.html'].sha256 = h('9'); }, /not for the pair-build bytes of index.html/);
+  refuses(i => { i.observation.sites.app.localGzip.files['/missing.html'] = { sha256: h('9'), gzipSha256: h('9') }; }, /outside the pair build: \/missing.html/);
+  refuses(i => { delete i.observation.sites.app.localGzip.files['/old.html']; }, /local gzip evidence missing: \/old.html/);
+  refuses(i => { i.observation.sites.marketing.localGzip.profile.node = 'other'; }, /local compression profiles differ between sites/);
+  refuses(i => { delete i.observation.sites.app.localGzip; }, /missing observation.sites.app field: localGzip/);
 });
 
 test('routing rules are validated', () => {
@@ -256,7 +325,7 @@ test('no release, deployment, activation or Functions path consumes this module'
     }
   }
   for (const directory of ['scripts', 'app/scripts', 'app/src', 'platform', '.github']) walk(path.join(ROOT, directory));
-  // The Part A suite names this module only in its own no-consumer allowlist.
+  // The Part A and Part C suites name this module only in their own no-consumer allowlists.
   assert.deepEqual(consumers.sort(), ['scripts/hosting-release/hosting-deployment.cjs', 'scripts/hosting-release/hosting-deployment.test.cjs',
-    'scripts/hosting-release/hosting-identity.test.cjs']);
+    'scripts/hosting-release/hosting-identity.test.cjs', 'scripts/hosting-release/provider-manifest.test.cjs']);
 });

@@ -14,8 +14,12 @@
 // and it does not prove an enabled build.
 //
 // Provider file hashes are never assumed to equal local SHA-256 hashes (owner
-// decision 6). The provider manifest is validated structurally and its
-// cryptographic binding to local bytes is always reported as unresolved.
+// decision 6). D13 Part C (schema 2) requires the complete provider version-file
+// manifest (provider-manifest.cjs) and compares it with locally reproduced gzip
+// SHA-256 under a byte-calibrated compression profile: `bound`, `mismatch` or
+// `unreproducible`. A `bound` manifest is content-to-version consistency only; it
+// never establishes that the version is the one currently served. Schema 1 (Part B)
+// observations are refused, never reinterpreted.
 //
 // Schema (every record is a plain object of exactly these fields; no optional keys):
 //   candidate      the A1 Hosting-only candidate (hosting-identity.cjs)
@@ -25,21 +29,27 @@
 //   expected       { project, sites: { app: <site id>, marketing: <site id> } }
 //   routing        { app: Rules, marketing: Rules }, Rules = { ignore: [glob],
 //                    redirects: [{ source | regex, destination, type }] }
-//   observation    { kind: 'lyfelabz.hostingDeploymentObservation', schemaVersion: 1,
-//                    project, startedAt, completedAt, provenance, sites: { app: Site, marketing: Site } }
+//   observation    { kind: 'lyfelabz.hostingDeploymentObservation', schemaVersion: 2,
+//                    project, startedAt, completedAt, provenance, deployCompressionProfile,
+//                    sites: { app: Site, marketing: Site } }
+//   deployCompressionProfile  null | compression profile recorded where the deploy ran
+//                    (provider-manifest.cjs compressionProfile()); null is unreproducible
 //   provenance     { kind: 'synthetic-fixture' | 'offline-record', tool,
 //                    versionSource: 'hosting-live-channel', byteSource: 'public-edge-cache-busted-get' }
 //   Site           { site: 'projects/<project or number>/sites/<id>', versionBefore: Version,
 //                    served: { observedAt, files: [{ path, sha256 }] }, versionAfter: Version,
-//                    providerFiles: null | { observedAt, hashEncoding: 'provider-reported',
-//                                            files: [{ path: '/<file>', hash }] } }
-//   Version        { observedAt, versionName, versionStatus, releaseTime, message }
+//                    providerManifest: { provenance, pages } (provider-manifest.cjs input; the
+//                                        version identity comes from versionBefore),
+//                    localGzip: { profile, files: { '/<file>': { sha256, gzipSha256 } } } }
+//   Version        { observedAt, releaseName, releaseType, releaseTime, message,
+//                    versionName, versionStatus, fileCount }
 //   now            ISO-8601 UTC timestamp supplied by the caller
 const { fingerprint, canonical, MAX_AGE_MS, PROJECT_NUMBERS } = require('./backend-state.cjs');
 const { TARGETS, isRedirected, requestPathFor } = require('./contract.cjs');
 const { releaseMessage } = require('./release.cjs');
 const { FIREBASE_BUILTIN_IGNORES, isHostingIgnored } = require('../../app/scripts/lessonBuilder/hostingExclusion.cjs');
 const { validateHostingCandidate, hostingCandidateFingerprint } = require('./hosting-identity.cjs');
+const { normalizeProviderManifest, bindProviderManifest } = require('./provider-manifest.cjs');
 
 // Owner decision 5: observations are no older than five minutes (A1 MAX_AGE_MS).
 const MAX_OBSERVATION_AGE_MS = MAX_AGE_MS;
@@ -47,14 +57,18 @@ const MAX_OBSERVATION_AGE_MS = MAX_AGE_MS;
 const CLOCK_SKEW_MS = 0;
 // Only FINALIZED versions are acceptable, matching the S6c observer semantics.
 const ACCEPTED_VERSION_STATUS = 'FINALIZED';
+// The initial contract accepts only ordinary deploy releases (no ROLLBACK or SITE_DISABLE).
+const ACCEPTED_RELEASE_TYPE = 'DEPLOY';
+const OBSERVATION_SCHEMA = 2;
 const OBSERVATION_KIND = 'lyfelabz.hostingDeploymentObservation';
 // No live-capture provenance exists: live capture needs separate authorization.
 const PROVENANCE_KINDS = Object.freeze(['synthetic-fixture', 'offline-record']);
 const SCOPE = 'observation-consistency';
 const LIMITATIONS = Object.freeze([
   'public-edge bytes are compared with local SHA-256 only as supplied in the offline observation',
-  'provider version-file hashes are not reconciled with local SHA-256; provider-byte binding is unresolved',
-  'version metadata and release message are provider-reported claims, not attestation of content',
+  'provider version-file binding is content-to-manifest consistency of locally reproduced gzip SHA-256 only',
+  'a bound manifest does not establish which version is currently served; serving rests on release metadata and public-edge bytes',
+  'compression profiles, version metadata and release identity are recorded or provider-reported claims, not attestation of content',
   'no closed-versus-enabled bundle classification is performed (deferred)',
   'not provider-backed certification, deployment approval, activation or availability'
 ]);
@@ -146,13 +160,21 @@ function validatePairBuild(pair) {
   });
 }
 
+const VERSION_FIELDS = ['observedAt', 'releaseName', 'releaseType', 'releaseTime', 'message', 'versionName', 'versionStatus', 'fileCount'];
 function validateVersion(v, site, description) {
-  record(v, ['observedAt', 'versionName', 'versionStatus', 'releaseTime', 'message'], description);
+  record(v, VERSION_FIELDS, description);
   const observedAt = time(v.observedAt, `${description} observation`);
   const releaseTime = time(v.releaseTime, `${description} release`);
   const m = /^(?:projects\/([^/]+)\/)?sites\/([a-z0-9-]+)\/versions\/([a-f0-9]+)$/.exec(text(v.versionName, `${description} version name`));
   if (!m) refuse(`malformed ${description} version name`);
   if (m[2] !== site.id || (m[1] !== undefined && !site.projects.includes(m[1]))) refuse(`${description} version belongs to another site or project`);
+  // Both documented release name formats; only the live channel is accepted.
+  const r = /^(?:projects\/([^/]+)\/)?sites\/([a-z0-9-]+)\/(?:channels\/live\/)?releases\/([A-Za-z0-9_-]+)$/.exec(text(v.releaseName, `${description} release name`));
+  if (!r) refuse(`malformed ${description} release name`);
+  if (r[2] !== site.id || (r[1] !== undefined && !site.projects.includes(r[1]))) refuse(`${description} release belongs to another site or project`);
+  text(v.releaseType, `${description} release type`);
+  if (v.releaseType !== ACCEPTED_RELEASE_TYPE) refuse(`${description} release type ${v.releaseType} is not ${ACCEPTED_RELEASE_TYPE}`);
+  if (!Number.isSafeInteger(v.fileCount) || v.fileCount < 0) refuse(`malformed ${description} file count`);
   text(v.versionStatus, `${description} version status`);
   if (v.versionStatus !== ACCEPTED_VERSION_STATUS) refuse(`${description} version status ${v.versionStatus} is not ${ACCEPTED_VERSION_STATUS}`);
   if (typeof v.message !== 'string') refuse(`malformed ${description} release message`);
@@ -206,8 +228,9 @@ function verifyHostingDeploymentObservation(input) {
   for (const target of TARGETS) validateRules(routing[target], `routing.${target}`);
 
   // Observation envelope, provenance and freshness.
-  record(observation, ['kind', 'schemaVersion', 'project', 'startedAt', 'completedAt', 'provenance', 'sites'], 'observation');
-  if (observation.kind !== OBSERVATION_KIND || observation.schemaVersion !== 1) refuse('unsupported observation kind or schema');
+  if (observation?.kind === OBSERVATION_KIND && observation?.schemaVersion === 1) refuse('observation schema 1 (D13 Part B) is superseded by schema 2 (D13 Part C) and is not reinterpreted');
+  record(observation, ['kind', 'schemaVersion', 'project', 'startedAt', 'completedAt', 'provenance', 'deployCompressionProfile', 'sites'], 'observation');
+  if (observation.kind !== OBSERVATION_KIND || observation.schemaVersion !== OBSERVATION_SCHEMA) refuse('unsupported observation kind or schema');
   if (observation.project !== expected.project) refuse('observation project differs from the expected project');
   const p = record(observation.provenance, ['kind', 'tool', 'versionSource', 'byteSource'], 'observation.provenance');
   if (!PROVENANCE_KINDS.includes(p.kind)) refuse('unsupported provenance kind');
@@ -224,9 +247,10 @@ function verifyHostingDeploymentObservation(input) {
   const projects = [expected.project, PROJECT_NUMBERS[expected.project]];
   const message = releaseMessage(candidate.source.sha, candidate.source.dirty);
   const sites = {};
-  let manifests = 0;
+  const bindings = [];
+  let localProfile = null;
   for (const target of TARGETS) {
-    const o = record(observation.sites[target], ['site', 'versionBefore', 'served', 'versionAfter', 'providerFiles'], `observation.sites.${target}`);
+    const o = record(observation.sites[target], ['site', 'versionBefore', 'served', 'versionAfter', 'providerManifest', 'localGzip'], `observation.sites.${target}`);
     const id = expected.sites[target];
     if (!projects.some(pr => o.site === `projects/${pr}/sites/${id}`)) refuse(`${target} observed site is not the expected site ${id}`);
     const site = { id, projects };
@@ -234,7 +258,7 @@ function verifyHostingDeploymentObservation(input) {
     // Version identity before and after byte verification must be stable.
     const before = validateVersion(o.versionBefore, site, `${target} versionBefore`);
     const after = validateVersion(o.versionAfter, site, `${target} versionAfter`);
-    for (const key of ['versionName', 'versionStatus', 'releaseTime', 'message'])
+    for (const key of VERSION_FIELDS.slice(1))
       if (o.versionBefore[key] !== o.versionAfter[key]) refuse(`${target} ${key} changed between before and after observations`);
     if (o.versionBefore.message !== message) refuse(`${target} release message is not ${JSON.stringify(message)}`);
 
@@ -249,26 +273,36 @@ function verifyHostingDeploymentObservation(input) {
     exactSet(served, expectedServed, `${target} served files`);
     for (const file of expectedServed) if (served.get(file) !== pairBuild.files[target][file]) refuse(`${target} served bytes differ for ${file}`);
 
-    // Provider version-file manifest: structural only, never reconciled with SHA-256.
-    let manifest = 'absent';
-    if (o.providerFiles !== null) {
-      const m = record(o.providerFiles, ['observedAt', 'hashEncoding', 'files'], `${target} providerFiles`);
-      const at = time(m.observedAt, `${target} providerFiles`);
-      if (at < startedAt || at > completedAt) refuse(`${target} provider manifest is outside the observation window`);
-      if (m.hashEncoding !== 'provider-reported') refuse(`unsupported ${target} provider hash encoding`);
-      const files = validateEntries(m.files, `${target} provider files`, (value, d) => {
-        if (typeof value !== 'string' || !value.startsWith('/')) refuse(`malformed ${d}`);
-        relativePath(value.slice(1), d);
-      }, 'hash');
-      exactSet(files, deployed.map(f => `/${f}`), `${target} provider files`);
-      manifest = 'present'; manifests += 1;
-    }
-    sites[target] = Object.freeze({ site: o.site, versionName: o.versionBefore.versionName, servedPaths: expectedServed.length,
-      redirectedPaths: deployed.length - expectedServed.length, providerFileManifest: manifest });
+    // Provider-uploaded files: every non-ignored file, redirected paths included. This
+    // set is validated separately from the public-edge served set above.
+    const pm = record(o.providerManifest, ['provenance', 'pages'], `${target} providerManifest`);
+    const manifest = normalizeProviderManifest({
+      expected: { project: expected.project, projectNumber: PROJECT_NUMBERS[expected.project], site: id, versionName: o.versionBefore.versionName },
+      version: { name: o.versionBefore.versionName, status: o.versionBefore.versionStatus, fileCount: o.versionBefore.fileCount },
+      provenance: pm.provenance, pages: pm.pages
+    });
+    const at = time(manifest.provenance.observedAt, `${target} providerManifest`);
+    if (at < startedAt || at > completedAt) refuse(`${target} provider manifest is outside the observation window`);
+    if (manifest.provenance.kind !== p.kind) refuse(`${target} provider manifest provenance differs from the observation provenance`);
+    const local = record(o.localGzip, ['profile', 'files'], `${target} localGzip`);
+    map(local.files, `${target} localGzip.files`, (file, entry) => {
+      const rel = file.startsWith('/') ? file.slice(1) : null;
+      if (rel === null || !Object.hasOwn(pairBuild.files[target], rel)) refuse(`${target} local gzip evidence names a file outside the pair build: ${file}`);
+      if (entry?.sha256 !== pairBuild.files[target][rel]) refuse(`${target} local gzip evidence is not for the pair-build bytes of ${rel}`);
+    });
+    if (localProfile !== null && canonical(localProfile) !== canonical(local.profile)) refuse('local compression profiles differ between sites');
+    localProfile = local.profile;
+    const binding = bindProviderManifest({ manifest, uploaded: deployed, local, deployProfile: observation.deployCompressionProfile });
+    bindings.push(binding.binding);
+    sites[target] = Object.freeze({ site: o.site, releaseName: o.versionBefore.releaseName, versionName: o.versionBefore.versionName,
+      fileCount: manifest.fileCount, servedPaths: expectedServed.length, uploadedPaths: deployed.length,
+      redirectedPaths: deployed.length - expectedServed.length, providerFileManifest: 'complete',
+      providerFileBinding: binding.binding, providerFileBindingReason: binding.reason, mismatchedPaths: binding.mismatchedPaths });
   }
 
   return Object.freeze({
     scope: SCOPE,
+    observationSchemaVersion: OBSERVATION_SCHEMA,
     project: expected.project,
     hostingCandidateFingerprint: candidateFingerprint,
     observationFingerprint: fingerprint(observation),
@@ -276,12 +310,14 @@ function verifyHostingDeploymentObservation(input) {
     candidateFingerprintReconstructed: true,
     localAndPublicBytesConsistent: true,
     providerVersionMetadataStable: true,
-    providerFileManifest: manifests === TARGETS.length ? 'present' : manifests === 0 ? 'absent' : 'partial',
-    providerFileBinding: 'unresolved',
+    providerReleaseIdentityStable: true,
+    providerFileManifest: 'complete',
+    providerFileBinding: bindings.includes('mismatch') ? 'mismatch' : bindings.includes('unreproducible') ? 'unreproducible' : 'bound',
+    servingEstablishedByManifest: false,
     sites: Object.freeze(sites),
     limitations: LIMITATIONS,
     deployable: false, certified: false, authorized: false, available: false
   });
 }
 
-module.exports = { verifyHostingDeploymentObservation, MAX_OBSERVATION_AGE_MS, CLOCK_SKEW_MS, ACCEPTED_VERSION_STATUS, SCOPE };
+module.exports = { verifyHostingDeploymentObservation, MAX_OBSERVATION_AGE_MS, CLOCK_SKEW_MS, ACCEPTED_VERSION_STATUS, ACCEPTED_RELEASE_TYPE, OBSERVATION_SCHEMA, SCOPE };
