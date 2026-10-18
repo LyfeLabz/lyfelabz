@@ -167,7 +167,8 @@ test('module has no network executor, credential, environment, clock or filesyst
       /new Date\(/, /execFile|spawn/, /gcloud|access_token|Authorization/, /require\('\.\/release\.cjs'\)\.(liveRelease|runFirebaseJson)/])
       assert.doesNotMatch(source, forbidden, `${file} ${forbidden}`);
   }
-  assert.deepEqual(Object.keys(C).sort(), ['MAX_WINDOW_MS', 'PLAN_KIND', 'PROVIDER_API', 'SCOPE', 'TRANSCRIPT_KIND', 'planCapture', 'replayCapture']);
+  assert.deepEqual(Object.keys(C).sort(), ['DIAGNOSTIC_HEADERS', 'EDGE_DIAGNOSTIC_FIELDS', 'HISTORICAL_SCOPE', 'MAX_WINDOW_MS', 'PLAN_KIND', 'PROVIDER_API',
+    'RESERVED_LIVE_PROVENANCE', 'SCOPE', 'TRANSCRIPT_KIND', 'planCapture', 'replayCapture', 'replayCaptureHistorical']);
 });
 
 // --- Replay --------------------------------------------------------------------
@@ -284,6 +285,91 @@ test('local gzip evidence and candidate identity are checked by the Part B/C con
   refuses(i => { i.receipt = null; i.candidate.source.dirty = true; }, /clean source/);
 });
 
+// --- D13 Part F: reserved live provenance, edge diagnostics, historical replay ----
+
+function withDiagnostics(i, overrides = {}) {
+  for (const ex of i.transcript.exchanges.filter(e => e.id.startsWith('edge:'))) {
+    const file = ex.id.split(':').slice(2).join(':');
+    const length = Buffer.byteLength(BYTES[ex.id.split(':')[1]][file]);
+    ex.response.diagnostics = { rawSha256: ex.response.sha256, rawLength: length, decodedSha256: ex.response.sha256, contentEncoding: 'identity',
+      contentLength: length, etag: '"abc"', age: '0', cacheControl: 'max-age=3600', xCache: 'MISS', xServedBy: 'cache-synthetic-1',
+      responseUrl: ex.request.url, nonce: 'synthetic01', redirectCount: 0, ...overrides };
+  }
+  return i;
+}
+
+test('live-staging-capture provenance cannot be asserted by a supplied transcript', () => {
+  assert.equal(C.RESERVED_LIVE_PROVENANCE, 'live-staging-capture');
+  for (const from of ['synthetic-fixture', 'offline-record']) {
+    const i = input(); i.transcript.provenance.kind = from;
+    assert.equal(C.replayCapture(i).provenance, from);
+  }
+  refuses(i => { i.transcript.provenance.kind = 'live-staging-capture'; }, /cannot be asserted by a supplied transcript/);
+  refuses(i => { i.transcript.provenance.kind = 'live-capture'; }, /unsupported transcript provenance kind/);
+  refuses(i => { i.transcript.provenance.trusted = true; }, /unknown transcript\.provenance field: trusted/);
+  refuses(i => { i.transcript.live = true; }, /unknown transcript field: live/);
+});
+
+test('optional edge diagnostics are validated and never override byte verification', () => {
+  const plain = C.replayCapture(input());
+  const diag = C.replayCapture(withDiagnostics(input()));
+  // A transcript without diagnostics replays exactly as before; diagnostics add no authority.
+  assert.equal(diag.publicEdgeBytes, plain.publicEdgeBytes);
+  assert.equal(diag.certified, false);
+  assert.equal(C.replayCapture(withDiagnostics(input(), { etag: null, age: null, cacheControl: null, xCache: null, xServedBy: null, contentLength: null })).scope, C.SCOPE);
+  const bad = (overrides, reason, mutate) => assert.throws(() => { const i = withDiagnostics(input(), overrides); if (mutate) mutate(i); C.replayCapture(i); }, reason);
+  bad({ decodedSha256: 'f'.repeat(64) }, /decoded hash differs from the recorded served hash/);
+  bad({ rawSha256: 'f'.repeat(64) }, /identity encoding with differing raw and decoded bytes/);
+  bad({ contentEncoding: 'br' }, /unsupported .* contentEncoding/);
+  bad({ contentLength: 1 }, /contentLength differs from the raw length/);
+  bad({ redirectCount: 1 }, /record a redirect/);
+  bad({ nonce: 'other01' }, /nonce is not the planned nonce/);
+  bad({ responseUrl: 'https://lyfelabz-staging.web.app/elsewhere' }, /response URL is not the planned request/);
+  bad({ authorization: 'x' }, /unknown edge:.* diagnostics field: authorization/);
+  bad({ setCookie: 'x' }, /unknown edge:.* diagnostics field: setCookie/);
+  bad({ xServedBy: 'Bearer abc' }, /credential-like material/);
+  bad({ etag: 'synthetic-marker:abc' }, /credential-like material/);
+  bad({ age: 'x\n' }, /malformed .* diagnostics age/);
+  // Consistent diagnostics cannot rescue a wrong served hash: Part B still compares bytes.
+  bad({}, /served bytes differ/, i => {
+    const ex = find(i, 'edge:app:index.html');
+    ex.response.sha256 = ex.response.diagnostics.rawSha256 = ex.response.diagnostics.decodedSha256 = 'e'.repeat(64);
+  });
+});
+
+test('historical replay keeps provenance, never renews freshness and never certifies', () => {
+  const base = () => { const i = input(); delete i.now; return i; };
+  const recent = C.replayCaptureHistorical({ ...base(), replayedAt: '2026-10-18T12:04:30.000Z' });
+  assert.equal(recent.historical, true);
+  assert.equal(recent.scope, C.HISTORICAL_SCOPE);
+  assert.deepEqual(recent.evaluation, { mode: 'historical', evaluatedAt: at(240), replayedAt: '2026-10-18T12:04:30.000Z' });
+  assert.equal(recent.windowWithinLimit, true);
+  assert.equal(recent.internallyConsistent, true);
+  assert.equal(recent.currentNow, true);
+  assert.equal(recent.provenance, 'synthetic-fixture');
+  const old = C.replayCaptureHistorical({ ...base(), replayedAt: '2027-01-01T00:00:00.000Z' });
+  assert.equal(old.currentNow, false);
+  assert.equal(old.internallyConsistent, true);
+  for (const r of [recent, old]) {
+    assert.equal(r.freshAtCertification, 'not-established');
+    assert.equal(r.certificationTime, null);
+    assert.equal(r.renewsFreshness, false);
+    for (const flag of ['deployable', 'certified', 'authorized', 'available']) { assert.equal(r[flag], false); assert.equal(r.consistency[flag], false); }
+    assert.ok(Object.isFrozen(r));
+  }
+  const offline = base(); offline.transcript.provenance.kind = 'offline-record';
+  assert.equal(C.replayCaptureHistorical({ ...offline, replayedAt: '2027-01-01T00:00:00.000Z' }).provenance, 'offline-record');
+  // The strict replay of the same old transcript still refuses: history renews nothing.
+  assert.throws(() => C.replayCapture({ ...base(), now: '2027-01-01T00:00:00.000Z' }), /stale observation/);
+  const hist = (mutate, reason) => { const i = { ...base(), replayedAt: '2027-01-01T00:00:00.000Z' }; mutate(i); assert.throws(() => C.replayCaptureHistorical(i), reason); };
+  hist(i => { i.replayedAt = at(100); }, /replay time precedes the capture completion/);
+  hist(i => { i.now = NOW; }, /unknown historical replay input field: now/);
+  hist(i => { i.certificationTime = NOW; }, /unknown historical replay input field: certificationTime/);
+  hist(i => { i.transcript.completedAt = '2026-10-18T12:06:00.000Z'; }, /observation window exceeds five minutes/);
+  hist(i => { i.transcript.provenance.kind = 'live-staging-capture'; }, /cannot be asserted by a supplied transcript/);
+  hist(i => { find(i, 'after:app').response.body.release.name = `sites/${SITES.app}/channels/live/releases/r-app-2`; }, /changed between before and after/);
+});
+
 test('no release, deployment, activation or Functions path consumes this module', () => {
   const consumers = [];
   function walk(directory) {
@@ -307,7 +393,9 @@ test('no release, deployment, activation or Functions path consumes this module'
   for (const directory of ['scripts', 'app/scripts', 'app/src', 'platform', '.github']) walk(path.join(ROOT, directory));
   // The Part B, Part C and receipt suites name this module only in their own no-consumer allowlists.
   // The D13 Part E local benchmark drives the planner and replay; it is itself unconsumed.
+  // The D13 Part F executor drives the planner and replay over an injected transport; it is itself unconsumed.
   assert.deepEqual(consumers.sort(), ['scripts/hosting-release/capture-benchmark.cjs', 'scripts/hosting-release/capture-benchmark.test.cjs',
     'scripts/hosting-release/deploy-receipt.test.cjs', 'scripts/hosting-release/hosting-capture.cjs', 'scripts/hosting-release/hosting-capture.test.cjs',
-    'scripts/hosting-release/hosting-deployment.test.cjs', 'scripts/hosting-release/provider-manifest.test.cjs']);
+    'scripts/hosting-release/hosting-deployment.test.cjs', 'scripts/hosting-release/hosting-executor.cjs', 'scripts/hosting-release/hosting-executor.test.cjs',
+    'scripts/hosting-release/provider-manifest.test.cjs']);
 });

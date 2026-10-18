@@ -57,6 +57,7 @@ const HOSTING_TEST_FILES = Object.freeze([
   'scripts/hosting-release/hosting-capture.test.cjs',
   'scripts/hosting-release/deploy-receipt.test.cjs',
   'scripts/hosting-release/capture-benchmark.test.cjs',
+  'scripts/hosting-release/hosting-executor.test.cjs',
   'scripts/unit-placement/check-parity.test.cjs'
 ]);
 

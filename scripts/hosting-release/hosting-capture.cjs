@@ -5,7 +5,7 @@
 // module. It performs no I/O: no network, filesystem, environment, clock (`now` is an
 // input), subprocess or credential access. There is no HTTP executor: a plan only
 // describes requests, and replay only consumes exchanges recorded elsewhere and
-// supplied as data. No live-capture provenance kind exists.
+// supplied as data. No live-capture provenance kind is accepted (see Part F below).
 //
 // planCapture(planInput) -> a deterministic, frozen plan for both sites:
 //   planInput { project, expectedCandidateFingerprint, pairBuild, routing, nonce,
@@ -33,6 +33,21 @@
 // D13 Part B observation (schema 2) and runs the Part B and Part C verifiers
 // unchanged. A pass is replay consistency only: never certification, deployment
 // approval, deployment provenance, activation or availability.
+//
+// D13 Part F additions (offline):
+//   - An edge response may carry an optional `diagnostics` record (EDGE_DIAGNOSTIC_FIELDS):
+//     raw and decoded SHA-256, raw length, Content-Encoding, Content-Length, an explicit
+//     header allowlist (ETag, Age, Cache-Control, X-Cache, X-Served-By), response URL,
+//     nonce and redirect count (always 0). It is validated for internal consistency with
+//     the planned request and the recorded decoded `sha256`, and it never overrides the
+//     byte comparison. Headers are one edge location's report and never establish global
+//     CDN consistency. A transcript without diagnostics replays exactly as before.
+//   - `live-staging-capture` is a reserved provenance kind. A supplied transcript can never
+//     assert it: replay refuses it explicitly. Live provenance must come from a trusted
+//     capture pathway that is not enabled (separately authorized).
+//   - replayCaptureHistorical evaluates a transcript at its own completion time and reports
+//     that explicitly; it keeps the original provenance, never establishes current
+//     freshness or certification, and never renews expired evidence.
 const { fingerprint, MAX_AGE_MS, PROJECT_NUMBERS } = require('./backend-state.cjs');
 const { TARGETS, isRedirected, requestPathFor } = require('./contract.cjs');
 const { releaseMessage } = require('./release.cjs');
@@ -49,6 +64,14 @@ const RESOURCES = Object.freeze({
   files: PROVIDER_SOURCE
 });
 const PROVENANCE_KINDS = Object.freeze(['synthetic-fixture', 'offline-record']);
+// Reserved for a future trusted live capture pathway; never accepted from supplied records.
+const RESERVED_LIVE_PROVENANCE = 'live-staging-capture';
+const EDGE_DIAGNOSTIC_FIELDS = Object.freeze(['rawSha256', 'rawLength', 'decodedSha256', 'contentEncoding', 'contentLength',
+  'etag', 'age', 'cacheControl', 'xCache', 'xServedBy', 'responseUrl', 'nonce', 'redirectCount']);
+// Response header name -> diagnostic field. Nothing outside this allowlist is ever recorded.
+const DIAGNOSTIC_HEADERS = Object.freeze({ etag: 'etag', age: 'age', 'cache-control': 'cacheControl', 'x-cache': 'xCache', 'x-served-by': 'xServedBy' });
+const HEADER_VALUE = /^[\x20-\x7e]{0,1024}$/;
+const CREDENTIAL_VALUE = /bearer\s|ya29\.|access.token|synthetic-marker/i;
 // The complete identity-observation window (owner decision; A1 MAX_AGE_MS).
 const MAX_WINDOW_MS = MAX_AGE_MS;
 const MAX_PAGES = 1000;
@@ -264,6 +287,26 @@ function validateLocalGzip(localGzip) {
   return localGzip;
 }
 
+// Optional, observational edge diagnostics. Consistency checks only: the recorded decoded
+// `sha256` remains the value Part B compares with the pair build.
+function validateDiagnostics(d, sha256, url, nonce, id) {
+  record(d, EDGE_DIAGNOSTIC_FIELDS, `${id} diagnostics`);
+  pattern(d.rawSha256, DIGEST, `${id} diagnostics rawSha256`);
+  pattern(d.decodedSha256, DIGEST, `${id} diagnostics decodedSha256`);
+  if (!Number.isSafeInteger(d.rawLength) || d.rawLength < 0) refuse(`malformed ${id} diagnostics rawLength`);
+  if (d.decodedSha256 !== sha256) refuse(`${id} diagnostics decoded hash differs from the recorded served hash`);
+  if (!['identity', 'gzip'].includes(d.contentEncoding)) refuse(`unsupported ${id} diagnostics contentEncoding`);
+  if (d.contentEncoding === 'identity' && d.rawSha256 !== d.decodedSha256) refuse(`${id} diagnostics identity encoding with differing raw and decoded bytes`);
+  if (d.contentLength !== null && (!Number.isSafeInteger(d.contentLength) || d.contentLength !== d.rawLength)) refuse(`${id} diagnostics contentLength differs from the raw length`);
+  for (const field of Object.values(DIAGNOSTIC_HEADERS)) {
+    if (d[field] === null) continue;
+    if (typeof d[field] !== 'string' || !HEADER_VALUE.test(d[field])) refuse(`malformed ${id} diagnostics ${field}`);
+    if (CREDENTIAL_VALUE.test(d[field])) refuse(`${id} diagnostics ${field} carries credential-like material`);
+  }
+  if (d.responseUrl !== url) refuse(`${id} diagnostics response URL is not the planned request`);
+  if (d.nonce !== nonce) refuse(`${id} diagnostics nonce is not the planned nonce`);
+  if (d.redirectCount !== 0) refuse(`${id} diagnostics record a redirect`);
+}
 /** Replays a supplied transcript against its plan and the Part B/C contracts.
  * Throws on any inconsistency. Returns a frozen, non-authorizing result. */
 function replayCapture(input) {
@@ -275,6 +318,7 @@ function replayCapture(input) {
   if (t.kind !== TRANSCRIPT_KIND || t.schemaVersion !== 1) refuse('unsupported transcript kind or schema');
   if (t.planFingerprint !== fingerprint(plan)) refuse('transcript was recorded for another plan');
   const p = record(t.provenance, ['kind', 'tool'], 'transcript.provenance');
+  if (p.kind === RESERVED_LIVE_PROVENANCE) refuse('live-staging-capture provenance cannot be asserted by a supplied transcript; no trusted live capture pathway is enabled');
   if (!PROVENANCE_KINDS.includes(p.kind)) refuse('unsupported transcript provenance kind; no live-capture kind is authorized');
   text(p.tool, 'transcript provenance tool');
   const startedAt = time(t.startedAt, 'transcript start');
@@ -354,10 +398,11 @@ function replayCapture(input) {
     if (!r) refuse(`unexpected edge exchange: ${ex.id}`);
     planned.delete(ex.id);
     if (ex.request.url !== r.url) refuse(`${ex.id} request is not the planned origin, path and cache-busting nonce`);
-    record(ex.response, ['status', 'url', 'sha256'], `${ex.id} response`);
+    record(ex.response, ['status', 'url', 'sha256'], `${ex.id} response`, ['diagnostics']);
     if (ex.response.url !== r.url) refuse(`${ex.id} was answered from another origin or path (redirect followed)`);
     if (ex.response.status !== 200) refuse(`${ex.id} not served (HTTP ${String(ex.response.status)})`);
     pattern(ex.response.sha256, DIGEST, `${ex.id} sha256`);
+    if (Object.hasOwn(ex.response, 'diagnostics')) validateDiagnostics(ex.response.diagnostics, ex.response.sha256, r.url, plan.nonce, ex.id);
     served[r.target].files.push({ path: r.file, sha256: ex.response.sha256 });
     served[r.target].observedAt = ex.observedAt;
   }
@@ -434,4 +479,37 @@ function replayCapture(input) {
   });
 }
 
-module.exports = { planCapture, replayCapture, MAX_WINDOW_MS, PROVIDER_API, PLAN_KIND, TRANSCRIPT_KIND, SCOPE };
+/** Historical replay: verifies a recorded transcript's internal consistency at its own
+ * completion time (the explicit historical evaluation time), and reports separately
+ * whether it is still inside the current five-minute window at `replayedAt`. It never
+ * establishes freshness at certification, never certifies and never renews evidence. */
+function replayCaptureHistorical(input) {
+  record(input, ['planInput', 'transcript', 'candidate', 'localGzip', 'receipt', 'replayedAt'], 'historical replay input');
+  const replayedAt = time(input.replayedAt, 'replay');
+  const t = record(input.transcript, ['kind', 'schemaVersion', 'planFingerprint', 'provenance', 'startedAt', 'completedAt', 'exchanges'], 'transcript');
+  const startedAt = time(t.startedAt, 'transcript start');
+  const completedAt = time(t.completedAt, 'transcript completion');
+  if (replayedAt < completedAt) refuse('replay time precedes the capture completion');
+  // The unchanged strict replay, evaluated at the capture's own completion time.
+  const consistency = replayCapture({ planInput: input.planInput, transcript: t, candidate: input.candidate,
+    localGzip: input.localGzip, receipt: input.receipt, now: t.completedAt });
+  return deepFreeze({
+    scope: HISTORICAL_SCOPE,
+    historical: true,
+    evaluation: { mode: 'historical', evaluatedAt: t.completedAt, replayedAt: input.replayedAt },
+    capture: { startedAt: t.startedAt, completedAt: t.completedAt },
+    provenance: consistency.provenance,
+    windowWithinLimit: completedAt - startedAt <= MAX_WINDOW_MS,
+    internallyConsistent: true,
+    currentNow: replayedAt - startedAt <= MAX_WINDOW_MS,
+    freshAtCertification: 'not-established',
+    certificationTime: null,
+    renewsFreshness: false,
+    consistency,
+    deployable: false, certified: false, authorized: false, available: false
+  });
+}
+const HISTORICAL_SCOPE = 'historical-replay-consistency';
+
+module.exports = { planCapture, replayCapture, replayCaptureHistorical, MAX_WINDOW_MS, PROVIDER_API, PLAN_KIND, TRANSCRIPT_KIND, SCOPE,
+  HISTORICAL_SCOPE, RESERVED_LIVE_PROVENANCE, EDGE_DIAGNOSTIC_FIELDS, DIAGNOSTIC_HEADERS };

@@ -764,14 +764,99 @@ shared with every other function.
      gate, Functions A3 code, Rules, indexes, registries, Firebase configurations, CI and S6b to
      S6f. `prepare.cjs` gains one `HOSTING_TEST_FILES` line. The Part D and Part C no-consumer
      guards (`hosting-capture.test.cjs`, owner-approved scope extension, and
-     `provider-manifest.test.cjs`) add only the benchmark files to their allowlists. Implemented
-     in the repository, uncommitted, not independently certified.
+     `provider-manifest.test.cjs`) add only the benchmark files to their allowlists. Integrated
+     on main (`84d77c8`), not independently certified (this line previously read "implemented
+     in the repository, uncommitted"; corrected in Part F).
   9. [U] Still open before an authorized live staging capture: a dedicated read-only identity
      and its verified IAM permission (`firebasehosting.sites.get` assumed) and token scope; a
      live executor and the distinct live provenance kind (decision 1); replay freshness
      semantics (decision 2); response-header diagnostics (decision 4); measured provider and CDN
      timing; deploy-side receipts from a controlled deployment; bundle classification, an
      enabled builder and S6b binding.
+- [A] **D13 Part F (live-capture provenance boundary and executor safety, offline,
+  owner-authorized).** Owner approvals after the Part F reconnaissance: (1) a future dedicated,
+  keyless, staging-only service account; (2) `firebase.readonly` as the future provider-token
+  scope; (3) a distinct `live-staging-capture` provenance category; (4) separation of historical
+  consistency from current freshness; (5) diagnostic HTTP response headers, including optional
+  Fastly headers; (6) offline implementation with fake-transport tests only. Not authorized:
+  creating a service account, granting IAM roles, impersonation, minting tokens, authenticated
+  requests, contacting staging or deploying.
+  1. Provenance label versus trusted provenance. A provenance kind inside a record is a string a
+     caller can write, so no supplied record can establish live provenance. `live-staging-capture`
+     is reserved (`hosting-capture.cjs` `RESERVED_LIVE_PROVENANCE`): replay refuses it explicitly
+     from any supplied transcript, and the unchanged Part B and Part C contracts refuse it as an
+     unsupported kind (tested). Part B and Part C sources are unchanged. Live provenance can only
+     come from a trusted capture pathway: a module-internal live adapter in
+     `hosting-executor.cjs`, enabled by a separately authorized change, never an option. No
+     `live`, `trusted` or provenance option exists. Accepting live provenance downstream of a
+     serialized transcript also needs an integrity mechanism (deferred), because a fully
+     consistent forged transcript cannot be authenticated offline.
+  2. `scripts/hosting-release/hosting-executor.cjs` drives the unchanged Part D plan over an
+     injected transport and injected monotonic clock (explicit wall-clock start): before reads
+     for both sites, complete version-file pagination, public-edge reads with bounded
+     concurrency (1 to 16), after reads. It has no network adapter (`liveTransport:
+     'not-implemented'`), reads no environment, file, credential or proxy setting, starts no
+     subprocess and mints no token. Its output is always `synthetic-fixture` (the existing kind)
+     because an injected transport cannot prove where its bytes came from, even when the run
+     exercises the complete capture schema; it never produces `offline-record`. The transcript is
+     verified by the unchanged `replayCapture` (and through it Part B and Part C), evaluated at
+     the capture's own completion time and reported as `replayEvaluatedAt`. All authority flags
+     are `false`.
+  3. Request isolation. Provider: `https://firebasehosting.googleapis.com/v1beta1/` only;
+     project `lyfelabz-staging` or `293337283840`; sites `lyfelabz-staging` and
+     `lyfelabz-staging-marketing`; only `channels/live` and `versions/<hex>/files` (optional
+     `pageToken` only); GET; `application/json`; identity encoding; 8 MB (`LIMITS.jsonBytes`).
+     Edge: exactly the two staging `web.app` origins, the planned path and only the
+     `hosting-release` nonce; GET; fixed headers `accept` and `accept-encoding` only (no
+     authorization, cookie or other credential header); identity or requested gzip, decoded
+     (bounded) before SHA-256; 16 MB (`LIMITS.fileBytes`). Both: canonical `https` URLs with no
+     userinfo, port or fragment; production names, numbers and domains (`lyfelabz-prod`,
+     `182791689935`, `lyfelabz-marketing`, `lyfelabz.com`) refused raw or percent-decoded; any
+     3xx, nonzero redirect count or response URL different from the request refuses (so neither
+     surface can be answered from the other); non-200 refuses with no retry; Content-Length must
+     equal the received bytes; per-request timeout at most 30 s with abort. A repeated, empty,
+     non-string or over-long page token refuses. Only provider requests may carry an
+     authorization header, and in this operation only a synthetic, non-secret marker
+     (`synthetic-marker:<label>`); a real bearer token is refused as an option.
+  4. Edge diagnostics (optional `diagnostics` on an edge response): `rawSha256`, `rawLength`,
+     `decodedSha256`, `contentEncoding`, `contentLength`, `etag`, `age`, `cacheControl`,
+     `xCache`, `xServedBy` (null when absent), `responseUrl`, `nonce`, `redirectCount` (0).
+     Headers come from an explicit allowlist (`DIAGNOSTIC_HEADERS`); Authorization, Cookie,
+     Set-Cookie, Proxy-Authorization and every other header are never stored, unknown diagnostic
+     fields refuse, and header values that look like credentials refuse. Replay checks internal
+     consistency (decoded hash equals the recorded served hash, identity encoding has equal raw and
+     decoded hashes, Content-Length equals the raw length, planned URL and nonce, zero redirects)
+     but diagnostics never override the Part B byte comparison. They are one edge location's
+     report and do not establish global CDN consistency. A transcript without diagnostics replays
+     exactly as before.
+  5. Historical replay (`replayCaptureHistorical`, input `replayedAt` instead of `now`) runs the
+     unchanged strict replay at the transcript's own completion time and says so
+     (`evaluation.mode: 'historical'`, `evaluatedAt`, `replayedAt`). It reports
+     `windowWithinLimit`, `internallyConsistent`, `currentNow` (whether `replayedAt` is still
+     within five minutes of the capture start), `freshAtCertification: 'not-established'`,
+     `certificationTime: null` and `renewsFreshness: false`; it keeps the original provenance and
+     every authority flag is `false`. It refuses a replay time before completion and accepts no
+     `now` or certification time. The strict `replayCapture` contract, the five-minute limit and
+     the zero clock-skew allowance are unchanged.
+  6. Not changed: Part A to C modules, Part E, certify, release, build-pair, backend-state, the
+     client gate, Functions A3 code, Rules, indexes, registries, Firebase configurations, CI and
+     S6a to S6f. `prepare.cjs` gains one `HOSTING_TEST_FILES` line. The Part C and Part D
+     no-consumer guards add only the executor files to their allowlists; the new executor guard
+     allows only those two allowlist mentions. No release, deployment or activation path requires
+     any D13 module (tested).
+  7. [U] Remaining IAM uncertainty: the public discovery document (revision 20261011) lists
+     `cloud-platform`, `cloud-platform.read-only`, `firebase` and `firebase.readonly` for both
+     methods, and `roles/firebasehosting.viewer` holds only `firebasehosting.sites.get` and
+     `sites.list` among Hosting permissions; no documentation maps `channels.get` or
+     `versions.files.list` to `firebasehosting.sites.get`. A staging read with a viewer-only
+     principal and a `firebase.readonly` token must confirm it.
+  8. Separately authorized later: creating the staging service account (keyless), granting
+     `roles/firebasehosting.viewer` on `lyfelabz-staging` and token-creator rights to the
+     operator; impersonated token minting with the fixed `firebase.readonly` scope and a
+     required expected principal (never Firebase CLI login or ambient gcloud or ADC credentials);
+     the live network adapter (provider-only token attachment, no proxy, no redirects); the
+     trusted live provenance pathway and its transcript integrity; and one staging observation.
+  9. Status: implemented in the repository, uncommitted, not independently certified.
 
 ### D14 - Where tooling runs and approval system identity
 

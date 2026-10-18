@@ -238,6 +238,10 @@ test('provenance', () => {
   refuses(i => { delete i.observation.provenance; }, /missing observation field: provenance/);
   refuses(i => { i.observation.provenance = null; }, /provenance must be a plain object/);
   refuses(i => { i.observation.provenance.kind = 'live-capture'; }, /unsupported provenance kind/);
+  // D13 Part F: the reserved live kind is never accepted from a supplied observation record.
+  refuses(i => { i.observation.provenance.kind = 'live-staging-capture'; }, /unsupported provenance kind/);
+  refuses(i => { i.observation.provenance.kind = 'live-staging-capture'; i.observation.sites.app.providerManifest.provenance.kind = 'live-staging-capture';
+    i.observation.sites.marketing.providerManifest.provenance.kind = 'live-staging-capture'; }, /unsupported provenance kind/);
   refuses(i => { i.observation.provenance.tool = ''; }, /malformed provenance tool/);
   refuses(i => { i.observation.provenance.versionSource = 'operator'; }, /version source/);
   refuses(i => { i.observation.provenance.byteSource = 'cdn-cache'; }, /byte source/);

@@ -164,6 +164,8 @@ test('identity: project, site and version are explicit', () => {
 
 test('provenance and unknown or malformed fields refuse', () => {
   refuses(i => { i.provenance.kind = 'live-capture'; }, /unsupported provenance kind/);
+  // D13 Part F: the reserved live kind is never accepted from a supplied manifest record.
+  refuses(i => { i.provenance.kind = 'live-staging-capture'; }, /unsupported provenance kind/);
   refuses(i => { i.provenance.source = 'firebase-cli'; }, /unsupported provenance source/);
   refuses(i => { i.provenance.observedAt = 'now'; }, /malformed provenance timestamp/);
   refuses(i => { i.extra = 1; }, /unknown provider manifest input field: extra/);
@@ -264,10 +266,11 @@ test('no release, deployment, activation or Functions path consumes this module'
   for (const directory of ['scripts', 'app/scripts', 'app/src', 'platform', '.github']) walk(path.join(ROOT, directory));
   // The Part B verifier is the only consumer, and it is itself unconsumed.
   // The D13 Part D replay and deploy-receipt validator reuse it; both are themselves unconsumed.
-  // The D13 Part E benchmark suite uses it only to build synthetic fixtures.
+  // The D13 Part E benchmark and Part F executor suites use it only to build synthetic fixtures.
   assert.deepEqual(consumers.sort(), ['scripts/hosting-release/capture-benchmark.test.cjs',
     'scripts/hosting-release/deploy-receipt.cjs', 'scripts/hosting-release/deploy-receipt.test.cjs',
     'scripts/hosting-release/hosting-capture.cjs', 'scripts/hosting-release/hosting-capture.test.cjs',
     'scripts/hosting-release/hosting-deployment.cjs', 'scripts/hosting-release/hosting-deployment.test.cjs',
+    'scripts/hosting-release/hosting-executor.test.cjs',
     'scripts/hosting-release/provider-manifest.cjs', 'scripts/hosting-release/provider-manifest.test.cjs']);
 });
