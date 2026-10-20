@@ -155,14 +155,30 @@ describe("Browser Back/Forward: top-level surface navigation", () => {
 // wait, never a hand-constructed synthetic `popstate` event, so the full
 // push/pop round trip - not just the handler's reaction to an assumed
 // state shape - is what's actually exercised.
-const realBack = async (): Promise<void> => {
-  window.history.back();
+//
+// The traversal itself is awaited by its `popstate`, not by elapsed time:
+// jsdom delivers it through two nested `setTimeout(0)` hops, so an
+// event-loop stall of ~100ms (a loaded parallel `verify` run) let a fixed
+// 100ms wait expire before the event fired. The shell's listener was
+// registered at mount, so it has run by the time this one resolves; the
+// 100ms that follows still covers any render work the handler schedules.
+const traverse = async (go: () => void): Promise<void> => {
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      window.removeEventListener("popstate", onPop);
+      reject(new Error("history traversal did not fire popstate"));
+    }, 5000);
+    const onPop = (): void => {
+      clearTimeout(timer);
+      resolve();
+    };
+    window.addEventListener("popstate", onPop, { once: true });
+    go();
+  });
   await new Promise((resolve) => setTimeout(resolve, 100));
 };
-const realForward = async (): Promise<void> => {
-  window.history.forward();
-  await new Promise((resolve) => setTimeout(resolve, 100));
-};
+const realBack = (): Promise<void> => traverse(() => window.history.back());
+const realForward = (): Promise<void> => traverse(() => window.history.forward());
 
 describe("Browser Back/Forward: Students -> Student Detail", () => {
   const CLASS_ID = "history-class-1";
