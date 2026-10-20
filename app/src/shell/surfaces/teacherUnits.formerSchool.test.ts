@@ -9,6 +9,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import {
   createAttemptStorageKey,
   createTeacherUnitCreateAttemptStore,
@@ -99,7 +101,7 @@ function mount(scope: Scope, opts: { c?: ReturnType<typeof callables>; mint?: ()
     now: () => T0 + 1000,
     mint: opts.mint ?? (() => "key_NEWNEWNEW"),
   });
-  const view = renderTeacherUnitsPanel(host, ctl);
+  const view = renderTeacherUnitsPanel(host, ctl, EXPANDED);
   return { host, ctl, c, view };
 }
 

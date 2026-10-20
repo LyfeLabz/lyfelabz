@@ -12,6 +12,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController, type TeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -81,7 +83,7 @@ async function panel(units: TeacherUnit[]) {
     store: createTeacherUnitCreateAttemptStore(SCOPE),
     initialGrade: "7",
   });
-  renderTeacherUnitsPanel(host, ctl);
+  renderTeacherUnitsPanel(host, ctl, EXPANDED);
   calls.list[0].d.resolve({ units });
   await tick();
   return {
@@ -272,9 +274,10 @@ describe("focus while busy", () => {
 
   test("a pending create keeps focus in the form and refuses a second submit", async () => {
     const h = await panel([]);
+    press(btn(h, "units-create-open"));
     const title = q(h.host, "units-create-title") as HTMLInputElement;
+    expect(document.activeElement).toBe(title);
     title.value = "Weather";
-    title.focus();
     const form = q(h.host, "units-create-form") as HTMLFormElement;
     form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     await tick();
@@ -288,7 +291,9 @@ describe("focus while busy", () => {
     const created = unit({ title: "Weather", resourceIds: [] });
     last(h, "create").d.resolve({ unit: created, replayed: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, "units-create-another"));
+    // Milestone 1: the form closes and focus moves to the new unit's card.
+    expect(form.hidden).toBe(true);
+    expect(document.activeElement).toBe(btn(h, `units-toggle-${created.unitId}`));
   });
 });
 
@@ -761,6 +766,7 @@ describe("F1: Check for changes announces only its own accepted read", () => {
 
 describe("F2: create completion respects focus ownership", () => {
   const startCreate = async (h: H, title: string) => {
+    press(btn(h, "units-create-open"));
     const input = q(h.host, "units-create-title") as HTMLInputElement;
     input.value = title;
     input.focus();
@@ -803,12 +809,13 @@ describe("F2: create completion respects focus ownership", () => {
     expect(status(h)).toContain("LyfeLabz couldn't confirm whether this unit was created.");
   });
 
-  test("focus still in the create form moves to Create another (unchanged)", async () => {
+  test("focus still in the create form moves to the new unit's card (Milestone 1)", async () => {
     const h = await panel([]);
     await startCreate(h, "Weather");
-    last(h, "create").d.resolve({ unit: unit({ title: "Weather", resourceIds: [] }), replayed: false });
+    const created = unit({ title: "Weather", resourceIds: [] });
+    last(h, "create").d.resolve({ unit: created, replayed: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, "units-create-another"));
+    expect(document.activeElement).toBe(btn(h, `units-toggle-${created.unitId}`));
   });
 
   test("a completion after an account change moves no focus", async () => {

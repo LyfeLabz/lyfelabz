@@ -1,4 +1,4 @@
-import { requireTeacherUnitsAvailable } from "../../teacherUnits/releaseAvailability";
+import { requireTeacherUnitsAvailable, teacherUnitsAvailable } from "../../teacherUnits/releaseAvailability";
 import {
   TEACHER_UNIT_DESCRIPTION_MAX_LENGTH,
   TEACHER_UNIT_GRADES,
@@ -32,11 +32,19 @@ import type {
   PendingMutationResolution,
 } from "../../teacherUnits/pendingMutations";
 import type { PendingUnitMutationRecord } from "../../teacherUnits/mutationReconciliation";
+import {
+  buildLessonPreviewLink,
+  buildResourceCard,
+  buildResourceOpenLink,
+  setResourceCardStatus,
+} from "./resourceCard";
 
-// U2.2 - My Units panel inside Curriculum (docs/platform/TEACHER_UNITS.md
-// §9.4). DOM only: no Firebase, no browser storage. Everything it shows
-// comes from the injected controller, which holds authoritative server
-// state and the durable create attempts.
+// U2.2 - My Units panel (docs/platform/TEACHER_UNITS.md §9.4). Since Teacher
+// Units UX Milestone 1 it is the body of the top-level My Units workspace
+// surface (myUnits.ts) rather than a Curriculum tab. DOM only: no Firebase,
+// no browser storage. Everything it shows comes from the injected
+// controller, which holds authoritative server state and the durable create
+// attempts.
 //
 // Teacher input is never rebuilt away: the create form and every open unit
 // editor are long-lived elements, so typing, focus, and unsaved edits
@@ -60,8 +68,22 @@ const BLOCKED_MESSAGES: Partial<Record<CreateBlockedReason, string>> = Object.fr
   replayRefused: "This request can't be checked again. Check your units instead.",
   schoolContextChanged:
     "Your school changed, so this request can't be checked again here. Reload the page to continue at your current school.",
-  newUnitIntentRequired: "Choose Create another unit first.",
+  newUnitIntentRequired: "Choose Create Unit first.",
 });
+
+// The My Units surface is shown only when the shell holds a Teacher Units
+// seam AND this release's availability boundary is open. A closed release
+// (production today) has neither, so no My Units navigation item renders.
+export function teacherUnitsSurfaceEnabled(seam: unknown): boolean {
+  return seam !== null && seam !== undefined && teacherUnitsAvailable();
+}
+
+export type TeacherUnitsPanelOptions = {
+  // Units start expanded instead of collapsed (title and resource count).
+  readonly unitsInitiallyExpanded?: boolean;
+  // The teacher left the archived view from inside the panel.
+  readonly onArchivedViewExit?: () => void;
+};
 
 function gradeLabel(g: TeacherUnitGrade): string {
   return `Grade ${g}`;
@@ -76,6 +98,9 @@ function resourceTypeLabel(r: FlatResource): string {
 type CardView = {
   readonly li: HTMLLIElement;
   unit: TeacherUnit;
+  // Milestone 1: compact container. Collapsed shows the title and resource
+  // count; expanded shows the description, resources, and unit actions.
+  expanded: boolean;
   // The server no longer returns this unit (deleted or another school).
   gone: boolean;
   editor: EditorView | null;
@@ -148,6 +173,7 @@ type PickerView = {
 export function renderTeacherUnitsPanel(
   host: HTMLElement,
   controller: TeacherUnitsController,
+  options: TeacherUnitsPanelOptions = {},
 ): { readonly dispose: () => void } {
   requireTeacherUnitsAvailable();
   const doc = host.ownerDocument;
@@ -219,15 +245,15 @@ export function renderTeacherUnitsPanel(
   root.setAttribute("aria-labelledby", "units-heading");
   host.appendChild(root);
 
-  const heading = el("h3", "shell-units-heading", "My Units");
+  // The page headline of the My Units surface.
+  const heading = el("h2", "shell-welcome shell-units-heading", "My Units");
   heading.id = "units-heading";
   heading.tabIndex = -1;
   root.appendChild(heading);
-  root.appendChild(
-    el("p", "shell-units-intro", "Create your own units for each grade, then add LyfeLabz resources to them."),
-  );
 
-  // Grade selector and archived toggle.
+  // Grade selector, Create Unit, and Check for changes. Show archived units
+  // moved to Settings > Units (Milestone 1); the archived view is entered
+  // from there and left with the banner below.
   const toolbar = el("div", "shell-units-toolbar");
   root.appendChild(toolbar);
   const gradeRow = el("div", "shell-filter-row");
@@ -244,20 +270,46 @@ export function renderTeacherUnitsPanel(
     gradeRow.appendChild(b);
     gradeButtons.set(g, b);
   }
-  const archivedLabel = el("label", "shell-units-archived-toggle");
-  const archivedBox = el("input");
-  archivedBox.type = "checkbox";
-  archivedBox.setAttribute("data-testid", "units-show-archived");
-  archivedBox.addEventListener("change", () => controller.setShowArchived(archivedBox.checked));
-  archivedLabel.appendChild(archivedBox);
-  archivedLabel.appendChild(doc.createTextNode(" Show archived units"));
-  toolbar.appendChild(archivedLabel);
+  // Milestone 1: one compact control opens the create form on request. The
+  // selected grade decides the new unit's grade; the label never names it.
+  const createOpen = button("", "primary");
+  createOpen.classList.add("shell-units-create-open");
+  createOpen.setAttribute("data-testid", "units-create-open");
+  const plus = el("span", "shell-units-create-plus", "+");
+  plus.setAttribute("aria-hidden", "true");
+  createOpen.appendChild(plus);
+  createOpen.appendChild(doc.createTextNode(" Create Unit"));
+  createOpen.setAttribute("aria-expanded", "false");
+  toolbar.appendChild(createOpen);
   // U2.5 Check for changes: the controller's own list read (`refresh`),
   // which accepts only evidence newer than what is held. Never a page
-  // reload, never a replay of an unconfirmed change.
+  // reload, never a replay of an unconfirmed change. Milestone 1 keeps it
+  // (recovery and conflict notices direct the teacher to it) as a quiet
+  // secondary control; ordinary freshness is automatic (every My Units
+  // visit reads the list, and so does returning to this browser tab).
   const checkChanges = button("Check for changes");
+  checkChanges.classList.add("shell-units-check-changes");
   checkChanges.setAttribute("data-testid", "units-check-changes");
   toolbar.appendChild(checkChanges);
+
+  // The archived view (entered from Settings > Units) lists archived units
+  // with the active ones, each archived unit with its Restore control.
+  const archivedView = el("div", "shell-units-archived-view");
+  archivedView.setAttribute("data-testid", "units-archived-view");
+  archivedView.setAttribute("role", "region");
+  archivedView.setAttribute("aria-label", "Archived units");
+  archivedView.hidden = true;
+  const archivedViewText = el("p", "shell-units-archived-view-text");
+  archivedView.appendChild(archivedViewText);
+  const archivedExit = button("Show active units only");
+  archivedExit.setAttribute("data-testid", "units-archived-exit");
+  archivedExit.addEventListener("click", () => {
+    controller.setShowArchived(false);
+    options.onArchivedViewExit?.();
+    focus(createOpen);
+  });
+  archivedView.appendChild(archivedExit);
+  root.appendChild(archivedView);
   let checking = false;
   // The list read this Check for changes started, and whether any other
   // list read began after it. Success is announced only when that read
@@ -416,10 +468,14 @@ export function renderTeacherUnitsPanel(
   createSection.appendChild(former);
 
   const createForm = el("form", "shell-units-form");
+  createForm.id = uid("create-form");
   createForm.setAttribute("data-testid", "units-create-form");
   createForm.noValidate = true;
+  createForm.hidden = true;
   createSection.appendChild(createForm);
-  createForm.appendChild(el("h4", "shell-units-subheading", "New unit"));
+  createOpen.setAttribute("aria-controls", createForm.id);
+  const createHeading = el("h4", "shell-units-subheading", "New unit");
+  createForm.appendChild(createHeading);
 
   // aria-invalid and aria-describedby for a field and its error message.
   const markInvalid = (control: HTMLInputElement | HTMLTextAreaElement, error: HTMLElement | null): void => {
@@ -467,28 +523,47 @@ export function renderTeacherUnitsPanel(
   createSubmit.type = "submit";
   createSubmit.setAttribute("data-testid", "units-create-submit");
   createActions.appendChild(createSubmit);
-
-  // Long-lived confirmation box; its button receives focus after a create.
-  const createdBox = el("div", "shell-units-created");
-  createdBox.setAttribute("data-testid", "units-created");
-  createdBox.hidden = true;
-  const createdMessage = el("p", "shell-units-created-message");
-  createdMessage.setAttribute("data-testid", "units-created-message");
-  createdBox.appendChild(createdMessage);
-  const createAnother = button("Create another unit");
-  createAnother.setAttribute("data-testid", "units-create-another");
-  createdBox.appendChild(createAnother);
-  createSection.appendChild(createdBox);
+  const createCancel = button("Cancel");
+  createCancel.setAttribute("data-testid", "units-create-cancel");
+  createActions.appendChild(createCancel);
 
   const resetCreateForm = (): void => {
     createTitle.value = "";
     createDescription.value = "";
     showCreateError(null);
   };
-  createAnother.addEventListener("click", () => {
-    if (controller.beginNewUnit()) {
-      resetCreateForm();
-      focus(createTitle);
+  // Whether the teacher asked for the create form. It closes after a
+  // confirmed create; a pending, rejected, or blocked request keeps it open
+  // so its state and message stay visible.
+  let createFormOpen = false;
+  const setCreateFormOpen = (open: boolean): void => {
+    createFormOpen = open;
+    createForm.hidden = !open;
+    createOpen.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+  // Explicit new-unit intent: after a confirmed create the controller needs
+  // it before another create (U2.2); opening the form is that intent.
+  const openCreateForm = (): void => {
+    const kind = controller.getState().create.kind;
+    if (kind === "created" && !controller.beginNewUnit()) return;
+    if (kind === "created") resetCreateForm();
+    setCreateFormOpen(true);
+    focus(createTitle);
+  };
+  const closeCreateForm = (): void => {
+    if (controller.getState().create.kind === "inFlight") return;
+    setCreateFormOpen(false);
+    focus(createOpen);
+  };
+  createOpen.addEventListener("click", () => {
+    if (createFormOpen) closeCreateForm();
+    else openCreateForm();
+  });
+  createCancel.addEventListener("click", closeCreateForm);
+  createForm.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      closeCreateForm();
     }
   });
 
@@ -505,6 +580,8 @@ export function renderTeacherUnitsPanel(
 
   createForm.addEventListener("submit", (ev) => {
     ev.preventDefault();
+    // A submitted form is an open form.
+    if (!createFormOpen) setCreateFormOpen(true);
     if (isInert(createSubmit)) return;
     const s = controller.getState();
     const titleMsg = validateUnitTitle(createTitle.value);
@@ -560,6 +637,7 @@ export function renderTeacherUnitsPanel(
         if (entry.own) {
           if (controller.beginNewUnit()) {
             resetCreateForm();
+            setCreateFormOpen(true);
             focus(createTitle);
           }
         } else if (controller.dismissAbandoned(entry.key)) {
@@ -709,7 +787,7 @@ export function renderTeacherUnitsPanel(
       }
       former.appendChild(items);
       former.appendChild(
-        el("p", "shell-units-recovery-note", "You can still create a new unit here with the form below."),
+        el("p", "shell-units-recovery-note", "You can still create a new unit here with Create Unit."),
       );
     }
     // The status region is shared with other actions. Announce only real
@@ -741,6 +819,10 @@ export function renderTeacherUnitsPanel(
   };
 
   let prevCreateKind: TeacherUnitsViewState["create"]["kind"] = "idle";
+  // Units to open when their card first appears (a just-created unit), and
+  // the created unit whose card takes focus once listed.
+  const expandOnArrival = new Set<string>();
+  let createdFocus: string | null = null;
   let prevConfirmed: TeacherUnitsViewState["lastConfirmed"] = null;
 
   const renderCreate = (s: TeacherUnitsViewState): void => {
@@ -754,7 +836,8 @@ export function renderTeacherUnitsPanel(
       create.kind === "unresolved" ||
       create.kind === "abandoned" ||
       create.kind === "created";
-    createForm.hidden = create.kind === "created";
+    // A confirmed create closes the form (see the transitions below); every
+    // other state leaves it as the teacher set it.
     // While the request is pending, the fields are read-only and the submit
     // is aria-disabled, so the control the teacher used keeps focus. Every
     // other lock (unconfirmed requests first) disables them.
@@ -767,7 +850,10 @@ export function renderTeacherUnitsPanel(
     createSubmit.disabled = blocked;
     setAriaDisabled(createSubmit, pending);
     createSubmit.setAttribute("aria-busy", pending ? "true" : "false");
-    createSubmit.textContent = create.kind === "inFlight" ? "Creating..." : `Create ${gradeLabel(s.grade)} unit`;
+    createSubmit.textContent = create.kind === "inFlight" ? "Creating..." : "Create unit";
+    const newHeading = `New ${gradeLabel(s.grade)} unit`;
+    if (createHeading.textContent !== newHeading) createHeading.textContent = newHeading;
+    setAriaDisabled(createCancel, pending);
 
     const blockedMsg = s.createBlocked !== null ? BLOCKED_MESSAGES[s.createBlocked] ?? null : null;
     if (create.kind === "rejected") {
@@ -781,24 +867,29 @@ export function renderTeacherUnitsPanel(
       );
     } else if (shownError !== null && create.kind !== "idle") showCreateError(null);
 
-    createdBox.hidden = create.kind !== "created";
-    if (create.kind === "created") {
-      createdMessage.textContent = `Created "${create.unit.title}" (${gradeLabel(create.unit.grade)}).`;
-    }
+    // A rejected request's message is in the form, so the form shows.
+    if (create.kind === "rejected" && !createFormOpen) setCreateFormOpen(true);
 
     // Transitions: announce and move focus to the next meaningful control,
     // since the control that started the action may now be hidden.
     // Focus moves only while it is still the create's own: in the create
     // area, or lost. A teacher who moved elsewhere keeps their focus.
     const a = doc.activeElement;
-    const ownsCreate = a === null || a === doc.body || createSection.contains(a);
+    const ownsCreate = a === null || a === doc.body || createSection.contains(a) || a === createOpen;
+    // Milestone 1: one brief success notification (the polite status line);
+    // the form closes and the new unit opens, ready for resources.
+    if (prevCreateKind !== create.kind && create.kind === "created") {
+      setCreateFormOpen(false);
+      expandOnArrival.add(create.unit.unitId);
+    }
     if (prevCreateKind !== create.kind && !ownsCreate) {
       if (create.kind === "created") announce(`Created "${create.unit.title}" in ${gradeLabel(create.unit.grade)}.`);
       else if (prevCreateKind === "inFlight" && create.kind === "unresolved") announce(createUnresolved(create.reason));
     } else if (prevCreateKind !== create.kind) {
       if (create.kind === "created") {
         announce(`Created "${create.unit.title}" in ${gradeLabel(create.unit.grade)}.`);
-        focus(createAnother);
+        createdFocus = create.unit.unitId;
+        focus(createOpen);
       } else if (prevCreateKind === "inFlight" && create.kind === "unresolved") {
         announce(createUnresolved(create.reason));
         focus(
@@ -847,7 +938,7 @@ export function renderTeacherUnitsPanel(
   // resources, Edit, Archive, or Restore), else its first available button.
   const cardAction = (card: CardView): HTMLElement | null => {
     if (!card.li.isConnected) return null;
-    const actions = card.body.querySelectorAll<HTMLElement>(":scope > .shell-units-actions button");
+    const actions = card.body.querySelectorAll<HTMLElement>(":scope > .shell-units-card-details > .shell-units-actions button");
     for (const b of Array.from(actions)) if (canFocus(b)) return b;
     for (const b of Array.from(card.li.querySelectorAll<HTMLElement>("button"))) if (canFocus(b)) return b;
     return null;
@@ -1103,7 +1194,7 @@ export function renderTeacherUnitsPanel(
       return `This is a ${gradeLabel(st.unit.grade)} unit, so it isn't in the ${gradeLabel(view.grade)} list.${editorOpen ? " Its editor is still open." : ""} Choose ${gradeLabel(st.unit.grade)} to see it in the list.`;
     }
     if (st.kind === "archived" && !view.showArchived) {
-      return `This unit is archived, so it isn't in the list.${editorOpen ? " Its editor is still open." : ""} Turn on Show archived units to see its resources in the list.`;
+      return `This unit is archived, so it isn't in the list.${editorOpen ? " Its editor is still open." : ""} Choose View archived units in Settings > Units to see its resources in the list.`;
     }
     if (card?.li.isConnected && !card.gone && card.unit === st.unit) return null;
     if (view.list.kind === "loading") return "The unit list is loading. These details are from the latest version LyfeLabz has loaded.";
@@ -1384,7 +1475,7 @@ export function renderTeacherUnitsPanel(
         if (reason === "blocking") {
           return sentences([
             editing,
-            "Too many units have unconfirmed changes whose current state hasn't been loaded. Choose Check for changes for the grades they're in (turn on Show archived units to include archived units), then try again.",
+            "Too many units have unconfirmed changes whose current state hasn't been loaded. Choose Check for changes for the grades they're in (choose View archived units in Settings > Units to include archived units), then try again.",
           ]);
         }
         const dismissible = controller.getState().pending.some((e) => e.status === "uncertain");
@@ -1533,7 +1624,7 @@ export function renderTeacherUnitsPanel(
     const picker = card.picker;
     if (picker === null) return;
     const u = card.unit;
-    const h = picker.form.querySelector("h5");
+    const h = picker.form.querySelector("h4");
     const label = `Add resources to "${u.title}"`;
     if (h !== null && h.textContent !== label) h.textContent = label;
     const key = card.pickerKey;
@@ -1620,7 +1711,7 @@ export function renderTeacherUnitsPanel(
     form.setAttribute("data-testid", `units-picker-${u.unitId}`);
     const headingId = uid("picker-heading");
     form.setAttribute("aria-labelledby", headingId);
-    const h = el("h5", "shell-units-subheading", `Add resources to "${u.title}"`);
+    const h = el("h4", "shell-units-subheading", `Add resources to "${u.title}"`);
     h.id = headingId;
     form.appendChild(h);
     form.appendChild(
@@ -1846,7 +1937,7 @@ export function renderTeacherUnitsPanel(
     const resolved = resolveUnitResources(u.resourceIds);
     const retired = retiredCount(u);
     const h = el(
-      "h5",
+      "h4",
       "shell-units-resources-heading",
       resolved.length === 0 ? "Resources" : `Resources (${resolved.length})`,
     );
@@ -1861,19 +1952,40 @@ export function renderTeacherUnitsPanel(
       resolved.forEach((entry, i) => {
         const li = el("li", "shell-units-resource");
         li.setAttribute("data-resource-id", entry.id);
-        const text = el("span", "shell-units-resource-text");
         const name = entry.status === "available" ? entry.resource.title : "A resource that is no longer available";
+        // Milestone 1: the same full-width resource card as Curriculum
+        // (resourceCard.ts). Membership controls stay this panel's own.
+        const row = entry.status === "available"
+          ? buildResourceCard(doc, {
+            className: "shell-units-resource-card",
+            tag: "div",
+            grade: entry.resource.grade,
+            topic: entry.resource.topic,
+            typeLabel: resourceTypeLabel(entry.resource),
+            title: name,
+            titleTag: "span",
+          })
+          : buildResourceCard(doc, {
+            className: "shell-units-resource-card",
+            tag: "div",
+            grade: null,
+            topic: null,
+            typeLabel: null,
+            title: name,
+            titleTag: "span",
+          });
+        li.appendChild(row.card);
+        const cardActions = row.actions;
         if (entry.status === "available") {
-          text.appendChild(el("span", "shell-lesson-resource-type", resourceTypeLabel(entry.resource)));
-          text.appendChild(el("span", "shell-lesson-resource-title", name));
-          const meta: string[] = [];
-          if (entry.resource.grade !== null) meta.push(`Grade ${entry.resource.grade}`);
-          if (resourceEligibility(entry.resource) === "organizeOnly") meta.push("Not assignable");
-          if (meta.length > 0) text.appendChild(el("span", "shell-units-resource-meta", meta.join(" · ")));
-        } else {
-          text.appendChild(el("span", "shell-lesson-resource-title", name));
+          if (resourceEligibility(entry.resource) === "organizeOnly") setResourceCardStatus(row, "Not assignable");
+          // Preview for a lesson, Open for every other resource: the same
+          // teacher-safe links Curriculum uses. Neither assigns anything.
+          const r = entry.resource;
+          const view = r.type === "lesson"
+            ? buildLessonPreviewLink(doc, { slug: r.id, title: name }, `units-resource-preview-${u.unitId}-${r.id}`)
+            : buildResourceOpenLink(doc, r.openHref, `Open ${name} (opens in a new tab)`, `units-resource-open-${u.unitId}-${r.id}`);
+          if (view !== null) cardActions.appendChild(view);
         }
-        li.appendChild(text);
         // U2.4 ordering: only while every resource is placeable (the server
         // refuses any list that still names a retired id) and there is
         // something to reorder. Boundary and pending controls stay focusable
@@ -1898,7 +2010,7 @@ export function renderTeacherUnitsPanel(
             });
             moves.appendChild(move);
           }
-          li.appendChild(moves);
+          cardActions.appendChild(moves);
         }
         // Retired rows are removed together (below); one at a time would be
         // refused while another retired id remains.
@@ -1910,7 +2022,7 @@ export function renderTeacherUnitsPanel(
           remove.disabled = retired > 0;
           remove.setAttribute("data-busy-gate", "");
           remove.addEventListener("click", () => removeResource(card, entry.id, name, i));
-          li.appendChild(remove);
+          cardActions.appendChild(remove);
         }
         ol.appendChild(li);
       });
@@ -2025,14 +2137,47 @@ export function renderTeacherUnitsPanel(
             }
             return;
           }
+          // Milestone 1: a compact disclosure. The toggle names the unit and
+          // its resource count; the details hold everything else.
           const titleRow = el("div", "shell-units-card-title-row");
-          titleRow.appendChild(el("h4", "shell-units-card-title", u.title));
+          const titleHeading = el("h3", "shell-units-card-heading");
+          const detailsId = uid("unit-details");
+          const toggle = el("button", "shell-units-card-toggle");
+          toggle.type = "button";
+          toggle.setAttribute("data-testid", `units-toggle-${u.unitId}`);
+          toggle.setAttribute("aria-controls", detailsId);
+          toggle.setAttribute("aria-expanded", card.expanded ? "true" : "false");
+          const chevron = el("span", "shell-units-card-chevron", card.expanded ? "\u25B4" : "\u25BE");
+          chevron.setAttribute("aria-hidden", "true");
+          toggle.appendChild(el("span", "shell-units-card-title", u.title));
+          const count = u.resourceIds.length;
+          const countLabel = el(
+            "span",
+            "shell-units-card-count",
+            count === 0 ? "No resources" : count === 1 ? "1 resource" : `${count} resources`,
+          );
+          countLabel.setAttribute("data-testid", `units-count-${u.unitId}`);
+          toggle.appendChild(countLabel);
+          toggle.appendChild(chevron);
+          titleHeading.appendChild(toggle);
+          titleRow.appendChild(titleHeading);
           if (u.status === "archived") titleRow.appendChild(el("span", "shell-units-badge", "Archived"));
           card.body.appendChild(titleRow);
+          const details = el("div", "shell-units-card-details");
+          details.id = detailsId;
+          details.setAttribute("data-testid", `units-details-${u.unitId}`);
+          details.hidden = !card.expanded;
+          card.body.appendChild(details);
+          toggle.addEventListener("click", () => {
+            card.expanded = !card.expanded;
+            details.hidden = !card.expanded;
+            toggle.setAttribute("aria-expanded", card.expanded ? "true" : "false");
+            chevron.textContent = card.expanded ? "\u25B4" : "\u25BE";
+          });
           if (u.description.length > 0) {
-            card.body.appendChild(el("p", "shell-units-card-description", u.description));
+            details.appendChild(el("p", "shell-units-card-description", u.description));
           }
-          card.body.appendChild(renderResources(card));
+          details.appendChild(renderResources(card));
           const actions = el("div", "shell-units-actions");
           if (u.status === "active") {
             const add = button("Add resources");
@@ -2077,7 +2222,7 @@ export function renderTeacherUnitsPanel(
             });
             actions.appendChild(restore);
           }
-          card.body.appendChild(actions);
+          details.appendChild(actions);
         },
         (tid) => {
           const swap = counterpartOf(tid);
@@ -2113,8 +2258,9 @@ export function renderTeacherUnitsPanel(
     notice.setAttribute("role", "alert");
     notice.hidden = true;
     li.appendChild(notice);
+    const expanded = options.unitsInitiallyExpanded === true || expandOnArrival.delete(unit.unitId);
     return {
-      li, unit, gone: false, editor: null, picker: null, confirmRetired: null, noticeText: null, notice, body,
+      li, unit, expanded, gone: false, editor: null, picker: null, confirmRetired: null, noticeText: null, notice, body,
       rendered: null, pickerKey: null,
     };
   };
@@ -2181,8 +2327,7 @@ export function renderTeacherUnitsPanel(
       }
     }
     const empty = units.length === 0 && pinned.length === 0
-      ? s.showArchived ? `You don't have any ${gradeLabel(s.grade)} units yet.`
-        : `You don't have any active ${gradeLabel(s.grade)} units. Create one above.`
+      ? s.showArchived ? `No ${gradeLabel(s.grade)} units yet.` : `No active ${gradeLabel(s.grade)} units yet.`
       : "";
     updateListMessage(empty, () => {
       if (empty !== "") listState.appendChild(el("p", "shell-units-empty", empty));
@@ -2204,6 +2349,20 @@ export function renderTeacherUnitsPanel(
       if (list.children[i] !== card.li) list.insertBefore(card.li, list.children[i] ?? null);
     });
     if (departed !== null) departFocus(departed.unitId, departed.index);
+    // A just-created unit's card takes focus from Create Unit once listed.
+    if (createdFocus !== null) {
+      const created = cards.get(createdFocus);
+      if (created !== undefined) {
+        createdFocus = null;
+        expandOnArrival.delete(created.unit.unitId);
+        if (!created.expanded) {
+          created.expanded = true;
+          created.rendered = null;
+          renderCardBody(created);
+        }
+        if (doc.activeElement === createOpen) focus(q(created, `units-toggle-${created.unit.unitId}`));
+      }
+    }
   };
 
   // ---------- Unconfirmed changes (A3-4 S2) ----------
@@ -2466,7 +2625,9 @@ export function renderTeacherUnitsPanel(
       b.setAttribute("aria-pressed", active ? "true" : "false");
       b.classList.toggle("shell-filter-pill-active", active);
     }
-    archivedBox.checked = s.showArchived;
+    archivedView.hidden = !s.showArchived;
+    const archivedText = `Archived ${gradeLabel(s.grade)} units are shown with your active units. Restore a unit to use it again.`;
+    if (archivedViewText.textContent !== archivedText) archivedViewText.textContent = archivedText;
     setAriaDisabled(checkChanges, checking || s.list.kind === "loading");
     renderCreate(s);
     renderList(s);
@@ -2533,10 +2694,32 @@ export function renderTeacherUnitsPanel(
     }
   };
 
+  // Milestone 1 automatic freshness: returning to this browser tab reads
+  // the list again through the same `refresh` as Check for changes (same
+  // ordering, revision, and account guards; nothing is resent). Silent, at
+  // most once per AUTO_REFRESH_MIN_MS, and only while a loaded list is shown
+  // and no other read is running. No polling.
+  const AUTO_REFRESH_MIN_MS = 30_000;
+  let lastAutoRefresh = Date.now();
+  const onVisibility = (): void => {
+    if (disposed || doc.visibilityState !== "visible") return;
+    if (!root.isConnected) {
+      if (wasConnected) dispose();
+      return;
+    }
+    const now = Date.now();
+    if (now - lastAutoRefresh < AUTO_REFRESH_MIN_MS) return;
+    if (checking || controller.getState().list.kind !== "ready") return;
+    lastAutoRefresh = now;
+    void controller.refresh();
+  };
+  doc.addEventListener("visibilitychange", onVisibility);
+
   const unsubscribe = controller.subscribe(render);
   const dispose = (): void => {
     if (disposed) return;
     disposed = true;
+    doc.removeEventListener("visibilitychange", onVisibility);
     unsubscribe();
     controller.dispose();
   };

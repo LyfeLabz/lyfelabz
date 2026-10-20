@@ -68,6 +68,16 @@ export function dispatch(
   while (mount.firstChild) mount.removeChild(mount.firstChild);
   surface(session, mount);
   if (history && typeof history.replaceState === "function") {
-    history.replaceState(history.state ?? null, "", path);
+    // Teacher Units UX Milestone 1A: the teacher shell has just written its
+    // state with a matching hash (`#units`, ...). Keep that hash so a refresh
+    // reopens the same destination. Only for an active teacher with shell
+    // state, so no other session kind inherits a teacher hash.
+    const hash =
+      session.kind === "activeTeacher" &&
+      history.state != null &&
+      typeof location !== "undefined"
+        ? location.hash
+        : "";
+    history.replaceState(history.state ?? null, "", `${path}${hash}`);
   }
 }

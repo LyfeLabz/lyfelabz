@@ -1,9 +1,10 @@
 /**
  * @jest-environment jsdom
  *
- * U2.2 My Units inside Curriculum (TEACHER_UNITS.md "U2.2"): the gated
- * Browse | My Units switch, lazy controller creation, history, and the
- * panel's create, edit, conflict, archive, and recovery behavior.
+ * U2.2 My Units (TEACHER_UNITS.md "U2.2"): Curriculum without the former
+ * Browse | My Units switch (Teacher Units UX Milestone 1 made My Units a
+ * top-level surface; see myUnits.surface.test.ts), the legacy history entry,
+ * and the panel's create, edit, conflict, archive, and recovery behavior.
  */
 import * as fs from "fs";
 import * as path from "path";
@@ -13,7 +14,6 @@ import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
 import {
   renderCurriculumSurface,
-  initialTeacherUnitsGrade,
   _resetCurriculumSessionStateForTest,
 } from "./curriculum";
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
@@ -26,9 +26,7 @@ import {
 import { createTeacherUnitCreateAttemptStore, createAttemptStorageKey } from "../../teacherUnits/createAttemptStore";
 import {
   createTeacherUnitsController,
-  createTeacherUnitsSurfaceSeam,
   type TeacherUnitsController,
-  type TeacherUnitsSurfaceSeam,
 } from "../../teacherUnits/unitsController";
 import type { TeacherUnit, TeacherUnitsCallables } from "../../teacherUnits/types";
 import { CREATE_ATTEMPT_REPLAY_WINDOW_MS } from "../../teacherUnits/saveCoordination";
@@ -134,7 +132,7 @@ describe("feature gate", () => {
     expect(() => boundary.requireTeacherUnitsAvailable()).toThrow("unavailable");
   });
 
-  test("without the seam Curriculum is unchanged: no switch, no My Units, no teacher-unit storage", () => {
+  test("Curriculum opens directly on the catalog: no view switch, no My Units, no teacher-unit storage", () => {
     const setSpy = jest.spyOn(Storage.prototype, "setItem");
     const getSpy = jest.spyOn(Storage.prototype, "getItem");
     const mount = mountEl();
@@ -143,100 +141,20 @@ describe("feature gate", () => {
     expect(q(mount, "curriculum-view-switch")).toBeNull();
     expect(q(mount, "curriculum-units")).toBeNull();
     expect(q(mount, "units-panel")).toBeNull();
-    // Original structure: the view and summary host are direct children.
+    expect(mount.textContent).not.toContain("My Units");
+    // The view and summary host are the direct children.
     expect(Array.from(mount.children).map((c) => c.getAttribute("data-testid"))).toEqual([
       "curriculum-view",
       "curriculum-summary-host",
     ]);
-    expect(h.controller.restoreUnits()).toBe(false);
+    expect("restoreUnits" in h.controller).toBe(false);
     const touched = [...setSpy.mock.calls.map((c) => c[0]), ...getSpy.mock.calls.map((c) => c[0])];
     expect(touched.some((k) => String(k).includes("teacherUnits"))).toBe(false);
     setSpy.mockRestore();
     getSpy.mockRestore();
   });
-});
 
-describe("Browse | My Units switch", () => {
-  function setup(filterGrade?: "6" | "7") {
-    const created: Array<{ uid: string; schoolId: string; initialGrade: string }> = [];
-    const c = callables();
-    const mem = memoryStorage();
-    const seam: TeacherUnitsSurfaceSeam = {
-      createController: (input) => {
-        created.push(input);
-        return createTeacherUnitsSurfaceSeam({
-          callables: c as unknown as TeacherUnitsCallables,
-          readFirebaseUid: () => "teacherA",
-          readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),
-          createStore: (scope) => createTeacherUnitCreateAttemptStore(scope, () => mem.storage),
-        }).createController(input);
-      },
-    };
-    const mount = mountEl();
-    const h = historySeam();
-    renderCurriculumSurface(mount, teacher, { listClasses, curriculumHistory: h.seam, teacherUnits: seam });
-    if (filterGrade) (q(mount, `filter-grade-${filterGrade}`) as HTMLButtonElement).click();
-    return { mount, h, created, c };
-  }
-
-  test("Browse is selected and the controller is created lazily on first open", async () => {
-    const { mount, created, c } = setup();
-    const browse = q(mount, "curriculum-view-browse") as HTMLButtonElement;
-    const units = q(mount, "curriculum-view-units") as HTMLButtonElement;
-    expect(q(mount, "curriculum-view-switch")?.getAttribute("role")).toBe("tablist");
-    expect(browse.getAttribute("aria-selected")).toBe("true");
-    expect(units.getAttribute("aria-selected")).toBe("false");
-    expect(q(mount, "curriculum-browse")?.hidden).toBe(false);
-    expect(q(mount, "curriculum-units")?.hidden).toBe(true);
-    expect(created).toHaveLength(0);
-    expect(c.list).not.toHaveBeenCalled();
-    units.click();
-    await flush();
-    expect(created).toHaveLength(1);
-    expect(q(mount, "curriculum-browse")?.hidden).toBe(true);
-    expect(q(mount, "units-panel")).not.toBeNull();
-    expect(c.list).toHaveBeenCalledTimes(1);
-    // Re-opening reuses the same panel.
-    browse.click();
-    units.click();
-    expect(created).toHaveLength(1);
-  });
-
-  test("history: My Units pushes its own entry; restoreTop and restoreTab return to Browse", () => {
-    const { mount, h } = setup();
-    (q(mount, "curriculum-view-units") as HTMLButtonElement).click();
-    expect(h.pushes).toEqual([{ kind: "shell-curriculum-units", surface: "curriculum" }]);
-    expect(h.controller.restoreTop()).toBe(true);
-    expect(q(mount, "curriculum-units")?.hidden).toBe(true);
-    expect(h.controller.restoreUnits()).toBe(true);
-    expect(q(mount, "curriculum-units")?.hidden).toBe(false);
-    h.controller.restoreTab("investigations");
-    expect(q(mount, "curriculum-units")?.hidden).toBe(true);
-  });
-
-  test("arrow keys move between the two view tabs", () => {
-    const { mount } = setup();
-    const tablist = q(mount, "curriculum-view-switch") as HTMLElement;
-    tablist.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
-    expect(q(mount, "curriculum-view-units")?.getAttribute("aria-selected")).toBe("true");
-    expect(document.activeElement).toBe(q(mount, "curriculum-view-units"));
-    tablist.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
-    expect(q(mount, "curriculum-view-browse")?.getAttribute("aria-selected")).toBe("true");
-  });
-
-  test("My Units defaults to the active Curriculum grade filter", () => {
-    const { mount, created } = setup("7");
-    (q(mount, "curriculum-view-units") as HTMLButtonElement).click();
-    expect(created[0]).toEqual({ uid: "teacherA", schoolId: "schoolA", initialGrade: "7" });
-  });
-
-  test("grade fallback when the filter is All", () => {
-    expect(initialTeacherUnitsGrade("all")).toBe("6");
-    expect(initialTeacherUnitsGrade("7")).toBe("7");
-    expect(initialTeacherUnitsGrade("8")).toBe("8");
-  });
-
-  test("history state shape round-trips through the strict parser", () => {
+  test("the legacy My Units history entry still parses strictly", () => {
     const s: ShellHistoryState = { kind: "shell-curriculum-units", surface: "curriculum" };
     expect(parseShellHistoryState(s)).toEqual(s);
     expect(hashForState(s)).toBe("#curriculum/units");
@@ -263,7 +181,7 @@ describe("My Units panel", () => {
       now: opts.now ?? (() => T0),
       mint: opts.mint ?? (() => "key_00000001"),
     });
-    const view = renderTeacherUnitsPanel(host, ctl);
+    const view = renderTeacherUnitsPanel(host, ctl, { unitsInitiallyExpanded: true });
     return { host, ctl, c, mem, view };
   }
 
@@ -279,7 +197,7 @@ describe("My Units panel", () => {
     const { host } = panel();
     expect(host.textContent).toContain("Loading units...");
     await flush();
-    expect(q(host, "units-list-state")?.textContent).toContain("You don't have any active Grade 7 units");
+    expect(q(host, "units-list-state")?.textContent).toBe("No active Grade 7 units yet.");
     expect(q(host, "units-grade-7")?.getAttribute("aria-pressed")).toBe("true");
     expect(q(host, "units-grade-8")).not.toBeNull();
   });
@@ -295,11 +213,18 @@ describe("My Units panel", () => {
     expect(q(host, "units-retry")).toBeNull();
   });
 
-  test("create: client validation, then server create, then explicit Create another", async () => {
+  test("create: Create Unit opens the form, validation, server create, the form closes, Create Unit again", async () => {
     const created = unit({ title: "Water Cycle", description: "" });
     const c = callables({ create: jest.fn(async () => ({ unit: created, replayed: false })) });
     const { host, mem } = panel({ c });
     await flush();
+    const open = q(host, "units-create-open") as HTMLButtonElement;
+    expect((q(host, "units-create-form") as HTMLFormElement).hidden).toBe(true);
+    expect(open.getAttribute("aria-expanded")).toBe("false");
+    open.click();
+    expect((q(host, "units-create-form") as HTMLFormElement).hidden).toBe(false);
+    expect(open.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement).toBe(q(host, "units-create-title"));
     submit(q(host, "units-create-form"));
     expect(q(host, "units-create-error")?.textContent).toMatch(/Enter a unit name/);
     expect(c.create).not.toHaveBeenCalled();
@@ -307,11 +232,14 @@ describe("My Units panel", () => {
     submit(q(host, "units-create-form"));
     await flush();
     expect(c.create).toHaveBeenCalledWith({ grade: "7", title: "Water Cycle", description: "", idempotencyKey: "key_00000001", expectedSchoolId: "schoolA" });
-    expect(q(host, "units-created")?.textContent).toContain('Created "Water Cycle"');
+    expect(q(host, "units-status")?.textContent).toBe('Created "Water Cycle" in Grade 7.');
+    expect(q(host, "units-created")).toBeNull();
+    expect(q(host, "units-create-another")).toBeNull();
     expect(q(host, `units-card-${created.unitId}`)).not.toBeNull();
     expect(mem.map.size).toBe(0);
     expect((q(host, "units-create-form") as HTMLFormElement).hidden).toBe(true);
-    (q(host, "units-create-another") as HTMLButtonElement).click();
+    expect(open.getAttribute("aria-expanded")).toBe("false");
+    open.click();
     expect((q(host, "units-create-form") as HTMLFormElement).hidden).toBe(false);
     expect((q(host, "units-create-title") as HTMLInputElement).value).toBe("");
     expect(document.activeElement).toBe(q(host, "units-create-title"));
@@ -418,7 +346,7 @@ describe("My Units panel", () => {
     expect(q(host, `units-edit-title-${u.unitId}`)).toBeNull();
   });
 
-  test("archive and restore with the archived toggle", async () => {
+  test("archive, then the archived view (entered as from Settings > Units), restore, and leave it", async () => {
     const u = unit();
     const archived = { ...u, status: "archived" as const, revision: 2, archivedAtMillis: 9 };
     const restored = { ...u, revision: 3 };
@@ -427,22 +355,27 @@ describe("My Units panel", () => {
       archive: jest.fn(async () => ({ unit: archived, noop: false })),
       restore: jest.fn(async () => ({ unit: restored, noop: false })),
     });
-    const { host } = panel({ c });
+    const { host, ctl } = panel({ c });
     await flush();
     (q(host, `units-archive-${u.unitId}`) as HTMLButtonElement).click();
     await flush();
     expect(q(host, `units-card-${u.unitId}`)).toBeNull();
     expect(q(host, "units-status")?.textContent).toContain("Archived");
-    const toggle = q(host, "units-show-archived") as HTMLInputElement;
-    toggle.checked = true;
-    toggle.dispatchEvent(new Event("change"));
+    expect(q(host, "units-show-archived")).toBeNull();
+    expect((q(host, "units-archived-view") as HTMLElement).hidden).toBe(true);
+    ctl.setShowArchived(true);
     await flush();
+    expect((q(host, "units-archived-view") as HTMLElement).hidden).toBe(false);
     expect(q(host, `units-card-${u.unitId}`)?.textContent).toContain("Archived");
     expect(q(host, `units-edit-${u.unitId}`)).toBeNull();
     (q(host, `units-restore-${u.unitId}`) as HTMLButtonElement).click();
     await flush();
     expect(c.restore).toHaveBeenCalledWith({ unitId: u.unitId, expectedRevision: 2 });
     expect(q(host, `units-edit-${u.unitId}`)).not.toBeNull();
+    (q(host, "units-archived-exit") as HTMLButtonElement).click();
+    await flush();
+    expect(ctl.getState().showArchived).toBe(false);
+    expect((q(host, "units-archived-view") as HTMLElement).hidden).toBe(true);
   });
 
   test("a detached panel disposes its controller on the next late update", async () => {
@@ -467,22 +400,27 @@ describe("My Units panel", () => {
     expect(dispose).toHaveBeenCalled();
   });
 
-  test("create success is announced and focus moves to Create another unit", async () => {
+  test("create success is one polite announcement; focus moves to the new unit, which opens", async () => {
     const created = unit({ title: "Water Cycle" });
     const c = callables({ create: jest.fn(async () => ({ unit: created, replayed: false })) });
-    const { host } = panel({ c });
+    const { host, ctl } = panel({ c });
     await flush();
+    (q(host, "units-create-open") as HTMLButtonElement).click();
     const title = q(host, "units-create-title") as HTMLInputElement;
-    title.focus();
     type(title, "Water Cycle");
     submit(q(host, "units-create-form"));
     await flush();
     expect(q(host, "units-status")?.textContent).toBe('Created "Water Cycle" in Grade 7.');
     expect(q(host, "units-status")?.getAttribute("aria-live")).toBe("polite");
-    expect(document.activeElement).toBe(q(host, "units-create-another"));
-    // The confirmation element is long-lived: rerenders keep focus on it.
-    await (q(host, "units-show-archived") as HTMLInputElement, flush());
-    expect(document.activeElement).toBe(q(host, "units-create-another"));
+    // Exactly one success message anywhere in the panel.
+    expect(host.textContent?.split("Water Cycle\" in Grade 7").length).toBe(2);
+    const toggle = q(host, `units-toggle-${created.unitId}`);
+    expect(document.activeElement).toBe(toggle);
+    expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+    // Rerenders keep focus there.
+    ctl.setGrade("7");
+    await flush();
+    expect(document.activeElement).toBe(q(host, `units-toggle-${created.unitId}`));
   });
 
   test("an uncertain create moves focus to Check again and announces it", async () => {
@@ -579,6 +517,9 @@ describe("My Units panel", () => {
       await flush();
       const form = q(host, "units-create-form") as HTMLElement;
       const recovery = q(host, "units-recovery") as HTMLElement;
+      // Closed until requested.
+      expect(getComputedStyle(form).display).toBe("none");
+      (q(host, "units-create-open") as HTMLButtonElement).click();
       expect(getComputedStyle(form).display).toBe("flex");
       expect(recovery.hidden).toBe(true);
       expect(getComputedStyle(recovery).display).toBe("none");
@@ -587,7 +528,7 @@ describe("My Units panel", () => {
       await flush();
       expect(form.hidden).toBe(true);
       expect(getComputedStyle(form).display).toBe("none");
-      expect(getComputedStyle(q(host, "units-created") as HTMLElement).display).not.toBe("none");
+      expect(getComputedStyle(q(host, "units-archived-view") as HTMLElement).display).toBe("none");
     } finally {
       style.remove();
     }

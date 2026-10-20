@@ -8,6 +8,8 @@
  * an acknowledgment (Dismiss): never a resend (D3).
  */
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import {
   createTeacherUnitsController,
@@ -96,7 +98,7 @@ function harness() {
     const host = document.createElement("div");
     document.body.appendChild(host);
     const ctl = seam.createController({ uid: "teacherA", schoolId: "schoolA", initialGrade: "7" });
-    const view = renderTeacherUnitsPanel(host, ctl);
+    const view = renderTeacherUnitsPanel(host, ctl, EXPANDED);
     last("list").d.resolve({ units });
     await tick();
     return { host, ctl, view };
@@ -492,7 +494,7 @@ describe("fifth remediation P3: capacity guidance names only an action that can 
       initialGrade: "7",
       pendingRegistry: registry,
     });
-    renderTeacherUnitsPanel(host, ctl);
+    renderTeacherUnitsPanel(host, ctl, EXPANDED);
     s.calls.list[s.calls.list.length - 1].d.resolve({ units: [u] });
     await tick();
     (q(host, `units-edit-${u.unitId}`) as HTMLButtonElement).click();

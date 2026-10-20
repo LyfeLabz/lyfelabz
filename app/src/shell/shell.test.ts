@@ -567,9 +567,12 @@ describe("Workspace outlet (Sprint 6C)", () => {
     expect(headline?.textContent).toBe("Classes");
   });
 
-  test("WORKSPACE_SURFACES registers exactly the three workspace-surface keys", () => {
+  test("WORKSPACE_SURFACES registers exactly the four workspace-surface keys (My Units gated)", () => {
+    // Teacher Units UX Milestone 1: My Units ("units") is a registered
+    // surface, reachable only when the shell holds an enabled Teacher Units
+    // seam (see the gated navigation tests in shell.my-units.test.ts).
     expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
-      ["classes", "curriculum", "settings"],
+      ["classes", "curriculum", "settings", "units"],
     );
   });
 
@@ -1437,8 +1440,10 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     // destination. See CLASS_SNAPSHOT_EXPERIENCE.md §6 and
     // SNAPSHOT_ARCHITECTURE.md §6. Sprint 28.6D reduced the primary
     // navigation to Classes, Curriculum, Settings (Present Mode removed).
+    // Teacher Units UX Milestone 1 registers a gated My Units surface, which
+    // the closed navigation below never shows.
     expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
-      ["classes", "curriculum", "settings"],
+      ["classes", "curriculum", "settings", "units"],
     );
     const mount = mkMount();
     renderNavigation(mount);
@@ -2563,19 +2568,24 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     );
   });
 
-  test("Curriculum grid targets four columns on large desktop and reflows (Sprint 28.6H, Finding 6)", () => {
-    // The base grid is an explicit 4-column layout (not auto-fill, which
-    // produced 5 across at 1280), and it reduces to 3 / 2 / 1 at narrower
-    // widths. Card readability over maximum density.
+  test("Curriculum is one full-width card per row at every width (Teacher Units UX Milestone 1)", () => {
+    // Replaces the Sprint 28.6H four-column grid: a single column of shared
+    // resource rows, with no breakpoint that re-introduces columns.
     const gridMatch = shellHtml.match(
       /\.shell-curriculum-grid\s*\{([^}]+)\}/,
     );
     expect(gridMatch).not.toBeNull();
-    expect(gridMatch![1]).toMatch(/grid-template-columns:\s*repeat\(4,/);
-    expect(shellHtml).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
-    expect(shellHtml).toMatch(/repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
-    // No auto-fill density that overflows to 5 columns.
-    expect(gridMatch![1]).not.toMatch(/auto-fill/);
+    expect(gridMatch![1]).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\);/);
+    expect(gridMatch![1]).not.toMatch(/auto-fill|repeat\(/);
+    const stripped = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(stripped).not.toMatch(/\.shell-curriculum-grid\s*\{\s*grid-template-columns:\s*repeat\(/);
+    // The shared row: identity on the left, actions on the right, stacking
+    // into one column at the 720px canonical breakpoint.
+    expect(stripped).toMatch(/\.shell-resource-row\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto;/);
+    expect(stripped).toMatch(/@media \(max-width: 720px\)\s*\{\s*\.shell-card\.shell-resource-row,\s*\.shell-resource-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);/);    // At phone width the shell body's single track must not be content-sized,
+    // or the horizontal nav row (now up to four items) widens the whole page
+    // instead of scrolling inside the nav.
+    expect(stripped).toMatch(/@media \(max-width: 720px\)\s*\{\s*\.shell-body\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\);/);
   });
 
   test("Curriculum card vertical spacing is materially reduced (Sprint 28.6H.4, Task D3/D6)", () => {

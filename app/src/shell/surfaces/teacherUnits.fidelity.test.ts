@@ -14,6 +14,8 @@
  * visible, and announced).
  */
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController, type TeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -97,7 +99,7 @@ async function panel(units: TeacherUnit[], ctx: () => TeacherUnitCreateContext |
     store: createTeacherUnitCreateAttemptStore(SCOPE),
     initialGrade: "7",
   });
-  renderTeacherUnitsPanel(host, ctl);
+  renderTeacherUnitsPanel(host, ctl, EXPANDED);
   h.calls.list[0].d.resolve({ units });
   await tick();
   return { ...h, host, ctl };
@@ -197,7 +199,7 @@ describe("B: addition and removal messages follow the committed write", () => {
     addVia(h3, c, [R1.id]);
     h3.calls.setResources[0].d.resolve({ unit: archived(c, 3, { resourceIds: [R1.id] }), noop: false });
     await tick();
-    expect(status(h3.host)).toBe(`Added 1 resource to "${c.title}". "${c.title}" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`);
+    expect(status(h3.host)).toBe(`Added 1 resource to "${c.title}". "${c.title}" is archived. This unit is archived, so it isn't in the list. Choose View archived units in Settings > Units to see its resources in the list.`);
 
     const d = unit({ title: "Rocks" });
     const h4 = await panel([d]);

@@ -1,4 +1,3 @@
-import { teacherUnitsAvailable } from "../../teacherUnits/releaseAvailability";
 import type { Session } from "../../session/types";
 import {
   readStoredCurriculumFilters,
@@ -21,7 +20,6 @@ import {
   getSurfaceableLessons,
   getFormalResourcesForLesson,
   FORMAL_RESOURCE_LABEL,
-  TOPIC_LABEL,
   type CurriculumResource,
   type FormalResourceType,
   type LessonGrade,
@@ -44,11 +42,7 @@ import type {
 } from "../navigationHistory";
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { createCurriculumTabs, type CurriculumTabs } from "./curriculumResourceTabs";
-import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
-import type { TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
-import type { TeacherUnitGrade } from "../../teacherUnits/types";
-import { buildLessonBasePath } from "../../assignments/studentList/launch";
-import { attachDeliveryNewTabPreparation } from "../../assignments/studentList/deliveryNavigation";
+import { buildResourceCard, buildLessonPreviewLink } from "./resourceCard";
 import { mintAssignmentId } from "./shared/assignmentId";
 import { formatLocalDate, formatLocalTime } from "./shared/activeAssignments";
 import {
@@ -234,18 +228,12 @@ export type CurriculumSurfaceDeps = {
   // Browser Back/Forward: shell-owned seam for the nested Lesson Summary page
   // (see navigationHistory.ts). Absent in harnesses without history.
   readonly curriculumHistory?: NestedPageHistorySeam<CurriculumHistoryController> | null;
-  // U2.2 My Units (TEACHER_UNITS.md "U2.2"). Supplied only when the entry
-  // point's TEACHER_UNITS_GATE_OPEN is true. When absent-or-null nothing
-  // about Curriculum changes: no Browse | My Units switch, no teacher-unit
-  // callable, and no create-recovery storage access.
-  readonly teacherUnits?: TeacherUnitsSurfaceSeam | null;
 };
 
-// My Units opens on the active Curriculum grade filter. "All" has no single
-// grade; the teacher-level saved default grade was removed in Sprint 28.6F
-// (teacherPreferences/types.ts), so the fallback is the first grade.
-export function initialTeacherUnitsGrade(filter: string): TeacherUnitGrade {
-  return filter === "6" || filter === "7" || filter === "8" ? filter : "6";
+// Teacher Units UX Milestone 1: My Units is its own workspace surface and
+// opens on the teacher's Curriculum grade filter ("all" when none is set).
+export function readCurriculumGradeFilter(uid: string): string {
+  return readSessionFilters(uid).grade;
 }
 
 const DEFAULT_LIST_CLASSES: ListClasses = () =>
@@ -971,89 +959,19 @@ export function renderCurriculumSurface(
   // Workspace shell (header, navigation, footer) stays mounted and
   // Curriculum remains the active global navigation context. Back removes
   // the summary surface and restores the grid.
-  // U2.2: with the gate open, a Browse | My Units switch sits above the
-  // existing Curriculum content, which moves unchanged into a Browse host.
-  // With the gate closed the DOM is exactly as before.
-  const teacherUnits = teacherUnitsAvailable() ? deps.teacherUnits ?? null : null;
-  let browseParent: HTMLElement = mount;
-  let unitsHost: HTMLElement | null = null;
-  let viewSwitch: { tablist: HTMLElement; browse: HTMLButtonElement; units: HTMLButtonElement } | null =
-    null;
-  if (teacherUnits !== null) {
-    const tablist = doc.createElement("div");
-    tablist.className = "shell-curriculum-tabs shell-curriculum-view-switch";
-    tablist.setAttribute("role", "tablist");
-    tablist.setAttribute("aria-label", "Curriculum view");
-    tablist.setAttribute("data-testid", "curriculum-view-switch");
-    const makeTab = (key: "browse" | "units", label: string): HTMLButtonElement => {
-      const b = doc.createElement("button");
-      b.type = "button";
-      b.className = "shell-curriculum-tab";
-      b.id = `curriculum-view-tab-${key}`;
-      b.setAttribute("role", "tab");
-      b.setAttribute("aria-controls", `curriculum-view-panel-${key}`);
-      b.setAttribute("data-testid", `curriculum-view-${key}`);
-      b.textContent = label;
-      tablist.appendChild(b);
-      return b;
-    };
-    viewSwitch = { tablist, browse: makeTab("browse", "Browse"), units: makeTab("units", "My Units") };
-    mount.appendChild(tablist);
-    browseParent = doc.createElement("div");
-    browseParent.id = "curriculum-view-panel-browse";
-    browseParent.setAttribute("role", "tabpanel");
-    browseParent.setAttribute("aria-labelledby", "curriculum-view-tab-browse");
-    browseParent.setAttribute("data-testid", "curriculum-browse");
-    mount.appendChild(browseParent);
-    unitsHost = doc.createElement("div");
-    unitsHost.id = "curriculum-view-panel-units";
-    unitsHost.setAttribute("role", "tabpanel");
-    unitsHost.setAttribute("aria-labelledby", "curriculum-view-tab-units");
-    unitsHost.setAttribute("data-testid", "curriculum-units");
-    unitsHost.hidden = true;
-    mount.appendChild(unitsHost);
-  }
+  // Teacher Units UX Milestone 1: My Units is a top-level workspace surface
+  // (myUnits.ts), so Curriculum opens directly on the resource catalog with
+  // no Browse | My Units switch.
 
   const curriculumView = doc.createElement("div");
   curriculumView.className = "shell-curriculum-view";
   curriculumView.setAttribute("data-testid", "curriculum-view");
-  browseParent.appendChild(curriculumView);
+  mount.appendChild(curriculumView);
 
   const summaryHost = doc.createElement("div");
   summaryHost.className = "shell-curriculum-summary-host";
   summaryHost.setAttribute("data-testid", "curriculum-summary-host");
-  browseParent.appendChild(summaryHost);
-
-  // Which Curriculum view shows. Always "browse" without the seam.
-  let unitsOpen = false;
-  let unitsPanelMounted = false;
-  // Assigned once the grade filter state exists, below.
-  let readFilterGrade: () => string = () => "all";
-  const setUnitsView = (open: boolean): boolean => {
-    if (viewSwitch === null || unitsHost === null || teacherUnits === null) return false;
-    const changed = open !== unitsOpen;
-    unitsOpen = open;
-    browseParent.hidden = open;
-    unitsHost.hidden = !open;
-    viewSwitch.browse.setAttribute("aria-selected", open ? "false" : "true");
-    viewSwitch.units.setAttribute("aria-selected", open ? "true" : "false");
-    viewSwitch.browse.tabIndex = open ? -1 : 0;
-    viewSwitch.units.tabIndex = open ? 0 : -1;
-    if (open && !unitsPanelMounted) {
-      // Lazy: no teacher-unit callable or storage access until My Units is
-      // actually opened.
-      unitsPanelMounted = true;
-      renderTeacherUnitsPanel(
-        unitsHost,
-        teacherUnits.createController({
-          uid: session.uid,
-          schoolId: session.schoolId,
-          initialGrade: initialTeacherUnitsGrade(readFilterGrade()),
-        }),
-      );
-    }
-    return changed;
-  };
+  mount.appendChild(summaryHost);
 
   // Browser Back/Forward: opening a Lesson Summary is a real drill-down with
   // its own history entry (unless this call is itself a history restore);
@@ -1112,28 +1030,23 @@ export function renderCurriculumSurface(
       if (lessonSummary === null) return false;
       const lesson = LESSONS.find((l) => l.slug === lessonSlug);
       if (lesson === undefined) return false;
-      setUnitsView(false);
       // Lesson Summary is reached only from the Lessons tab.
       tabs?.select("lessons");
       openLessonSummary(lesson, { fromHistory: true });
       return true;
     },
     restoreTop: () => {
-      const leftUnits = setUnitsView(false);
       const summaryOpen = curriculumView.hidden;
       if (summaryOpen) closeLessonSummary();
       const tabChanged = tabs?.select("lessons") ?? false;
-      return summaryOpen || tabChanged || leftUnits;
+      return summaryOpen || tabChanged;
     },
     restoreTab: (tab) => {
       if (tabs === null) return false;
-      const leftUnits = setUnitsView(false);
       const summaryOpen = curriculumView.hidden;
       if (summaryOpen) closeLessonSummary();
-      return tabs.select(tab) || summaryOpen || leftUnits;
+      return tabs.select(tab) || summaryOpen;
     },
-    // Fails closed (false, no change) when My Units is not enabled.
-    restoreUnits: () => setUnitsView(true),
   });
 
   // Sprint 13C, retained through Sprint 28.6D: rediscover the quiet
@@ -1207,27 +1120,6 @@ export function renderCurriculumSurface(
     activation: new Map(LESSONS.map((l) => [l.slug, true])),
   };
   writeSessionFilters(session.uid, state.grade, state.topic);
-  readFilterGrade = () => state.grade;
-  if (viewSwitch !== null) {
-    const { browse, units } = viewSwitch;
-    setUnitsView(false);
-    browse.addEventListener("click", () => {
-      if (setUnitsView(false)) curriculumHistory?.push({ kind: "shell-surface", surface: "curriculum" });
-    });
-    units.addEventListener("click", () => {
-      if (setUnitsView(true)) {
-        curriculumHistory?.push({ kind: "shell-curriculum-units", surface: "curriculum" });
-      }
-    });
-    // Arrow-key movement between the two view tabs (WAI-ARIA tabs).
-    viewSwitch.tablist.addEventListener("keydown", (ev) => {
-      if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight" && ev.key !== "Home" && ev.key !== "End") return;
-      ev.preventDefault();
-      const toUnits = ev.key === "Home" ? false : ev.key === "End" ? true : !unitsOpen;
-      (toUnits ? units : browse).focus();
-      (toUnits ? units : browse).click();
-    });
-  }
 
   // The type tabs sit between the welcome heading and the shared grade /
   // topic filters. The existing lesson grid and its empty notice become the
@@ -1504,8 +1396,22 @@ function renderLessonCard(
   onAssign: (lesson: SurfaceableLesson, card: HTMLElement) => void,
   viewSummary?: ViewSummaryOptions,
 ): HTMLElement {
-  const card = doc.createElement("article");
-  card.className = "shell-card shell-lesson-card";
+  // Teacher Units UX Milestone 1: the lesson card is a shared full-width
+  // resource row (resourceCard.ts); its controls below are unchanged.
+  const row = buildResourceCard(doc, {
+    className: "shell-card shell-lesson-card",
+    grade: lesson.grade,
+    topic: lesson.topic,
+    typeLabel: "Lesson",
+    title: lesson.title,
+    titleTag: "h3",
+    testIds: {
+      grade: `lesson-grade-${lesson.slug}`,
+      topic: `lesson-topic-${lesson.slug}`,
+      title: `lesson-title-${lesson.slug}`,
+    },
+  });
+  const card = row.card;
   card.setAttribute("data-testid", `lesson-card-${lesson.slug}`);
   card.setAttribute("data-lesson-slug", lesson.slug);
   card.setAttribute("data-grade", lesson.grade);
@@ -1517,35 +1423,6 @@ function renderLessonCard(
     card.setAttribute("data-lesson-active", active ? "true" : "false");
     card.classList.toggle("shell-lesson-card-inactive", !active);
   };
-
-  const header = doc.createElement("div");
-  header.className = "shell-lesson-header";
-  const gradePill = doc.createElement("span");
-  gradePill.className = "shell-lesson-badge shell-lesson-grade";
-  gradePill.setAttribute("data-testid", `lesson-grade-${lesson.slug}`);
-  // Sprint 28.6D (Task 5): compact grade tag ("G6" rather than "Grade 6")
-  // to recover card vertical space. Presentation-only; the manifest grade
-  // metadata is unchanged. The science-domain label is retained alongside.
-  gradePill.textContent = `G${lesson.grade}`;
-  header.appendChild(gradePill);
-  const topicPill = doc.createElement("span");
-  topicPill.className = `shell-lesson-badge shell-lesson-topic shell-lesson-topic-${lesson.topic}`;
-  topicPill.setAttribute("data-testid", `lesson-topic-${lesson.slug}`);
-  topicPill.textContent = TOPIC_LABEL[lesson.topic];
-  header.appendChild(topicPill);
-
-  card.appendChild(header);
-
-  const titleRow = doc.createElement("div");
-  titleRow.className = "shell-lesson-title-row";
-
-  const title = doc.createElement("h3");
-  title.className = "shell-lesson-title";
-  title.setAttribute("data-testid", `lesson-title-${lesson.slug}`);
-  title.textContent = lesson.title;
-  titleRow.appendChild(title);
-
-  card.appendChild(titleRow);
 
   const actions = doc.createElement("div");
   actions.className = "shell-lesson-actions";
@@ -1626,33 +1503,15 @@ function renderLessonCard(
   // assignment or Classroom state (Blueprint §7). A quieter, neutral
   // action than Assign. Rendered as a real link so it is keyboard
   // reachable and its destination is a genuine navigation.
-  const previewPath = buildLessonBasePath(lesson.slug);
-  if (previewPath !== null) {
-    const preview = doc.createElement("a");
-    preview.className = "shell-lesson-preview";
-    preview.setAttribute("data-testid", `lesson-preview-${lesson.slug}`);
-    preview.href = previewPath;
-    preview.target = "_blank";
-    preview.rel = "noopener";
-    preview.textContent = "Preview";
-    preview.setAttribute(
-      "aria-label",
-      `Preview ${lesson.title} (opens in a new tab)`,
-    );
-    // Policy E cache transition: a plain click prepares the `/app/lessons/**`
-    // target before the new tab loads it (deliveryNavigation.ts). The link
-    // itself is unchanged, so modified clicks keep native behavior.
-    const view = doc.defaultView;
-    if (view !== null) attachDeliveryNewTabPreparation(preview, view);
-    actionPair.appendChild(preview);
-  }
+  const preview = buildLessonPreviewLink(doc, lesson, `lesson-preview-${lesson.slug}`);
+  if (preview !== null) actionPair.appendChild(preview);
 
   // The paired row is appended as a single unit. Assign and Preview are its
   // only members; View Summary (below) is a sibling of this pair, never a
   // child, so it is outside the pair's width calculation.
   actions.appendChild(actionPair);
 
-  card.appendChild(actions);
+  row.actions.appendChild(actions);
 
   // Sprint 28.6H.3 (Task D3/D4/D5): View Summary and Resources are both quiet
   // secondary lesson-inspection actions, so they share ONE quiet footer instead
@@ -1703,7 +1562,7 @@ function renderLessonCard(
 
   if (hasViewSummary || resources !== null) {
     const footer = doc.createElement("div");
-    footer.className = "shell-lesson-footer";
+    footer.className = "shell-lesson-footer shell-resource-row-footer";
     footer.setAttribute("data-testid", `lesson-footer-${lesson.slug}`);
     footer.appendChild(footerRow);
     if (resources !== null) footer.appendChild(resources.panel);

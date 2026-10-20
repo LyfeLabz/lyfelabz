@@ -11,6 +11,8 @@
  *    where the unit now is; it never says its resources are "shown".
  */
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController, type TeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -91,7 +93,7 @@ async function panel(units: TeacherUnit[]) {
     store: createTeacherUnitCreateAttemptStore(SCOPE),
     initialGrade: "7",
   });
-  renderTeacherUnitsPanel(host, ctl);
+  renderTeacherUnitsPanel(host, ctl, EXPANDED);
   h.calls.list[0].d.resolve({ units });
   await tick();
   return { ...h, host, ctl };
@@ -160,8 +162,8 @@ describe("B: outcomes of separate operations do not overwrite one another", () =
     await checkWith(h, [archived({ ...a, resourceIds: [R2.id] }, 3), archived({ ...b, resourceIds: [R2.id] }, 3)]);
     const order: Array<[number, TeacherUnit]> = reversed ? [[1, b], [0, a]] : [[0, a], [1, b]];
     for (const [i, u] of order) await confirmRemove(h, i, u, [R2.id], 2);
-    const msgA = `Removed "${R1.title}" from "Plants". "Plants" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`;
-    const msgB = `Removed "${R1.title}" from "Water". "Water" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`;
+    const msgA = `Removed "${R1.title}" from "Plants". "Plants" is archived. This unit is archived, so it isn't in the list. Choose View archived units in Settings > Units to see its resources in the list.`;
+    const msgB = `Removed "${R1.title}" from "Water". "Water" is archived. This unit is archived, so it isn't in the list. Choose View archived units in Settings > Units to see its resources in the list.`;
     expect(notices(h, msgA)).toHaveLength(1);
     expect(notices(h, msgB)).toHaveLength(1);
     // The live region carries the latest; neither outcome is lost.
@@ -257,7 +259,7 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
     expect(moved[0].textContent).toContain(
-      "This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.",
+      "This unit is archived, so it isn't in the list. Choose View archived units in Settings > Units to see its resources in the list.",
     );
     expect(moved[0].textContent).toContain(`"Plants"`);
   });

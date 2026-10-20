@@ -2,7 +2,10 @@
 // permanent left-side panel defined in TEACHER_EXPERIENCE_PHILOSOPHY.md
 // §3.3. Sprint 28.6D performs the teacher information-architecture
 // transition (Blueprint §4): the panel now contains, in order, LYFELABZ,
-// Classes, Curriculum, Settings. Classes is the operational home and the
+// Classes, Curriculum, Settings. Teacher Units UX Milestone 1 adds My Units
+// between Curriculum and Settings, rendered only when the shell holds an
+// enabled Teacher Units seam (never in a closed release, so the closed
+// navigation is unchanged). Classes is the operational home and the
 // default landing surface; the LYFELABZ brand item lands on Classes.
 // Present Mode leaves the primary navigation - its former "show students
 // the lesson" purpose is met faithfully by lesson Preview - and the
@@ -16,6 +19,7 @@
 export type WorkspaceSurfaceKey =
   | "curriculum"
   | "classes"
+  | "units"
   | "settings";
 
 export type NavigationItemKey = "lyfelabz" | WorkspaceSurfaceKey;
@@ -43,6 +47,8 @@ const NAV_ICON_PATHS: Readonly<Record<WorkspaceSurfaceKey, string>> =
   Object.freeze({
     curriculum:
       "M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5V4.5Z M4 19.5A2.5 2.5 0 0 1 6.5 17H20",
+    units:
+      "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12 M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17",
     classes:
       "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
     settings:
@@ -105,9 +111,34 @@ export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = Object.freeze([
   }),
 ]);
 
+// Teacher Units UX Milestone 1: the My Units item. Not part of
+// NAVIGATION_ITEMS, which stays the closed-release navigation; it is
+// inserted after Curriculum only when `unitsEnabled` is true.
+export const MY_UNITS_NAVIGATION_ITEM: NavigationItem = Object.freeze({
+  key: "units" as const,
+  label: "My Units",
+  available: true,
+  targetSurface: "units" as const,
+  variant: "item" as const,
+});
+
+export function navigationItemsFor(
+  unitsEnabled: boolean,
+): ReadonlyArray<NavigationItem> {
+  if (!unitsEnabled) return NAVIGATION_ITEMS;
+  const items: NavigationItem[] = [];
+  for (const item of NAVIGATION_ITEMS) {
+    items.push(item);
+    if (item.key === "curriculum") items.push(MY_UNITS_NAVIGATION_ITEM);
+  }
+  return Object.freeze(items);
+}
+
 export type NavigationRenderInput = {
   readonly activeKey: WorkspaceSurfaceKey;
   readonly onSelect: (surface: WorkspaceSurfaceKey) => void;
+  // True only when the shell holds an enabled Teacher Units seam.
+  readonly unitsEnabled?: boolean;
 };
 
 export function renderNavigation(
@@ -126,7 +157,7 @@ export function renderNavigation(
   const list = doc.createElement("ul");
   list.className = "shell-nav-list";
 
-  for (const item of NAVIGATION_ITEMS) {
+  for (const item of navigationItemsFor(input.unitsEnabled === true)) {
     const li = doc.createElement("li");
     li.className = "shell-nav-item";
     const btn = doc.createElement("button");

@@ -47,6 +47,7 @@ import {
 } from "./firebase";
 import { getEmulatorEndpoints } from "./firebase-config";
 import { dispatch } from "./router/router";
+import { parseShellHash, type ShellHistoryState } from "./shell/navigationHistory";
 import { createRouteTable } from "./router/routes";
 import { renderLoadingSurface } from "./router/surfaces";
 import { createCurriculumScrollGuard } from "./shell/curriculumScrollGuard";
@@ -243,6 +244,14 @@ async function run(): Promise<void> {
   // storage per PDR-027 §9) and preserved across the sign-in / onboarding
   // round trip through the browser URL, then consumed when the caller
   // resolves to an active student. Null on a normal (non-deep-link) load.
+  // Teacher Units UX Milestone 1A: the teacher shell destination a fresh
+  // load asked for (`#units`, `#curriculum/investigations`, ...), captured
+  // once here because every later dispatch rewrites the URL. Held in memory
+  // only and consumed by the first teacher shell mount, which validates it.
+  let pendingShellState: ShellHistoryState | null =
+    typeof window !== "undefined" && window.location
+      ? parseShellHash(window.location.hash)
+      : null;
   let pendingDeepLinkAssignmentId: string | null =
     typeof window !== "undefined" && window.location
       ? parseDeepLinkAssignmentId(window.location.pathname)
@@ -1191,6 +1200,11 @@ async function run(): Promise<void> {
     assignmentSummary: () => assignmentSummary,
     lessonSummary: () => lessonSummary,
     teacherUnits: () => teacherUnits,
+    consumeInitialShellState: () => {
+      const state = pendingShellState;
+      pendingShellState = null;
+      return state;
+    },
     studentAssignmentsList: () => studentAssignmentsList,
     studentResultsList: () => studentResultsList,
     createClass: () => createClass,

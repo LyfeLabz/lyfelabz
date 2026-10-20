@@ -11,6 +11,8 @@
  * read the rendered live region and card alerts.
  */
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController, type TeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -84,7 +86,7 @@ async function panel(units: TeacherUnit[]) {
     store: createTeacherUnitCreateAttemptStore(SCOPE),
     initialGrade: "7",
   });
-  renderTeacherUnitsPanel(host, ctl);
+  renderTeacherUnitsPanel(host, ctl, EXPANDED);
   h.calls.list[0].resolve({ units });
   await tick();
   return { ...h, host, ctl };
@@ -184,7 +186,7 @@ describe("Remove", () => {
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R2.id], revision: 2 }, noop: false });
     await tick();
     expect(status(h.host)).toBe(
-      `Removed "${R1.title}" from "${a.title}". Your change was saved. "${R1.title}" is in "${a.title}" again after this unit changed. "${a.title}" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`,
+      `Removed "${R1.title}" from "${a.title}". Your change was saved. "${R1.title}" is in "${a.title}" again after this unit changed. "${a.title}" is archived. This unit is archived, so it isn't in the list. Choose View archived units in Settings > Units to see its resources in the list.`,
     );
     expect(status(h.host)).toContain("Removed"); // Historical committed removal, followed by current re-add evidence.
   });
@@ -197,7 +199,7 @@ describe("Remove", () => {
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [], revision: 2 }, noop: true });
     await tick();
     expect(status(h.host)).toBe(
-      `No change was needed when this request was checked. "${R1.title}" is in "${a.title}" after this unit changed. "${a.title}" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`,
+      `No change was needed when this request was checked. "${R1.title}" is in "${a.title}" after this unit changed. "${a.title}" is archived. This unit is archived, so it isn't in the list. Choose View archived units in Settings > Units to see its resources in the list.`,
     );
   });
 
@@ -294,7 +296,7 @@ describe("Add", () => {
     await checkWith(h, [{ ...a, resourceIds: [R1.id], status: "archived", archivedAtMillis: 5, revision: 3 }]);
     h.calls.setResources[0].resolve({ unit: { ...a, resourceIds: [R1.id], revision: 2 }, noop: false });
     await tick();
-    expect(status(h.host)).toBe(`Added 1 resource to "${a.title}". "${a.title}" is archived. This unit is archived, so it isn't in the list. Turn on Show archived units to see its resources in the list.`);
+    expect(status(h.host)).toBe(`Added 1 resource to "${a.title}". "${a.title}" is archived. This unit is archived, so it isn't in the list. Choose View archived units in Settings > Units to see its resources in the list.`);
   });
 });
 

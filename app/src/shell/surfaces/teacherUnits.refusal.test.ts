@@ -7,6 +7,8 @@
  * and whether Restore is the next step, follows the current state.
  */
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController, type TeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -87,7 +89,7 @@ async function panel(units: TeacherUnit[]) {
     store: createTeacherUnitCreateAttemptStore(SCOPE),
     initialGrade: "7",
   });
-  renderTeacherUnitsPanel(host, ctl);
+  renderTeacherUnitsPanel(host, ctl, EXPANDED);
   h.calls.list[0].d.resolve({ units });
   await tick();
   return { ...h, host, ctl };

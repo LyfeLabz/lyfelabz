@@ -25,7 +25,6 @@
 import {
   getResourcesByType,
   FORMAL_RESOURCE_LABEL,
-  TOPIC_LABEL,
   type FormalResourceType,
   type LessonGrade,
   type LessonTopic,
@@ -36,6 +35,7 @@ import {
   type CurriculumResourceTab,
   type CurriculumTab,
 } from "../navigationHistory";
+import { buildResourceCard, buildResourceOpenLink } from "./resourceCard";
 
 const TAB_RESOURCE_TYPE: Readonly<
   Record<CurriculumResourceTab, FormalResourceType>
@@ -228,8 +228,10 @@ export function createCurriculumTabs(input: {
   };
 }
 
-// A formal resource card: the lesson card's grade/topic header and title
-// language, with a single Open action. No assignment controls, no summary.
+// A formal resource card: the shared full-width resource row
+// (resourceCard.ts) with the lesson card's grade/topic badges and title
+// language, its owning lesson, and a single Open action. No assignment
+// controls, no summary.
 function renderResourceCard(
   doc: Document,
   entry: SurfaceableUnitResource,
@@ -237,62 +239,40 @@ function renderResourceCard(
   const { resource, unit } = entry;
   const typeLabel = FORMAL_RESOURCE_LABEL[resource.type as FormalResourceType];
 
-  const card = doc.createElement("article");
-  card.className = "shell-card shell-resource-card";
+  const row = buildResourceCard(doc, {
+    className: "shell-card shell-resource-card",
+    grade: unit.grade,
+    topic: unit.topic,
+    typeLabel,
+    title: resource.label,
+    titleTag: "h3",
+    testIds: {
+      grade: "resource-grade",
+      topic: "resource-topic",
+      type: "resource-type",
+      title: "resource-title",
+    },
+  });
+  const card = row.card;
   card.setAttribute("data-testid", `resource-card-${resource.filename}`);
   card.setAttribute("data-resource-type", resource.type);
   card.setAttribute("data-grade", unit.grade);
   card.setAttribute("data-topic", unit.topic);
   card.setAttribute("role", "listitem");
 
-  const header = doc.createElement("div");
-  header.className = "shell-lesson-header";
-  const gradePill = doc.createElement("span");
-  gradePill.className = "shell-lesson-badge shell-lesson-grade";
-  gradePill.setAttribute("data-testid", "resource-grade");
-  gradePill.textContent = `G${unit.grade}`;
-  header.appendChild(gradePill);
-  const topicPill = doc.createElement("span");
-  topicPill.className = `shell-lesson-badge shell-lesson-topic shell-lesson-topic-${unit.topic}`;
-  topicPill.setAttribute("data-testid", "resource-topic");
-  topicPill.textContent = TOPIC_LABEL[unit.topic];
-  header.appendChild(topicPill);
-  card.appendChild(header);
-
-  const type = doc.createElement("span");
-  type.className = "shell-lesson-resource-type";
-  type.setAttribute("data-testid", "resource-type");
-  type.textContent = typeLabel;
-  card.appendChild(type);
-
-  const title = doc.createElement("h3");
-  title.className = "shell-lesson-title";
-  title.setAttribute("data-testid", "resource-title");
-  title.textContent = resource.label;
-  card.appendChild(title);
-
-  const footer = doc.createElement("div");
-  footer.className = "shell-resource-card-footer";
-
   const lesson = doc.createElement("p");
   lesson.className = "shell-resource-card-lesson";
   lesson.setAttribute("data-testid", "resource-lesson");
   lesson.textContent = `Lesson: ${unit.title}`;
-  footer.appendChild(lesson);
+  row.main.appendChild(lesson);
 
-  const open = doc.createElement("a");
-  open.className = "shell-lesson-resource-open";
-  open.setAttribute("data-testid", "resource-open");
-  open.href = resource.href;
-  open.target = "_blank";
-  open.rel = "noopener";
-  open.textContent = "Open";
-  open.setAttribute(
-    "aria-label",
-    `Open ${typeLabel.toLowerCase()}: ${resource.label} (opens in a new tab)`,
+  row.actions.appendChild(
+    buildResourceOpenLink(
+      doc,
+      resource.href,
+      `Open ${typeLabel.toLowerCase()}: ${resource.label} (opens in a new tab)`,
+      "resource-open",
+    ),
   );
-  footer.appendChild(open);
-
-  card.appendChild(footer);
   return card;
 }

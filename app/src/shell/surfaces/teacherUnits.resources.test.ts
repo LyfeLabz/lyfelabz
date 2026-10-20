@@ -8,6 +8,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -92,7 +94,7 @@ async function panel(initial: TeacherUnit[], grade: TeacherUnitGrade = "7") {
     store: createTeacherUnitCreateAttemptStore(SCOPE, () => memoryStorage()),
     initialGrade: grade,
   });
-  renderTeacherUnitsPanel(host, ctl);
+  renderTeacherUnitsPanel(host, ctl, EXPANDED);
   await flush();
   return { host, ctl, c, units };
 }
@@ -371,7 +373,8 @@ describe("styles and copy", () => {
       const notice = q(host, `units-card-${a.unitId}`)?.querySelector(".shell-units-notice") as HTMLElement;
       expect(notice.hidden).toBe(true);
       expect(getComputedStyle(notice).display).toBe("none");
-      expect(getComputedStyle(rowsOf(host, a.unitId)[0]).display).toBe("flex");
+      // Milestone 1: each row holds the shared full-width resource card.
+      expect(getComputedStyle(rowsOf(host, a.unitId)[0].querySelector(".shell-resource-row") as HTMLElement).display).toBe("grid");
     } finally {
       style.remove();
     }
@@ -531,7 +534,7 @@ describe("status messages (P2)", () => {
       store: createTeacherUnitCreateAttemptStore(SCOPE, ((st) => () => st)(memoryStorage())),
       initialGrade: "7",
     });
-    renderTeacherUnitsPanel(host, ctl);
+    renderTeacherUnitsPanel(host, ctl, EXPANDED);
     await flush();
     const d = deferred<{ unit: TeacherUnit; noop: boolean }>();
     c.setResources.mockReturnValueOnce(d.promise);

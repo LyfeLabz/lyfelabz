@@ -1,5 +1,7 @@
 /** @jest-environment jsdom */
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController, type TeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -85,7 +87,7 @@ async function panel(units: TeacherUnit[], ctx: () => TeacherUnitCreateContext |
     store: createTeacherUnitCreateAttemptStore(SCOPE),
     initialGrade: "7",
   });
-  renderTeacherUnitsPanel(host, ctl);
+  renderTeacherUnitsPanel(host, ctl, EXPANDED);
   h.calls.list[0].d.resolve({ units });
   await tick();
   return { ...h, host, ctl };
@@ -342,7 +344,7 @@ describe("internal falsification: presentation acceptance and live-region equali
     (q(h.host, `units-resources-add-${a.unitId}`) as HTMLButtonElement).click();
     const picker = q(h.host, `units-picker-${a.unitId}`)!;
     await refreshWith(h, [{ ...a, title: "New picker name", revision: 2 }]);
-    expect(picker.querySelector('h5')?.textContent).toContain("New picker name");
+    expect(picker.querySelector('h4')?.textContent).toContain("New picker name");
   });
   test.each([false, true])("two simultaneous confirmations remain independent (reverse=%s)", async reverse => {
     const a = unit(); const b = unit({ title: "Other" }); const h = await panel([a, b]);

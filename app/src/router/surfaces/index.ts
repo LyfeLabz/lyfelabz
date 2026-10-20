@@ -1,5 +1,6 @@
 import type { RouteSurface } from "../router";
 import type { TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
+import type { ShellHistoryState } from "../../shell/navigationHistory";
 import type { ListClasses } from "../../classes/listClasses";
 import type {
   UpdateTeacherClassOrder,
@@ -188,6 +189,9 @@ export type SurfaceDeps = {
   readonly lessonSummary?: () => LessonSummaryCallable | null;
   // U2.2 My Units seam; null unless TEACHER_UNITS_GATE_OPEN (index.ts).
   readonly teacherUnits?: () => TeacherUnitsSurfaceSeam | null;
+  // Teacher Units UX Milestone 1A: one-shot fresh-load shell destination
+  // (the startup URL hash, parsed); the first teacher shell mount takes it.
+  readonly consumeInitialShellState?: () => ShellHistoryState | null;
   // Sprint 17 Slice 4: certified `assignmentsListForStudent` callable
   // seam consumed by the activeStudent surface. Always supplied through
   // a getter so per-session state can rebind across reruns without
@@ -1098,6 +1102,7 @@ export const makeActiveTeacherSurface =
     const setAccommodation =
       deps.setAccommodation !== undefined ? deps.setAccommodation() : null;
     mountTeacherShell(session, mount, {
+      initialState: deps.consumeInitialShellState?.() ?? null,
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
       onLaunchPresentMode: deps.onLaunchPresentMode,

@@ -30,13 +30,14 @@ import {
   type CurriculumHistoryController,
   type SettingsHistoryController,
   type ShellHistoryState,
+  type UnitsHistoryController,
   parseShellHistoryState,
   hashForState,
-  hashForSurface,
   urlWithHash,
 } from "./navigationHistory";
 import { dismissOpenModals } from "./openModals";
 import { mountWorkspaceOutlet } from "./surfaces/workspace";
+import { teacherUnitsSurfaceEnabled } from "./surfaces/teacherUnitsPanel";
 import type { SnapshotPreview } from "./surfaces/snapshot";
 import type {
   ClassManagementIntent,
@@ -117,6 +118,11 @@ export type ShellDeps = {
   readonly lessonSummary?: LessonSummaryCallable | null;
   // U2.2 My Units seam; null unless the entry-point gate is open.
   readonly teacherUnits?: TeacherUnitsSurfaceSeam | null;
+  // Teacher Units UX Milestone 1A: the destination a fresh page load asked
+  // for (its URL hash, captured once by the entry point and parsed with
+  // `parseShellHash`). A request only: it is validated below, and anything
+  // unavailable falls back without rendering the requested surface first.
+  readonly initialState?: ShellHistoryState | null;
   // Sprint 20 internal beta: injected create-class callable seam.
   readonly createClass?: CreateClass | null;
   // Sprint 24B Phase 2: injected dependencies for the primary Import
@@ -190,7 +196,9 @@ export function mountTeacherShell(
   body.setAttribute("data-testid", "shell-body");
 
   // Browser Back/Forward support: the default landing surface is
-  // deliberately never read from `window.location` on mount. `dispatch`
+  // deliberately never read from `window.location` on mount. (Milestone 1A:
+  // a fresh-load deep link arrives instead as `deps.initialState`, captured
+  // by the entry point before any dispatch rewrote the URL; see below.) `dispatch`
   // (router.ts) issues its own `replaceState(null, "", path)` immediately
   // after this function returns, using a bare session-kind pathname with
   // no hash - it would silently discard any hash-derived initial surface
@@ -270,6 +278,14 @@ export function mountTeacherShell(
   // `classesDetailController`).
   let curriculumController: CurriculumHistoryController | null = null;
   let settingsController: SettingsHistoryController | null = null;
+  // Teacher Units UX Milestone 1: My Units is a top-level surface only when
+  // the shell holds an enabled Teacher Units seam (never in a closed
+  // release). Otherwise "units" is refused as a destination everywhere.
+  const unitsEnabled = teacherUnitsSurfaceEnabled(deps.teacherUnits ?? null);
+  let unitsController: UnitsHistoryController | null = null;
+  // One-shot: the next My Units mount opens on its archived view (Settings >
+  // Units, or a restored archived-view history entry).
+  let archivedUnitsIntent = false;
 
   // Browser Back/Forward: the single push/replace path for every history
   // state, so each entry's URL is derived by the one mapping in
@@ -412,6 +428,36 @@ export function mountTeacherShell(
           },
         }
       : null,
+    // Browser Back/Forward: My Units' archived view.
+    unitsHistory: win && unitsEnabled
+      ? {
+          push: pushShellState,
+          replace: replaceShellState,
+          registerController: (controller: UnitsHistoryController): void => {
+            unitsController = controller;
+          },
+        }
+      : null,
+    consumeArchivedUnitsIntent: (): boolean => {
+      const intent = archivedUnitsIntent;
+      archivedUnitsIntent = false;
+      return intent;
+    },
+    // Settings > Units: open My Units on its archived view. One history
+    // entry (the archived view), like any other real navigation.
+    openArchivedUnits: unitsEnabled
+      ? (): void => {
+          if (activeKey === "units" && !showingDetail) {
+            if (unitsController?.restoreArchived(true) === true) {
+              pushShellState({ kind: "shell-units-archived", surface: "units" });
+            }
+            return;
+          }
+          archivedUnitsIntent = true;
+          navigateTo("units", { fromPopstate: true });
+          pushShellState({ kind: "shell-units-archived", surface: "units" });
+        }
+      : null,
     // Browser Back/Forward: Settings' nested "Manage connection" page.
     settingsHistory: win
       ? {
@@ -465,6 +511,8 @@ export function mountTeacherShell(
     next: WorkspaceSurfaceKey,
     options?: { readonly fromPopstate?: boolean },
   ): void => {
+    // Fails closed: My Units is never a destination unless it is enabled.
+    if (next === "units" && !unitsEnabled) return;
     if (next === activeKey && !showingDetail) {
       // Selecting Curriculum while already in Curriculum (on a resource tab
       // or in Lesson Summary) returns to its landing view, Lessons. That is a
@@ -477,6 +525,15 @@ export function mountTeacherShell(
         curriculumController?.restoreTop() === true
       ) {
         pushShellState({ kind: "shell-surface", surface: "curriculum" });
+      }
+      // Selecting My Units from its archived view returns to the active
+      // units, the same way.
+      if (
+        next === "units" &&
+        !options?.fromPopstate &&
+        unitsController?.restoreArchived(false) === true
+      ) {
+        pushShellState({ kind: "shell-surface", surface: "units" });
       }
       return;
     }
@@ -492,6 +549,7 @@ export function mountTeacherShell(
     currentWorkspaceClassId = null;
     curriculumController = null;
     settingsController = null;
+    unitsController = null;
     activeKey = next;
     outletHost.textContent = "";
     mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
@@ -509,6 +567,7 @@ export function mountTeacherShell(
     navMount.textContent = "";
     renderNavigation(navMount, {
       activeKey,
+      unitsEnabled,
       onSelect: (next) => {
         navigateTo(next);
       },
@@ -524,8 +583,61 @@ export function mountTeacherShell(
   // body, footer) because the footer is still appended after the body.
   mount.appendChild(body);
 
+  // Milestone 1A: honor a fresh-load deep link, validated before the first
+  // render so a refused destination never paints. My Units (and its archived
+  // view) pass only the same `unitsEnabled` gate as navigation; otherwise the
+  // request falls back to the default landing, except the legacy Curriculum
+  // My Units entry, which keeps its fail-closed meaning (Curriculum).
+  let initialState: ShellHistoryState = { kind: "shell-surface", surface: "classes" };
+  const requested = deps.initialState ?? null;
+  if (requested !== null) {
+    switch (requested.kind) {
+      case "shell-surface":
+        if (requested.surface !== "units" || unitsEnabled) initialState = requested;
+        break;
+      case "shell-units-archived":
+        if (unitsEnabled) {
+          initialState = requested;
+          archivedUnitsIntent = true;
+        }
+        break;
+      case "shell-curriculum-units":
+        initialState = { kind: "shell-surface", surface: unitsEnabled ? "units" : "curriculum" };
+        break;
+      case "shell-lesson-summary":
+      case "shell-curriculum-tab":
+      case "shell-settings-integrations":
+        initialState = requested;
+        break;
+      default:
+        // Class-scoped entries need the asynchronously loaded class list;
+        // they land on Classes (parseShellHash never produces them).
+        initialState = { kind: "shell-surface", surface: "classes" };
+    }
+  }
+  activeKey = initialState.surface;
+
   renderNav();
   mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
+
+  // Nested destinations restore through the controllers the surface just
+  // registered; one that cannot be restored stays on its surface. (Assigned
+  // in callbacks during the mount, so widen past TypeScript's narrowing.)
+  const mountedCurriculum = curriculumController as CurriculumHistoryController | null;
+  const mountedSettings = settingsController as SettingsHistoryController | null;
+  if (initialState.kind === "shell-lesson-summary") {
+    if (mountedCurriculum?.restoreLessonSummary(initialState.lessonSlug) !== true) {
+      initialState = { kind: "shell-surface", surface: "curriculum" };
+    }
+  } else if (initialState.kind === "shell-curriculum-tab") {
+    if (mountedCurriculum?.restoreTab(initialState.tab) !== true) {
+      initialState = { kind: "shell-surface", surface: "curriculum" };
+    }
+  } else if (initialState.kind === "shell-settings-integrations") {
+    if (mountedSettings?.restoreIntegrations() !== true) {
+      initialState = { kind: "shell-surface", surface: "settings" };
+    }
+  }
 
   // Browser Back/Forward support: canonicalize the URL/history-state for
   // the surface actually chosen above (whether that came from a restored
@@ -534,14 +646,10 @@ export function mountTeacherShell(
   // otherwise every shell mount (including a session `rerun`) would grow
   // the history stack with a redundant entry.
   if (win) {
-    const initialState: ShellHistoryState = {
-      kind: "shell-surface",
-      surface: activeKey,
-    };
     win.history.replaceState(
       initialState,
       "",
-      urlWithHash(win.location.pathname, hashForSurface(activeKey)),
+      urlWithHash(win.location.pathname, hashForState(initialState)),
     );
   }
 
@@ -636,6 +744,8 @@ export function mountTeacherShell(
             classesDetailController?.restoreToTopList();
           } else if (parsed.surface === "curriculum") {
             curriculumController?.restoreTop();
+          } else if (parsed.surface === "units") {
+            unitsController?.restoreArchived(false);
           } else {
             settingsController?.restoreRoot();
           }
@@ -676,8 +786,23 @@ export function mountTeacherShell(
           curriculumController?.restoreTab(parsed.tab);
           return;
         case "shell-curriculum-units":
-          navigateTo("curriculum", { fromPopstate: true });
-          curriculumController?.restoreUnits();
+          // Legacy entry from when My Units was a Curriculum tab: My Units
+          // when enabled, else Curriculum (as before, when it failed closed).
+          if (unitsEnabled) {
+            navigateTo("units", { fromPopstate: true });
+            unitsController?.restoreArchived(false);
+          } else {
+            navigateTo("curriculum", { fromPopstate: true });
+          }
+          return;
+        case "shell-units-archived":
+          if (!unitsEnabled) return;
+          if (activeKey === "units" && !showingDetail && unitsController !== null) {
+            unitsController.restoreArchived(true);
+          } else {
+            archivedUnitsIntent = true;
+            navigateTo("units", { fromPopstate: true });
+          }
           return;
         case "shell-settings-integrations":
           navigateTo("settings", { fromPopstate: true });

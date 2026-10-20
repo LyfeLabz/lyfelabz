@@ -293,19 +293,14 @@ describe("D4 - Active Assignments dashboard is styled", () => {
   });
 });
 
-describe("Curriculum density (Sprint 28.6H, Finding 6)", () => {
-  test("the grid uses an explicit 4-column layout, not auto-fill", () => {
-    // 28.6H replaced the auto-fill minmax() track (which produced 5 across at
-    // 1280) with explicit column counts (4 desktop, reflowing to 3 / 2 / 1),
-    // so card readability wins over maximum density.
+describe("Curriculum density (Teacher Units UX Milestone 1)", () => {
+  test("the catalog is a single column of full-width rows, not a tile grid", () => {
+    // Milestone 1 replaced the Sprint 28.6H 4 / 3 / 2 / 1 column grid with one
+    // compact, full-width resource card per row at every width.
     const grid = ruleBody(html, ".shell-curriculum-grid");
     expect(grid).not.toBeNull();
-    expect(grid).toMatch(/grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
-    expect(grid).not.toMatch(/auto-fill/);
-    // Reflow rules exist for narrower widths.
-    const stripped = html.replace(/\/\*[\s\S]*?\*\//g, "");
-    expect(stripped).toMatch(/repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
-    expect(stripped).toMatch(/repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+    expect(grid).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\);/);
+    expect(grid).not.toMatch(/auto-fill|repeat\(/);
   });
 });
 

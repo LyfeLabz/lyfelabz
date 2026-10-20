@@ -21,7 +21,8 @@ import type { WorkspaceSurfaceKey } from "./navigation";
 //   Curriculum                        shell-surface(curriculum)
 //   Lesson Summary (View summary)     shell-lesson-summary(lessonSlug)
 //   Curriculum resource-type tab      shell-curriculum-tab(tab)
-//   Curriculum My Units (U2.2, gated) shell-curriculum-units
+//   My Units (gated)                  shell-surface(units)
+//   My Units archived view (gated)    shell-units-archived
 //   Settings                          shell-surface(settings)
 //   Settings > Manage connection      shell-settings-integrations
 export type ClassWorkspaceSection = "assignments" | "roster" | "setup";
@@ -81,7 +82,11 @@ export type ShellHistoryState =
       readonly surface: "curriculum";
       readonly tab: CurriculumResourceTab;
     }
+  // Legacy (U2.2): My Units was a Curriculum tab. Entries created before
+  // My Units became a top-level surface still parse; the shell restores
+  // them as My Units (or leaves Curriculum showing when it is not enabled).
   | { readonly kind: "shell-curriculum-units"; readonly surface: "curriculum" }
+  | { readonly kind: "shell-units-archived"; readonly surface: "units" }
   | { readonly kind: "shell-settings-integrations"; readonly surface: "settings" };
 
 const CLASS_WORKSPACE_SECTIONS: ReadonlySet<string> = new Set([
@@ -96,6 +101,7 @@ const isNonEmptyString = (v: unknown): v is string =>
 const WORKSPACE_SURFACE_KEYS: ReadonlySet<string> = new Set([
   "classes",
   "curriculum",
+  "units",
   "settings",
 ]);
 
@@ -161,6 +167,9 @@ export function parseShellHistoryState(
   if (v.kind === "shell-curriculum-units" && v.surface === "curriculum") {
     return { kind: "shell-curriculum-units", surface: "curriculum" };
   }
+  if (v.kind === "shell-units-archived" && v.surface === "units") {
+    return { kind: "shell-units-archived", surface: "units" };
+  }
   if (v.kind === "shell-settings-integrations" && v.surface === "settings") {
     return { kind: "shell-settings-integrations", surface: "settings" };
   }
@@ -224,9 +233,42 @@ export function hashForState(state: ShellHistoryState): string {
       return `#curriculum/${state.tab}`;
     case "shell-curriculum-units":
       return "#curriculum/units";
+    case "shell-units-archived":
+      return "#units/archived";
     case "shell-settings-integrations":
       return "#settings/integrations";
   }
+}
+
+// Teacher Units UX Milestone 1A: fresh-load deep links. The strict inverse of
+// `hashForState` for the entries a fresh load can restore synchronously; a
+// class-workspace hash (whose class list loads asynchronously) restores only
+// its surface, Classes. Unknown or malformed hashes return null (the default
+// landing). The result is only a request: the shell still validates it
+// (for example My Units against its availability gate) before using it.
+export function parseShellHash(hash: string): ShellHistoryState | null {
+  const clean = hash.startsWith("#") ? hash.slice(1) : hash;
+  if (isWorkspaceSurfaceKey(clean)) return { kind: "shell-surface", surface: clean };
+  if (clean === "units/archived") return { kind: "shell-units-archived", surface: "units" };
+  if (clean === "curriculum/units") return { kind: "shell-curriculum-units", surface: "curriculum" };
+  if (clean === "settings/integrations") return { kind: "shell-settings-integrations", surface: "settings" };
+  if (clean.startsWith("classes/")) return { kind: "shell-surface", surface: "classes" };
+  if (clean.startsWith("curriculum/summary/")) {
+    let slug: string;
+    try {
+      slug = decodeURIComponent(clean.slice("curriculum/summary/".length));
+    } catch {
+      return null;
+    }
+    return slug.length > 0 && !slug.includes("/")
+      ? { kind: "shell-lesson-summary", surface: "curriculum", lessonSlug: slug }
+      : null;
+  }
+  if (clean.startsWith("curriculum/")) {
+    const tab = clean.slice("curriculum/".length);
+    return isCurriculumResourceTab(tab) ? { kind: "shell-curriculum-tab", surface: "curriculum", tab } : null;
+  }
+  return null;
 }
 
 export function parseSurfaceFromHash(hash: string): WorkspaceSurfaceKey | null {
@@ -260,8 +302,12 @@ export type CurriculumHistoryController = {
   // Select a non-Lesson resource tab (closing any open Lesson Summary);
   // false (no change) when that tab is not surfaced.
   readonly restoreTab: (tab: CurriculumResourceTab) => boolean;
-  // U2.2: show My Units; false (no change) when it is not enabled.
-  readonly restoreUnits: () => boolean;
+};
+
+export type UnitsHistoryController = {
+  // Show the archived units view (true) or the active units (false). True
+  // when anything changed.
+  readonly restoreArchived: (show: boolean) => boolean;
 };
 
 export type SettingsHistoryController = {

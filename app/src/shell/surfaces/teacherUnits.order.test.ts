@@ -9,6 +9,8 @@
  * archived and retired units.
  */
 import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+// These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
+const EXPANDED = { unitsInitiallyExpanded: true } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -92,7 +94,7 @@ async function panel(initial: TeacherUnit[], grade: TeacherUnitGrade = "7") {
     store: createTeacherUnitCreateAttemptStore(SCOPE, () => memoryStorage()),
     initialGrade: grade,
   });
-  renderTeacherUnitsPanel(host, ctl);
+  renderTeacherUnitsPanel(host, ctl, EXPANDED);
   await flush();
   return { host, ctl, c, units };
 }

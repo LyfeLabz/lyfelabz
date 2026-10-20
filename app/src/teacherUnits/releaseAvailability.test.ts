@@ -6,8 +6,10 @@ import { teacherUnitsReleaseBoundary } from "./releaseBoundary";
 import { createTeacherUnitsController, createTeacherUnitsSurfaceSeam } from "./unitsController";
 import { createTeacherUnitCreateAttemptStore } from "./createAttemptStore";
 import { createFirebaseTeacherUnitsCallables } from "./wire";
-import { renderTeacherUnitsPanel } from "../shell/surfaces/teacherUnitsPanel";
+import { renderTeacherUnitsPanel, teacherUnitsSurfaceEnabled } from "../shell/surfaces/teacherUnitsPanel";
 import { renderCurriculumSurface } from "../shell/surfaces/curriculum";
+import { renderMyUnitsSurface } from "../shell/surfaces/myUnits";
+import { mountTeacherShell } from "../shell/shell";
 import type { Session } from "../session/types";
 
 // These test the real closed module, rather than the historical enabled U2 fixture.
@@ -33,14 +35,40 @@ test("all alternate exported constructors refuse before dependency, DOM or stora
   expect(() => createTeacherUnitCreateAttemptStore(dependency as never)).toThrow("unavailable");
   expect(() => renderTeacherUnitsPanel(dependency as never, dependency as never)).toThrow("unavailable");
 });
-test("injected seam cannot add My Units to closed Curriculum", () => {
-  const mount = document.createElement("div");
+test("injected seam cannot add My Units to a closed release", () => {
   const createController = jest.fn();
+  const seam = { createController };
   const session: Extract<Session, { kind: "activeTeacher" }> = Object.freeze({
     kind: "activeTeacher", uid: "teacher", schoolId: "school", displayName: "Teacher",
   });
-  renderCurriculumSurface(mount, session, { teacherUnits:{ createController }, listClasses:jest.fn().mockResolvedValue([]) });
-  expect(mount.querySelector('[data-testid="curriculum-view-switch"]')).toBeNull();
-  expect(mount.textContent).not.toContain("My Units");
+  // The shared surface gate stays closed even with a seam.
+  expect(teacherUnitsSurfaceEnabled(seam)).toBe(false);
+  // Curriculum has no My Units switch of any kind.
+  const curriculum = document.createElement("div");
+  renderCurriculumSurface(curriculum, session, { listClasses: jest.fn().mockResolvedValue([]) });
+  expect(curriculum.querySelector('[data-testid="curriculum-view-switch"]')).toBeNull();
+  expect(curriculum.textContent).not.toContain("My Units");
+  // The My Units surface renders nothing and creates no controller.
+  const units = document.createElement("div");
+  renderMyUnitsSurface(units, session, { teacherUnits: seam });
+  expect(units.childElementCount).toBe(0);
+  // The shell offers no My Units navigation and refuses it as a destination.
+  const shellMount = document.createElement("div");
+  document.body.appendChild(shellMount);
+  mountTeacherShell(session, shellMount, {
+    onSignOut: jest.fn(),
+    listClasses: jest.fn().mockResolvedValue([]),
+    onLaunchPresentMode: jest.fn(),
+    teacherUnits: seam,
+    // Milestone 1A: a fresh-load #units deep link is refused too.
+    initialState: { kind: "shell-units-archived", surface: "units" },
+  });
+  expect(shellMount.querySelector('[data-testid="workspace-outlet"]')?.getAttribute("data-active-surface")).toBe("classes");
+  expect(shellMount.querySelector('[data-testid="nav-units"]')).toBeNull();
+  expect(shellMount.textContent).not.toContain("My Units");
+  window.dispatchEvent(new PopStateEvent("popstate", { state: { kind: "shell-surface", surface: "units" } }));
+  window.dispatchEvent(new PopStateEvent("popstate", { state: { kind: "shell-units-archived", surface: "units" } }));
+  expect(shellMount.querySelector('[data-testid="workspace-outlet"]')?.getAttribute("data-active-surface")).toBe("classes");
   expect(createController).not.toHaveBeenCalled();
+  shellMount.remove();
 });

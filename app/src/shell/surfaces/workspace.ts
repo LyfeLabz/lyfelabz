@@ -32,6 +32,7 @@ import type {
   CurriculumHistoryController,
   NestedPageHistorySeam,
   SettingsHistoryController,
+  UnitsHistoryController,
 } from "../navigationHistory";
 import {
   renderCurriculumSurface,
@@ -45,6 +46,7 @@ import {
   type StudentDetailHistorySeam,
 } from "./classes";
 import { renderSettingsSurface } from "./settings";
+import { renderMyUnitsSurface } from "./myUnits";
 import type { SnapshotPreview } from "./snapshot";
 import type {
   AssignmentSummaryCallable,
@@ -188,6 +190,12 @@ export type WorkspaceDeps = {
   // and Settings' Manage connection nested pages (see navigationHistory.ts).
   readonly curriculumHistory?: NestedPageHistorySeam<CurriculumHistoryController> | null;
   readonly settingsHistory?: NestedPageHistorySeam<SettingsHistoryController> | null;
+  // Teacher Units UX Milestone 1: My Units history seam, the archived-view
+  // one-shot it consumes, and the Settings > Units opener that sets it.
+  // `openArchivedUnits` is null unless My Units is enabled.
+  readonly unitsHistory?: NestedPageHistorySeam<UnitsHistoryController> | null;
+  readonly consumeArchivedUnitsIntent?: (() => boolean) | null;
+  readonly openArchivedUnits?: (() => void) | null;
   // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned
   // student-selection intent seam (see shell.ts `classesStudentIntent`).
   // The Classes surface reads it once on mount to open Student Detail
@@ -250,7 +258,19 @@ export const WORKSPACE_SURFACES: Readonly<
         assignmentSummary: deps.assignmentSummary ?? null,
         lessonSummary: deps.lessonSummary ?? null,
         curriculumHistory: deps.curriculumHistory ?? null,
+      }),
+  }),
+  units: Object.freeze({
+    key: "units" as const,
+    render: (
+      mount: HTMLElement,
+      session: ActiveTeacher,
+      deps: WorkspaceDeps,
+    ) =>
+      renderMyUnitsSurface(mount, session, {
         teacherUnits: deps.teacherUnits ?? null,
+        unitsHistory: deps.unitsHistory ?? null,
+        consumeArchivedIntent: deps.consumeArchivedUnitsIntent ?? null,
       }),
   }),
   classes: Object.freeze({
@@ -324,6 +344,7 @@ export const WORKSPACE_SURFACES: Readonly<
         getAccommodation: deps.getAccommodation ?? null,
         setAccommodation: deps.setAccommodation ?? null,
         settingsHistory: deps.settingsHistory ?? null,
+        openArchivedUnits: deps.openArchivedUnits ?? null,
       }),
   }),
 });

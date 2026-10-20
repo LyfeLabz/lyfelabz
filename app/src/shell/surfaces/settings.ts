@@ -92,6 +92,9 @@ export type SettingsDeps = {
   // Browser Back/Forward: shell-owned seam for the nested Manage connection
   // page (see navigationHistory.ts). Absent in harnesses without history.
   readonly settingsHistory?: NestedPageHistorySeam<SettingsHistoryController> | null;
+  // Teacher Units UX Milestone 1: opens My Units on its archived view.
+  // Present only when My Units is enabled; the Units tab renders only then.
+  readonly openArchivedUnits?: (() => void) | null;
 };
 
 export function renderSettingsSurface(
@@ -110,7 +113,11 @@ export function renderSettingsSurface(
   // state is local/in-memory (no routing change, no persistence), reusing the
   // H.4 tab architecture. `pendingTabFocus` moves focus onto the selected tab
   // after a redraw so keyboard selection lands where the user expects.
-  type SettingsTab = "class-management" | "student-services";
+  // Teacher Units UX Milestone 1 adds a third category, Units, only when My
+  // Units is enabled. It holds the archived-units entry point that used to be
+  // the "Show archived units" checkbox inside My Units.
+  type SettingsTab = "class-management" | "student-services" | "units";
+  const openArchivedUnits = deps.openArchivedUnits ?? null;
   let settingsTab: SettingsTab = "class-management";
   let pendingTabFocus: SettingsTab | null = null;
 
@@ -964,6 +971,42 @@ export function renderSettingsSurface(
     return panel;
   };
 
+  const renderUnitsPanel = (): HTMLElement => {
+    const panel = doc.createElement("div");
+    panel.className = "shell-settings-panel";
+    panel.id = "settings-panel-units";
+    panel.setAttribute("data-testid", "settings-panel-units");
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("aria-labelledby", "settings-tab-units");
+
+    const section = doc.createElement("section");
+    section.className = "shell-settings-units";
+    section.setAttribute("aria-labelledby", "settings-units-archived-heading");
+    const heading = doc.createElement("h3");
+    heading.id = "settings-units-archived-heading";
+    heading.className = "shell-settings-subheading";
+    heading.textContent = "Archived units";
+    section.appendChild(heading);
+    const note = doc.createElement("p");
+    note.id = "settings-units-archived-note";
+    note.className = "shell-settings-units-note";
+    note.textContent =
+      "Archived units are hidden from My Units. View them there to see their resources or restore them.";
+    section.appendChild(note);
+    const view = doc.createElement("button");
+    view.type = "button";
+    view.className = "shell-btn";
+    view.setAttribute("data-testid", "settings-units-view-archived");
+    view.setAttribute("aria-describedby", note.id);
+    view.textContent = "View archived units";
+    view.addEventListener("click", () => {
+      openArchivedUnits?.();
+    });
+    section.appendChild(view);
+    panel.appendChild(section);
+    return panel;
+  };
+
   const drawRoot = (): void => {
     const headline = doc.createElement("h2");
     headline.id = "surface-headline";
@@ -996,10 +1039,9 @@ export function renderSettingsSurface(
     // ArrowLeft/ArrowRight (wrapping), Home, and End select the destination
     // tab and move focus onto it via the same redraw path a click uses. Panels
     // are local UI (no fetch on switch, no routing, no history entry).
-    const tabOrder: readonly SettingsTab[] = [
-      "class-management",
-      "student-services",
-    ];
+    const tabOrder: readonly SettingsTab[] = openArchivedUnits !== null
+      ? ["class-management", "student-services", "units"]
+      : ["class-management", "student-services"];
 
     const makeTab = (
       tab: SettingsTab,
@@ -1047,10 +1089,7 @@ export function renderSettingsSurface(
       return btn;
     };
 
-    const activePanelId =
-      settingsTab === "class-management"
-        ? "settings-panel-class-management"
-        : "settings-panel-student-services";
+    const activePanelId = `settings-panel-${settingsTab}`;
 
     tablist.appendChild(
       makeTab(
@@ -1068,12 +1107,17 @@ export function renderSettingsSurface(
         "Student Services",
       ),
     );
+    if (openArchivedUnits !== null) {
+      tablist.appendChild(makeTab("units", "settings-tab-units", activePanelId, "Units"));
+    }
     container.appendChild(tablist);
 
     const panel =
       settingsTab === "student-services"
         ? renderStudentServicesPanel()
-        : renderClassManagementPanel();
+        : settingsTab === "units"
+          ? renderUnitsPanel()
+          : renderClassManagementPanel();
     container.appendChild(panel);
 
     if (pendingTabFocus !== null) {

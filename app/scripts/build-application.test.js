@@ -104,10 +104,13 @@ test('actual compiled exported constructors refuse alternate and unconditional c
       import {createFirebaseTeacherUnitsCallables} from './teacherUnits/wire';
       import {renderCurriculumSurface} from './shell/surfaces/curriculum';
       import {renderTeacherUnitsPanel} from './shell/surfaces/teacherUnitsPanel';
+      import {renderMyUnitsSurface} from './shell/surfaces/myUnits';
       const deps = new Proxy({}, {get(){throw new Error('dependency touched');}});
       const mount=document.createElement('div'); document.body.appendChild(mount);
-      renderCurriculumSurface(mount, {kind:'activeTeacher',uid:'teacher',schoolId:'school',displayName:'Teacher'}, {teacherUnits:{createController(){throw new Error('injected seam touched');}},listClasses:()=>Promise.resolve([])});
-      globalThis.viewSwitch = !!mount.querySelector('[data-testid=curriculum-view-switch]');
+      const teacher={kind:'activeTeacher',uid:'teacher',schoolId:'school',displayName:'Teacher'} as const;
+      renderCurriculumSurface(mount, teacher, {listClasses:()=>Promise.resolve([])});
+      renderMyUnitsSurface(mount, teacher, {teacherUnits:{createController(){throw new Error('injected seam touched');}}});
+      globalThis.viewSwitch = !!mount.querySelector('[data-testid=curriculum-view-switch], [data-testid=units-panel]');
       globalThis.renderedText = mount.textContent;
       globalThis.results = [teacherUnitsReleaseBoundary(()=>{throw new Error('factory touched');})];
       for (const create of [()=>createTeacherUnitsController(deps as never),()=>createTeacherUnitsSurfaceSeam(deps as never),()=>createTeacherUnitCreateAttemptStore(deps as never),()=>createFirebaseTeacherUnitsCallables(deps as never),()=>renderTeacherUnitsPanel(deps as never,deps as never)]) {
@@ -124,11 +127,12 @@ test('actual compiled exported constructors refuse alternate and unconditional c
       expect(dom.window.viewSwitch).toBe(false);
       expect(dom.window.renderedText).not.toContain('My Units');
     } finally {dom.window.close();}
-    // Exact hostname attack against the real Curriculum renderer, not just a label.
+    // Exact hostname attack against the real teacher shell (its My Units
+    // navigation gate), not just a label.
     fs.writeFileSync(path.join(root,'app/src/index.ts'),`
-      import {renderCurriculumSurface} from './shell/surfaces/curriculum';
+      import {mountTeacherShell} from './shell/shell';
       const mount=document.createElement('div'); document.body.appendChild(mount);
-      renderCurriculumSurface(mount, {kind:'activeTeacher',uid:'teacher',schoolId:'school',displayName:'Teacher'}, {teacherUnits:{createController(){throw new Error('unexpected lazy construction');}},listClasses:()=>Promise.resolve([])});
+      mountTeacherShell({kind:'activeTeacher',uid:'teacher',schoolId:'school',displayName:'Teacher'}, mount, {onSignOut(){},onLaunchPresentMode(){},teacherUnits:{createController(){throw new Error('unexpected lazy construction');}},listClasses:()=>Promise.resolve([])});
     `);
     fs.writeFileSync(path.join(root,'app/src/teacherUnits/releaseAvailability.tsx'),
       'export function teacherUnitsAvailable(){return location.hostname === "app.lyfelabz.com";} export function requireTeacherUnitsAvailable(){}');
@@ -138,7 +142,7 @@ test('actual compiled exported constructors refuse alternate and unconditional c
       try {
         Object.assign(browser.window,{fetch:()=>{throw new Error('network touched');},TextEncoder,TextDecoder});
         vm.runInContext(raw.outputFiles[0].text,browser.getInternalVMContext());
-        expect(!!browser.window.document.querySelector('[data-testid=curriculum-view-switch]')).toBe(hostname==='app.lyfelabz.com');
+        expect(!!browser.window.document.querySelector('[data-testid=nav-units]')).toBe(hostname==='app.lyfelabz.com');
         expect(browser.window.document.body.textContent.includes('My Units')).toBe(hostname==='app.lyfelabz.com');
       } finally {browser.window.close();}
     }

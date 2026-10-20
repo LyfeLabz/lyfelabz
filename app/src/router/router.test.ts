@@ -307,6 +307,7 @@ describe("dispatch — renders the correct surface into the mount", () => {
   // pins the fix: dispatch must preserve whatever `history.state` already
   // is, never force it back to null.
   test("preserves an existing history.state instead of forcing it to null", () => {
+    window.history.replaceState(null, "", "/app/teacher");
     const mount = mkMount();
     const hist = fakeHistory();
     // Simulate a surface having already written richer state via
@@ -332,11 +333,34 @@ describe("dispatch — renders the correct surface into the mount", () => {
     );
 
     expect(hist.calls).toHaveLength(1);
-    expect(hist.calls[0].url).toBe("/app/teacher");
+    // Milestone 1A: the real teacher shell mounted by this route table writes
+    // its own `#classes`; dispatch keeps that hash with the state.
+    expect(hist.calls[0].url).toBe("/app/teacher#classes");
     expect(hist.calls[0].state).toEqual({
       kind: "shell-surface",
       surface: "classes",
     });
+  });
+
+  // Teacher Units UX Milestone 1A: the teacher shell's hash survives the
+  // trailing canonicalization, so a refresh reopens the same destination;
+  // no other session kind (and no stateless dispatch) keeps a hash.
+  test("keeps the current hash only for an active teacher with shell state", () => {
+    const teacherSession = freeze<Session>({ kind: "activeTeacher", uid: "u1", schoolId: "s1", displayName: "Ada" });
+    const table = { ...createSignOutOnlyRouteTable(noop), activeTeacher: () => undefined };
+    window.history.replaceState(null, "", "/app/teacher#units");
+    const withState = fakeHistory();
+    withState.state = { kind: "shell-surface", surface: "units" };
+    dispatch(teacherSession, table, mkMount(), withState);
+    expect(withState.calls[0].url).toBe("/app/teacher#units");
+    const noState = fakeHistory();
+    dispatch(teacherSession, table, mkMount(), noState);
+    expect(noState.calls[0].url).toBe("/app/teacher");
+    const signedOut = fakeHistory();
+    signedOut.state = { kind: "shell-surface", surface: "units" };
+    dispatch(freeze<Session>({ kind: "unauthenticated" }), createSignOutOnlyRouteTable(noop), mkMount(), signedOut);
+    expect(signedOut.calls[0].url).not.toContain("#");
+    window.history.replaceState(null, "", "/app/teacher");
   });
 
   test("still writes null when there was no prior history.state", () => {
