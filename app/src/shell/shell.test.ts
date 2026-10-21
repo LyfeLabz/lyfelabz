@@ -2547,21 +2547,41 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(stripped).toMatch(/\.shell-lesson-card-inactive\s*\{[^}]*background\s*:/);
   });
 
-  test("Update Assignment is a green-OUTLINE action (transparent fill, green border + text), not solid/gray/disabled", () => {
+  test("Manage is a muted-green OUTLINE action (transparent fill, green border + text), not solid/gray/disabled (Teacher Units UX Milestone 1)", () => {
     const assignedMatch = shellHtml.match(
       /\.shell-lesson-assign\.shell-lesson-assigned-action\s*\{([^}]+)\}/,
     );
     expect(assignedMatch).not.toBeNull();
     const body = assignedMatch![1];
     expect(body).toMatch(/background\s*:\s*transparent/);
-    expect(body).toMatch(/color\s*:\s*#1f6b3d/);
-    expect(body).toMatch(/border-color\s*:\s*#1f6b3d/);
+    expect(body).toMatch(/color\s*:\s*#356b52/);
+    expect(body).toMatch(/border-color\s*:\s*#356b52/);
     expect(body).toMatch(/box-shadow\s*:\s*none/);
     const baseMatch = shellHtml.match(/\n\s*\.shell-lesson-assign\s*\{([^}]+)\}/);
-    expect(baseMatch![1]).toMatch(/background\s*:\s*#1f6b3d/);
+    expect(baseMatch![1]).toMatch(/background\s*:\s*#356b52/);
+    expect(baseMatch![1]).toMatch(/color\s*:\s*#fff/);
     expect(shellHtml).toMatch(
-      /\.shell-lesson-assign\.shell-lesson-assigned-action:hover[^{]*\{[^}]*background\s*:\s*rgba\(31,\s*107,\s*61/,
+      /\.shell-lesson-assign\.shell-lesson-assigned-action:hover[^{]*\{[^}]*background\s*:\s*rgba\(53,\s*107,\s*82/,
     );
+    // Assign is flat: a later Curriculum-only rule removes the shared
+    // primary micro shadow; pressed and disabled states are explicit.
+    const stripped = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(stripped).toMatch(/\n\s*\.shell-lesson-assign\s*\{\s*box-shadow:\s*none;\s*\}/);
+    expect(stripped).toMatch(/\.shell-lesson-assign:active\s*\{[^}]*background:\s*#24493a/);
+    expect(stripped).toMatch(/\.shell-lesson-assign:disabled,\s*\.shell-lesson-assign\[aria-disabled="true"\]\s*\{[^}]*cursor:\s*not-allowed/);
+    // WCAG AA: white on the fill and the green on white both clear 4.5:1.
+    const lum = (hex: string): number => {
+      const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * c[0]! + 0.7152 * c[1]! + 0.0722 * c[2]!;
+    };
+    const ratio = (a: string, b: string): number => {
+      const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+      return (hi! + 0.05) / (lo! + 0.05);
+    };
+    for (const green of ["#356b52", "#2c5a45", "#24493a"]) {
+      expect(ratio("#ffffff", green)).toBeGreaterThanOrEqual(4.5);
+    }
     expect(shellHtml).toMatch(
       /\.shell-lesson-assign\.shell-lesson-assigned-action:focus-visible\s*\{[^}]*box-shadow/,
     );

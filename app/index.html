@@ -1502,18 +1502,32 @@
   .shell-lesson-assign {
     /* Sprint 28.6H.4 (Task D1): sizing (width/height/box) is owned by the
        shared `.shell-lesson-assign, .shell-lesson-preview` rule above; this
-       rule carries only the primary-green presentation. */
+       rule carries only the primary-green presentation.
+       Teacher Units UX Milestone 1: Curriculum's assignment control uses a
+       muted forest green (#356B52; white text 6.22:1, hover #2C5A45 7.91:1,
+       active #24493A 10.05:1). Scoped to `.shell-lesson-assign`, which only
+       Curriculum lesson cards render; the shared LyfeLabz green elsewhere is
+       unchanged. */
     padding: 0 0.5rem;
     font: inherit;
-    background: #1f6b3d;
+    background: #356b52;
     color: #fff;
-    border: 1px solid #1f6b3d;
+    border: 1px solid #356b52;
     border-radius: 4px;
     cursor: pointer;
   }
   .shell-lesson-assign:hover, .shell-lesson-assign:focus-visible {
-    background: #175a31;
-    border-color: #175a31;
+    background: #2c5a45;
+    border-color: #2c5a45;
+  }
+  .shell-lesson-assign:active {
+    background: #24493a;
+    border-color: #24493a;
+  }
+  .shell-lesson-assign:disabled,
+  .shell-lesson-assign[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
   /* Sprint 28.6H.8 (Part B): a previously assigned lesson reads "Reassign" as a
      green-OUTLINE action - transparent fill (the assigned card's slate tint
@@ -1525,17 +1539,25 @@
      reads as disabled/gray. Hover adds a very light green wash; the focus ring
      is re-asserted so focus stays visible (Part K). The two-class selector wins
      over the base solid-green + polish rules regardless of source order. */
+  /* Milestone 1: Manage is the same muted green as an outline (#356B52 on
+     white 6.22:1; hover #2C5A45 on the 8% wash 7.06:1; active #24493A on the
+     14% wash 8.23:1). */
   .shell-lesson-assign.shell-lesson-assigned-action {
     background: transparent;
-    color: #1f6b3d;
-    border-color: #1f6b3d;
+    color: #356b52;
+    border-color: #356b52;
     box-shadow: none;
   }
   .shell-lesson-assign.shell-lesson-assigned-action:hover,
   .shell-lesson-assign.shell-lesson-assigned-action:focus-visible {
-    background: rgba(31, 107, 61, 0.08);
-    border-color: #175a31;
-    color: #175a31;
+    background: rgba(53, 107, 82, 0.08);
+    border-color: #2c5a45;
+    color: #2c5a45;
+  }
+  .shell-lesson-assign.shell-lesson-assigned-action:active {
+    background: rgba(53, 107, 82, 0.14);
+    border-color: #24493a;
+    color: #24493a;
   }
   .shell-lesson-assign.shell-lesson-assigned-action:focus-visible {
     box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
@@ -2934,6 +2956,10 @@
     transition: background 0.15s ease, border-color 0.15s ease,
                 box-shadow 0.15s ease;
   }
+  /* Milestone 1: Curriculum's Assign is flat (no micro shadow), so it reads
+     as a calm primary action. Focus keeps its ring (the focus-visible rule
+     below is more specific). */
+  .shell-lesson-assign { box-shadow: none; }
   .shell-lesson-view-summary,
   .shell-assign-cancel,
   .shell-summary-select-choice,

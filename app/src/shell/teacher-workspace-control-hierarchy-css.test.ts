@@ -248,8 +248,10 @@ describe("solid navigation-teal focus outline on the changed families", () => {
 
 describe("content-action semantics are unchanged", () => {
   test("Assign stays primary green and View Summary stays gold", () => {
+    // Teacher Units UX Milestone 1: Curriculum's Assign uses the muted forest
+    // green; the shared primary token (`.shell-btn-primary`) is unchanged.
     const assignRules = rulesFor(".shell-lesson-assign").map((r) => r.body).join("\n");
-    expect(assignRules).toMatch(/background:\s*#1f6b3d/);
+    expect(assignRules).toMatch(/background:\s*#356b52/);
     expect(ruleBody(".shell-btn-primary")).toMatch(/background:\s*var\(--tw-primary\)/);
     const summaryRules = rulesFor(".shell-lesson-view-summary").map((r) => r.body).join("\n");
     expect(summaryRules).toMatch(/--tw-gold/);
