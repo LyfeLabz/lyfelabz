@@ -354,7 +354,7 @@ describe("Curriculum lifecycle UI", () => {
     expect(btn.textContent).toBe("Assign");
   });
 
-  test("previously-assigned lesson shows 'Update Assignment' button text", () => {
+  test("previously-assigned lesson shows 'Manage' button text", () => {
     const hydrated: AssignmentDetailMetadata[] = [
       freeze({
         assignmentId: "a-1",
@@ -376,7 +376,7 @@ describe("Curriculum lifecycle UI", () => {
     const btn = mount.querySelector<HTMLButtonElement>(
       `[data-testid=lesson-assign-${LESSON_SLUG}]`,
     )!;
-    expect(btn.textContent).toBe("Update Assignment");
+    expect(btn.textContent).toBe("Manage");
     expect(btn.classList.contains("shell-lesson-assigned-action")).toBe(true);
     expect(btn.classList.contains("shell-lesson-reassign")).toBe(false);
   });
@@ -1282,7 +1282,7 @@ describe("Curriculum lifecycle UI", () => {
     expect(btn.classList.contains("shell-lesson-reassign")).toBe(false);
   });
 
-  // ---- 17. Update aria-label says "Update assignment for" ----
+  // ---- 17. Update aria-label says "Manage assignment for" ----
 
   test("assigned card button has accessible update label", () => {
     const hydrated: AssignmentDetailMetadata[] = [
@@ -1306,7 +1306,7 @@ describe("Curriculum lifecycle UI", () => {
     const btn = mount.querySelector<HTMLButtonElement>(
       `[data-testid=lesson-assign-${LESSON_SLUG}]`,
     )!;
-    expect(btn.getAttribute("aria-label")).toContain("Update assignment for");
+    expect(btn.getAttribute("aria-label")).toContain("Manage assignment for");
   });
 
   // ---- 18. Loading text updates during lifecycle state fetch ----
@@ -4685,7 +4685,7 @@ describe("Update Assignment: primary action label", () => {
     });
     expect(
       mount.querySelector(`[data-testid=lesson-assign-${LESSON_SLUG}]`)?.textContent,
-    ).toBe("Update Assignment");
+    ).toBe("Manage");
     clickAssign(mount, LESSON_SLUG);
     await flush();
     await flush();

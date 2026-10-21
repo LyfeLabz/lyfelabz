@@ -290,7 +290,7 @@ describe("Curriculum previously-assigned card state (Sprint 28.6H.6 Part C)", ()
       `[data-testid=lesson-assign-${LESSON.slug}]`,
     )!;
     expect(assign).not.toBeNull();
-    expect(assign.textContent).toBe("Update Assignment");
+    expect(assign.textContent).toBe("Manage");
     expect(assign.disabled).toBe(false);
     expect(assign.classList.contains("shell-lesson-assigned-action")).toBe(true);
     // Part B5: the assigned-card slate tint is preserved alongside.

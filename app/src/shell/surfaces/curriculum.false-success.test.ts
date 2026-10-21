@@ -147,6 +147,11 @@ const makeDetailSeam = (
   };
 };
 
+const statusText = (mount: HTMLElement, slug: string): string | null =>
+  mount
+    .querySelector(`[data-testid=lesson-card-${slug}] .shell-resource-row-status`)
+    ?.textContent ?? null;
+
 const clickAssign = (mount: HTMLElement, slug: string): void => {
   mount
     .querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${slug}]`)
@@ -212,7 +217,7 @@ describe("Assign false-success guard", () => {
     await flush();
 
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
     expect(assignedState(btn)).toBe("true");
     expect(asn.publishes.length).toBeGreaterThan(0);
   });
@@ -404,7 +409,7 @@ describe("Assign false-success guard", () => {
     // One class published, so the badge is Assigned.
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
   });
 
   test("persisted assignment is rediscovered on remount (post-reload hydration)", () => {
@@ -427,7 +432,7 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
     expect(assignedState(btn)).toBe("true");
   });
 
@@ -496,9 +501,12 @@ describe("Assign false-success guard", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
     expect(assignedState(btn)).toBe("true");
     expect(publishes.length).toBe(1);
+    // Teacher Units UX Milestone 1: only the class that actually published
+    // is counted, never the class whose publish failed.
+    expect(statusText(mount, "earths-layers")).toBe("Assigned to 1 class");
   });
 
   test("hydration only lights up cards whose lessonSlug exactly matches", () => {
@@ -555,7 +563,7 @@ describe("Assign false-success guard", () => {
     );
     expect(buttons.length).toBe(1);
     expect(assignedState(buttons[0])).toBe("true");
-    expect(buttons[0]?.textContent).toBe("Update Assignment");
+    expect(buttons[0]?.textContent).toBe("Manage");
     expect(assignedState(buttons[0])).toBe("true");
   });
 
@@ -670,7 +678,7 @@ describe("Assign outcome model - three-way multi-class mix", () => {
     // A published class exists, so the badge is Assigned.
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
     // Exactly one draft was rejected; two drafts saved; one publish failed.
     expect(detail.registered).toHaveLength(1); // only the published class
   });
@@ -746,7 +754,7 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
     expect(assignedState(btn)).toBe("true");
   });
 
@@ -770,7 +778,7 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
     expect(assignedState(btn)).toBe("true");
   });
 
@@ -803,7 +811,7 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
 
     const btn = assignBtn(mount, "earths-layers");
     expect(assignedState(btn)).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
     expect(assignedState(btn)).toBe("true");
   });
 
@@ -837,5 +845,77 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
     expect(assignedState(draftCard)).toBe("false");
     const publishedCard = assignBtn(mount, "what-is-life");
     expect(assignedState(publishedCard)).toBe("true");
+  });
+});
+
+// Teacher Units UX Milestone 1: "Assigned to N classes" beneath the title,
+// derived only from real class assignment records in the registry.
+describe("Assigned class-count status line", () => {
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+  });
+
+  const record = (
+    assignmentId: string,
+    classId: string | undefined,
+    status: AssignmentDetailMetadata["status"],
+    lessonSlug = "earths-layers",
+  ): AssignmentDetailMetadata => ({
+    assignmentId,
+    title: "Earth's Layers",
+    className: "Class",
+    status,
+    lessonSlug,
+    ...(classId === undefined ? {} : { classId }),
+  });
+
+  const mountWith = (hydrated: AssignmentDetailMetadata[]): HTMLElement => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      assignmentDetail: makeDetailSeam(hydrated).seam,
+    });
+    return mount;
+  };
+
+  test("counts distinct classes with published or closed records, never drafts, duplicates or other lessons", () => {
+    const mount = mountWith([
+      record("a1", "c1", "published"),
+      record("a2", "c1", "closed"), // same class again: still one class
+      record("a3", "c2", "closed"),
+      record("a4", "c3", "published"),
+      record("a5", "c4", "draft"), // a draft never counts
+      record("a6", "c5", "published", "what-is-life"), // another lesson
+    ]);
+    expect(statusText(mount, "earths-layers")).toBe("Assigned to 3 classes");
+    expect(statusText(mount, "what-is-life")).toBe("Assigned to 1 class");
+    expect(assignBtn(mount, "earths-layers")?.textContent).toBe("Manage");
+  });
+
+  test("an unassigned or draft-only lesson shows no status line", () => {
+    const mount = mountWith([record("a1", "c1", "draft")]);
+    expect(statusText(mount, "earths-layers")).toBeNull();
+    expect(statusText(mount, "what-is-life")).toBeNull();
+    expect(assignBtn(mount, "earths-layers")?.textContent).toBe("Assign");
+  });
+
+  test("a qualifying record without its class shows no count rather than an estimate", () => {
+    const mount = mountWith([
+      record("a1", "c1", "published"),
+      record("a2", undefined, "published"),
+    ]);
+    expect(statusText(mount, "earths-layers")).toBeNull();
+    // The assigned state itself is unchanged.
+    expect(assignBtn(mount, "earths-layers")?.textContent).toBe("Manage");
+  });
+
+  test("the status sits in the card's identity column, beneath the title", () => {
+    const mount = mountWith([record("a1", "c1", "published")]);
+    const card = mount.querySelector<HTMLElement>("[data-testid=lesson-card-earths-layers]")!;
+    const main = card.querySelector<HTMLElement>(":scope > .shell-resource-row-main")!;
+    const kids = Array.from(main.children).map((el) => el.className);
+    expect(kids.indexOf("shell-resource-row-status")).toBeGreaterThan(
+      kids.indexOf("shell-lesson-title-row"),
+    );
   });
 });

@@ -436,10 +436,10 @@
      (`:not(.shell-lesson-card-inactive)`), which keeps its own gray treatment.
      The tint is supplemental only; Assign/Preview/View Summary/Resources and
      every badge are unchanged. */
-  .shell-lesson-card-assigned:not(.shell-lesson-card-inactive) {
-    background: rgba(90, 120, 160, 0.08);
-    border-color: rgba(70, 100, 140, 0.22);
-  }
+  /* Teacher Units UX Milestone 1: the tint is retired. An assigned card keeps
+     the same white surface and hairline border as every resource row; its
+     state reads from the Manage action and the "Assigned to N classes" line.
+     The class stays as a state hook only. */
   .shell-lesson-card-inactive {
     background: #f6f6f6;
     opacity: 0.72;
@@ -591,13 +591,11 @@
     align-self: flex-start;
   }
   /* Sprint 28.6H.3 (Task D3/D6): the shared quiet footer for the two secondary
-     lesson-inspection actions. View Summary sits at the left; the Resources
-     disclosure is pushed to the right (`margin-left:auto`) so a Resources-only
-     card reads `                1 Resource ›` while a View-Summary-only card
-     reads `View Summary` at the left. The hairline boundary + top padding are
-     applied only when the row actually contains a VISIBLE control (`:has`), so
-     a card whose sole footer member is a hidden (never-assigned) View Summary
-     shows no empty footer and no stray rule. Wraps on very narrow cards. */
+     lesson-inspection actions, left-aligned beneath the title (Teacher Units
+     UX Milestone 1: no divider, no right-pushed disclosure). Spacing applies
+     only when the row actually contains a VISIBLE control (`:has`), so a card
+     whose sole footer member is a hidden (never-assigned) View Summary shows
+     no empty footer. Wraps on very narrow cards. */
   .shell-lesson-footer-row {
     display: flex;
     flex-wrap: wrap;
@@ -605,8 +603,15 @@
     gap: 0.35rem 0.6rem;
     min-width: 0;
   }
-  .shell-lesson-footer-row > .shell-lesson-resources-toggle {
-    margin-left: auto;
+  /* Teacher Units UX Milestone 1: the disclosure sits at the left, directly
+     beneath the title, sharing one quiet line with View Summary:
+     "View Summary · 1 Resource >". The separator is presentational only
+     (empty alternative text), shown only when View Summary is visible. */
+  .shell-lesson-view-summary:not([hidden]) + .shell-lesson-resources-toggle::before {
+    content: "\00B7" / "";
+    margin-right: 0.35rem;
+    color: var(--tw-ink-muted, #566472);
+    font-weight: 400;
   }
   .shell-lesson-footer:has(.shell-lesson-footer-row > *:not([hidden])) .shell-lesson-footer-row {
     /* Sprint 28.6H.4 (Task D3/D5): restrained footer separation so the quiet

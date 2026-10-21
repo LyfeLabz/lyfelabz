@@ -98,7 +98,7 @@ export function buildResourceCard(doc: Document, input: ResourceCardInput): Reso
 
 // The optional informational status line beneath the title. `null` removes
 // it, so a card without a status carries no empty element.
-export function setResourceCardStatus(card: ResourceCard, text: string | null): void {
+export function setResourceCardStatus(card: Pick<ResourceCard, "main">, text: string | null): void {
   const existing = card.main.querySelector<HTMLElement>(":scope > .shell-resource-row-status");
   if (text === null) {
     existing?.remove();

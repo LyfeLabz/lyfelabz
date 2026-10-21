@@ -42,7 +42,7 @@ import type {
 } from "../navigationHistory";
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { createCurriculumTabs, type CurriculumTabs } from "./curriculumResourceTabs";
-import { buildResourceCard, buildLessonPreviewLink } from "./resourceCard";
+import { buildResourceCard, buildLessonPreviewLink, setResourceCardStatus } from "./resourceCard";
 import { mintAssignmentId } from "./shared/assignmentId";
 import { formatLocalDate, formatLocalTime } from "./shared/activeAssignments";
 import {
@@ -855,6 +855,31 @@ function qualifiesForAssignedBadge(status: AssignmentStatus): boolean {
   return status === "published" || status === "closed";
 }
 
+// Teacher Units UX Milestone 1: the number of distinct classes holding a
+// qualifying (`published`/`closed`, see above) assignment of this lesson,
+// read from the same certified retrieval-hydrated registry that restores the
+// Assigned state; in-session publishes register into it too. Classes are
+// counted, never students or recipients. Null when the count cannot be stated
+// exactly: no enumerable registry, a registry failure, or a qualifying record
+// that does not name its class. Null and zero both show no status line.
+function assignedClassCount(
+  assignmentDetail: CurriculumAssignmentDetailSeam | null,
+  slug: string,
+): number | null {
+  if (assignmentDetail === null || typeof assignmentDetail.list !== "function") return null;
+  const classIds = new Set<string>();
+  try {
+    for (const entry of assignmentDetail.list()) {
+      if (entry.lessonSlug !== slug || !qualifiesForAssignedBadge(entry.status)) continue;
+      if (typeof entry.classId !== "string" || entry.classId.length === 0) return null;
+      classIds.add(entry.classId);
+    }
+  } catch {
+    return null;
+  }
+  return classIds.size;
+}
+
 function ensureClasses(
   uid: string,
   listClasses: ListClasses,
@@ -1267,7 +1292,7 @@ export function renderCurriculumSurface(
       assignments,
       assignmentDetail,
       onConfirm: (summary) => {
-        refreshAssignControl(card, lesson);
+        refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
         showSuccess(successBanner, summary);
       },
       onLifecycleComplete: () => {
@@ -1278,18 +1303,18 @@ export function renderCurriculumSurface(
         // stays clickable in both states (reassignment is always
         // available). Curriculum no longer renders assignment rows, so
         // no dashboard refresh is needed here (Blueprint §6).
-        refreshAssignControl(card, lesson);
+        refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
       },
     });
   };
 
   for (const lesson of LESSONS) {
-    grid.appendChild(
-      renderLessonCard(doc, lesson, state.activation, openAssignDialog, {
-        showViewSummary: lessonSummary !== null,
-        onViewSummary: openLessonSummary,
-      }),
-    );
+    const card = renderLessonCard(doc, lesson, state.activation, openAssignDialog, {
+      showViewSummary: lessonSummary !== null,
+      onViewSummary: openLessonSummary,
+    });
+    refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
+    grid.appendChild(card);
   }
   applyFilters();
 
@@ -1311,11 +1336,11 @@ function applyAssignState(
   lesson: SurfaceableLesson,
   assigned: boolean,
 ): void {
-  btn.textContent = assigned ? "Update Assignment" : "Assign";
+  btn.textContent = assigned ? "Manage" : "Assign";
   btn.setAttribute(
     "aria-label",
     assigned
-      ? `Update assignment for ${lesson.title}`
+      ? `Manage assignment for ${lesson.title}`
       : `Assign ${lesson.title}`,
   );
   btn.classList.toggle("shell-lesson-assigned-action", assigned);
@@ -1324,12 +1349,24 @@ function applyAssignState(
 function refreshAssignControl(
   card: HTMLElement,
   lesson: SurfaceableLesson,
+  assignedClasses: number | null,
 ): void {
   const btn = card.querySelector<HTMLButtonElement>(
     `[data-testid=lesson-assign-${lesson.slug}]`,
   );
   if (!btn) return;
   const assigned = isAssigned(lesson.slug);
+  // Teacher Units UX Milestone 1: the quiet status line beneath the title,
+  // only for an assigned card with an exact class count.
+  const main = card.querySelector<HTMLElement>(":scope > .shell-resource-row-main");
+  if (main !== null) {
+    setResourceCardStatus(
+      { main },
+      assigned && assignedClasses !== null && assignedClasses > 0
+        ? `Assigned to ${assignedClasses === 1 ? "1 class" : `${assignedClasses} classes`}`
+        : null,
+    );
+  }
   // Sprint 28.6H.7 (Part B): a previously assigned lesson reads "Assign Again"
   // in muted green; an unused lesson keeps full-strength green "Assign". Assign
   // is always available and always re-assignable - the change is presentation

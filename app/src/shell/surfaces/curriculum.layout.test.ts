@@ -236,7 +236,7 @@ describe("Curriculum lesson-card layout & activation badge model", () => {
     const btn = card.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     )!;
-    expect(btn.textContent).toBe("Update Assignment");
+    expect(btn.textContent).toBe("Manage");
     expect(card.getAttribute("data-lesson-assigned")).toBe("true");
     expect(card.contains(btn)).toBe(true);
     // The Assign control still lives inside the actions row.
@@ -279,7 +279,7 @@ describe("Curriculum lesson-card layout & activation badge model", () => {
     const assign = card.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     )!;
-    expect(assign.textContent).toBe("Update Assignment");
+    expect(assign.textContent).toBe("Manage");
     expect(assign.disabled).toBe(false);
   });
 

@@ -192,7 +192,7 @@ describe("B6 success banner - visibility after successful assignment", () => {
         "data-lesson-assigned",
       ),
     ).toBe("true");
-    expect(btn?.textContent).toBe("Update Assignment");
+    expect(btn?.textContent).toBe("Manage");
   });
 });
 

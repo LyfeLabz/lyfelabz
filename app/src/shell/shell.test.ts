@@ -962,7 +962,7 @@ describe("Assign Experience - Sprint 6E", () => {
     const assign = mount.querySelector<HTMLButtonElement>(
       "[data-testid=lesson-assign-earths-layers]",
     );
-    expect(assign?.textContent).toBe("Update Assignment");
+    expect(assign?.textContent).toBe("Manage");
     expect(assign?.disabled).toBe(false);
     expect(assign?.classList.contains("shell-lesson-assigned-action")).toBe(true);
     expect(
@@ -2538,16 +2538,13 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(completeMatch![1]).not.toMatch(/#1f6b3d|#175a31/);
   });
 
-  test("Curriculum assigned lesson gets a cool/slate tint distinct from the green completed state (Sprint 28.6H.6, Part C)", () => {
-    const assignedMatch = shellHtml.match(
-      /\.shell-lesson-card-assigned:not\(\.shell-lesson-card-inactive\)\s*\{([^}]+)\}/,
-    );
-    expect(assignedMatch).not.toBeNull();
-    const body = assignedMatch![1];
-    expect(body).toMatch(/background\s*:/);
-    // Cool blue/slate, never green - the two states must not share a color.
-    expect(body).not.toMatch(/#1f6b3d|#175a31/);
-    expect(body).not.toMatch(/220,\s*132/); // not the pale-green rgba used by Classes
+  test("Curriculum assigned lesson keeps the same white surface and border as every row (Teacher Units UX Milestone 1; retires the Sprint 28.6H.6 Part C tint)", () => {
+    // Assignment reads from the Manage action and the class-count status line,
+    // never from a filled card, so an assigned card can never look disabled.
+    const stripped = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(stripped).not.toMatch(/\.shell-lesson-card-assigned[^{,]*\{[^}]*(background|border-color)\s*:/);
+    // The genuine inactive (deactivated) treatment is unchanged.
+    expect(stripped).toMatch(/\.shell-lesson-card-inactive\s*\{[^}]*background\s*:/);
   });
 
   test("Update Assignment is a green-OUTLINE action (transparent fill, green border + text), not solid/gray/disabled", () => {
@@ -2622,7 +2619,7 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     const body = pairMatch![1];
     // Task J #13: same width rule. Teacher Units UX Milestone 1 compact
     // refinement: a shared 5.25rem = 84px minimum in the full-width resource
-    // row; a longer label ("Update Assignment") widens its own button on one
+    // row; a longer label widens its own button on one
     // line rather than overflowing a fixed box.
     const minWidth = body.match(/min-width:\s*([0-9.]+rem)/);
     expect(minWidth).not.toBeNull();
@@ -2682,15 +2679,18 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     );
     expect(actionsMatch).not.toBeNull();
     expect(actionsMatch![1]).toMatch(/flex-direction:\s*column/);
-    // The shared footer row holds View Summary (left) and the Resources
-    // disclosure (pushed right via margin-left:auto).
+    // The shared footer row holds View Summary and the Resources disclosure,
+    // both at the left beneath the title (Teacher Units UX Milestone 1),
+    // separated by a presentational dot only when View Summary is visible.
     const footerRowMatch = shellHtml.match(
       /\n\s*\.shell-lesson-footer-row\s*\{([^}]+)\}/,
     );
     expect(footerRowMatch).not.toBeNull();
     expect(footerRowMatch![1]).toMatch(/display:\s*flex/);
-    expect(shellHtml).toMatch(
-      /\.shell-lesson-footer-row\s*>\s*\.shell-lesson-resources-toggle\s*\{[^}]*margin-left:\s*auto/,
+    const strippedCss = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(strippedCss).not.toMatch(/\.shell-lesson-resources-toggle\s*\{[^}]*margin-left:\s*auto/);
+    expect(strippedCss).toMatch(
+      /\.shell-lesson-view-summary:not\(\[hidden\]\)\s*\+\s*\.shell-lesson-resources-toggle::before\s*\{[^}]*content:\s*"\\00B7"\s*\/\s*"";/,
     );
     // View Summary is no longer a direct child of the actions stack (that CSS
     // rule is gone); it must not carry any greedy flex basis.
