@@ -26,7 +26,7 @@ const FILES = [
   "app/lessons/lesson_measuring-matter.html",
 ];
 const SCRIPT_HEADERS = [
-  "<!-- ===== GLOSSARY CARDS (click to expand only, one open at a time) ===== -->",
+  "<!-- ===== VOCABULARY EXPLORER (one term at a time; ungraded, nothing stored) ===== -->",
   "<!-- ===== PREDICT BEFORE REVEAL ===== -->",
   "<!-- ===== TOOL MATCH GAME ===== -->",
   "<!-- ===== PRACTICE PROBLEM STEPPER ===== -->",
@@ -61,41 +61,82 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
     ({ doc, html } = load(rel));
   });
 
-  describe("vocabulary cards", () => {
-    test("use the canonical glossary-card markup with the standard intro", () => {
-      const cards = [...doc.querySelectorAll("#vocab .glossary-card")];
-      expect(cards.map((c) => c.querySelector(".gc-term").textContent)).toEqual([
-        "Matter", "Mass", "Volume", "Density", "Triple Beam Balance", "Graduated Cylinder",
-      ]);
-      for (const card of cards) {
-        expect(card.tagName).toBe("BUTTON");
-        expect(card.getAttribute("type")).toBe("button");
-        expect(card.getAttribute("aria-expanded")).toBe("false");
-        const head = card.querySelector(":scope > .gc-head");
-        expect(head.querySelector("span.gc-term")).not.toBeNull();
-        const chev = head.querySelector("span.gc-chev");
-        expect(chev.getAttribute("aria-hidden")).toBe("true");
-        expect(chev.textContent).toBe("▾");
-        expect(card.querySelector(":scope > .gc-def").textContent.trim().length).toBeGreaterThan(0);
+  describe("vocabulary explorer", () => {
+    const TERMS = ["Matter", "Mass", "Volume", "Density", "Triple Beam Balance", "Graduated Cylinder"];
+    const DEFS = {
+      matter: ["Anything that has mass and takes up space (volume).", "The most common states of matter are solid, liquid, and gas."],
+      mass: ["The amount of matter in an object.", "Mass is measured in grams (g) with a triple beam balance."],
+      volume: ["The amount of space an object takes up.", "Volume is measured in cubic centimeters (cm³) with a ruler or in milliliters (mL) with a graduated cylinder."],
+      density: ["A measure of how much matter is packed into a space.", "Density is the ratio of mass to volume: D = m ÷ V, in g/cm³ or g/mL."],
+      balance: ["The lab tool scientists use to measure mass in grams.", "You slide weights along three beams until the pointer balances."],
+      cylinder: ["A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).", null],
+    };
+    const terms = () => [...doc.querySelectorAll("#vocab .vx-term")];
+    const term = (key) => doc.querySelector(`#vocab .vx-term[data-term="${key}"]`);
+    const pressed = () => terms().filter((t) => t.getAttribute("aria-pressed") === "true").map((t) => t.dataset.term);
+    const shown = () => [...doc.querySelectorAll("#vocab .vx-panel")].filter((p) => !p.hidden).map((p) => p.dataset.term);
+    const said = () => doc.getElementById("vx-announce").textContent;
+
+    test("renders six accessible selectors, the intro, and exact definitions", () => {
+      expect(terms().map((t) => t.querySelector(".gc-term").textContent)).toEqual(TERMS);
+      for (const t of terms()) {
+        expect(t.tagName).toBe("BUTTON");
+        expect(t.getAttribute("type")).toBe("button");
+        expect(t.querySelector(".vx-check").getAttribute("aria-hidden")).toBe("true");
+        const panel = doc.getElementById(t.getAttribute("aria-controls"));
+        expect(panel.dataset.term).toBe(t.dataset.term);
+        const [lead, support] = DEFS[t.dataset.term];
+        expect(panel.querySelector(".gc-lead").textContent).toBe(lead);
+        expect(panel.querySelector(".gc-support")?.textContent ?? null).toBe(support);
       }
-      expect(doc.querySelector("#vocab .section-desc").textContent).toBe(
-        "Choose a card to see what each word means.",
-      );
-      expect(doc.querySelector("#vocab .gc-hint")).toBeNull();
+      expect(doc.querySelector("#vocab .section-desc").textContent).toBe("Select a word to explore its meaning.");
+      expect(doc.querySelector("#vocab .vx-grid").getAttribute("role")).toBe("group");
+      const live = [...doc.querySelectorAll("#vocab [aria-live]")];
+      expect(live.map((el) => el.id)).toEqual(["vx-announce"]);
+      expect(live[0].getAttribute("aria-atomic")).toBe("true");
+      expect(doc.querySelector("#vocab .glossary-card")).toBeNull();
     });
 
-    test("open one card at a time and keep chevron and aria-expanded in sync", () => {
-      const cards = [...doc.querySelectorAll("#vocab .glossary-card")];
-      const state = () => cards.map((c) => [
-        c.classList.contains("open"), c.getAttribute("aria-expanded"), c.querySelector(".gc-chev").textContent,
-      ]);
-      click(cards[1]);
-      click(cards[3]);
-      expect(state().filter(([open]) => open)).toHaveLength(1);
-      expect(state()[3]).toEqual([true, "true", "▴"]);
-      expect(state()[1]).toEqual([false, "false", "▾"]);
-      click(cards[3]);
-      expect(state().every(([open, exp, chev]) => !open && exp === "false" && chev === "▾")).toBe(true);
+    test("has no Compare mode markup", () => {
+      expect(doc.querySelectorAll("#vocab .vx-mode, #vocab .vx-modes, #vx-info, #vx-status, #vx-guide, #vocab .vx-reserve")).toHaveLength(0);
+      expect(doc.getElementById("vocab").textContent).not.toMatch(/compare/i);
+      expect(scriptsOf(html)[0]).not.toMatch(/compar/i);
+    });
+
+    test("selects exactly one term, starting on Matter, and swaps the single panel", () => {
+      expect(pressed()).toEqual(["matter"]);
+      expect(shown()).toEqual(["matter"]);
+      for (const key of Object.keys(DEFS)) {
+        click(term(key));
+        expect(pressed()).toEqual([key]);
+        expect(shown()).toEqual([key]);
+        for (const t of terms()) expect(["true", "false"]).toContain(t.getAttribute("aria-pressed"));
+      }
+      click(term("cylinder"));
+      expect(pressed()).toEqual(["cylinder"]);
+    });
+
+    test("announces each new definition once through the persistent live region", async () => {
+      click(term("mass"));
+      await wait(150);
+      expect(said()).toBe(
+        "Mass. The amount of matter in an object. Mass is measured in grams (g) with a triple beam balance.",
+      );
+      doc.getElementById("vx-announce").textContent = "sentinel";
+      click(term("mass"));
+      await wait(150);
+      expect(said()).toBe("sentinel");
+      click(term("cylinder"));
+      await wait(150);
+      expect(said()).toBe(
+        "Graduated Cylinder. A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).",
+      );
+    });
+
+    test("is ungraded: no storage, forms, or assessment hooks", () => {
+      const script = scriptsOf(html)[0];
+      expect(script).not.toMatch(/localStorage|sessionStorage|fetch\(|XMLHttpRequest|postMessage|submit|score|assessment/i);
+      expect(doc.querySelectorAll("#vocab form, #vocab input, #vocab [data-question], #vocab [data-assess]")).toHaveLength(0);
     });
   });
 

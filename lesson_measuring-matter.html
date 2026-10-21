@@ -1336,47 +1336,82 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   border-radius: 99px;
 }
 
-/* Glossary cards: click-to-expand ONLY. Hover gives subtle visual
-   feedback (lift + shadow) but never reveals content. Canonical markup:
-   button.glossary-card > .gc-head (span.gc-term + span.gc-chev) + .gc-def.
-   The definition reads at body size in full-contrast text once opened. */
-.glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; align-items: start; }
-@media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
-.glossary-card {
-  width: 100%;
-  min-height: 56px;
+/* Vocabulary Explorer: six term selectors above one definition panel.
+   Exactly one term is selected; choosing another swaps the panel.
+   Markup: .vx > #vx-announce + .vx-grid (button.vx-term[aria-pressed])
+   + .vx-panels (.vx-panel > .vx-panel-term + .gc-lead + .gc-support).
+   Ungraded and stateless: nothing is stored or submitted.
+   Selected = term-color fill and check; keyboard focus = gold ring.
+   #vx-announce is the only live region: it reads the new definition. */
+.gc-teal   { --vx: var(--teal);   }
+.gc-orange { --vx: var(--orange); }
+.gc-blue   { --vx: var(--matter); }
+.gc-green  { --vx: var(--green);  }
+.vx-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.vx-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 0.75rem; }
+@media (max-width: 720px) { .vx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.vx-term {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-height: 60px;
+  padding: 0.7rem 1rem 0.7rem 1.1rem;
   background: var(--card);
-  border: 1px solid var(--border);
-  border-top: 3px solid var(--teal);
-  border-radius: 16px;
-  padding: 1rem 1.3rem;
+  border: 2px solid rgba(255,255,255,0.08);
+  border-left: 5px solid var(--vx);
+  border-radius: 14px;
   text-align: left;
   cursor: pointer;
-  font-family: 'Nunito', sans-serif;
-  color: var(--text);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
-.glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-.glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-.gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
-.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.2rem; line-height: 1.3; }
-.gc-chev { font-size: 0.9rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
-.glossary-card.open .gc-chev { color: var(--gold); }
-.gc-def {
-  display: none;
-  font-size: 1rem;
-  color: var(--text);
-  line-height: 1.6;
-  margin-top: 0.7rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid rgba(255,255,255,0.1);
+.vx-term .gc-term { min-width: 0; overflow-wrap: anywhere; font-family: 'Fredoka One', cursive; font-size: 1.2rem; line-height: 1.25; color: var(--vx); }
+.vx-check {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  visibility: hidden;
+  font-size: 0.85rem;
+  font-weight: 900;
+  line-height: 1;
 }
-.glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
-.gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
-.gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
-.gc-blue   { border-top-color: var(--matter); } .gc-blue .gc-term   { color: var(--matter); }
-.gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+.vx-term:hover { border-color: color-mix(in srgb, var(--vx) 55%, transparent); border-left-color: var(--vx); }
+.vx-term[aria-pressed="true"] {
+  border-color: var(--vx);
+  background: color-mix(in srgb, var(--vx) 20%, var(--card));
+}
+.vx-term[aria-pressed="true"] .vx-check { visibility: visible; background: var(--vx); color: var(--dark); }
+.vx-term:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+@media (max-width: 480px) {
+  .vx-term { position: relative; padding: 0.6rem 1.9rem 0.6rem 0.75rem; }
+  .vx-term .gc-term { font-size: 1rem; }
+  .vx-check { position: absolute; top: 0.45rem; right: 0.45rem; width: 1.2rem; height: 1.2rem; font-size: 0.7rem; }
+}
+.vx-panels { margin-top: 1rem; }
+.vx-panel {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-top: 4px solid var(--vx);
+  border-radius: 16px;
+  padding: 1.1rem 1.3rem 1.25rem;
+  animation: predictFadeUp 0.25s ease both;
+}
+.vx-panel[hidden] { display: none; }
+.vx-panel-term {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--vx);
+  margin: 0 0 0.8rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(255,255,255,0.14);
+}
+.gc-lead { margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.55; color: var(--text); }
+.gc-support { margin: 0.7rem 0 0; font-size: 1rem; line-height: 1.6; color: var(--text); }
 </style>
 <style id="nav-hamburger-style">
   /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
@@ -1636,32 +1671,48 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Key Vocabulary</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
-    <div class="glossary-grid">
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Matter</span><span class="gc-chev" aria-hidden="true">▾</span></div>
-        <div class="gc-def">Anything that has mass and takes up space (volume). The most common states of matter are solid, liquid, and gas.</div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Mass</span><span class="gc-chev" aria-hidden="true">▾</span></div>
-        <div class="gc-def">The amount of matter in an object. Mass is measured in grams (g) with a triple beam balance.</div>
-      </button>
-      <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Volume</span><span class="gc-chev" aria-hidden="true">▾</span></div>
-        <div class="gc-def">The amount of space an object takes up. Volume is measured in cubic centimeters (cm³) with a ruler or in milliliters (mL) with a graduated cylinder.</div>
-      </button>
-      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Density</span><span class="gc-chev" aria-hidden="true">▾</span></div>
-        <div class="gc-def">A measure of how much matter is packed into a space. Density is the ratio of mass to volume: D = m ÷ V, in g/cm³ or g/mL.</div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Triple Beam Balance</span><span class="gc-chev" aria-hidden="true">▾</span></div>
-        <div class="gc-def">The lab tool scientists use to measure mass in grams. You slide weights along three beams until the pointer balances.</div>
-      </button>
-      <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Graduated Cylinder</span><span class="gc-chev" aria-hidden="true">▾</span></div>
-        <div class="gc-def">A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).</div>
-      </button>
+    <p class="section-desc" style="margin-bottom: 1.4rem;">Select a word to explore its meaning.</p>
+    <div class="vx" id="vocab-explorer">
+      <p class="vx-sr" id="vx-announce" aria-live="polite" aria-atomic="true"></p>
+      <div class="vx-grid" role="group" aria-label="Vocabulary words">
+        <button class="vx-term gc-blue" type="button" aria-pressed="true" aria-controls="vx-def-matter" data-term="matter"><span class="gc-term">Matter</span><span class="vx-check" aria-hidden="true">✓</span></button>
+        <button class="vx-term gc-teal" type="button" aria-pressed="false" aria-controls="vx-def-mass" data-term="mass"><span class="gc-term">Mass</span><span class="vx-check" aria-hidden="true">✓</span></button>
+        <button class="vx-term gc-green" type="button" aria-pressed="false" aria-controls="vx-def-volume" data-term="volume"><span class="gc-term">Volume</span><span class="vx-check" aria-hidden="true">✓</span></button>
+        <button class="vx-term gc-orange" type="button" aria-pressed="false" aria-controls="vx-def-density" data-term="density"><span class="gc-term">Density</span><span class="vx-check" aria-hidden="true">✓</span></button>
+        <button class="vx-term gc-teal" type="button" aria-pressed="false" aria-controls="vx-def-balance" data-term="balance"><span class="gc-term">Triple Beam Balance</span><span class="vx-check" aria-hidden="true">✓</span></button>
+        <button class="vx-term gc-green" type="button" aria-pressed="false" aria-controls="vx-def-cylinder" data-term="cylinder"><span class="gc-term">Graduated Cylinder</span><span class="vx-check" aria-hidden="true">✓</span></button>
+      </div>
+      <div class="vx-panels">
+        <div class="vx-panel gc-blue" id="vx-def-matter" data-term="matter">
+          <h3 class="vx-panel-term">Matter</h3>
+          <p class="gc-lead">Anything that has mass and takes up space (volume).</p>
+          <p class="gc-support">The most common states of matter are solid, liquid, and gas.</p>
+        </div>
+        <div class="vx-panel gc-teal" id="vx-def-mass" data-term="mass" hidden>
+          <h3 class="vx-panel-term">Mass</h3>
+          <p class="gc-lead">The amount of matter in an object.</p>
+          <p class="gc-support">Mass is measured in grams (g) with a triple beam balance.</p>
+        </div>
+        <div class="vx-panel gc-green" id="vx-def-volume" data-term="volume" hidden>
+          <h3 class="vx-panel-term">Volume</h3>
+          <p class="gc-lead">The amount of space an object takes up.</p>
+          <p class="gc-support">Volume is measured in cubic centimeters (cm³) with a ruler or in milliliters (mL) with a graduated cylinder.</p>
+        </div>
+        <div class="vx-panel gc-orange" id="vx-def-density" data-term="density" hidden>
+          <h3 class="vx-panel-term">Density</h3>
+          <p class="gc-lead">A measure of how much matter is packed into a space.</p>
+          <p class="gc-support">Density is the ratio of mass to volume: D = m ÷ V, in g/cm³ or g/mL.</p>
+        </div>
+        <div class="vx-panel gc-teal" id="vx-def-balance" data-term="balance" hidden>
+          <h3 class="vx-panel-term">Triple Beam Balance</h3>
+          <p class="gc-lead">The lab tool scientists use to measure mass in grams.</p>
+          <p class="gc-support">You slide weights along three beams until the pointer balances.</p>
+        </div>
+        <div class="vx-panel gc-green" id="vx-def-cylinder" data-term="cylinder" hidden>
+          <h3 class="vx-panel-term">Graduated Cylinder</h3>
+          <p class="gc-lead">A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).</p>
+        </div>
+      </div>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -1674,7 +1725,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load (one card open at a time)</li></ul>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load (one definition at a time, definition first, units and tools beneath)</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1682,7 +1733,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal, no hover</li><li>One card open at a time</li><li>Short definitions with units named</li></ul>
+          <ul class="edu-note-text"><li>Word buttons report pressed state; full keyboard use</li><li>Definition panel announced politely without moving focus</li><li>Ungraded and optional; nothing is stored</li><li>Short definitions with units named</li></ul>
         </div>
       </div>
     </div>
@@ -2925,23 +2976,33 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
 </script>
 
-<!-- ===== GLOSSARY CARDS (click to expand only, one open at a time) ===== -->
+<!-- ===== VOCABULARY EXPLORER (one term at a time; ungraded, nothing stored) ===== -->
 <script>
 (function(){
-  var cards = document.querySelectorAll('.glossary-card');
-  cards.forEach(function(card){
-    card.addEventListener('click', function(){
-      var wasOpen = card.classList.contains('open');
-      cards.forEach(function(c){
-        c.classList.remove('open');
-        c.setAttribute('aria-expanded', 'false');
-        var chev = c.querySelector('.gc-chev'); if (chev) chev.textContent = '▾';
-      });
-      if (!wasOpen) {
-        card.classList.add('open');
-        card.setAttribute('aria-expanded', 'true');
-        var chev = card.querySelector('.gc-chev'); if (chev) chev.textContent = '▴';
-      }
+  var root = document.getElementById('vocab-explorer');
+  if (!root) return;
+  var terms = [].slice.call(root.querySelectorAll('.vx-term'));
+  var panels = [].slice.call(root.querySelectorAll('.vx-panel'));
+  var announcer = document.getElementById('vx-announce');
+  var announceTimer;
+  var picked = 'matter';
+  function announce(msg){
+    clearTimeout(announceTimer);
+    announcer.textContent = '';
+    announceTimer = setTimeout(function(){ announcer.textContent = msg; }, 100);
+  }
+  function definitionMessage(key){
+    var panel = document.getElementById('vx-def-' + key);
+    return [].slice.call(panel.children).map(function(el, i){ return el.textContent.trim() + (i === 0 ? '.' : ''); }).join(' ');
+  }
+  terms.forEach(function(t){
+    t.addEventListener('click', function(){
+      var key = t.getAttribute('data-term');
+      if (key === picked) return;
+      picked = key;
+      terms.forEach(function(x){ x.setAttribute('aria-pressed', x === t ? 'true' : 'false'); });
+      panels.forEach(function(p){ p.hidden = p.getAttribute('data-term') !== key; });
+      announce(definitionMessage(key));
     });
   });
 })();
