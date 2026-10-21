@@ -2668,7 +2668,7 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     // block (not the comma-listed responsive/focus rules); it starts with the
     // quiet text-style padding.
     const vsMatch = shellHtml.match(
-      /\n\s*\.shell-lesson-view-summary\s*\{\s*padding: 0\.2rem 0;([^}]+)\}/,
+      /\n\s*\.shell-lesson-view-summary\s*\{\s*padding: 0\.1rem 0;([^}]+)\}/,
     );
     expect(vsMatch).not.toBeNull();
     // Borderless (no boxed outline competing with Assign/Preview), transparent
@@ -2676,6 +2676,20 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(vsMatch![1]).toMatch(/border:\s*none/);
     expect(vsMatch![1]).toMatch(/background:\s*transparent/);
     expect(vsMatch![1]).toMatch(/white-space:\s*nowrap/);
+    // Teacher Units UX Milestone 1 polish: a quiet supporting link - small,
+    // medium weight, no gold underline; hover/focus reveal an ink underline.
+    expect(vsMatch![1]).toMatch(/font-weight:\s*500/);
+    expect(vsMatch![1]).toMatch(/text-decoration:\s*none/);
+    expect(vsMatch![1]).not.toMatch(/gold/);
+    expect(shellHtml).toMatch(
+      /\.shell-lesson-view-summary:hover,\s*\.shell-lesson-view-summary:focus-visible\s*\{[^}]*text-decoration:\s*underline/,
+    );
+    // The Curriculum-only polish is scoped to the Curriculum grid, so the
+    // shared pills and My Units rows are untouched.
+    const stripped = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(stripped).toMatch(/\.shell-curriculum-grid \.shell-lesson-badge\s*\{[^}]*font-size:\s*0\.68rem/);
+    expect(stripped).toMatch(/\.shell-curriculum-grid \.shell-lesson-title-row \.shell-lesson-title\s*\{\s*flex:\s*0 1 auto;/);
+    expect(stripped).toMatch(/\n\s*\.shell-lesson-badge\s*\{[^}]*font-size:\s*0\.75rem/);
   });
 
   test("Sprint 28.6H.4 (Task D1/D2): the Assign/Preview pair shrink-wraps to the left and never stretches; View Summary lives in the shared footer", () => {

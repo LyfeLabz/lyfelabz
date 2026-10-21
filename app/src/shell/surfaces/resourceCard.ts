@@ -30,6 +30,9 @@ export type ResourceCardInput = {
   readonly typeLabel: string | null;
   readonly title: string;
   readonly titleTag: "h3" | "h4" | "h5" | "span";
+  // Where the resource-type label sits: in the metadata header (default,
+  // My Units) or directly after the title (Curriculum, Milestone 1 polish).
+  readonly typePlacement?: "header" | "title";
   readonly testIds?: {
     readonly grade?: string;
     readonly topic?: string;
@@ -71,12 +74,13 @@ export function buildResourceCard(doc: Document, input: ResourceCardInput): Reso
     topic.textContent = TOPIC_LABEL[input.topic];
     header.appendChild(topic);
   }
+  let type: HTMLElement | null = null;
   if (input.typeLabel !== null) {
-    const type = doc.createElement("span");
+    type = doc.createElement("span");
     type.className = "shell-lesson-resource-type";
     if (input.testIds?.type) type.setAttribute("data-testid", input.testIds.type);
     type.textContent = input.typeLabel;
-    header.appendChild(type);
+    if (input.typePlacement !== "title") header.appendChild(type);
   }
   if (header.childElementCount > 0) main.appendChild(header);
 
@@ -87,6 +91,7 @@ export function buildResourceCard(doc: Document, input: ResourceCardInput): Reso
   if (input.testIds?.title) title.setAttribute("data-testid", input.testIds.title);
   title.textContent = input.title;
   titleRow.appendChild(title);
+  if (type !== null && input.typePlacement === "title") titleRow.appendChild(type);
   main.appendChild(titleRow);
 
   const actions = doc.createElement("div");

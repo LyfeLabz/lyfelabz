@@ -246,6 +246,7 @@ function renderResourceCard(
     typeLabel,
     title: resource.label,
     titleTag: "h3",
+    typePlacement: "title",
     testIds: {
       grade: "resource-grade",
       topic: "resource-topic",

@@ -1573,14 +1573,18 @@
      lives in the text + underline. white-space:nowrap keeps the label on one
      line. Hidden (no dead control) until the lesson has owned
      published/closed assignment history. */
+  /* Teacher Units UX Milestone 1 polish: View Summary is a quiet supporting
+     link - small, medium weight, no gold underline. Hover and keyboard focus
+     reveal an ink underline (focus also keeps its ring below). */
   .shell-lesson-view-summary {
-    padding: 0.2rem 0;
+    padding: 0.1rem 0;
     /* margin: 0 zeroes the global button 1rem top-margin that otherwise adds
        16px above this footer control (Sprint 28.6H.4, Task D3/D5). */
     margin: 0;
     font: inherit;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.3;
     background: transparent;
     color: var(--tw-ink-soft, #3a4653);
     border: none;
@@ -1588,14 +1592,13 @@
     cursor: pointer;
     white-space: nowrap;
     min-height: 1.25rem;
-    text-decoration: underline;
-    text-decoration-color: var(--tw-gold-border, rgba(214, 158, 23, 0.55));
+    text-decoration: none;
     text-underline-offset: 2px;
   }
   .shell-lesson-view-summary:hover,
   .shell-lesson-view-summary:focus-visible {
-    color: var(--tw-gold-strong, #a9790f);
-    text-decoration-color: var(--tw-gold-strong, #a9790f);
+    color: var(--tw-ink, #1c2733);
+    text-decoration: underline;
   }
   .shell-lesson-view-summary:focus-visible {
     outline: none;
@@ -5653,6 +5656,28 @@
     min-width: 0;
   }
   .shell-resource-row-actions > .shell-lesson-actions { margin-top: 0; }
+  /* Milestone 1 polish, Curriculum only (both the lesson list and the
+     resource tabs render inside .shell-curriculum-grid; My Units does not):
+     the title is primary and everything else supports it. Smaller pills with
+     a quieter border, the resource type directly after the title (baseline
+     aligned, wrapping beneath a long title rather than overlapping), a small
+     muted status line, and tighter vertical rhythm. */
+  .shell-curriculum-grid .shell-resource-row { row-gap: 0.1rem; }
+  .shell-curriculum-grid .shell-resource-row-main { gap: 0.1rem; }
+  .shell-curriculum-grid .shell-lesson-badge {
+    padding: 0.03rem 0.45rem;
+    font-size: 0.68rem;
+    line-height: 1.3;
+    border-color: rgba(0, 0, 0, 0.05);
+  }
+  .shell-curriculum-grid .shell-lesson-header { gap: 0.3rem; }
+  .shell-curriculum-grid .shell-lesson-title-row { column-gap: 0.5rem; }
+  .shell-curriculum-grid .shell-lesson-title-row .shell-lesson-title { flex: 0 1 auto; }
+  .shell-curriculum-grid .shell-lesson-title-row > .shell-lesson-resource-type { flex: 0 0 auto; }
+  .shell-curriculum-grid .shell-resource-row-status {
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
   .shell-resource-row-footer { grid-area: footer; min-width: 0; }
   @media (max-width: 720px) {
     .shell-card.shell-resource-row,

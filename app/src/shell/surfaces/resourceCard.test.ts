@@ -62,6 +62,24 @@ describe("buildResourceCard", () => {
     expect(row.main.querySelector(".shell-resource-row-status")).toBeNull();
   });
 
+  test("typePlacement 'title' puts the type directly after the title; the default keeps it in the header", () => {
+    const inline = buildResourceCard(document, {
+      className: "ctx", grade: "7", topic: "life-science", typeLabel: "Engineering Challenge",
+      title: "A long resource title", titleTag: "h3", typePlacement: "title",
+    });
+    expect(Array.from(inline.header.children).map((c) => c.textContent)).toEqual(["G7", TOPIC_LABEL["life-science"]]);
+    expect(Array.from(inline.titleRow.children)).toEqual([
+      inline.title,
+      inline.titleRow.querySelector(".shell-lesson-resource-type"),
+    ]);
+    expect(inline.titleRow.lastElementChild?.textContent).toBe("Engineering Challenge");
+    const header = buildResourceCard(document, {
+      className: "ctx", grade: "7", topic: "life-science", typeLabel: "Lesson", title: "T", titleTag: "span",
+    });
+    expect(header.header.lastElementChild?.textContent).toBe("Lesson");
+    expect(header.titleRow.querySelector(".shell-lesson-resource-type")).toBeNull();
+  });
+
   test("no header at all when there is nothing to badge", () => {
     const row = buildResourceCard(document, {
       className: "ctx", tag: "div", grade: null, topic: null, typeLabel: null, title: "Gone", titleTag: "span",
@@ -106,6 +124,9 @@ describe("Curriculum uses the shared row", () => {
       const main = card.querySelector(":scope > .shell-resource-row-main") as HTMLElement;
       expect(main.contains(q(card, `lesson-title-${slug}`))).toBe(true);
       expect(main.querySelector(".shell-lesson-resource-type")?.textContent).toBe("Lesson");
+      // Milestone 1 polish: the type follows the title, not the pills.
+      const title = q(card, `lesson-title-${slug}`) as HTMLElement;
+      expect(title.nextElementSibling?.classList.contains("shell-lesson-resource-type")).toBe(true);
       // View Summary keeps its control (hidden until assignment history).
       expect(q(card, `lesson-view-summary-${slug}`)).not.toBeNull();
       const footer = q(card, `lesson-footer-${slug}`);
@@ -124,6 +145,7 @@ describe("Curriculum uses the shared row", () => {
     const actions = card.querySelector(":scope > .shell-resource-row-actions") as HTMLElement;
     expect(main.contains(q(card, "resource-lesson"))).toBe(true);
     expect(main.contains(q(card, "resource-type"))).toBe(true);
+    expect(q(card, "resource-title")!.nextElementSibling).toBe(q(card, "resource-type"));
     expect(actions.contains(q(card, "resource-open"))).toBe(true);
     expect(card.querySelector(".shell-lesson-assign")).toBeNull();
   });

@@ -1442,6 +1442,7 @@ function renderLessonCard(
     typeLabel: "Lesson",
     title: lesson.title,
     titleTag: "h3",
+    typePlacement: "title",
     testIds: {
       grade: `lesson-grade-${lesson.slug}`,
       topic: `lesson-topic-${lesson.slug}`,
