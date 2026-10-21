@@ -641,12 +641,15 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   border-radius: 99px;
   margin-top: 0.4rem;
 }
-.hook-card .hook-card-observation,
-.hook-card .hook-card-question { display: none; }
-.hook-card.revealed .hook-card-prompt { display: none; }
-.hook-card.revealed .hook-card-observation,
-.hook-card.revealed .hook-card-question {
-  display: block;
+/* Prompt and revealed text share one grid cell, so every card always reserves
+   its expanded height and revealing never changes the grid row height.
+   visibility:hidden keeps the inactive layer out of the accessibility tree. */
+.hook-card { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; }
+.hook-card-prompt { grid-area: 3 / 1; justify-self: center; align-self: center; }
+.hook-card-reveal { grid-area: 3 / 1; visibility: hidden; }
+.hook-card.revealed .hook-card-prompt { visibility: hidden; }
+.hook-card.revealed .hook-card-reveal {
+  visibility: visible;
   animation: predictFadeUp 0.4s ease both;
 }
 
@@ -1755,30 +1758,36 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="hook-card c1" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🎳</span>
         <div class="hook-card-name">Two Same-Size Balls</div>
-        <div class="hook-card-observation">
-          A bowling ball and a beach ball can be exactly the same size, but one of them is much, much harder to lift.
+        <div class="hook-card-reveal">
+          <div class="hook-card-observation">
+            A bowling ball and a beach ball can be exactly the same size, but one of them is much, much harder to lift.
+          </div>
+          <div class="hook-card-question">If they take up the same space, what is different inside them?</div>
         </div>
-        <div class="hook-card-question">If they take up the same space, what is different inside them?</div>
         <div class="hook-card-prompt">Click to look closer</div>
       </div>
 
       <div class="hook-card c2" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🎈</span>
         <div class="hook-card-name">The Invisible Stuff</div>
-        <div class="hook-card-observation">
-          Blow up a balloon and it gets bigger and slightly heavier. But you can't see anything inside it - just air.
+        <div class="hook-card-reveal">
+          <div class="hook-card-observation">
+            Blow up a balloon and it gets bigger and slightly heavier. But you can't see anything inside it - just air.
+          </div>
+          <div class="hook-card-question">Is air "stuff"? Does it really take up space and have weight?</div>
         </div>
-        <div class="hook-card-question">Is air "stuff"? Does it really take up space and have weight?</div>
         <div class="hook-card-prompt">Click to look closer</div>
       </div>
 
       <div class="hook-card c3" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🚢</span>
         <div class="hook-card-name">The Floating Giant</div>
-        <div class="hook-card-observation">
-          A steel cargo ship has a mass of millions of kilograms, yet it floats. A pebble has almost no mass, yet it sinks instantly.
+        <div class="hook-card-reveal">
+          <div class="hook-card-observation">
+            A steel cargo ship has a mass of millions of kilograms, yet it floats. A pebble has almost no mass, yet it sinks instantly.
+          </div>
+          <div class="hook-card-question">If heaviness decided floating, the ship should sink first. So what really decides?</div>
         </div>
-        <div class="hook-card-question">If heaviness decided floating, the ship should sink first. So what really decides?</div>
         <div class="hook-card-prompt">Click to look closer</div>
       </div>
 
