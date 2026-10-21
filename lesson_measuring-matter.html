@@ -60,6 +60,9 @@ Regenerate: npm --prefix app run lessons:build -- --only=measuring-matter --targ
     --density:        #e67e22;   /* orange - density */
     --density-dim:    rgba(230,126,34,0.08);
     --density-border: rgba(230,126,34,0.3);
+
+    --matter:       #7cc8f8;  /* light blue - matter (vocabulary) */
+    --check-border: #6a87a1;  /* answer-option border, 3:1 on card surfaces */
   }
 
   /* ===== RESET ===== */
@@ -275,7 +278,7 @@ Regenerate: npm --prefix app run lessons:build -- --only=measuring-matter --targ
     border: 1px solid rgba(245,200,66,0.22);
     border-left: 4px solid var(--gold);
     border-radius: 12px;
-    font-size: 0.98rem;
+    font-size: 1rem;
     color: var(--text);
     line-height: 1.65;
   }
@@ -452,83 +455,113 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <!-- ── Engagement + Content Styles ── -->
 <style>
 
-/* ── QUESTION PAUSE CARD ── */
-.question-pause {
+/* ── QUICK CHECK FAMILY (formative, ungraded, nothing collected) ──
+   One shell for every practice multiple-choice moment outside the final
+   quiz: predictions use a gold rule, quick checks and Quick Recall use a
+   teal rule. Option rows share one shape; each activity's own script still
+   owns its state classes (.chosen, .selected, .right/.correct, .wrong). */
+.check-card {
   max-width: 760px;
-  margin: 0.5rem auto 2rem;
-  padding: 1.2rem 1.5rem;
-  background: rgba(255,255,255,0.03);
-  border: 1px dashed rgba(255,255,255,0.18);
-  border-radius: 14px;
+  margin: 0 auto 2rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+}
+.check-card.check-predict { border-left-color: var(--gold); }
+.check-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.5rem;
+}
+.check-predict .check-eyebrow { color: var(--gold); }
+.check-q {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 0.9rem;
+}
+.check-options { display: grid; gap: 0.6rem; }
+.check-opt {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.9rem;
-}
-.question-pause-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  opacity: 0.75;
-}
-.question-pause-text {
-  font-size: 0.98rem;
-  font-style: italic;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-.question-pause-text strong {
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 2.6rem 0.75rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border: 2px solid var(--check-border);
+  border-radius: 12px;
   color: var(--text);
-  font-style: normal;
-  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
 }
+/* Hover stays at state-class specificity so answered states always win. */
+.check-opt:where(:not([aria-disabled="true"]):not(:disabled)):hover {
+  border-color: var(--teal);
+  background: rgba(59,200,232,0.08);
+}
+.check-opt[aria-disabled="true"], .check-opt:disabled { cursor: default; }
+.check-opt.selected { border-color: var(--teal); background: rgba(59,200,232,0.1); }
+.check-opt.chosen   { border-color: var(--gold); background: rgba(245,200,66,0.14); color: var(--gold); }
+.check-opt.right,
+.check-opt.correct  { border-color: var(--green); background: rgba(46,204,113,0.12); }
+.check-opt.wrong    { border-color: var(--red);   background: rgba(231,76,60,0.1); }
+/* State icons so right and wrong never rely on color alone; the empty
+   alt text keeps them out of the accessible name. */
+.check-opt.right::after,
+.check-opt.correct::after,
+.check-opt.wrong::after {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+.check-opt.right::after,
+.check-opt.correct::after { content: '\2713'; content: '\2713' / ''; color: var(--green); }
+.check-opt.wrong::after   { content: '\2717'; content: '\2717' / ''; color: #ff9b8e; }
 @media (max-width: 480px) {
-  .question-pause {
-    padding: 0.9rem 1rem;
-    gap: 0.6rem;
-    margin-top: 0;
-  }
-  .question-pause-icon { font-size: 1.2rem; }
-  .question-pause-text { font-size: 0.9rem; }
+  .check-card { padding: 1.1rem 1rem; }
 }
 
 /* ── PREDICT BEFORE REVEAL ── */
-.question-pause.predict-pause {
-  display: block;
-}
 .question-pause.predict-pause .qp-row {
   display: flex;
-  align-items: center;
-  gap: 0.9rem;
+  align-items: flex-start;
+  gap: 0.8rem;
 }
-.predict-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.9rem;
+.question-pause-icon {
+  font-size: 1.4rem;
+  line-height: 1.4;
+  flex-shrink: 0;
 }
-.predict-btn {
-  flex: 1;
-  min-width: 140px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.15);
+.question-pause-text {
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--text);
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.84rem;
-  font-weight: 800;
-  padding: 0.55rem 0.7rem;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: all 0.2s;
+  line-height: 1.55;
 }
-.predict-btn:hover:not(.locked) {
-  border-color: rgba(245,200,66,0.5);
-  background: rgba(245,200,66,0.08);
+.question-pause-text strong { color: var(--gold); font-weight: 800; }
+.predict-buttons {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1rem;
 }
-.predict-btn.chosen {
-  border-color: var(--gold);
-  background: rgba(245,200,66,0.16);
-  color: var(--gold);
-}
-.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; }
+.question-pause.locked .predict-btn { opacity: 0.5; }
 .question-pause.locked .predict-btn.chosen { opacity: 1; }
 
 .predict-gated { display: none; }
@@ -581,13 +614,13 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   margin-bottom: 0.6rem;
 }
 .hook-card-observation {
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--text-muted);
   line-height: 1.6;
   margin-bottom: 1rem;
 }
 .hook-card-question {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 800;
   font-style: italic;
   color: var(--gold);
@@ -598,7 +631,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .hook-card.revealed { cursor: default; }
 .hook-card-prompt {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -634,7 +667,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  font-size: 0.93rem;
+  font-size: 1rem;
   line-height: 1.55;
 }
 .observe-icon { font-size: 1.6rem; flex-shrink: 0; }
@@ -692,7 +725,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-muted);
   line-height: 1.4;
@@ -719,7 +752,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .process-card.step2 { background: var(--volume-dim);  border: 1px solid var(--volume-border);  }
 .process-card.step3 { background: var(--density-dim); border: 1px solid var(--density-border); }
 .process-step-label {
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 900;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -738,88 +771,49 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .process-card.step2 .process-name { color: var(--volume); }
 .process-card.step3 .process-name { color: var(--density); }
 .process-body {
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--text-muted);
   line-height: 1.6;
 }
 .process-body strong { color: var(--text); }
 .process-mini {
   margin-top: 0.8rem;
-  font-size: 0.74rem;
+  font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   padding: 0.3rem 0.8rem;
-  border-radius: 99px;
+  border-radius: 12px;
+  line-height: 1.45;
   display: inline-block;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.12);
   color: var(--text-muted);
 }
 
-/* ── TOOL MATCH GAME ── */
-.tool-match {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 2rem 1.8rem;
-  max-width: 860px;
-  margin: 0 auto 2rem;
-}
+/* ── TOOL MATCH GAME (Quick Check shell) ── */
 .tool-match-title {
   font-family: 'Fredoka One', cursive;
   font-size: 1.2rem;
   color: var(--text);
-  text-align: center;
   margin-bottom: 0.3rem;
 }
 .tool-match-sub {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-muted);
-  text-align: center;
-  max-width: 620px;
-  margin: 0 auto 1.5rem;
+  margin-bottom: 0.4rem;
   line-height: 1.6;
 }
 .tm-question {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
-  padding: 1.1rem 1.3rem;
-  margin-bottom: 1rem;
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
-.tm-q-text {
-  font-weight: 800;
-  font-size: 0.96rem;
-  color: var(--text);
-  margin-bottom: 0.8rem;
-  line-height: 1.5;
-}
-.tm-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.tm-btn {
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 800;
-  background: rgba(255,255,255,0.04);
-  border: 1.5px solid rgba(255,255,255,0.15);
-  color: var(--text);
-  padding: 0.5rem 1.1rem;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.tm-btn:hover:not(:disabled) { border-color: rgba(59,200,232,0.55); background: rgba(59,200,232,0.08); }
-.tm-btn.right { border-color: var(--green); background: rgba(46,204,113,0.12); color: var(--green); }
-.tm-btn.wrong { border-color: var(--red);   background: rgba(231,76,60,0.1);   color: #ff9b8e; }
 .tm-fb {
   display: none;
   margin-top: 0.7rem;
-  font-size: 0.86rem;
+  font-size: 1rem;
   line-height: 1.55;
-  padding: 0.6rem 0.9rem;
+  padding: 0.65rem 0.95rem;
   border-radius: 10px;
 }
 .tm-fb.visible { display: block; animation: predictFadeUp 0.35s ease both; }
@@ -827,13 +821,13 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .tm-fb.no { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.3);  color: #ecb3b3; }
 .tm-done {
   display: none;
-  margin-top: 0.6rem;
+  margin-top: 1.1rem;
   padding: 0.9rem 1.2rem;
   border-radius: 12px;
   background: rgba(46,204,113,0.1);
   border: 1px solid rgba(46,204,113,0.35);
   color: #a8e6c4;
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 .tm-done.visible { display: block; animation: predictFadeUp 0.4s ease both; }
@@ -855,7 +849,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   margin-bottom: 0.3rem;
 }
 .vol-lab-sub {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-muted);
   text-align: center;
   max-width: 620px;
@@ -899,7 +893,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   border: 1px solid rgba(46,204,113,0.3);
   border-radius: 12px;
   padding: 0.9rem 1.1rem;
-  font-size: 0.94rem;
+  font-size: 1rem;
   line-height: 1.6;
   color: var(--text);
 }
@@ -959,7 +953,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   margin-bottom: 0.3rem;
 }
 .density-lab-sub {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-muted);
   text-align: center;
   max-width: 620px;
@@ -1011,7 +1005,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   border: 1px solid rgba(255,255,255,0.12);
 }
 .dl-panel-name {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1032,7 +1026,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .dl-tank-svg { width: 100%; max-width: 260px; height: auto; display: block; margin: 0 auto; }
 .dl-verdict {
   text-align: center;
-  font-size: 0.86rem;
+  font-size: 0.95rem;
   font-weight: 800;
   margin-top: 0.5rem;
 }
@@ -1046,7 +1040,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   background: rgba(46,204,113,0.06);
   border: 1px solid rgba(46,204,113,0.25);
   border-left: 4px solid var(--green);
-  font-size: 0.94rem;
+  font-size: 1rem;
   color: var(--text);
   line-height: 1.65;
 }
@@ -1070,7 +1064,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   margin-bottom: 0.3rem;
 }
 .we-sub {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-muted);
   text-align: center;
   max-width: 620px;
@@ -1085,7 +1079,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   margin-bottom: 1.4rem;
 }
 .we-chip {
-  font-size: 0.84rem;
+  font-size: 0.9rem;
   font-weight: 800;
   padding: 0.35rem 1rem;
   border-radius: 99px;
@@ -1115,11 +1109,11 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   display: flex; align-items: center; justify-content: center;
   margin-top: 0.1rem;
 }
-.we-step-body { flex: 1; font-size: 0.93rem; line-height: 1.65; color: var(--text-muted); }
+.we-step-body { flex: 1; font-size: 1rem; line-height: 1.65; color: var(--text-muted); }
 .we-step-body strong { color: var(--text); }
 .we-step-body .we-math {
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   letter-spacing: 0.03em;
   display: block;
   margin-top: 0.35rem;
@@ -1145,33 +1139,23 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .we-hidden { display: none; }
 .we-hidden.visible { display: block; animation: predictFadeUp 0.35s ease both; }
 
-/* answer-choice buttons inside practice problem */
+/* answer-choice buttons inside practice problem (Quick Check option rows,
+   math kept in Orbitron) */
 .we-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.7rem;
 }
 .we-opt-btn {
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  background: rgba(255,255,255,0.04);
-  border: 1.5px solid rgba(255,255,255,0.15);
-  color: var(--text);
-  padding: 0.5rem 1.1rem;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
 }
-.we-opt-btn:hover:not(:disabled) { border-color: rgba(59,200,232,0.55); background: rgba(59,200,232,0.08); }
-.we-opt-btn.right { border-color: var(--green); background: rgba(46,204,113,0.12); color: var(--green); }
-.we-opt-btn.wrong { border-color: var(--red);   background: rgba(231,76,60,0.1);   color: #ff9b8e; }
 .we-fb {
   display: none;
   margin-top: 0.6rem;
-  font-size: 0.88rem;
+  font-size: 1rem;
   line-height: 1.6;
   padding: 0.65rem 0.95rem;
   border-radius: 10px;
@@ -1187,25 +1171,20 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   background: rgba(46,204,113,0.1);
   border: 1px solid rgba(46,204,113,0.35);
   color: #a8e6c4;
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 .we-success.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@media (max-width: 480px) {
+  .worked-example { padding: 1.4rem 1rem; }
+  .we-step { flex-direction: column; gap: 0.5rem; padding: 1rem; }
+}
 
-/* ── QUICK RECALL ── */
-.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
-.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
-.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
-.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
-.qr-options { display: grid; gap: 0.45rem; }
-.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
-.qr-options label:hover { border-color: var(--teal); }
+/* ── QUICK RECALL (Quick Check shell) ── */
+.qr-sub { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
 .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
-.qr-options input[type=radio] { accent-color: var(--teal); }
-.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
-.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
-.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
-.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-options input[type=radio] { accent-color: var(--teal); flex-shrink: 0; width: 1.1rem; height: 1.1rem; }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.95rem; border-radius: 10px; font-size: 1rem; line-height: 1.55; }
 .qr-feedback.visible { display: block; }
 .qr-feedback:focus { outline: none; }
 .qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
@@ -1256,7 +1235,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
 
 .wrapup-beat-label {
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 900;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -1274,7 +1253,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   color: var(--text);
 }
 .wrapup-beat-body {
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--text-muted);
   line-height: 1.6;
 }
@@ -1286,7 +1265,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   margin-top: 0.75rem;
 }
 .wbc {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   font-weight: 800;
   padding: 0.22rem 0.65rem;
   border-radius: 99px;
@@ -1309,7 +1288,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .summary-table th {
   text-align: left;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1358,16 +1337,20 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 
 /* Glossary cards: click-to-expand ONLY. Hover gives subtle visual
-   feedback (lift + shadow) but never reveals content. */
+   feedback (lift + shadow) but never reveals content. Canonical markup:
+   button.glossary-card > .gc-head (span.gc-term + span.gc-chev) + .gc-def.
+   The definition reads at body size in full-contrast text once opened. */
 .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; align-items: start; }
 @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
 .glossary-card {
+  width: 100%;
+  min-height: 56px;
   background: var(--card);
   border: 1px solid var(--border);
   border-top: 3px solid var(--teal);
   border-radius: 16px;
-  padding: 1.2rem 1.3rem 1.3rem;
+  padding: 1rem 1.3rem;
   text-align: left;
   cursor: pointer;
   font-family: 'Nunito', sans-serif;
@@ -1376,24 +1359,23 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.35rem; }
-.gc-hint {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  opacity: 0.7;
+.gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.2rem; line-height: 1.3; }
+.gc-chev { font-size: 0.9rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
+.glossary-card.open .gc-chev { color: var(--gold); }
+.gc-def {
+  display: none;
+  font-size: 1rem;
+  color: var(--text);
+  line-height: 1.6;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
 }
-.gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
 .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
-.glossary-card.open .gc-hint { display: none; }
-.gc-term { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-.gc-term::after { content: '▾'; font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
-.glossary-card.open .gc-term::after { content: '▴'; color: var(--gold); }
 .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
 .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
-.gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
+.gc-blue   { border-top-color: var(--matter); } .gc-blue .gc-term   { color: var(--matter); }
 .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
 </style>
 <style id="nav-hamburger-style">
@@ -1657,27 +1639,27 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-term">Matter</div>
+        <div class="gc-head"><span class="gc-term">Matter</span><span class="gc-chev" aria-hidden="true">▾</span></div>
         <div class="gc-def">Anything that has mass and takes up space (volume). The most common states of matter are solid, liquid, and gas.</div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-term">Mass</div>
+        <div class="gc-head"><span class="gc-term">Mass</span><span class="gc-chev" aria-hidden="true">▾</span></div>
         <div class="gc-def">The amount of matter in an object. Mass is measured in grams (g) with a triple beam balance.</div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-term">Volume</div>
+        <div class="gc-head"><span class="gc-term">Volume</span><span class="gc-chev" aria-hidden="true">▾</span></div>
         <div class="gc-def">The amount of space an object takes up. Volume is measured in cubic centimeters (cm³) with a ruler or in milliliters (mL) with a graduated cylinder.</div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-term">Density</div>
+        <div class="gc-head"><span class="gc-term">Density</span><span class="gc-chev" aria-hidden="true">▾</span></div>
         <div class="gc-def">A measure of how much matter is packed into a space. Density is the ratio of mass to volume: D = m ÷ V, in g/cm³ or g/mL.</div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-term">Triple Beam Balance</div>
+        <div class="gc-head"><span class="gc-term">Triple Beam Balance</span><span class="gc-chev" aria-hidden="true">▾</span></div>
         <div class="gc-def">The lab tool scientists use to measure mass in grams. You slide weights along three beams until the pointer balances.</div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-term">Graduated Cylinder</div>
+        <div class="gc-head"><span class="gc-term">Graduated Cylinder</span><span class="gc-chev" aria-hidden="true">▾</span></div>
         <div class="gc-def">A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).</div>
       </button>
     </div>
@@ -1802,20 +1784,21 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <p class="section-desc">Look around you. Your desk, your water bottle, the air you're breathing - what do they all have in common?</p>
 
     <!-- Predict: is air matter? -->
-    <div class="question-pause predict-pause" id="qp-air">
+    <div class="question-pause predict-pause check-card check-predict" id="qp-air">
+      <div class="check-eyebrow">Predict</div>
       <div class="qp-row">
         <span class="question-pause-icon">🤔</span>
-        <div class="question-pause-text"><strong>Think about it:</strong> A rock is obviously "stuff." But is air stuff too? Make a prediction.</div>
+        <div class="question-pause-text" id="qp-air-q"><strong>Think about it:</strong> A rock is obviously "stuff." But is air stuff too? Make a prediction.</div>
       </div>
-      <div class="predict-buttons">
-        <button class="predict-btn" type="button" aria-pressed="false">Yes - air is matter just like a rock</button>
-        <button class="predict-btn" type="button" aria-pressed="false">No - air is empty space</button>
-        <button class="predict-btn" type="button" aria-pressed="false">Air is something in between</button>
+      <div class="predict-buttons" role="group" aria-labelledby="qp-air-q">
+        <button class="predict-btn check-opt" type="button" aria-pressed="false">Yes - air is matter just like a rock</button>
+        <button class="predict-btn check-opt" type="button" aria-pressed="false">No - air is empty space</button>
+        <button class="predict-btn check-opt" type="button" aria-pressed="false">Air is something in between</button>
       </div>
     </div>
 
     <div class="name-it teal-it predict-gated" data-gate="qp-air">
-      <div class="name-it-label">The key idea</div>
+      <div class="name-it-label">Key idea: Matter</div>
       <p><strong>Matter</strong> is anything that has <strong>mass</strong> and takes up space (<strong>volume</strong>). That includes air! Air has mass (a filled balloon weighs slightly more than an empty one) and it takes up space (that's why the balloon gets bigger). The most common states of matter are <strong>solid</strong>, <strong>liquid</strong>, and <strong>gas</strong>.</p>
     </div>
 
@@ -1877,7 +1860,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <span class="process-icon">⚖️</span>
         <div id="mass-term" class="process-name">Mass</div>
         <div class="process-body"><strong>Mass</strong> is the amount of matter in an object. It is measured in <strong>grams (g)</strong> with a <strong>triple beam balance</strong>.</div>
-        <span class="process-mini">Tool: Triple Beam Balance · Unit: g</span>
+        <span class="process-mini">Tool: Triple&nbsp;Beam&nbsp;Balance · Unit:&nbsp;g</span>
       </div>
 
       <div class="process-card step2">
@@ -1885,7 +1868,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <span class="process-icon">📦</span>
         <div id="volume-term" class="process-name">Volume</div>
         <div class="process-body"><strong>Volume</strong> is the amount of space an object takes up. It is measured in <strong>cubic centimeters (cm³)</strong> with a ruler, or in <strong>milliliters (mL)</strong> with a <strong>graduated cylinder</strong>.</div>
-        <span class="process-mini">Tools: Ruler or Graduated Cylinder · Units: cm³ or mL</span>
+        <span class="process-mini">Tools: Ruler or Graduated&nbsp;Cylinder · Units:&nbsp;cm³&nbsp;or&nbsp;mL</span>
       </div>
 
       <div class="process-card step3">
@@ -1899,36 +1882,37 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <!-- Tool match interactive -->
-    <div class="tool-match">
+    <div class="tool-match check-card">
+      <div class="check-eyebrow">Quick Check · Not graded</div>
       <div class="tool-match-title">🧰 Pick the Right Tool</div>
       <div class="tool-match-sub">A real scientist's first decision is choosing the right tool and unit. Answer all three to prove you're lab-ready.</div>
 
       <div class="tm-question" data-correct="1">
-        <div class="tm-q-text">1. You need to measure the mass of a wooden block. Which tool do you grab?</div>
-        <div class="tm-options">
-          <button class="tm-btn">Ruler</button>
-          <button class="tm-btn">Triple beam balance</button>
-          <button class="tm-btn">Graduated cylinder</button>
+        <div class="tm-q-text check-q" id="tm-q1">1. You need to measure the mass of a wooden block. Which tool do you grab?</div>
+        <div class="tm-options check-options" role="group" aria-labelledby="tm-q1">
+          <button class="tm-btn check-opt" type="button">Ruler</button>
+          <button class="tm-btn check-opt" type="button">Triple beam balance</button>
+          <button class="tm-btn check-opt" type="button">Graduated cylinder</button>
         </div>
         <div class="tm-fb" aria-live="polite"></div>
       </div>
 
       <div class="tm-question" data-correct="2">
-        <div class="tm-q-text">2. You need to measure the volume of juice for an experiment. Which tool do you grab?</div>
-        <div class="tm-options">
-          <button class="tm-btn">Triple beam balance</button>
-          <button class="tm-btn">Ruler</button>
-          <button class="tm-btn">Graduated cylinder</button>
+        <div class="tm-q-text check-q" id="tm-q2">2. You need to measure the volume of juice for an experiment. Which tool do you grab?</div>
+        <div class="tm-options check-options" role="group" aria-labelledby="tm-q2">
+          <button class="tm-btn check-opt" type="button">Triple beam balance</button>
+          <button class="tm-btn check-opt" type="button">Ruler</button>
+          <button class="tm-btn check-opt" type="button">Graduated cylinder</button>
         </div>
         <div class="tm-fb" aria-live="polite"></div>
       </div>
 
       <div class="tm-question" data-correct="0">
-        <div class="tm-q-text">3. You need the volume of a rectangular block (a solid with straight sides). Which tool do you grab?</div>
-        <div class="tm-options">
-          <button class="tm-btn">Ruler - measure length, width, and height</button>
-          <button class="tm-btn">Triple beam balance</button>
-          <button class="tm-btn">A bigger block to compare</button>
+        <div class="tm-q-text check-q" id="tm-q3">3. You need the volume of a rectangular block (a solid with straight sides). Which tool do you grab?</div>
+        <div class="tm-options check-options" role="group" aria-labelledby="tm-q3">
+          <button class="tm-btn check-opt" type="button">Ruler - measure length, width, and height</button>
+          <button class="tm-btn check-opt" type="button">Triple beam balance</button>
+          <button class="tm-btn check-opt" type="button">A bigger block to compare</button>
         </div>
         <div class="tm-fb" aria-live="polite"></div>
       </div>
@@ -2016,7 +2000,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <p class="section-desc">Remember the bowling ball and the beach ball? Same size, totally different heft. Density is the measurement that explains why.</p>
 
     <div class="name-it orange-it">
-      <div class="name-it-label">The key idea</div>
+      <div class="name-it-label">Key idea: Density</div>
       <p><strong>Density</strong> is the ratio of <strong style="color:var(--mass);">mass</strong> to <strong style="color:var(--volume);">volume</strong>: how much matter is packed into a space. It can be measured two ways: in <strong>g/cm³</strong> (triple beam balance + ruler) or in <strong>g/mL</strong> (triple beam balance + graduated cylinder).</p>
     </div>
 
@@ -2032,15 +2016,16 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <!-- Predict before the density lab -->
-    <div class="question-pause predict-pause" id="qp-density" style="margin-top: 2.5rem;">
+    <div class="question-pause predict-pause check-card check-predict" id="qp-density" style="margin-top: 2.5rem;">
+      <div class="check-eyebrow">Predict</div>
       <div class="qp-row">
         <span class="question-pause-icon">🧪</span>
-        <div class="question-pause-text"><strong>Density Lab:</strong> Water has a density of 1 g/mL. You're about to build an object and drop it in a tank. What do you think decides whether it floats? Make a prediction to unlock the lab.</div>
+        <div class="question-pause-text" id="qp-density-q"><strong>Density Lab:</strong> Water has a density of 1 g/mL. You're about to build an object and drop it in a tank. What do you think decides whether it floats? Make a prediction to unlock the lab.</div>
       </div>
-      <div class="predict-buttons">
-        <button class="predict-btn" type="button" aria-pressed="false">Heavy objects always sink</button>
-        <button class="predict-btn" type="button" aria-pressed="false">It floats if its density is less than water's</button>
-        <button class="predict-btn" type="button" aria-pressed="false">Big objects always float</button>
+      <div class="predict-buttons" role="group" aria-labelledby="qp-density-q">
+        <button class="predict-btn check-opt" type="button" aria-pressed="false">Heavy objects always sink</button>
+        <button class="predict-btn check-opt" type="button" aria-pressed="false">It floats if its density is less than water's</button>
+        <button class="predict-btn check-opt" type="button" aria-pressed="false">Big objects always float</button>
       </div>
     </div>
 
@@ -2071,7 +2056,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="dl-panel">
           <div class="dl-panel-name">The Tank (water = 1 g/mL)</div>
-          <svg class="dl-tank-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" aria-label="A tank of water showing whether the object floats or sinks">
+          <svg class="dl-tank-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A tank of water showing whether the object floats or sinks">
             <rect x="10" y="10" width="180" height="130" rx="8" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
             <rect x="12" y="55" width="176" height="83" rx="6" fill="rgba(59,130,246,0.18)"/>
             <line x1="12" y1="55" x2="188" y2="55" stroke="rgba(124,200,248,0.6)" stroke-width="2"/>
@@ -2167,11 +2152,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="we-step">
         <span class="we-step-num">1</span>
         <div class="we-step-body">
-          <strong>Find the volume.</strong> V = length × width × height = 4 × 3 × 2 = ?
-          <div class="we-options" id="pp-step1">
-            <button class="we-opt-btn" data-ans="0">9 cm³</button>
-            <button class="we-opt-btn" data-ans="1">24 cm³</button>
-            <button class="we-opt-btn" data-ans="0">12 cm³</button>
+          <span id="pp-q1"><strong>Find the volume.</strong> V = length × width × height = 4 × 3 × 2 = ?</span>
+          <div class="we-options" id="pp-step1" role="group" aria-labelledby="pp-q1">
+            <button class="we-opt-btn check-opt" type="button" data-ans="0">9 cm³</button>
+            <button class="we-opt-btn check-opt" type="button" data-ans="1">24 cm³</button>
+            <button class="we-opt-btn check-opt" type="button" data-ans="0">12 cm³</button>
           </div>
           <div class="we-fb" id="pp-fb1" aria-live="polite"></div>
         </div>
@@ -2180,11 +2165,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="we-step we-hidden" id="pp-step2-wrap">
         <span class="we-step-num">2</span>
         <div class="we-step-body">
-          <strong>Use the density formula.</strong> D = m ÷ V = 60 g ÷ 24 cm³ = ?
-          <div class="we-options" id="pp-step2">
-            <button class="we-opt-btn" data-ans="0">0.4 g/cm³</button>
-            <button class="we-opt-btn" data-ans="0">3.6 g/cm³</button>
-            <button class="we-opt-btn" data-ans="1">2.5 g/cm³</button>
+          <span id="pp-q2"><strong>Use the density formula.</strong> D = m ÷ V = 60 g ÷ 24 cm³ = ?</span>
+          <div class="we-options" id="pp-step2" role="group" aria-labelledby="pp-q2">
+            <button class="we-opt-btn check-opt" type="button" data-ans="0">0.4 g/cm³</button>
+            <button class="we-opt-btn check-opt" type="button" data-ans="0">3.6 g/cm³</button>
+            <button class="we-opt-btn check-opt" type="button" data-ans="1">2.5 g/cm³</button>
           </div>
           <div class="we-fb" id="pp-fb2" aria-live="polite"></div>
         </div>
@@ -2231,35 +2216,35 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <h2 class="section-title">Brain Check</h2>
     <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
 
-    <div class="qr-card" id="qrCard1">
-      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+    <div class="qr-card check-card" id="qrCard1">
+      <div class="qr-eyebrow check-eyebrow">Quick Recall · 1 of 2</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Two cubes are exactly the same size. Cube A has a mass of 270 g, and cube B has a mass of 27 g. Which statement is true?</div>
-      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>Cube A has more matter packed into the same space, so it is denser</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>Cube B is denser because it is lighter</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>They have the same density because they are the same size</span></label>
+      <div class="qr-q check-q" id="qr1Q">Two cubes are exactly the same size. Cube A has a mass of 270 g, and cube B has a mass of 27 g. Which statement is true?</div>
+      <div class="qr-options check-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label class="check-opt"><input type="radio" name="qr1" value="0"><span>Cube A has more matter packed into the same space, so it is denser</span></label>
+        <label class="check-opt"><input type="radio" name="qr1" value="1"><span>Cube B is denser because it is lighter</span></label>
+        <label class="check-opt"><input type="radio" name="qr1" value="2"><span>They have the same density because they are the same size</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite" tabindex="-1"></div>
       <div class="qr-actions">
-        <button class="qr-check" id="qr1Check">Check Answer</button>
-        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+        <button class="qr-check" type="button" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" type="button" id="qr1Retry" style="display:none;">Try Again</button>
       </div>
     </div>
 
-    <div class="qr-card" id="qrCard2">
-      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
+    <div class="qr-card check-card" id="qrCard2">
+      <div class="qr-eyebrow check-eyebrow">Quick Recall · 2 of 2</div>
       <div class="qr-sub">One more brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">An ice cube floats in a glass of water. What must be true about the ice?</div>
-      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>Its density is less than the density of liquid water</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>Its mass is less than the mass of the water in the glass</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>Its volume is bigger than the volume of the water</span></label>
+      <div class="qr-q check-q" id="qr2Q">An ice cube floats in a glass of water. What must be true about the ice?</div>
+      <div class="qr-options check-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label class="check-opt"><input type="radio" name="qr2" value="0"><span>Its density is less than the density of liquid water</span></label>
+        <label class="check-opt"><input type="radio" name="qr2" value="1"><span>Its mass is less than the mass of the water in the glass</span></label>
+        <label class="check-opt"><input type="radio" name="qr2" value="2"><span>Its volume is bigger than the volume of the water</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite" tabindex="-1"></div>
       <div class="qr-actions">
-        <button class="qr-check" id="qr2Check">Check Answer</button>
-        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+        <button class="qr-check" type="button" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" type="button" id="qr2Retry" style="display:none;">Try Again</button>
       </div>
     </div>
 
@@ -2950,10 +2935,12 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       cards.forEach(function(c){
         c.classList.remove('open');
         c.setAttribute('aria-expanded', 'false');
+        var chev = c.querySelector('.gc-chev'); if (chev) chev.textContent = '▾';
       });
       if (!wasOpen) {
         card.classList.add('open');
         card.setAttribute('aria-expanded', 'true');
+        var chev = card.querySelector('.gc-chev'); if (chev) chev.textContent = '▴';
       }
     });
   });
@@ -3007,14 +2994,16 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     var done = false;
     btns.forEach(function(btn, i){
       btn.addEventListener('click', function(){
-        if (done) return;
+        /* Answered options use aria-disabled, not disabled, so keyboard
+           focus stays on the control the student just pressed. */
+        if (done || btn.getAttribute('aria-disabled') === 'true') return;
         if (i === correct) {
           done = true;
           solved++;
           btn.classList.add('right');
           fb.className = 'tm-fb visible ok';
           fb.textContent = 'Correct! That\'s the right tool for the job.';
-          btns.forEach(function(b){ b.disabled = true; });
+          btns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
           if (solved === questions.length) {
             var tmDone = document.getElementById('tm-done');
             var tmDoneText = tmDone.textContent;
@@ -3024,7 +3013,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
           }
         } else {
           btn.classList.add('wrong');
-          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
           fb.className = 'tm-fb visible no';
           fb.textContent = 'Not quite. Think about what is being measured: amount of matter, liquid space, or block space. Try again.';
         }
@@ -3154,17 +3143,17 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     var done = false;
     opts.querySelectorAll('.we-opt-btn').forEach(function(btn){
       btn.addEventListener('click', function(){
-        if (done) return;
+        if (done || btn.getAttribute('aria-disabled') === 'true') return;
         if (btn.getAttribute('data-ans') === '1') {
           done = true;
           btn.classList.add('right');
           fb.className = 'we-fb visible ok';
           fb.textContent = okMsg;
-          opts.querySelectorAll('.we-opt-btn').forEach(function(b){ b.disabled = true; });
+          opts.querySelectorAll('.we-opt-btn').forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
           if (onCorrect) setTimeout(onCorrect, 350);
         } else {
           btn.classList.add('wrong');
-          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
           fb.className = 'we-fb visible no';
           fb.textContent = noMsg;
         }
