@@ -2482,16 +2482,18 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(typeMatch).not.toBeNull();
     expect(typeMatch![1]).not.toMatch(/background\s*:/);
     expect(typeMatch![1]).toMatch(/text-transform\s*:\s*uppercase/);
-    // Sprint 28.6H.3 (Task D3): the shared quiet footer row (View Summary +
-    // Resources) is separated by a light top border, applied only when a
-    // visible control is present (`:has`).
+    // Teacher Units UX Milestone 1 compact refinement: the shared quiet footer
+    // row (View Summary + Resources) is part of the card, with no divider and
+    // no separated bottom section. Its spacing applies only when a visible
+    // control is present (`:has`).
     const footerMatch = shellHtml.match(
-      /\.shell-lesson-footer-row\s*\{([^}]*border-top[^}]*)\}/,
+      /\.shell-lesson-footer:has\([^{]*\.shell-lesson-footer-row\s*\{([^}]*)\}/,
     );
     expect(footerMatch).not.toBeNull();
-    expect(footerMatch![1]).toMatch(/border-top\s*:/);
-    // The boundary is applied only when the footer holds a visible control.
-    expect(shellHtml).toMatch(/\.shell-lesson-footer:has\(/);
+    expect(footerMatch![1]).not.toMatch(/border-top\s*:/);
+    expect(footerMatch![1]).not.toMatch(/padding-top\s*:/);
+    const strippedCss = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(strippedCss).not.toMatch(/\.shell-lesson-footer-row\s*\{[^}]*border-top/);
   });
 
   test("expanded resource Open is a compact OUTLINED control, distinct from Assign/Preview (Sprint 28.6H.5, Task C1/C2, J#18-20)", () => {
@@ -2503,17 +2505,17 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     // J#18: outlined (a real border), not bare text and not a solid fill.
     expect(body).toMatch(/border\s*:\s*1px solid/);
     expect(body).toMatch(/background\s*:\s*transparent/);
-    // J#19: one consistent sizing rule with fixed dimensions (76 x 38px),
-    // within the 70-85 / 36-40 contract.
+    // J#19: one consistent sizing rule with fixed dimensions (72 x 28px,
+    // Teacher Units UX Milestone 1 compact refinement).
     const width = body.match(/width:\s*([0-9.]+)rem/);
     const height = body.match(/height:\s*([0-9.]+)rem/);
     expect(width).not.toBeNull();
     expect(height).not.toBeNull();
-    expect(parseFloat(width![1])).toBeCloseTo(4.75, 2); // 76px
-    expect(parseFloat(height![1])).toBeCloseTo(2.375, 3); // 38px
-    // J#20: strictly smaller than Assign/Preview (7rem x 2.75rem).
-    expect(parseFloat(width![1])).toBeLessThan(7);
-    expect(parseFloat(height![1])).toBeLessThan(2.75);
+    expect(parseFloat(width![1])).toBeCloseTo(4.5, 2); // 72px
+    expect(parseFloat(height![1])).toBeCloseTo(1.75, 3); // 28px
+    // J#20: strictly smaller than Assign/Preview (5.25rem x 2rem).
+    expect(parseFloat(width![1])).toBeLessThan(5.25);
+    expect(parseFloat(height![1])).toBeLessThan(2);
   });
 
   test("assignment Open action bottom-anchors and completed cards get a pale-green (not green primary) treatment (Sprint 28.6H.6, Part A/B)", () => {
@@ -2618,15 +2620,17 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     );
     expect(pairMatch).not.toBeNull();
     const body = pairMatch![1];
-    // Task J #13: same width rule. 7rem = 112px, within the 110-125px contract.
+    // Task J #13: same width rule. Teacher Units UX Milestone 1 compact
+    // refinement: 5.25rem = 84px in the full-width resource row.
     const width = body.match(/(?:^|[^-])width:\s*([0-9.]+rem)/);
     expect(width).not.toBeNull();
-    expect(width![1]).toBe("7rem");
-    // Task J #14: same height rule. 2.75rem = 44px, within 42-46px and meeting
-    // the 44px touch-target minimum.
+    expect(width![1]).toBe("5.25rem");
+    // Task J #14: same height rule. 2rem = 32px on fine pointers; coarse
+    // pointers keep the 44px touch-target minimum.
     const height = body.match(/height:\s*([0-9.]+rem)/);
     expect(height).not.toBeNull();
-    expect(height![1]).toBe("2.75rem");
+    expect(height![1]).toBe("2rem");
+    expect(shellHtml).toMatch(/@media \(pointer: coarse\)\s*\{\s*\.shell-lesson-assign,[\s\S]*?\.shell-lesson-preview,[\s\S]*?\{\s*min-height:\s*44px;\s*\}/);
     // Task J #15: neither button uses flex-grow to consume card width. It is
     // `flex: 0 1 auto` - grow 0 (never stretches into a page CTA), shrink 1
     // (both shrink EQUALLY to fit a narrow 4-column card, staying identical and

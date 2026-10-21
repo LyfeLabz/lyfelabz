@@ -560,12 +560,17 @@
      two controls shrink together, staying IDENTICAL and on one line. 7rem =
      112px is the roomy-card cap (within the 110-125px contract); 2.75rem = 44px
      is the fixed height (within 42-46px, meeting the 44px touch target).
-     box-sizing keeps padding/border inside the fixed box. */
+     box-sizing keeps padding/border inside the fixed box.
+     Teacher Units UX Milestone 1 compact refinement: in the full-width
+     resource row the pair is a small right-aligned control set, so the box
+     drops to 5.25rem x 2rem (84 x 32px) with a 0.85rem label. Coarse pointers
+     keep the 44px touch-target minimum (the pointer: coarse rule below). */
   .shell-lesson-assign,
   .shell-lesson-preview {
     box-sizing: border-box;
-    width: 7rem;
-    height: 2.75rem;
+    width: 5.25rem;
+    height: 2rem;
+    font-size: 0.85rem;
     flex: 0 1 auto;
     display: inline-flex;
     align-items: center;
@@ -601,12 +606,11 @@
     margin-left: auto;
   }
   .shell-lesson-footer:has(.shell-lesson-footer-row > *:not([hidden])) .shell-lesson-footer-row {
-    /* Sprint 28.6H.4 (Task D3/D5): restrained footer separation (0.4rem ->
-       0.3rem) so the quiet View Summary / Resources footer consumes less
-       vertical space. */
-    margin-top: 0.3rem;
-    padding-top: 0.3rem;
-    border-top: 1px solid var(--tw-hairline-soft, rgba(28, 39, 51, 0.06));
+    /* Sprint 28.6H.4 (Task D3/D5): restrained footer separation so the quiet
+       View Summary / Resources footer consumes less vertical space. Teacher
+       Units UX Milestone 1 compact refinement: no divider; the disclosure sits
+       directly beneath the row's identity as part of the same card. */
+    margin-top: 0;
   }
   .shell-lesson-toggle {
     padding: 0.25rem 0.6rem;
@@ -1223,7 +1227,7 @@
     flex-direction: column;
     gap: 0.3rem;
     margin: 0;
-    padding: 0.6rem 0.9rem;
+    padding: 0.5rem 0.75rem;
     box-sizing: border-box;
     min-width: 0;
   }
@@ -1553,7 +1557,7 @@
     border-radius: 4px;
     cursor: pointer;
     white-space: nowrap;
-    min-height: 28px;
+    min-height: 1.25rem;
     text-decoration: underline;
     text-decoration-color: var(--tw-gold-border, rgba(214, 158, 23, 0.55));
     text-underline-offset: 2px;
@@ -1602,7 +1606,7 @@
     /* margin: 0 zeroes the global button's 1rem top-margin (Sprint
        28.6H.4, Task D3/D5). */
     margin: 0;
-    padding: 0.15rem 0;
+    padding: 0;
     font: inherit;
     font-size: 0.8rem;
     font-weight: 600;
@@ -1611,7 +1615,7 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    min-height: 28px;
+    min-height: 1.25rem;
   }
   /* Disclosure caret: a single right chevron that rotates to point down
      when expanded. State is carried by shape + aria-expanded, never by
@@ -1682,8 +1686,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 4.75rem;
-    height: 2.375rem;
+    width: 4.5rem;
+    height: 1.75rem;
     /* Zero the global button/anchor top-margin reset is unnecessary (this is an
        <a>), but keep margin explicit for stable geometry. */
     margin: 0;
@@ -5559,10 +5563,12 @@
      generic `.shell-card { padding: 1.15rem 1.25rem }` (equal specificity, later
      source), so it is the authoritative card padding + height floor. Teacher
      Units UX Milestone 1: a full-width row needs no uniform-height floor
-     across columns, so the floor only keeps a one-line row from collapsing. */
+     across columns, so the floor only keeps a one-line row from collapsing.
+     The compact refinement uses the original My Units resource-row padding,
+     shared by every resource row (lesson, resource tab, unit resource). */
   .shell-lesson-card {
     min-height: 3rem;
-    padding: 0.6rem 0.9rem;
+    padding: 0.5rem 0.75rem;
   }
 
   /* ---- Shared full-width resource row (Teacher Units UX Milestone 1) ----
@@ -5579,7 +5585,7 @@
       "footer footer";
     align-items: center;
     column-gap: 1rem;
-    row-gap: 0.3rem;
+    row-gap: 0.15rem;
     margin: 0;
     box-sizing: border-box;
     min-width: 0;
@@ -5589,7 +5595,7 @@
     grid-area: main;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.15rem;
     min-width: 0;
   }
   .shell-resource-row .shell-lesson-title-row { margin-top: 0; }
