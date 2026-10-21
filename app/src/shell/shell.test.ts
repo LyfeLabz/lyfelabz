@@ -2621,10 +2621,14 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(pairMatch).not.toBeNull();
     const body = pairMatch![1];
     // Task J #13: same width rule. Teacher Units UX Milestone 1 compact
-    // refinement: 5.25rem = 84px in the full-width resource row.
-    const width = body.match(/(?:^|[^-])width:\s*([0-9.]+rem)/);
-    expect(width).not.toBeNull();
-    expect(width![1]).toBe("5.25rem");
+    // refinement: a shared 5.25rem = 84px minimum in the full-width resource
+    // row; a longer label ("Update Assignment") widens its own button on one
+    // line rather than overflowing a fixed box.
+    const minWidth = body.match(/min-width:\s*([0-9.]+rem)/);
+    expect(minWidth).not.toBeNull();
+    expect(minWidth![1]).toBe("5.25rem");
+    expect(body).not.toMatch(/(?:^|[^-])width:\s*[0-9.]+rem/);
+    expect(body).toMatch(/white-space:\s*nowrap/);
     // Task J #14: same height rule. 2rem = 32px on fine pointers; coarse
     // pointers keep the 44px touch-target minimum.
     const height = body.match(/height:\s*([0-9.]+rem)/);

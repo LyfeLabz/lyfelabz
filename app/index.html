@@ -563,20 +563,23 @@
      box-sizing keeps padding/border inside the fixed box.
      Teacher Units UX Milestone 1 compact refinement: in the full-width
      resource row the pair is a small right-aligned control set, so the box
-     drops to 5.25rem x 2rem (84 x 32px) with a 0.85rem label. Coarse pointers
-     keep the 44px touch-target minimum (the pointer: coarse rule below). */
+     drops to a 5.25rem x 2rem (84 x 32px) floor with a 0.85rem label. The
+     width is a shared minimum, not a fixed box, so a longer label ("Update
+     Assignment") widens its own button on one line instead of overflowing.
+     Coarse pointers keep the 44px touch-target minimum (the pointer: coarse
+     rule below). */
   .shell-lesson-assign,
   .shell-lesson-preview {
     box-sizing: border-box;
-    width: 5.25rem;
+    min-width: 5.25rem;
     height: 2rem;
+    white-space: nowrap;
     font-size: 0.85rem;
     flex: 0 1 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-width: 0;
     /* Zero the global button's 1rem top-margin (which applied to the
        Assign <button> but not the Preview <a>, shifting Assign 16px lower and
        inflating the pair). Both controls now share identical box geometry. */
@@ -5591,6 +5594,9 @@
     min-width: 0;
   }
   .shell-resource-row[hidden] { display: none; }
+  /* Compact My Units aesthetic: a resource row is a flat hairline card (no
+     elevation), the same as a resource inside a unit. */
+  .shell-card.shell-resource-row { box-shadow: none; }
   .shell-resource-row-main {
     grid-area: main;
     display: flex;
