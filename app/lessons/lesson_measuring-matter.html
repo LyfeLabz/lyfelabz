@@ -594,6 +594,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   line-height: 1.5;
 }
 .hook-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
+.hook-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
 .hook-card.revealed { cursor: default; }
 .hook-card-prompt {
   display: inline-block;
@@ -1206,6 +1207,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
 .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
 .qr-feedback.visible { display: block; }
+.qr-feedback:focus { outline: none; }
 .qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
 .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
 .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
@@ -1716,7 +1718,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div class="hook-grid">
 
-      <div class="hook-card c1" onclick="this.classList.add('revealed')">
+      <div class="hook-card c1" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🎳</span>
         <div class="hook-card-name">Two Same-Size Balls</div>
         <div class="hook-card-observation">
@@ -1726,7 +1728,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="hook-card-prompt">Click to look closer</div>
       </div>
 
-      <div class="hook-card c2" onclick="this.classList.add('revealed')">
+      <div class="hook-card c2" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🎈</span>
         <div class="hook-card-name">The Invisible Stuff</div>
         <div class="hook-card-observation">
@@ -1736,7 +1738,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="hook-card-prompt">Click to look closer</div>
       </div>
 
-      <div class="hook-card c3" onclick="this.classList.add('revealed')">
+      <div class="hook-card c3" role="button" tabindex="0" aria-expanded="false">
         <span class="hook-card-icon">🚢</span>
         <div class="hook-card-name">The Floating Giant</div>
         <div class="hook-card-observation">
@@ -1805,9 +1807,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="question-pause-text"><strong>Think about it:</strong> A rock is obviously "stuff." But is air stuff too? Make a prediction.</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn">Yes - air is matter just like a rock</button>
-        <button class="predict-btn">No - air is empty space</button>
-        <button class="predict-btn">Air is something in between</button>
+        <button class="predict-btn" type="button" aria-pressed="false">Yes - air is matter just like a rock</button>
+        <button class="predict-btn" type="button" aria-pressed="false">No - air is empty space</button>
+        <button class="predict-btn" type="button" aria-pressed="false">Air is something in between</button>
       </div>
     </div>
 
@@ -1907,7 +1909,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <button class="tm-btn">Triple beam balance</button>
           <button class="tm-btn">Graduated cylinder</button>
         </div>
-        <div class="tm-fb"></div>
+        <div class="tm-fb" aria-live="polite"></div>
       </div>
 
       <div class="tm-question" data-correct="2">
@@ -1917,7 +1919,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <button class="tm-btn">Ruler</button>
           <button class="tm-btn">Graduated cylinder</button>
         </div>
-        <div class="tm-fb"></div>
+        <div class="tm-fb" aria-live="polite"></div>
       </div>
 
       <div class="tm-question" data-correct="0">
@@ -1927,10 +1929,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <button class="tm-btn">Triple beam balance</button>
           <button class="tm-btn">A bigger block to compare</button>
         </div>
-        <div class="tm-fb"></div>
+        <div class="tm-fb" aria-live="polite"></div>
       </div>
 
-      <div class="tm-done" id="tm-done">🏆 Three for three! Mass → triple beam balance (g). Liquid volume → graduated cylinder (mL). Block volume → ruler (cm³). You're lab-ready.</div>
+      <div class="tm-done" id="tm-done" role="status">🏆 Three for three! Mass → triple beam balance (g). Liquid volume → graduated cylinder (mL). Block volume → ruler (cm³). You're lab-ready.</div>
     </div>
 
     <div class="bridge-callout green">
@@ -2035,9 +2037,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="question-pause-text"><strong>Density Lab:</strong> Water has a density of 1 g/mL. You're about to build an object and drop it in a tank. What do you think decides whether it floats? Make a prediction to unlock the lab.</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn">Heavy objects always sink</button>
-        <button class="predict-btn">It floats if its density is less than water's</button>
-        <button class="predict-btn">Big objects always float</button>
+        <button class="predict-btn" type="button" aria-pressed="false">Heavy objects always sink</button>
+        <button class="predict-btn" type="button" aria-pressed="false">It floats if its density is less than water's</button>
+        <button class="predict-btn" type="button" aria-pressed="false">Big objects always float</button>
       </div>
     </div>
 
@@ -2074,7 +2076,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
             <line x1="12" y1="55" x2="188" y2="55" stroke="rgba(124,200,248,0.6)" stroke-width="2"/>
             <rect id="dl-object" x="80" y="42" width="40" height="28" rx="5" fill="#f5c842" stroke="#e6b32e" stroke-width="2" style="transition: y 0.5s ease;"/>
           </svg>
-          <div class="dl-verdict float" id="dl-verdict">✓ Floats - density below 1 g/mL</div>
+          <div class="dl-verdict float" id="dl-verdict" aria-live="polite">✓ Floats - density below 1 g/mL</div>
         </div>
       </div>
 
@@ -2170,7 +2172,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
             <button class="we-opt-btn" data-ans="1">24 cm³</button>
             <button class="we-opt-btn" data-ans="0">12 cm³</button>
           </div>
-          <div class="we-fb" id="pp-fb1"></div>
+          <div class="we-fb" id="pp-fb1" aria-live="polite"></div>
         </div>
       </div>
 
@@ -2183,7 +2185,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
             <button class="we-opt-btn" data-ans="0">3.6 g/cm³</button>
             <button class="we-opt-btn" data-ans="1">2.5 g/cm³</button>
           </div>
-          <div class="we-fb" id="pp-fb2"></div>
+          <div class="we-fb" id="pp-fb2" aria-live="polite"></div>
         </div>
       </div>
 
@@ -2237,7 +2239,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <label><input type="radio" name="qr1" value="1"><span>Cube B is denser because it is lighter</span></label>
         <label><input type="radio" name="qr1" value="2"><span>They have the same density because they are the same size</span></label>
       </div>
-      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite" tabindex="-1"></div>
       <div class="qr-actions">
         <button class="qr-check" id="qr1Check">Check Answer</button>
         <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
@@ -2253,7 +2255,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <label><input type="radio" name="qr2" value="1"><span>Its mass is less than the mass of the water in the glass</span></label>
         <label><input type="radio" name="qr2" value="2"><span>Its volume is bigger than the volume of the water</span></label>
       </div>
-      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite" tabindex="-1"></div>
       <div class="qr-actions">
         <button class="qr-check" id="qr2Check">Check Answer</button>
         <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
@@ -2823,6 +2825,22 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 })();
 </script>
 
+<!-- ===== HOOK CARDS (click or Enter/Space to reveal) ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.hook-card').forEach(function(card){
+    function reveal(){
+      card.classList.add('revealed');
+      card.setAttribute('aria-expanded', 'true');
+    }
+    card.addEventListener('click', reveal);
+    card.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); }
+    });
+  });
+})();
+</script>
+
 <!-- ===== PREDICT BEFORE REVEAL ===== -->
 <script>
 (function(){
@@ -2832,6 +2850,8 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       btn.addEventListener('click', () => {
         if (pause.classList.contains('locked')) return;
         btn.classList.add('chosen');
+        btn.setAttribute('aria-pressed', 'true');
+        pause.querySelectorAll('.predict-btn').forEach(b => { if (b !== btn) b.setAttribute('aria-disabled', 'true'); });
         pause.classList.add('locked');
         if (gated) setTimeout(() => gated.classList.add('visible'), 250);
       });
@@ -2860,7 +2880,13 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
           fb.className = 'tm-fb visible ok';
           fb.textContent = 'Correct! That\'s the right tool for the job.';
           btns.forEach(function(b){ b.disabled = true; });
-          if (solved === questions.length) document.getElementById('tm-done').classList.add('visible');
+          if (solved === questions.length) {
+            var tmDone = document.getElementById('tm-done');
+            var tmDoneText = tmDone.textContent;
+            tmDone.textContent = '';
+            tmDone.classList.add('visible');
+            setTimeout(function(){ tmDone.textContent = tmDoneText; }, 100);
+          }
         } else {
           btn.classList.add('wrong');
           btn.disabled = true;
@@ -2938,6 +2964,15 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
   var verdict = document.getElementById('dl-verdict');
   var synth   = document.getElementById('dl-synthesis');
   var triedBoth = { sink: false, float: false };
+  var lastVerdict = null;
+  /* Update the live region only when the classification changes, so slider
+     movement within one class is not re-announced. */
+  function setVerdict(cls, text) {
+    if (lastVerdict === text) return;
+    lastVerdict = text;
+    verdict.className = 'dl-verdict ' + cls;
+    verdict.textContent = text;
+  }
 
   function render() {
     var m = parseInt(massIn.value, 10);
@@ -2951,17 +2986,14 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 
     if (d < 1) {
       obj.setAttribute('y', 42);   /* bobbing at the surface (water line y=55) */
-      verdict.className = 'dl-verdict float';
-      verdict.textContent = '✓ Floats - density below 1 g/mL';
+      setVerdict('float', '✓ Floats - density below 1 g/mL');
       triedBoth.float = true;
     } else if (d === 1) {
       obj.setAttribute('y', 70);
-      verdict.className = 'dl-verdict float';
-      verdict.textContent = '≈ Hovers - density exactly 1 g/mL, same as water';
+      setVerdict('float', '≈ Hovers - density exactly 1 g/mL, same as water');
     } else {
       obj.setAttribute('y', 106);  /* resting on the bottom */
-      verdict.className = 'dl-verdict sink';
-      verdict.textContent = '✗ Sinks - density above 1 g/mL';
+      setVerdict('sink', '✗ Sinks - density above 1 g/mL');
       triedBoth.sink = true;
     }
     if (triedBoth.sink && triedBoth.float) synth.classList.add('visible');
@@ -3041,12 +3073,14 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
         checkBtn.style.display = 'none';
         retryBtn.style.display = 'none';
         [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+        fb.focus();
       } else {
         sel.closest('label').classList.add('wrong');
         fb.className = 'qr-feedback visible no';
         fb.textContent = noMsg;
         checkBtn.style.display = 'none';
         retryBtn.style.display = 'inline-flex';
+        retryBtn.focus();
       }
     });
     retryBtn.addEventListener('click', function(){
