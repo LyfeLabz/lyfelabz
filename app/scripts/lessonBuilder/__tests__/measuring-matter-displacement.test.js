@@ -61,7 +61,11 @@ describe.each(FILES)("Measuring Matter Water Displacement Lab in %s", (rel) => {
     expect(pos(order[0])).toBeLessThan(pos(order[1]));
     expect(pos(order[1])).toBeLessThan(pos(order[2]));
     const labels = [...measure.querySelectorAll(".name-it-label")].map((l) => l.textContent);
-    expect(labels).toEqual(["Key idea: Water Displacement", "Key idea: Same Space, Two Units"]);
+    expect(labels).toEqual(["Key idea: Same Space, Two Units"]);
+    // The displacement explanation now introduces Lab 3 itself.
+    expect($("disp-lab").querySelector(".disp-lab-sub").textContent).toContain(
+      "When an object is fully submerged, it displaces a volume of water equal to its own volume."
+    );
     expect(measure.textContent).toContain("Object's volume = final water volume minus initial water volume.");
     expect(measure.textContent).toContain("1 mL and 1 cm³ are exactly the same amount of space.");
   });
