@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Tesseract - LyfeLabz WonderBox</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Fira+Code:wght@300;400&family=Syne:wght@700;800&family=Syne+Mono&display=swap');
+
+  /* ===== WONDERBOX NAV ===== */
+  .wb-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    padding: 0 clamp(16px, 4vw, 48px);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(2,4,8,0.88);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(120,190,255,0.1);
+  }
+  .wb-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .wb-nav-icon { width: 34px; height: 34px; flex-shrink: 0; }
+  .wb-nav-icon svg { width: 100%; height: 100%; }
+  .wb-nav-wordmark {
+    font-family: 'Syne Mono', monospace;
+    font-size: 21.6px;
+    letter-spacing: 0.06em;
+    color: #00f5d4;
+    text-shadow: 0 0 20px rgba(0,245,212,0.4);
+    text-decoration: none;
+  }
+  .wb-nav-wordmark span { color: #ffd166; text-shadow: 0 0 20px rgba(255,209,102,0.4); }
+  .wb-back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,245,212,0.07);
+    border: 1px solid rgba(0,245,212,0.28);
+    padding: 4.8px 14.4px;
+    border-radius: 99px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: #00f5d4;
+    text-decoration: none;
+    transition: background 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+  }
+  .wb-back-pill:hover {
+    background: rgba(0,245,212,0.15);
+    box-shadow: 0 0 20px rgba(0,245,212,0.18);
+  }
+
+  :root {
+    --gold:      #e8b84b;
+    --gold-dim:  rgba(232,184,75,0.15);
+    --gold-glow: rgba(232,184,75,0.4);
+    --void:      #020408;
+    --white:     #f0f4ff;
+
+    /* tesseract face hues, one per coordinate plane */
+    --c0: #ff3d58;  /* xy */
+    --c1: #ff8020;  /* xz */
+    --c2: #f0d000;  /* xw */
+    --c3: #22e870;  /* yz */
+    --c4: #00c8ff;  /* yw */
+    --c5: #b040ff;  /* zw */
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--white);
+    font-family: 'Fira Code', monospace;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  #canvas:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  /* ===== STAGE ===== */
+  #stage {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+  #canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+  }
+  #canvas.dragging { cursor: grabbing; }
+
+  /* ===== HEADER ===== */
+  #header {
+    position: fixed;
+    top: 64px; left: 0; right: 0;
+    z-index: 10;
+    padding: 20px 32px 16px;
+    background: linear-gradient(to bottom, rgba(2,4,8,0.95) 60%, transparent);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+
+  #title-block h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-shadow: 0 0 40px var(--gold-glow);
+    line-height: 1.1;
+  }
+
+  #title-block .subtitle {
+    font-size: 0.74rem;
+    letter-spacing: 0.3em;
+    color: rgba(232,184,75,0.82);
+    margin-top: 4px;
+    text-transform: uppercase;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+
+  #drag-hint {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    color: rgba(200,220,255,0.55);
+    margin-top: 8px;
+  }
+
+  /* ===== EQUATIONS ===== */
+  #equations {
+    position: fixed;
+    top: 172px;
+    left: 20px;
+    bottom: 24px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 260px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(232,184,75,0.3) transparent;
+  }
+  #equations > * { flex-shrink: 0; }
+
+  .eq-intro {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: rgba(200,220,255,0.55);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    line-height: 1.6;
+    padding-left: 10px;
+    border-left: 1px solid rgba(200,220,255,0.12);
+  }
+
+  .eq-intro strong {
+    display: block;
+    font-size: 0.8rem;
+    color: rgba(232,184,75,0.88);
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+  }
+
+  .eq {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 10px;
+    border-left: 1px solid rgba(200,220,255,0.1);
+    margin-bottom: 4px;
+    transition: all 0.3s;
+  }
+
+  .eq-name {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(200,220,255,0.5);
+    transition: color 0.3s;
+  }
+
+  .eq-formula {
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    color: rgba(200,220,255,0.68);
+    transition: color 0.3s, text-shadow 0.3s;
+  }
+
+  .eq.active { border-left-color: var(--gold); }
+  .eq.active .eq-name   { color: rgba(232,184,75,0.72); }
+  .eq.active .eq-formula {
+    color: var(--gold);
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+
+  .eq-conclusion {
+    margin-top: 8px;
+    padding: 7px 10px;
+    border-left: 1px solid rgba(200,220,255,0.12);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: rgba(200,220,255,0.58);
+    line-height: 1.65;
+    font-style: italic;
+  }
+
+  /* ===== RIGHT COLUMN: controls + learn ===== */
+  #right-col {
+    position: fixed;
+    top: 172px;
+    right: 20px;
+    bottom: 24px;
+    z-index: 10;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    pointer-events: none;
+  }
+  #right-col > * { pointer-events: auto; }
+
+  #controls {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 210px;
+    align-self: flex-end;
+    flex-shrink: 0;
+  }
+
+  #controls-header {
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
+    color: rgba(200,220,255,0.6);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    line-height: 1.5;
+    border-bottom: 1px solid rgba(200,220,255,0.1);
+    padding-bottom: 6px;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 5px 0;
+    gap: 10px;
+    transition: opacity 0.2s;
+  }
+  .toggle-row:hover { opacity: 0.85; }
+
+  .toggle-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 99px;
+    padding: 4px 12px 4px 8px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    color: rgba(230,240,255,0.9);
+    white-space: nowrap;
+    flex: 1;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .toggle-row.active .toggle-pill {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .toggle-pill-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tog-switch {
+    width: 34px; height: 18px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .toggle-row.active .tog-switch {
+    background: rgba(232,184,75,0.35);
+    border-color: rgba(232,184,75,0.65);
+    box-shadow: 0 0 10px rgba(232,184,75,0.3);
+  }
+
+  .tog-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: rgba(180,180,200,0.5);
+    transition: transform 0.25s, background 0.25s;
+  }
+  .toggle-row.active .tog-thumb {
+    transform: translateX(16px);
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold-glow);
+  }
+
+  /* ===== LEARN ACCORDIONS ===== */
+  #bottom-right {
+    margin-top: auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(232,184,75,0.3) transparent;
+  }
+
+  #learn-header {
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    color: rgba(200,220,255,0.6);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(200,220,255,0.12);
+    padding-bottom: 6px;
+  }
+
+  .learn-item {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+  }
+  .learn-item:hover { border-color: rgba(255,255,255,0.22); }
+
+  .learn-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 7px 11px;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .learn-trigger:hover { background: rgba(255,255,255,0.1); }
+
+  .learn-trigger-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: rgba(230,240,255,0.95);
+  }
+
+  .learn-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .learn-chevron {
+    font-size: 0.62rem;
+    color: rgba(180,200,255,0.5);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .learn-item.open .learn-chevron { transform: rotate(180deg); }
+
+  .learn-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    background: rgba(0,0,0,0.3);
+  }
+
+  .learn-body-inner {
+    padding: 8px 12px 10px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    color: rgba(205,225,255,0.8);
+    line-height: 1.65;
+  }
+  .learn-body-inner p + p { margin-top: 6px; }
+  .learn-body-inner strong { color: var(--gold); font-weight: 400; }
+  .learn-body-inner a { color: var(--gold); }
+
+  /* ===== DIMENSION LADDER + FACE LEGEND ===== */
+  #dock {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: min(470px, calc(100vw - 600px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  #ladder-caption {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    line-height: 1.55;
+    color: rgba(200,220,255,0.62);
+  }
+
+  #counts {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+
+  #ladder {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .rung {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 6px 4px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(2,4,8,0.6);
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .rung:hover { background: rgba(255,255,255,0.08); }
+  .rung-dim {
+    font-size: 0.8rem;
+    color: rgba(230,240,255,0.9);
+  }
+  .rung-name {
+    font-size: 0.56rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(200,220,255,0.6);
+  }
+  .rung[aria-pressed="true"] {
+    border-color: rgba(232,184,75,0.65);
+    background: rgba(232,184,75,0.12);
+    box-shadow: 0 0 12px rgba(232,184,75,0.2);
+  }
+  .rung[aria-pressed="true"] .rung-dim,
+  .rung[aria-pressed="true"] .rung-name { color: var(--gold); }
+
+  #legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+  }
+  #legend-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(200,220,255,0.6);
+    margin-right: 4px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 7px;
+    border-radius: 99px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(2,4,8,0.6);
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    color: rgba(230,240,255,0.9);
+    transition: opacity 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .chip:hover, .chip.hi { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.35); }
+  .chip[aria-pressed="true"] { border-color: var(--gold); }
+  .chip.absent { opacity: 0.3; }
+
+  /* scanlines */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 5;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+  }
+
+  /* corner accents */
+  .corner { position: fixed; z-index: 10; width: 40px; height: 40px; pointer-events: none; opacity: 0.28; }
+  .corner.tl { top:12px; left:12px; border-top:1px solid var(--gold); border-left:1px solid var(--gold); }
+  .corner.tr { top:12px; right:12px; border-top:1px solid var(--gold); border-right:1px solid var(--gold); }
+  .corner.bl { bottom:12px; left:12px; border-bottom:1px solid var(--gold); border-left:1px solid var(--gold); }
+  .corner.br { bottom:12px; right:12px; border-bottom:1px solid var(--gold); border-right:1px solid var(--gold); }
+
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* ===== STACKED LAYOUT (tablet portrait, phones, short screens) =====
+     The fixed overlay panels need roughly 960 x 600 to sit beside the
+     shape without covering it. Below that, the page scrolls: the shape
+     gets its own stage and the panels flow underneath it. */
+  @media (max-width: 959px), (max-height: 599px) {
+    body { overflow-x: hidden; overflow-y: auto; height: auto; }
+
+    #header {
+      position: relative;
+      top: auto;
+      margin-top: 64px;
+      padding: 16px 16px 8px;
+      background: none;
+    }
+
+    #stage {
+      position: relative;
+      inset: auto;
+      height: min(62vh, 520px);
+      min-height: 300px;
+    }
+
+    #dock,
+    #equations,
+    #right-col {
+      position: static;
+      transform: none;
+      width: auto;
+      margin: 0 16px 24px;
+    }
+    #dock { max-width: 520px; margin-left: auto; margin-right: auto; padding: 0 16px; }
+    #right-col { display: flex; flex-direction: column; gap: 24px; pointer-events: auto; }
+    #controls { width: 100%; align-self: stretch; }
+    #bottom-right { margin-top: 0; overflow: visible; }
+    #equations { max-width: 520px; overflow: visible; }
+
+    .corner.bl, .corner.br { display: none; }
+
+    .learn-trigger { padding: 11px 12px; }
+    .toggle-row { padding: 7px 0; }
+    .chip { padding: 6px 12px 6px 9px; }
+  }
+
+  @media (max-width: 599px) {
+    #main-flow { display: flex; flex-direction: column; }
+    #right-col { order: 2; }
+    #equations { order: 3; }
+  }
+
+  @media (min-width: 600px) and (max-width: 959px) {
+    #main-flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 8px;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    #dock { grid-column: 1 / -1; }
+    #equations, #right-col { margin: 0 16px 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== WONDERBOX NAV ===== -->
+<nav class="wb-nav">
+  <a href="index.html" class="wb-nav-left" aria-label="LyfeLabz Wonder Box home">
+    <div class="wb-nav-icon">
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1" y="8" width="32" height="24" rx="2" stroke="#00f5d4" stroke-width="1.2" fill="none"/>
+        <path d="M1 12 L17 20 L33 12" stroke="#00f5d4" stroke-width="1" fill="none" stroke-opacity="0.6"/>
+        <path d="M4 8 L17 1 L30 8" stroke="#ffd166" stroke-width="1" fill="none" stroke-opacity="0.8"/>
+        <circle cx="17" cy="15" r="3" fill="rgba(0,245,212,0.15)" stroke="#00f5d4" stroke-width="1"/>
+        <line x1="17" y1="12" x2="17" y2="1" stroke="#ffd166" stroke-width="0.8" stroke-opacity="0.5" stroke-dasharray="2,2"/>
+        <circle cx="17" cy="1" r="1.5" fill="#ffd166" fill-opacity="0.7"/>
+      </svg>
+    </div>
+    <span class="wb-nav-wordmark">LYFE<span>LABZ</span></span>
+  </a>
+  <a href="index.html" class="wb-back-pill">← WONDERBOX</a>
+</nav>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<!-- ===== HEADER ===== -->
+<header id="header">
+  <div id="title-block">
+    <h1>THE TESSERACT</h1>
+    <div class="subtitle">4D Hypercube · ℝ⁴ → ℝ³ → ℝ² · 6 face orientations</div>
+    <div id="drag-hint">Drag sideways to turn it through the 4th dimension · drag up or down to tilt it</div>
+  </div>
+</header>
+
+<div id="stage">
+  <canvas id="canvas" tabindex="0" role="img"
+    aria-label="A rotating tesseract, shown as a perspective shadow: a small cube inside a larger cube with their matching corners joined. Use the arrow keys to rotate it."></canvas>
+</div>
+
+<main id="main-flow">
+
+<!-- ===== DIMENSION LADDER + FACE LEGEND ===== -->
+<section id="dock" aria-label="Build it one dimension at a time">
+  <p id="ladder-caption">Each step copies the shape and slides the copy in a brand-new direction, at right angles to every direction before it.</p>
+  <div id="counts" aria-live="polite">16 corners · 32 edges · 24 squares · 8 cubes</div>
+  <div id="ladder" role="group" aria-label="Choose how many dimensions">
+    <button type="button" class="rung" data-dim="0" aria-pressed="false"><span class="rung-dim">0D</span><span class="rung-name">Point</span></button>
+    <button type="button" class="rung" data-dim="1" aria-pressed="false"><span class="rung-dim">1D</span><span class="rung-name">Line</span></button>
+    <button type="button" class="rung" data-dim="2" aria-pressed="false"><span class="rung-dim">2D</span><span class="rung-name">Square</span></button>
+    <button type="button" class="rung" data-dim="3" aria-pressed="false"><span class="rung-dim">3D</span><span class="rung-name">Cube</span></button>
+    <button type="button" class="rung" data-dim="4" aria-pressed="true"><span class="rung-dim">4D</span><span class="rung-name">Tesseract</span></button>
+  </div>
+  <div id="legend" role="group" aria-label="Highlight squares by the plane they lie in">
+    <span id="legend-label">Highlight</span>
+    <button type="button" class="chip" data-group="0" aria-pressed="false"><span class="chip-dot" style="background:#ff3d58;box-shadow:0 0 6px #ff3d58"></span>XY</button>
+    <button type="button" class="chip" data-group="1" aria-pressed="false"><span class="chip-dot" style="background:#ff8020;box-shadow:0 0 6px #ff8020"></span>XZ</button>
+    <button type="button" class="chip" data-group="2" aria-pressed="false"><span class="chip-dot" style="background:#f0d000;box-shadow:0 0 6px #f0d000"></span>XW</button>
+    <button type="button" class="chip" data-group="3" aria-pressed="false"><span class="chip-dot" style="background:#22e870;box-shadow:0 0 6px #22e870"></span>YZ</button>
+    <button type="button" class="chip" data-group="4" aria-pressed="false"><span class="chip-dot" style="background:#00c8ff;box-shadow:0 0 6px #00c8ff"></span>YW</button>
+    <button type="button" class="chip" data-group="5" aria-pressed="false"><span class="chip-dot" style="background:#b040ff;box-shadow:0 0 6px #b040ff"></span>ZW</button>
+  </div>
+</section>
+
+<!-- ===== EQUATIONS ===== -->
+<section id="equations" aria-label="The numbers behind the tesseract">
+  <div class="eq-intro">
+    <strong>The Geometry of 4D</strong>
+    A tesseract extends the cube into a 4th direction of space the same way a cube extends a square. Every count follows the same pattern as you add a dimension.
+  </div>
+
+  <div class="eq active" id="eq0">
+    <div class="eq-name">The projection</div>
+    <div class="eq-formula">ℝ⁴ → ℝ³ → ℝ²</div>
+  </div>
+  <div class="eq" id="eq1">
+    <div class="eq-name">Vertices (2ⁿ, n=4)</div>
+    <div class="eq-formula">2⁴ = 16 vertices</div>
+  </div>
+  <div class="eq" id="eq2">
+    <div class="eq-name">Edges (n · 2ⁿ⁻¹)</div>
+    <div class="eq-formula">4 · 2³ = 32 edges</div>
+  </div>
+  <div class="eq" id="eq3">
+    <div class="eq-name">Square faces (C(n,2) · 2ⁿ⁻²)</div>
+    <div class="eq-formula">6 · 4 = 24 faces</div>
+  </div>
+  <div class="eq" id="eq4">
+    <div class="eq-name">Cubic cells (2n)</div>
+    <div class="eq-formula">2 × 4 = 8 cells</div>
+  </div>
+  <div class="eq" id="eq5">
+    <div class="eq-name">Planes of rotation (C(4,2))</div>
+    <div class="eq-formula">R ∈ SO(4) · 6 planes</div>
+  </div>
+
+  <div class="eq-conclusion">
+    Each new dimension doubles the vertices and adds a new kind of boundary piece. A square is bounded by 4 edges, a cube by 6 squares, and a tesseract by 8 cubes.
+  </div>
+</section>
+
+<!-- ===== RIGHT COLUMN ===== -->
+<div id="right-col">
+
+<!-- ===== CONTROLS ===== -->
+<section id="controls" aria-label="Display controls">
+  <div id="controls-header">Toggle layers on or off<br>to explore each component</div>
+
+  <button type="button" class="toggle-row active" role="switch" aria-checked="true" data-toggle="faces">
+    <span class="toggle-pill">
+      <span class="toggle-pill-dot" style="background:#e8b84b;box-shadow:0 0 6px #e8b84b"></span>
+      FACE FILLS
+    </span>
+    <span class="tog-switch"><span class="tog-thumb"></span></span>
+  </button>
+
+  <button type="button" class="toggle-row active" role="switch" aria-checked="true" data-toggle="glow">
+    <span class="toggle-pill">
+      <span class="toggle-pill-dot" style="background:#00c8ff;box-shadow:0 0 6px #00c8ff"></span>
+      EDGE GLOW
+    </span>
+    <span class="tog-switch"><span class="tog-thumb"></span></span>
+  </button>
+
+  <button type="button" class="toggle-row active" role="switch" aria-checked="true" data-toggle="verts">
+    <span class="toggle-pill">
+      <span class="toggle-pill-dot" style="background:#22e870;box-shadow:0 0 6px #22e870"></span>
+      VERTICES
+    </span>
+    <span class="tog-switch"><span class="tog-thumb"></span></span>
+  </button>
+
+  <button type="button" class="toggle-row active" role="switch" aria-checked="true" data-toggle="auto">
+    <span class="toggle-pill">
+      <span class="toggle-pill-dot" style="background:#b040ff;box-shadow:0 0 6px #b040ff"></span>
+      AUTO-ROTATE
+    </span>
+    <span class="tog-switch"><span class="tog-thumb"></span></span>
+  </button>
+
+  <button type="button" class="toggle-row active" role="switch" aria-checked="true" data-toggle="stars">
+    <span class="toggle-pill">
+      <span class="toggle-pill-dot" style="background:#ff8020;box-shadow:0 0 6px #ff8020"></span>
+      STARFIELD
+    </span>
+    <span class="tog-switch"><span class="tog-thumb"></span></span>
+  </button>
+</section>
+
+<!-- ===== LEARN ACCORDIONS ===== -->
+<section id="bottom-right" aria-label="Learn more">
+  <div id="learn-header">Tap to learn more ▾</div>
+
+  <div class="learn-item">
+    <button type="button" class="learn-trigger" aria-expanded="false" aria-controls="learn-gu">
+      <span class="learn-trigger-left">
+        <span class="learn-dot" style="background:#e8b84b;box-shadow:0 0 5px #e8b84b"></span>
+        From Geometric Unity
+      </span>
+      <span class="learn-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="learn-body" id="learn-gu"><div class="learn-body-inner">
+      <p><a href="geometric-unity.html">Geometric Unity</a> asked you to picture a 14-dimensional space and a map, π, that sends each of its points down to our 4D spacetime. That is a huge leap to imagine all at once.</p>
+      <p>Here you take one step at a time. You add <strong>one extra direction of space</strong> and watch a simpler kind of projection, a perspective shadow, bring it down to your screen.</p>
+      <p>Two differences matter. Spacetime's 4 dimensions are 3 of space plus 1 of time, but the tesseract's 4th dimension, w, is another direction of space. And Geometric Unity is an unproven proposal, while the tesseract is settled mathematics.</p>
+    </div></div>
+  </div>
+
+  <div class="learn-item">
+    <button type="button" class="learn-trigger" aria-expanded="false" aria-controls="learn-what">
+      <span class="learn-trigger-left">
+        <span class="learn-dot" style="background:#ff3d58;box-shadow:0 0 5px #ff3d58"></span>
+        What is a Tesseract?
+      </span>
+      <span class="learn-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="learn-body" id="learn-what"><div class="learn-body-inner">
+      <p>A tesseract is a 4D cube. It needs a 4th direction of space, called w, at right angles to x, y, and z. We cannot point in that direction, but mathematics handles it easily.</p>
+      <p>Just as a cube's surface is 6 squares folded up in 3D, a tesseract's boundary is 8 cubes folded up in 4D. What you see is its shadow: squashed from 4D into 3D, then from 3D onto your flat screen.</p>
+    </div></div>
+  </div>
+
+  <div class="learn-item">
+    <button type="button" class="learn-trigger" aria-expanded="false" aria-controls="learn-build">
+      <span class="learn-trigger-left">
+        <span class="learn-dot" style="background:#ff8020;box-shadow:0 0 5px #ff8020"></span>
+        Point → Line → Square → Cube
+      </span>
+      <span class="learn-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="learn-body" id="learn-build"><div class="learn-body-inner">
+      <p>Slide a <strong>point</strong> and it traces a <strong>line</strong>. Slide the line sideways and it sweeps out a <strong>square</strong>. Slide the square up and you get a <strong>cube</strong>. Slide the cube in the w direction and you get a <strong>tesseract</strong>.</p>
+      <p>Every step, you keep the old shape, add a copy, and join each old corner to its copy. So corners double: 1, 2, 4, 8, 16. Edges become old edges × 2 plus one new edge per old corner: 0, 1, 4, 12, 32.</p>
+      <p>Try the 0D to 4D buttons to watch each step happen.</p>
+    </div></div>
+  </div>
+
+  <div class="learn-item">
+    <button type="button" class="learn-trigger" aria-expanded="false" aria-controls="learn-cells">
+      <span class="learn-trigger-left">
+        <span class="learn-dot" style="background:#f0d000;box-shadow:0 0 5px #f0d000"></span>
+        The 8 Cubic Cells
+      </span>
+      <span class="learn-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="learn-body" id="learn-cells"><div class="learn-body-inner">
+      <p>A cube's surface is made of 6 squares. A tesseract's boundary is made of 8 cubes, called cells: one pair for each of the 4 directions x, y, z, and w.</p>
+      <p>When the shadow is seen straight on, it looks like a small cube inside a big cube, joined by 6 frustums (pyramids with their tips cut off). That stretching is caused by perspective. In 4D, all 8 cells are identical, perfect cubes.</p>
+    </div></div>
+  </div>
+
+  <div class="learn-item">
+    <button type="button" class="learn-trigger" aria-expanded="false" aria-controls="learn-colors">
+      <span class="learn-trigger-left">
+        <span class="learn-dot" style="background:#22e870;box-shadow:0 0 5px #22e870"></span>
+        The 6 Face Colors
+      </span>
+      <span class="learn-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="learn-body" id="learn-colors"><div class="learn-body-inner">
+      <p>Each of the 24 squares lies flat in one of 6 coordinate planes, the pair of directions it stretches along: red XY, orange XZ, gold XW, green YZ, cyan YW, violet ZW. That gives 4 squares of each color.</p>
+      <p>Squares of the same color are parallel in 4D, like opposite faces of a cube. In the shadow they get stretched by different amounts, but in the real shape they stay parallel. Use the Highlight buttons to pick out one set.</p>
+    </div></div>
+  </div>
+
+  <div class="learn-item">
+    <button type="button" class="learn-trigger" aria-expanded="false" aria-controls="learn-rotation">
+      <span class="learn-trigger-left">
+        <span class="learn-dot" style="background:#00c8ff;box-shadow:0 0 5px #00c8ff"></span>
+        4D Rotation
+      </span>
+      <span class="learn-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="learn-body" id="learn-rotation"><div class="learn-body-inner">
+      <p>Every rotation happens in a plane. In 3D only one direction is left over, so we call that line the "axis." In 4D, a rotation in the XW plane leaves a whole plane (YZ) unchanged, so there is no single axis.</p>
+      <p>3D has 3 planes to turn in. 4D has 6: XY, XZ, XW, YZ, YW, ZW. Here the shape turns in XW and YW. In the shadow, cubes seem to pass through each other and turn inside out, but in 4D nothing passes through anything. The rigid shape just turns, and its shadow changes.</p>
+    </div></div>
+  </div>
+
+  <div class="learn-item">
+    <button type="button" class="learn-trigger" aria-expanded="false" aria-controls="learn-proj">
+      <span class="learn-trigger-left">
+        <span class="learn-dot" style="background:#b040ff;box-shadow:0 0 5px #b040ff"></span>
+        Projecting to 2D
+      </span>
+      <span class="learn-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="learn-body" id="learn-proj"><div class="learn-body-inner">
+      <p>We use perspective twice. First, points farther away in w are drawn smaller, which turns 4D into 3D. Then points farther away in z are drawn smaller, which turns 3D into 2D.</p>
+      <p>A cube seen face-on in perspective looks like a small square inside a big square. In the same way, a tesseract looks like a small cube inside a big cube. The distortion is not a mistake. It is depth in a direction you cannot see directly.</p>
+    </div></div>
+  </div>
+</section>
+
+</div>
+</main>
+
+<p class="sr-only" id="kbd-help">Arrow keys rotate the shape. Space bar starts or stops auto-rotation.</p>
+
+<script>
+(function () {
+'use strict';
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+// ── n-cube geometry ───────────────────────────────────────────────
+// An n-cube (n = 0..4) has 2ⁿ vertices with coordinates ±1 on the first n
+// axes and 0 on the rest. A square face spans two axes (a, b): those two
+// vary around the square while every other used axis stays fixed at ±1.
+
+const AXIS_PAIRS  = [[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];  // xy xz xw yz yw zw
+const COLORS      = ['#ff3d58','#ff8020','#f0d000','#22e870','#00c8ff','#b040ff'];
+const SPEED_RATIO = [1.00, 0.76, 1.15, 0.85, 0.618, 0.93];
+const AXIS_NAMES  = 'xyzw';
+
+function hexRgb(hex) {
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+}
+const RGB = COLORS.map(hexRgb);
+
+function bit(i, axis) { return (i >> axis) & 1; }
+
+function buildCube(n) {
+  const count = 1 << n;
+  const edges = [];
+  for (let i = 0; i < count; i++) {
+    for (let ax = 0; ax < n; ax++) {
+      const j = i | (1 << ax);
+      if (j !== i) edges.push([i, j]);
+    }
+  }
+
+  const faces = [];
+  AXIS_PAIRS.forEach(([a, b], g) => {
+    if (a >= n || b >= n) return;
+    const others = [];
+    for (let ax = 0; ax < n; ax++) if (ax !== a && ax !== b) others.push(ax);
+    // one face per sign choice on the fixed axes
+    for (let fixed = 0; fixed < (1 << others.length); fixed++) {
+      let base = 0;
+      others.forEach((ax, k) => { if ((fixed >> k) & 1) base |= 1 << ax; });
+      // walk the square in order: (-,-) (+,-) (+,+) (-,+) on the varying axes
+      const verts = [base, base | (1 << a), base | (1 << a) | (1 << b), base | (1 << b)];
+      faces.push({ verts, group: g });
+    }
+  });
+
+  // cubic cells: choose 3 of the n axes to vary, then a sign for each other axis
+  const choose3 = n * (n - 1) * (n - 2) / 6;
+  const cells = n >= 3 ? choose3 * (1 << (n - 3)) : 0;
+  return { n, count, edges, faces, cells };
+}
+
+const CUBES = [0, 1, 2, 3, 4].map(buildCube);
+
+// ── State ──────────────────────────────────────────────────────────
+const angles = new Float64Array(6);
+angles[2] = 0.5; angles[4] = 0.8;
+angles[1] = 0.45; angles[3] = 0.35;
+
+let dim        = 4;     // shape currently shown
+let extrude    = 1;     // 0..1, how far the newest copy has slid apart
+let extrudeDir = 0;     // +1 growing, -1 shrinking, 0 idle
+let pendingDim = null;  // dimension to drop to once a shrink finishes
+
+let autoRotate = !reduceMotion.matches;
+let showFaces  = true;
+let showGlow   = true;
+let showVerts  = true;
+let showStars  = true;
+let hoverGroup = -1;
+let pinGroup   = -1;
+
+let isDragging = false;
+let prevX = 0, prevY = 0;
+let dragXZ = 0, dragXW = 0, dragYZ = 0;
+let velX = 0, velY = 0;
+
+// ── Canvas ─────────────────────────────────────────────────────────
+const cv    = document.getElementById('canvas');
+const ctx   = cv.getContext('2d');
+const stage = document.getElementById('stage');
+let W = 0, H = 0, dpr = 1;
+
+function resize() {
+  const r = stage.getBoundingClientRect();
+  W = r.width; H = r.height;
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width  = Math.round(W * dpr);
+  cv.height = Math.round(H * dpr);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Where to centre the shape so the overlay panels do not cover it.
+function viewport() {
+  const stacked = window.matchMedia('(max-width: 959px), (max-height: 599px)').matches;
+  if (stacked) return { cx: W / 2, cy: H / 2, size: Math.min(W, H) * 0.92 };
+  const top    = 172;
+  const dock   = document.getElementById('dock').getBoundingClientRect();
+  const bottom = H - dock.top + 12;
+  const side   = 300;
+  const size   = Math.max(160, Math.min(W - side * 2, H - top - bottom));
+  return { cx: W / 2, cy: top + (H - top - bottom) / 2, size };
+}
+// Largest |x| or |y| a projected tesseract vertex reaches at any rotation
+// (measured numerically). Used to fit the shadow inside the free area.
+const MAX_EXTENT = 0.36;
+
+// ── Pointer + keyboard rotation ────────────────────────────────────
+const SENS = 0.007;
+function addHorizontal(d) { if (dim === 4) dragXW += d; else dragXZ += d; }
+
+cv.addEventListener('pointerdown', e => {
+  isDragging = true; prevX = e.clientX; prevY = e.clientY;
+  velX = 0; velY = 0;
+  cv.setPointerCapture(e.pointerId);
+  cv.classList.add('dragging');
+});
+cv.addEventListener('pointermove', e => {
+  if (!isDragging) return;
+  velX = (e.clientX - prevX) * SENS;
+  velY = -(e.clientY - prevY) * SENS;
+  addHorizontal(velX); dragYZ += velY;
+  prevX = e.clientX; prevY = e.clientY;
+});
+function endDrag() {
+  isDragging = false;
+  cv.classList.remove('dragging');
+  if (reduceMotion.matches) { velX = 0; velY = 0; }
+}
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
+
+cv.setAttribute('aria-describedby', 'kbd-help');
+cv.addEventListener('keydown', e => {
+  const step = 0.12;
+  if (e.key === 'ArrowLeft')       addHorizontal(-step);
+  else if (e.key === 'ArrowRight') addHorizontal(step);
+  else if (e.key === 'ArrowUp')    dragYZ += step;
+  else if (e.key === 'ArrowDown')  dragYZ -= step;
+  else if (e.key === ' ')          setToggle('auto', !autoRotate);
+  else return;
+  e.preventDefault();
+});
+
+// ── Stars ─────────────────────────────────────────────────────────
+const STARS = Array.from({ length: 160 }, () => ({
+  rx: Math.random(), ry: Math.random(),
+  r:  Math.random() * 1.3 + 0.15,
+  a:  Math.random() * 0.38 + 0.06
+}));
+
+// ── 4D Math ───────────────────────────────────────────────────────
+// Rotation in the plane of axes a and b by θ (a Givens rotation).
+function rotate4D(v, rots) {
+  const p = [v[0], v[1], v[2], v[3]];
+  for (const [a, b, θ] of rots) {
+    const c = Math.cos(θ), s = Math.sin(θ);
+    const na = p[a]*c - p[b]*s;
+    const nb = p[a]*s + p[b]*c;
+    p[a] = na; p[b] = nb;
+  }
+  return p;
+}
+
+// Perspective from a 4D eye at w = 2.4 (vertices never reach |w| > 2).
+function proj4to3([x, y, z, w]) {
+  const f = 1 / (2.4 - w);
+  return [x*f, y*f, z*f];
+}
+
+// Perspective from a 3D eye at z = 4.5 (projected z never exceeds about 1.5).
+function proj3to2([x, y, z]) {
+  const f = 1 / (4.5 - z);
+  return { sx: x*f, sy: y*f, z };
+}
+
+// Vertex i of the current shape. The newest axis is scaled by `extrude`,
+// so during a step the two copies slide apart from the same place.
+function vertex(i, n, e) {
+  const v = [0, 0, 0, 0];
+  for (let ax = 0; ax < n; ax++) {
+    const s = bit(i, ax) ? 1 : -1;
+    v[ax] = ax === n - 1 ? s * e : s;
+  }
+  return v;
+}
+
+function planeUsesW(g) { return AXIS_PAIRS[g][1] === 3; }
+
+// ── Render ────────────────────────────────────────────────────────
+// Motion is measured in 60 fps "ticks" of real time, so slower machines
+// rotate at the same speed instead of in slow motion. The clamp stops a
+// jump after the tab has been in the background.
+let lastTime = 0;
+
+function draw(now) {
+  requestAnimationFrame(draw);
+  const ticks = lastTime ? Math.min((now - lastTime) / (1000 / 60), 4) : 1;
+  lastTime = now;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Void background
+  ctx.fillStyle = '#020408';
+  ctx.fillRect(0, 0, W, H);
+
+  const { cx, cy, size } = viewport();
+
+  // Radial glow
+  const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(W,H) * 0.58);
+  gr.addColorStop(0, 'rgba(30,20,60,0.5)');
+  gr.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gr;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  if (showStars) {
+    STARS.forEach(s => {
+      ctx.beginPath();
+      ctx.arc(s.rx * W, s.ry * H, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(200,200,255,${s.a})`;
+      ctx.fill();
+    });
+  }
+
+  // Dimension step animation
+  if (extrudeDir !== 0) {
+    extrude += extrudeDir * 0.025 * ticks;
+    if (extrude >= 1) { extrude = 1; extrudeDir = 0; }
+    if (extrude <= 0) {
+      extrude = 1; extrudeDir = 0;
+      if (pendingDim !== null) { setDim(pendingDim, false); pendingDim = null; }
+    }
+  }
+
+  // Inertia + auto-rotation
+  if (!isDragging) {
+    addHorizontal(velX * ticks); dragYZ += velY * ticks;
+    const decay = Math.pow(0.92, ticks);
+    velX *= decay; velY *= decay;
+    if (Math.abs(velX) < 1e-5) velX = 0;
+    if (Math.abs(velY) < 1e-5) velY = 0;
+    if (autoRotate) {
+      const planes = dim === 4 ? [2, 4] : [1, 3];   // XW + YW for 4D, XZ + YZ below
+      planes.forEach(g => { angles[g] += 0.005 * SPEED_RATIO[g] * ticks; });
+    }
+  }
+
+  // Rotations that involve w fade in only while the tesseract itself grows,
+  // so stepping between cube and tesseract never makes the shape jump.
+  const wFactor = dim === 4 ? extrude : 0;
+  const rots = [];
+  for (let g = 0; g < 6; g++) {
+    const [a, b] = AXIS_PAIRS[g];
+    rots.push([a, b, angles[g] * (planeUsesW(g) ? wFactor : 1)]);
+  }
+  rots.push([0, 2, dragXZ]);
+  rots.push([0, 3, dragXW * wFactor]);
+  rots.push([1, 2, dragYZ]);
+
+  const shape = CUBES[dim];
+  const scale = (size / 2) / MAX_EXTENT * 0.95;
+
+  const pts = [];
+  for (let i = 0; i < shape.count; i++) {
+    const r3 = proj4to3(rotate4D(vertex(i, dim, extrude), rots));
+    const { sx, sy, z } = proj3to2(r3);
+    pts.push({ sx: cx + sx*scale, sy: cy - sy*scale, z });
+  }
+
+  const hiGroup = pinGroup >= 0 ? pinGroup : hoverGroup;
+
+  // A line has no faces, so draw its single edge directly
+  if (dim === 1) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0].sx, pts[0].sy);
+    ctx.lineTo(pts[1].sx, pts[1].sy);
+    ctx.shadowBlur  = showGlow ? 10 : 0;
+    ctx.shadowColor = 'rgba(232,184,75,0.8)';
+    ctx.strokeStyle = 'rgba(232,184,75,0.9)';
+    ctx.lineWidth   = 1.8;
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
+  }
+
+  // Sort faces back to front (the 3D eye looks down -z, so larger z is nearer)
+  const fi = shape.faces.map(f => {
+    const ps = f.verts.map(i => pts[i]);
+    return { ps, rgb: RGB[f.group], group: f.group,
+      avgZ: (ps[0].z + ps[1].z + ps[2].z + ps[3].z) * 0.25 };
+  }).sort((a, b) => a.avgZ - b.avgZ);
+
+  // Draw faces
+  fi.forEach(({ ps, rgb, group }) => {
+    const hi     = hiGroup === group;
+    const dimmed = hiGroup >= 0 && !hi;
+    const fAlpha = !showFaces ? 0 : hi ? 0.32 : dimmed ? 0.04 : 0.12;
+    const sAlpha = hi ? 1.0 : dimmed ? 0.3 : 0.82;
+    const lw     = hi ? 2.2 : 1.5;
+    const blur   = showGlow ? (hi ? 18 : dimmed ? 0 : 7) : 0;
+
+    ctx.beginPath();
+    ctx.moveTo(ps[0].sx, ps[0].sy);
+    ctx.lineTo(ps[1].sx, ps[1].sy);
+    ctx.lineTo(ps[2].sx, ps[2].sy);
+    ctx.lineTo(ps[3].sx, ps[3].sy);
+    ctx.closePath();
+
+    if (fAlpha > 0) {
+      ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${fAlpha})`;
+      ctx.fill();
+    }
+
+    ctx.shadowBlur  = blur;
+    ctx.shadowColor = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+    ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${sAlpha})`;
+    ctx.lineWidth   = lw;
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
+  });
+
+  // Vertices (a lone point is always drawn, or 0D would be empty)
+  if (showVerts || dim === 0) {
+    pts.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.sx, p.sy, dim === 0 ? 5 : 3, 0, Math.PI*2);
+      ctx.fillStyle   = 'rgba(232,184,75,0.92)';
+      ctx.shadowBlur  = showGlow ? 10 : 0;
+      ctx.shadowColor = 'rgba(232,184,75,0.7)';
+      ctx.fill();
+      ctx.shadowBlur  = 0;
+    });
+  }
+}
+
+requestAnimationFrame(draw);
+
+// ── Equation cycling ───────────────────────────────────────────────
+const eqs = document.querySelectorAll('.eq');
+let activeEq = 0;
+setInterval(() => {
+  eqs[activeEq].classList.remove('active');
+  activeEq = (activeEq + 1) % eqs.length;
+  eqs[activeEq].classList.add('active');
+}, 2600);
+
+// ── Toggles ────────────────────────────────────────────────────────
+function setToggle(name, on) {
+  if (name === 'faces') showFaces  = on;
+  if (name === 'glow')  showGlow   = on;
+  if (name === 'verts') showVerts  = on;
+  if (name === 'auto')  autoRotate = on;
+  if (name === 'stars') showStars  = on;
+  const el = document.querySelector(`[data-toggle="${name}"]`);
+  el.classList.toggle('active', on);
+  el.setAttribute('aria-checked', String(on));
+}
+document.querySelectorAll('[data-toggle]').forEach(el => {
+  el.addEventListener('click', () => setToggle(el.dataset.toggle, el.getAttribute('aria-checked') !== 'true'));
+});
+setToggle('auto', autoRotate);
+reduceMotion.addEventListener('change', () => setToggle('auto', !reduceMotion.matches));
+
+// ── Learn accordions (one open at a time) ──────────────────────────
+const triggers = document.querySelectorAll('.learn-trigger');
+function setOpen(btn, open) {
+  const item = btn.parentElement;
+  const body = document.getElementById(btn.getAttribute('aria-controls'));
+  item.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  body.style.maxHeight = open ? body.scrollHeight + 'px' : '0px';
+}
+triggers.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const wasOpen = btn.getAttribute('aria-expanded') === 'true';
+    triggers.forEach(t => setOpen(t, false));
+    if (!wasOpen) setOpen(btn, true);
+  });
+});
+
+// ── Dimension ladder ───────────────────────────────────────────────
+const NAMES  = ['point', 'line', 'square', 'cube', 'tesseract'];
+const counts = document.getElementById('counts');
+const hint   = document.getElementById('drag-hint');
+
+function plural(k, word) { return `${k} ${word}${k === 1 ? '' : 's'}`; }
+
+function updateReadout() {
+  const s = CUBES[dim];
+  const parts = [plural(s.count, 'corner')];
+  if (dim >= 1) parts.push(plural(s.edges.length, 'edge'));
+  if (dim >= 2) parts.push(plural(s.faces.length, 'square'));
+  if (dim >= 3) parts.push(plural(s.cells, 'cube'));
+  counts.textContent = parts.join(' · ');
+
+  document.querySelectorAll('.rung').forEach(b =>
+    b.setAttribute('aria-pressed', String(+b.dataset.dim === dim)));
+
+  const present = new Set(s.faces.map(f => f.group));
+  document.querySelectorAll('.chip').forEach(c => {
+    const g = +c.dataset.group;
+    c.classList.toggle('absent', !present.has(g));
+    c.setAttribute('aria-disabled', String(!present.has(g)));
+  });
+  if (pinGroup >= 0 && !present.has(pinGroup)) setPin(-1);
+
+  hint.textContent = dim === 4
+    ? 'Drag sideways to turn it through the 4th dimension · drag up or down to tilt it'
+    : dim === 0 ? 'A point has no length, width, or height' : 'Drag to rotate';
+  cv.setAttribute('aria-label', dim === 4
+    ? 'A rotating tesseract, shown as a perspective shadow: a small cube inside a larger cube with their matching corners joined. Use the arrow keys to rotate it.'
+    : `A rotating ${NAMES[dim]}. Use the arrow keys to rotate it.`);
+}
+
+function setDim(n, animate) {
+  dim = n;
+  if (animate && !reduceMotion.matches && n > 0) { extrude = 0; extrudeDir = 1; }
+  else { extrude = 1; extrudeDir = 0; }
+  updateReadout();
+}
+
+document.querySelectorAll('.rung').forEach(b => {
+  b.addEventListener('click', () => {
+    const n = +b.dataset.dim;
+    if (n === dim && extrudeDir === 0) return;
+    pendingDim = null;
+    if (n === dim + 1) setDim(n, true);
+    else if (n === dim - 1 && !reduceMotion.matches) {
+      // run the step backwards: the copy slides back, then the shape drops a dimension
+      extrudeDir = -1; pendingDim = n;
+      document.querySelectorAll('.rung').forEach(r =>
+        r.setAttribute('aria-pressed', String(r === b)));
+    }
+    else setDim(n, false);
+  });
+});
+
+// ── Face legend: hover or focus previews, click pins ───────────────
+function setPin(g) {
+  pinGroup = g;
+  document.querySelectorAll('.chip').forEach(c =>
+    c.setAttribute('aria-pressed', String(+c.dataset.group === g)));
+}
+document.querySelectorAll('.chip').forEach(c => {
+  const g = +c.dataset.group;
+  const on  = () => { if (c.getAttribute('aria-disabled') !== 'true') hoverGroup = g; };
+  const off = () => { if (hoverGroup === g) hoverGroup = -1; };
+  c.addEventListener('pointerenter', on);
+  c.addEventListener('pointerleave', off);
+  c.addEventListener('focus', on);
+  c.addEventListener('blur', off);
+  c.addEventListener('click', () => {
+    if (c.getAttribute('aria-disabled') === 'true') return;
+    setPin(pinGroup === g ? -1 : g);
+  });
+});
+
+updateReadout();
+
+})();
+</script>
+</body>
+</html>

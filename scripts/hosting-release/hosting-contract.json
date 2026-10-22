@@ -42,6 +42,7 @@
     { "target": "marketing", "path": "/terms", "status": 200 },
     { "target": "marketing", "path": "/blog/", "status": 200 },
     { "target": "marketing", "path": "/wonderbox/", "status": 200 },
+    { "target": "marketing", "path": "/wonderbox/tesseract.html", "status": 200 },
     { "target": "marketing", "path": "/investigation_gray-zone.html", "status": 200 },
     { "target": "marketing", "path": "/app/lessons/lesson_carbon-cycle.html", "status": 404 },
     { "target": "marketing", "path": "/app/a/pair-certification", "status": 404 },
@@ -53,6 +54,7 @@
     { "target": "app", "path": "/app/lessons/lesson_carbon-cycle.html", "status": 200 },
     { "target": "app", "path": "/blog/", "status": 404 },
     { "target": "app", "path": "/wonderbox/", "status": 404 },
+    { "target": "app", "path": "/wonderbox/tesseract.html", "status": 404 },
     { "target": "app", "path": "/app/lessons/variants/manifest.json", "status": 404 },
     { "target": "app", "path": "/firebase.json", "status": 404 }
   ]

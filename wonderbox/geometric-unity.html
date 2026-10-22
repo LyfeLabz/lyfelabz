@@ -59,6 +59,17 @@
     background: rgba(0,245,212,0.15);
     box-shadow: 0 0 20px rgba(0,245,212,0.18);
   }
+  .wb-nav-right { display: flex; align-items: center; gap: 10px; }
+  .wb-next-pill {
+    background: rgba(232,184,75,0.08);
+    border-color: rgba(232,184,75,0.35);
+    color: #e8b84b;
+  }
+  .wb-next-pill:hover {
+    background: rgba(232,184,75,0.16);
+    box-shadow: 0 0 20px rgba(232,184,75,0.2);
+  }
+  @media (max-width: 560px) { .wb-next-pill { display: none; } }
 
   :root {
     --gold:      #e8b84b;
@@ -399,7 +410,10 @@
     </div>
     <span class="wb-nav-wordmark">LYFE<span>LABZ</span></span>
   </a>
-  <a href="index.html" class="wb-back-pill">← WONDERBOX</a>
+  <div class="wb-nav-right">
+    <a href="index.html" class="wb-back-pill">← WONDERBOX</a>
+    <a href="tesseract.html" class="wb-back-pill wb-next-pill">NEXT: TESSERACT →</a>
+  </div>
 </nav>
 
 <canvas id="canvas"></canvas>

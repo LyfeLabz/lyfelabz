@@ -244,62 +244,6 @@ nav {
   margin-top: 6px;
 }
 
-.hero-question-box {
-  margin: 32px auto;
-  max-width: 680px;
-  background: rgba(10,18,32,0.7);
-  border: 1px solid rgba(0,245,212,0.2);
-  border-radius: 12px;
-  padding: 18px 28px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  animation: fadeUp 0.8s 0.35s both;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 60px rgba(0,245,212,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-.qbox-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
-}
-
-.qbox-text {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(0.95rem, 2vw, 1.25rem);
-  font-weight: 600;
-  color: var(--text);
-  text-align: left;
-  min-height: 2em;
-}
-
-.qbox-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 1.1em;
-  background: var(--teal);
-  margin-left: 2px;
-  vertical-align: middle;
-  animation: blink 0.9s step-start infinite;
-}
-@keyframes blink { 50% { opacity: 0; } }
-
-.hero-sub {
-  max-width: 560px;
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: var(--muted);
-  line-height: 1.7;
-  margin: 0 auto 44px;
-  animation: fadeUp 0.8s 0.45s both;
-}
-
 .hero-actions {
   display: flex;
   gap: 16px;
@@ -395,168 +339,6 @@ nav {
 }
 
 .hero-lid { transform-origin: 70px 76px; }
-
-/* ── Question Submission ── */
-.q-submit-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  margin-top: 20px;
-  margin-bottom: 8px;
-  animation: fadeUp 0.8s 0.7s both;
-}
-
-.btn-ask {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 26px;
-  border-radius: 100px;
-  border: 1px solid rgba(92,225,255,0.35);
-  background: rgba(0,245,212,0.07);
-  color: var(--teal);
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: all 0.22s;
-  position: relative;
-  overflow: hidden;
-}
-.btn-ask::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(circle at 50% 0%, rgba(0,245,212,0.14), transparent 65%);
-  opacity: 0;
-  transition: opacity 0.22s;
-}
-.btn-ask:hover::before { opacity: 1; }
-.btn-ask:hover {
-  border-color: rgba(0,245,212,0.65);
-  box-shadow: 0 0 28px rgba(0,245,212,0.15);
-  transform: translateY(-1px);
-}
-.btn-ask-icon { font-size: 1rem; line-height: 1; }
-
-.q-form-box {
-  display: none;
-  width: min(520px, 92vw);
-  background: rgba(6,14,28,0.96);
-  border: 1px solid rgba(0,245,212,0.2);
-  border-radius: 10px;
-  padding: 18px 18px 16px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,245,212,0.04);
-  backdrop-filter: blur(20px);
-}
-.q-form-box.open { display: block; animation: formIn 0.22s ease; }
-@keyframes formIn {
-  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-  to   { opacity: 1; transform: none; }
-}
-.q-form-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.3em;
-  color: rgba(0,245,212,0.5);
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-.q-student-row {
-  display: grid;
-  grid-template-columns: 1fr 120px;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.q-student-field,
-.q-block-select {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 7px;
-  padding: 10px 12px;
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  font-size: 0.84rem;
-  outline: none;
-  transition: border-color 0.18s, box-shadow 0.18s;
-}
-
-.q-student-field::placeholder { color: rgba(180,210,240,0.3); }
-
-.q-block-select {
-  cursor: pointer;
-  color-scheme: dark;
-}
-
-.q-student-field:focus,
-.q-block-select:focus {
-  border-color: rgba(0,245,212,0.4);
-  box-shadow: 0 0 0 3px rgba(0,245,212,0.06);
-}
-
-@media (max-width: 520px) {
-  .q-student-row { grid-template-columns: 1fr; }
-}
-
-.q-form-row { display: flex; gap: 10px; align-items: stretch; }
-.q-input {
-  flex: 1;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 7px;
-  padding: 11px 14px;
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  font-size: 0.88rem;
-  outline: none;
-  transition: border-color 0.18s, box-shadow 0.18s;
-  resize: none;
-  min-height: 46px;
-  max-height: 130px;
-  line-height: 1.5;
-}
-.q-input::placeholder { color: rgba(180,210,240,0.3); }
-.q-input:focus {
-  border-color: rgba(0,245,212,0.4);
-  box-shadow: 0 0 0 3px rgba(0,245,212,0.06);
-}
-.q-send-btn {
-  flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(0,245,212,0.22), rgba(92,225,255,0.15));
-  border: 1px solid rgba(0,245,212,0.4);
-  border-radius: 7px;
-  color: var(--teal);
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  padding: 0 18px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-.q-send-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(0,245,212,0.32), rgba(92,225,255,0.22));
-  box-shadow: 0 0 24px rgba(0,245,212,0.2);
-}
-.q-send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.q-status {
-  margin-top: 9px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  text-align: center;
-  min-height: 16px;
-}
-.q-status.ok  { color: #4ade80; }
-.q-status.err { color: #f87171; }
 
 .hero-scroll {
   position: absolute;
@@ -778,6 +560,19 @@ section {
   inset: 0;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3CradialGradient id='rg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23c9a84c' stop-opacity='0.6'/%3E%3Cstop offset='100%25' stop-color='%23c9a84c' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='200' cy='100' rx='120' ry='70' fill='none' stroke='%23c9a84c' stroke-opacity='0.3' stroke-width='1'/%3E%3Cellipse cx='200' cy='100' rx='80' ry='45' fill='none' stroke='%23ffd84c' stroke-opacity='0.5' stroke-width='1.5'/%3E%3Cellipse cx='200' cy='100' rx='40' ry='25' fill='url(%23rg)' stroke='%23ffd84c' stroke-opacity='0.8' stroke-width='1'/%3E%3Cpath d='M120,100 Q200,40 280,100 Q200,160 120,100' fill='none' stroke='%2300e5ff' stroke-opacity='0.4' stroke-width='1'/%3E%3C/svg%3E") center/cover;
   animation: thumbPulse 4s ease-in-out infinite;
+}
+
+/* Tesseract thumb */
+.thumb-tess {
+  background: radial-gradient(ellipse at 50% 50%, rgba(232,184,75,0.2) 0%, rgba(176,64,255,0.14) 50%, rgba(2,4,8,1) 100%);
+}
+
+.thumb-tess::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Crect x='140' y='30' width='140' height='140' fill='%23f0d000' fill-opacity='0.05' stroke='%23f0d000' stroke-opacity='0.5' stroke-width='1.2'/%3E%3Crect x='185' y='75' width='50' height='50' fill='%23ff3d58' fill-opacity='0.1' stroke='%23ff3d58' stroke-opacity='0.75' stroke-width='1.2'/%3E%3Cline x1='140' y1='30' x2='185' y2='75' stroke='%2300c8ff' stroke-opacity='0.55' stroke-width='1'/%3E%3Cline x1='280' y1='30' x2='235' y2='75' stroke='%2322e870' stroke-opacity='0.55' stroke-width='1'/%3E%3Cline x1='280' y1='170' x2='235' y2='125' stroke='%2300c8ff' stroke-opacity='0.55' stroke-width='1'/%3E%3Cline x1='140' y1='170' x2='185' y2='125' stroke='%2322e870' stroke-opacity='0.55' stroke-width='1'/%3E%3Cg fill='%23e8b84b' fill-opacity='0.85'%3E%3Ccircle cx='140' cy='30' r='2.5'/%3E%3Ccircle cx='280' cy='30' r='2.5'/%3E%3Ccircle cx='280' cy='170' r='2.5'/%3E%3Ccircle cx='140' cy='170' r='2.5'/%3E%3Ccircle cx='185' cy='75' r='2'/%3E%3Ccircle cx='235' cy='75' r='2'/%3E%3Ccircle cx='235' cy='125' r='2'/%3E%3Ccircle cx='185' cy='125' r='2'/%3E%3C/g%3E%3C/svg%3E") center/cover;
+  animation: thumbPulse 4.5s ease-in-out infinite;
 }
 
 /* Standard Model thumb */
@@ -1316,52 +1111,6 @@ footer {
 
     <!-- Wonder Box wordmark -->
     <h1 class="hero-wb-title">Wonder Box</h1>
-
-
-  </div>
-
-  <!-- ── Submit Questions pill + inline form ── -->
-  <div class="q-submit-wrap" id="qSubmitWrap">
-    <button class="btn-ask" id="btnAsk" onclick="toggleQForm()">
-      <span class="btn-ask-icon">✦</span> Submit a Question
-    </button>
-    <div class="q-form-box" id="qFormBox">
-      <div class="q-form-label">What are you curious about?</div>
-      <div class="q-student-row">
-        <input
-          class="q-student-field"
-          id="qStudentName"
-          type="text"
-          placeholder="First and last name"
-          autocomplete="name"
-          required
-        >
-        <select class="q-block-select" id="qBlock" required>
-          <option value="">Block</option>
-          <option value="A">Block A</option>
-          <option value="B">Block B</option>
-          <option value="C">Block C</option>
-          <option value="D">Block D</option>
-          <option value="E">Block E</option>
-          <option value="F">Block F</option>
-          <option value="G">Block G</option>
-        </select>
-      </div>
-      <div class="q-form-row">
-        <textarea
-          class="q-input"
-          id="qInput"
-          rows="1"
-          placeholder="Type your question here…"
-          oninput="autoResize(this)"
-          onkeydown="handleKey(event)"
-        ></textarea>
-        <button class="q-send-btn" id="qSendBtn" onclick="submitQuestion()">
-          Send ↑
-        </button>
-      </div>
-      <div class="q-status" id="qStatus"></div>
-    </div>
   </div>
 
 </div>
@@ -1434,6 +1183,27 @@ footer {
         <div class="exp-card-arrow">↗</div>
       </a>
 
+      <!-- The Tesseract -->
+      <a href="tesseract.html" class="exp-card gold">
+        <div class="exp-card-thumb thumb-tess">
+          <div class="exp-card-thumb-label">4D INTERACTIVE</div>
+        </div>
+        <div class="exp-card-body">
+          <div class="exp-card-tag">GEOMETRY · THE FOURTH DIMENSION</div>
+          <h3 class="exp-card-title">The Tesseract</h3>
+          <p class="exp-card-desc">
+            Slide a point to make a line, a line to make a square, a square to make a cube. Now slide the cube in a direction you can't even point to. Spin a true 4D hypercube and watch its shadow fold through itself.
+          </p>
+          <div class="exp-card-meta">
+            <span class="meta-chip chip-dim">4 Spatial Dimensions</span>
+            <span class="meta-chip chip-amber">16 Corners · 8 Cubes</span>
+            <span class="meta-chip chip-dim">6 Rotation Planes</span>
+            <span class="meta-chip chip-teal">Live 4D</span>
+          </div>
+        </div>
+        <div class="exp-card-arrow">↗</div>
+      </a>
+
     </div>
   </div>
 </div>
@@ -1447,8 +1217,8 @@ footer {
   <ul class="footer-links">
     <li><a href="https://lyfelabz.com">Main Site</a></li>
     <li><a href="#explorations">Explorations</a></li>
-    <li><a href="https://www.lyfelabz.com/about_learning-science.html">About LyfeLabz</a></li>
-    <li><a href="https://www.lyfelabz.com/about_privacy.html">Privacy</a></li>
+    <li><a href="https://lyfelabz.com/about_lyfelabz.html">About LyfeLabz</a></li>
+    <li><a href="https://lyfelabz.com/privacy">Privacy</a></li>
   </ul>
   <div class="footer-copy">© 2026 LyfeLabz · Educational Use</div>
 </footer>
@@ -1527,51 +1297,6 @@ window.addEventListener('keydown', e => {
   }
 });
 
-/* ===== TYPEWRITER ===== */
-const questions = [
-  "If the universe started from nothing... what was the nothing?",
-  "Why does matter exist instead of just energy?",
-  "Is there a theory that unifies all four forces?",
-  "What gives particles their mass?",
-  "Why are there exactly three generations of particles?",
-  "What would a 14-dimensional space actually feel like?",
-  "Could there be more universes like ours?",
-  "What is dark matter actually made of?",
-];
-
-const icons = ['🌌','⚛️','🔭','🧲','🧬','🌊','🔬','✨'];
-let qi = 0, ci = 0, deleting = false, delay = 60;
-const qEl = document.getElementById('typed-question');
-const qIcon = document.querySelector('.qbox-icon');
-
-function typeLoop() {
-  if (!qEl) return; // guard: element not present on this page
-  const q = questions[qi];
-  if (!deleting) {
-    ci++;
-    qEl.innerHTML = q.slice(0, ci) + '<span class="qbox-cursor"></span>';
-    if (ci === q.length) {
-      deleting = true;
-      delay = 2200;
-    } else {
-      delay = 38 + Math.random() * 30;
-    }
-  } else {
-    ci = Math.max(0, ci - 2);
-    qEl.innerHTML = q.slice(0, ci) + '<span class="qbox-cursor"></span>';
-    if (ci === 0) {
-      deleting = false;
-      qi = (qi + 1) % questions.length;
-      if (qIcon) qIcon.textContent = icons[qi % icons.length];
-      delay = 300;
-    } else {
-      delay = 22;
-    }
-  }
-  setTimeout(typeLoop, delay);
-}
-typeLoop();
-
 /* ===== SCROLL REVEALS ===== */
 const observer = new IntersectionObserver(entries => {
   entries.forEach(e => {
@@ -1597,101 +1322,6 @@ const pillObserver = new IntersectionObserver(entries => {
 
 const pillSection = document.querySelector('.what-pills');
 if (pillSection) pillObserver.observe(pillSection);
-
-// ── Question Submission ──────────────────────────────────────────
-// Replace this URL after deploying your Google Apps Script web app:
-const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyvFOVXOPbjh82-jVDS63wP-kImWMU0HHfRSvf14g6be2NsF7fV5OWmzOcugYvyk6SJ/exec';
-
-function toggleQForm() {
-  const box  = document.getElementById('qFormBox');
-  const btn  = document.getElementById('btnAsk');
-  const open = box.classList.toggle('open');
-  btn.querySelector('.btn-ask-icon').textContent = open ? '✕' : '✦';
-  btn.innerHTML = open
-    ? '<span class="btn-ask-icon">✕</span> Close'
-    : '<span class="btn-ask-icon">✦</span> Submit a Question';
-  if (open) setTimeout(() => document.getElementById('qStudentName').focus(), 50);
-  document.getElementById('qStatus').textContent = '';
-  document.getElementById('qStatus').className = 'q-status';
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 130) + 'px';
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    submitQuestion();
-  }
-}
-
-async function submitQuestion() {
-  const input       = document.getElementById('qInput');
-  const nameInput   = document.getElementById('qStudentName');
-  const blockSelect = document.getElementById('qBlock');
-  const status      = document.getElementById('qStatus');
-  const btn         = document.getElementById('qSendBtn');
-  const text        = input.value.trim();
-  const studentName = nameInput.value.trim();
-  const block       = blockSelect.value.trim();
-
-  if (!studentName) {
-    status.textContent = 'Please enter your name before submitting.';
-    status.className   = 'q-status err';
-    nameInput.focus();
-    return;
-  }
-
-  if (!block) {
-    status.textContent = 'Please choose your block before submitting.';
-    status.className   = 'q-status err';
-    blockSelect.focus();
-    return;
-  }
-
-  if (!text) {
-    status.textContent = 'Please type a question first.';
-    status.className   = 'q-status err';
-    input.focus();
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
-  status.textContent = '';
-  status.className = 'q-status';
-
-  try {
-    await fetch(SHEET_ENDPOINT, {
-      method: 'POST',
-      mode:   'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name:      studentName,
-        block:     block,
-        question:  text,
-        timestamp: new Date().toISOString(),
-        page:      window.location.pathname
-      })
-    });
-    // no-cors means we can't read the response - treat as success
-    status.textContent = '✓ Question received, thank you!';
-    status.className   = 'q-status ok';
-    nameInput.value = '';
-    blockSelect.value = '';
-    input.value = '';
-    input.style.height = 'auto';
-    setTimeout(() => toggleQForm(), 2400);
-  } catch (err) {
-    status.textContent = 'Could not send. Check your connection.';
-    status.className   = 'q-status err';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Send ↑';
-  }
-}
 </script>
 </body>
 </html>
