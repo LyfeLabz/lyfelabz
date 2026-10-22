@@ -171,8 +171,11 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       for (const g of groups) {
         const label = doc.getElementById(g.getAttribute("aria-labelledby"));
         expect(label).not.toBeNull();
-        expect(label.textContent.trim().length).toBeGreaterThan(0);
-        expect(g.querySelectorAll(".check-opt").length).toBe(3);
+        // The water displacement check writes its question and four choices
+        // from the measured object at run time (covered by its own suite).
+        const dynamic = g.id === "disp-options";
+        if (!dynamic) expect(label.textContent.trim().length).toBeGreaterThan(0);
+        expect(g.querySelectorAll(".check-opt").length).toBe(dynamic ? 4 : 3);
       }
       for (const btn of doc.querySelectorAll("button.check-opt")) expect(btn.getAttribute("type")).toBe("button");
     });

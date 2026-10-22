@@ -29,7 +29,8 @@ const IDS = ["vol-l", "vol-w", "vol-h"];
 function load(rel) {
   const html = fs.readFileSync(path.join(ROOT, rel), "utf8");
   const start = html.indexOf('<div class="vol-lab"');
-  const end = html.indexOf('<div class="bridge-callout orange">', start);
+  const end = html.indexOf('<div class="bridge-callout orange mlab-next">', start);
+  expect(end).toBeGreaterThan(start);
   const markup = html.slice(start, end);
   const scriptStart = html.indexOf("<!-- ===== VOLUME BLOCK BUILDER ===== -->");
   const script = html

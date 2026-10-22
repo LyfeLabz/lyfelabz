@@ -7,7 +7,8 @@
 /*
  * Measuring Matter Measurement Lab and triple beam balance contract.
  *
- * Lab 1 is an interactive triple beam balance: students place an object,
+ * Lab 1 is an interactive triple beam balance: choosing an object sets it
+ * on the pan at once (no separate place or remove step), then students
  * move three riders (100 g, 10 g, and 0.1 g steps) until the pointer reaches
  * the center mark, then add the rider readings themselves. The object's mass
  * is never shown before the balance is balanced and the student's sum is
@@ -58,7 +59,6 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
     el.dispatchEvent(new win.Event("input", { bubbles: true }));
   };
   const choose = (key) => click(doc.querySelector(`.tbb-obj[data-obj="${key}"]`));
-  const place = () => click($("tbb-place"));
   const check = (answer) => {
     $("tbb-input").value = answer;
     click($("tbb-check"));
@@ -123,10 +123,37 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
     for (const b of doc.querySelectorAll(".tbb-obj")) expect(b.textContent).not.toMatch(/\d/);
   });
 
+  test("the first object starts on the pan with the riders at zero, ready to balance", () => {
+    expect(doc.querySelector('.tbb-obj[aria-pressed="true"]').dataset.obj).toBe("rock");
+    expect($("tbb-object").textContent).toBe("🪨");
+    expect(["h", "t", "o"].map((k) => $("tbb-" + k).value)).toEqual(["0", "0", "0"]);
+    expect(pointerY()).toBeLessThan(0);
+    expect($("tbb-status").textContent).toBe(
+      "The rock is on the pan. The pointer is above the center mark. Move a rider forward to add more mass."
+    );
+  });
+
+  test("there is no separate place or remove step", () => {
+    expect($("tbb-place")).toBeNull();
+    expect($("tbb-lab").textContent).not.toMatch(/place (it )?on (the )?pan|remove from (the )?pan|place an object/i);
+    expect(script).not.toMatch(/placed|tbb-place/);
+  });
+
+  test("choosing an object puts it straight on the pan and replaces the last one", () => {
+    choose("apple");
+    expect($("tbb-object").textContent).toBe("🍎");
+    expect($("tbb-object").querySelectorAll("text")).toHaveLength(1);
+    expect(pointerY()).toBeLessThan(0);
+    expect($("tbb-status").textContent).toMatch(/^The apple is on the pan\./);
+    choose("pencil");
+    expect($("tbb-object").textContent).toBe("✏️");
+    expect(doc.querySelectorAll('.tbb-obj[aria-pressed="true"]')).toHaveLength(1);
+    expect($("tbb-status").textContent).toMatch(/^The pencil is on the pan\./);
+    set("o", 1);
+    expect($("tbb-status").textContent).toBe("The pointer is above the center mark. Move a rider forward to add more mass.");
+  });
+
   test("the pointer rises when the object outweighs the riders, falls when it does not, and centers only when equal", () => {
-    expect(pointerY()).toBe(0);
-    expect($("tbb-status").textContent).toMatch(/^The pan is empty/);
-    place(); // rock
     expect(pointerY()).toBeLessThan(0);
     expect($("tbb-status").textContent).toMatch(/above the center mark/);
     set("h", 500);
@@ -140,7 +167,6 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
 
   test("the pointer response grows with the difference", () => {
     choose("apple");
-    place();
     set("h", 100);
     set("t", 80);
     const near = Math.abs(pointerY());
@@ -152,7 +178,6 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
 
   test("the ones beam resolves 0.1 g", () => {
     choose("pencil");
-    place();
     set("o", 6.3);
     expect($("tbb-status").textContent).toMatch(/above/);
     expect($("tbb-o-val").textContent).toBe("6.3 g");
@@ -164,8 +189,6 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
 
   test("feedback separates not balanced, balanced with a wrong sum, and correct", () => {
     choose("baseball");
-    expect(check("145.3")).toEqual({ cls: "tbb-fb no", text: "Place an object on the pan first, then balance it." });
-    place();
     expect(check("")).toEqual({ cls: "tbb-fb no", text: "Type the mass you read from the beams, in grams." });
     const unbalanced = check("145.3");
     expect(unbalanced.text).toMatch(/^Not balanced yet\./);
@@ -180,36 +203,43 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
   });
 
   test("moving a rider clears an earlier result so no stale success remains", () => {
-    place();
     set("h", 300);
     expect(check("300").cls).toBe("tbb-fb ok");
     set("t", 10);
     expect($("tbb-fb").textContent).toBe("");
   });
 
-  test("switching objects resets the pan, riders, answer, and feedback", () => {
-    place();
+  test("switching objects resets the riders, answer, feedback, and pointer for the new object", () => {
     set("h", 300);
-    check("300");
+    expect(check("300").cls).toBe("tbb-fb ok");
+    expect(pointerY()).toBe(0);
     choose("mug");
     expect(doc.querySelector('.tbb-obj[aria-pressed="true"]').dataset.obj).toBe("mug");
     expect(["h", "t", "o"].map((k) => $("tbb-" + k).value)).toEqual(["0", "0", "0"]);
     expect($("tbb-input").value).toBe("");
     expect($("tbb-fb").textContent).toBe("");
-    expect($("tbb-place").textContent).toBe("Place on pan");
-    expect($("tbb-object").innerHTML).toBe("");
+    expect($("tbb-object").textContent).toBe("☕");
+    expect(pointerY()).toBeLessThan(0);
+    set("h", 300); set("t", 50); set("o", 2.8);
+    expect(check("352.8").cls).toBe("tbb-fb ok");
+  });
+
+  test("choosing the object already on the pan keeps the student's work", () => {
+    set("h", 300);
+    choose("rock");
+    expect($("tbb-h").value).toBe("300");
+    expect(pointerY()).toBe(0);
   });
 
   test("reset returns the riders to zero and clears the attempt", () => {
     choose("mug");
-    place();
     set("h", 300); set("t", 50); set("o", 2.8);
     expect(check("352.8").cls).toBe("tbb-fb ok");
     click($("tbb-reset"));
     expect(["h", "t", "o"].map((k) => $("tbb-" + k + "-val").textContent)).toEqual(["0 g", "0 g", "0.0 g"]);
     expect($("tbb-input").value).toBe("");
     expect($("tbb-fb").textContent).toBe("");
-    expect($("tbb-place").textContent).toBe("Remove from pan");
+    expect($("tbb-object").textContent).toBe("☕");
   });
 
   test("step buttons move one notch and stay within each beam", () => {
