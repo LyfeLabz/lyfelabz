@@ -7,8 +7,9 @@
 /*
  * Measuring Matter vocabulary cards and Quick Check contract.
  *
- * Guards the visual redesign pilot: the canonical glossary-card markup
- * (one open at a time, chevron, aria-expanded), and the shared Quick Check
+ * Guards the visual redesign pilot: the Vocabulary Explorer (one definition
+ * at a time, pressed-state word buttons; a documented exception to the
+ * glossary-card pattern, with its intro text pinned below), and the shared Quick Check
  * shell around every formative multiple-choice moment outside the final quiz.
  * Runs the lesson's real scripts in jsdom against the source and both
  * generated outputs, so gates, retries, and feedback keep their behavior.
@@ -29,6 +30,8 @@ const SCRIPT_HEADERS = [
   "<!-- ===== VOCABULARY EXPLORER (one term at a time; ungraded, nothing stored) ===== -->",
   "<!-- ===== PREDICT BEFORE REVEAL ===== -->",
   "<!-- ===== TOOL MATCH GAME ===== -->",
+  "<!-- ===== WATER DISPLACEMENT LAB (ungraded, nothing stored) ===== -->",
+  "<!-- ===== DENSITY LAB ===== -->",
   "<!-- ===== PRACTICE PROBLEM STEPPER ===== -->",
   "<!-- ===== QUICK RECALL CHECKPOINTS ===== -->",
 ];
@@ -66,9 +69,9 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
     const DEFS = {
       matter: ["Anything that has mass and takes up space (volume).", "The most common states of matter are solid, liquid, and gas."],
       mass: ["The amount of matter in an object.", "Mass is measured in grams (g) with a triple beam balance."],
-      volume: ["The amount of space an object takes up.", "Volume is measured in cubic centimeters (cm³) with a ruler or in milliliters (mL) with a graduated cylinder."],
+      volume: ["The amount of space an object takes up.", "Volume is found in cubic centimeters (cm³) by multiplying length × width × height, or measured in milliliters (mL) with a graduated cylinder."],
       density: ["A measure of how much matter is packed into a space.", "Density is the ratio of mass to volume: D = m ÷ V, in g/cm³ or g/mL."],
-      balance: ["The lab tool scientists use to measure mass in grams.", "You slide weights along three beams until the pointer balances."],
+      balance: ["The lab tool scientists use to measure mass in grams.", "You slide the riders along the three beams until the pointer lines up with zero."],
       cylinder: ["A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).", null],
     };
     const terms = () => [...doc.querySelectorAll("#vocab .vx-term")];
@@ -141,17 +144,30 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
   });
 
   describe("Quick Check shell", () => {
+    test("each formative activity says it is not graded exactly once", () => {
+      expect(doc.querySelector("#recall .section-desc").textContent).toBe(
+        "Two quick questions before we put it all together. Pulling answers from memory now will help them stick."
+      );
+      const practice = doc.getElementById("pp-step2-wrap").closest(".worked-example");
+      expect(practice.querySelector(".check-eyebrow").textContent).toBe("Practice · Not graded");
+      const activities = [
+        doc.querySelector(".tool-match"), doc.getElementById("disp-check"), practice,
+        doc.getElementById("qrCard1"), doc.getElementById("qrCard2"),
+      ];
+      for (const el of activities) expect(el.textContent.match(/not graded/gi)).toHaveLength(1);
+    });
+
     test("wraps every formative check outside the quiz with an eyebrow", () => {
       const eyebrows = [...doc.querySelectorAll(".check-card > .check-eyebrow")].map((e) => e.textContent);
       expect(eyebrows).toEqual([
-        "Predict", "Quick Check · Not graded", "Predict", "Quick Recall · 1 of 2", "Quick Recall · 2 of 2",
+        "Predict", "Quick Check · Not graded", "Quick Check · Not graded", "Predict", "Quick Recall · 1 of 2", "Quick Recall · 2 of 2",
       ]);
       expect(doc.querySelectorAll("#quiz .check-card, #quiz .check-opt")).toHaveLength(0);
     });
 
     test("labels every option group by its question and styles every option", () => {
       const groups = [...doc.querySelectorAll('.check-card [role="group"], .worked-example [role="group"]')];
-      expect(groups).toHaveLength(9);
+      expect(groups).toHaveLength(10);
       for (const g of groups) {
         const label = doc.getElementById(g.getAttribute("aria-labelledby"));
         expect(label).not.toBeNull();
@@ -187,6 +203,56 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       await wait(300);
       expect(gated.classList.contains("visible")).toBe(true);
     });
+
+    test.each([
+      ["qp-air", "Prediction saved. The explanation is now below."],
+      ["qp-density", "Prediction saved. The Density Lab is now open below."],
+    ])("%s announces the unlocked content without moving focus", async (id, msg) => {
+      const pause = doc.getElementById(id);
+      const sr = pause.querySelector(".predict-sr");
+      expect(sr.getAttribute("aria-live")).toBe("polite");
+      expect(sr.textContent).toBe("");
+      const btn = pause.querySelector(".predict-btn");
+      btn.focus();
+      click(btn);
+      await wait(300);
+      expect(sr.textContent).toBe(msg);
+      expect(doc.activeElement).toBe(btn);
+    });
+
+    test("the air Key Idea opens by checking the prediction", () => {
+      const first = doc.querySelector('.predict-gated[data-gate="qp-air"] p');
+      expect(first.textContent).toBe("Check your prediction: air is matter, just like a rock.");
+    });
+  });
+
+  describe("Density Lab", () => {
+    const set = (id, value) => {
+      const el = doc.getElementById(id);
+      el.value = String(value);
+      el.dispatchEvent(new el.ownerDocument.defaultView.Event("input"));
+    };
+
+    test("tells students to make the object sink, then float again", () => {
+      expect(doc.querySelector(".density-lab-sub").textContent).toContain(
+        "Try this: Make your object sink. Then change only one slider to make it float again."
+      );
+    });
+
+    test("announces the synthesis once, after both a sink and a float", async () => {
+      const synth = doc.getElementById("dl-synthesis");
+      expect(synth.getAttribute("role")).toBe("status");
+      expect(synth.classList.contains("visible")).toBe(false);
+      set("dl-mass", 150);
+      expect(synth.classList.contains("visible")).toBe(true);
+      expect(synth.textContent.trim()).toBe("");
+      await wait(150);
+      expect(synth.querySelector("strong").textContent).toBe("Check your prediction, and solve the ship mystery.");
+      const filled = synth.innerHTML;
+      set("dl-mass", 20);
+      set("dl-mass", 180);
+      expect(synth.innerHTML).toBe(filled);
+    });
   });
 
   describe("Pick the Right Tool", () => {
@@ -206,6 +272,92 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       expect(btns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
       click(btns[2]);
       expect(btns[2].classList.contains("wrong")).toBe(false);
+    });
+
+    test("shows three labeled question cards side by side with the new directions", () => {
+      const tm = doc.querySelector(".tool-match");
+      expect(tm.querySelector(".tool-match-title").textContent).toBe("Pick the Right Tool");
+      expect(tm.querySelector(".tool-match-sub").textContent).toBe(
+        "Choose the best tool for each situation. Get immediate feedback and try again if needed."
+      );
+      const cards = [...tm.querySelectorAll(".tm-grid > .tm-question")];
+      expect(cards).toHaveLength(3);
+      expect(cards.map((c) => c.querySelector(".tm-label").textContent)).toEqual(["Question 1", "Question 2", "Question 3"]);
+      expect(cards.map((c) => c.getAttribute("data-correct"))).toEqual(["1", "2", "0"]);
+      for (const c of cards) {
+        expect(c.querySelectorAll(".tm-btn")).toHaveLength(3);
+        expect(c.querySelector(".tm-fb").getAttribute("aria-live")).toBe("polite");
+      }
+      expect(html).toMatch(/\.tm-grid \{[^}]*grid-template-columns: repeat\(auto-fit, minmax\(min\(100%, 15rem\), 1fr\)\)/);
+    });
+
+    test("each question card keeps its own state and feedback", () => {
+      const [q1, q2, q3] = [...doc.querySelectorAll(".tm-question")];
+      const b1 = [...q1.querySelectorAll(".tm-btn")];
+      click(b1[0]);
+      expect(q1.querySelector(".tm-fb").className).toBe("tm-fb visible no");
+      for (const q of [q2, q3]) {
+        expect(q.querySelector(".tm-fb").className).toBe("tm-fb");
+        expect(q.querySelector(".tm-fb").textContent).toBe("");
+        expect([...q.querySelectorAll(".tm-btn")].some((b) => b.classList.contains("wrong") || b.hasAttribute("aria-disabled"))).toBe(false);
+      }
+      click(q2.querySelectorAll(".tm-btn")[2]);
+      expect(q2.querySelector(".tm-fb").className).toBe("tm-fb visible ok");
+      expect(q1.querySelector(".tm-fb").className).toBe("tm-fb visible no");
+      click(b1[2]);
+      click(b1[1]);
+      expect(b1[1].classList.contains("right")).toBe(true);
+      expect(q3.querySelector(".tm-fb").textContent).toBe("");
+    });
+
+    test("aligns zones with subgrid and reserves feedback space with hidden copies of each card's own messages", () => {
+      for (const q of doc.querySelectorAll(".tm-question")) {
+        const zone = q.querySelector(".tm-fb-zone");
+        const [live, ...sizers] = [...zone.children];
+        expect(live.getAttribute("aria-live")).toBe("polite");
+        expect(live.classList.contains("tm-fb-sizer")).toBe(false);
+        expect(sizers.map((z) => z.textContent)).toEqual([...q.querySelectorAll(".tm-btn")].map((b) => b.getAttribute("data-fb")));
+        for (const z of sizers) {
+          expect(z.getAttribute("aria-hidden")).toBe("true");
+          expect(z.classList.contains("tm-fb-sizer")).toBe(true);
+        }
+      }
+      expect(html).toContain(".tm-question { grid-template-rows: subgrid; row-gap: 0; }");
+      expect(html).toContain(".tm-question .tm-options { grid-template-rows: subgrid; }");
+      expect(html).toContain(".tm-fb-zone > * { grid-area: 1 / 1; margin-top: 0; }");
+      expect(html).toContain(".tm-fb-zone .tm-fb.tm-fb-sizer { display: block; visibility: hidden; }");
+      expect(html).toContain("@media (max-width: 480px) { .tm-fb-zone .tm-fb.tm-fb-sizer { display: none; } }");
+    });
+
+    test("every option gives its own feedback", () => {
+      const FEEDBACK = [
+        [
+          "Not quite. A ruler measures length, not mass. Mass is the amount of matter, so you need a balance. Try again.",
+          "Correct! A triple beam balance measures mass in grams (g).",
+          "Not quite. A graduated cylinder measures the volume of a liquid, not mass. Try again.",
+        ],
+        [
+          "Not quite. A balance measures mass, not volume. Juice is a liquid, so measure the space it takes up. Try again.",
+          "Not quite. Juice has no length, width, or height to measure. It takes the shape of its container. Try again.",
+          "Correct! A graduated cylinder measures liquid volume in milliliters (mL).",
+        ],
+        [
+          "Correct! Measure length, width, and height with a ruler, then multiply to get cm³.",
+          "Not quite. A balance tells you the block's mass, not how much space it takes up. Try again.",
+          "Not quite. One side gives you a length, not a volume. Measure length, width, and height, then multiply. Try again.",
+        ],
+      ];
+      [...doc.querySelectorAll(".tm-question")].forEach((q, qi) => {
+        const correct = Number(q.getAttribute("data-correct"));
+        const fb = q.querySelector(".tm-fb");
+        const btns = [...q.querySelectorAll(".tm-btn")];
+        const order = [...btns.keys()].filter((i) => i !== correct).concat(correct);
+        for (const i of order) {
+          click(btns[i]);
+          expect(fb.textContent).toBe(FEEDBACK[qi][i]);
+          expect(fb.className).toBe(i === correct ? "tm-fb visible ok" : "tm-fb visible no");
+        }
+      });
     });
 
     test("solving all three shows the completion message", async () => {
@@ -235,7 +387,11 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       const s2 = [...doc.querySelectorAll("#pp-step2 .we-opt-btn")];
       click(s2[2]);
       await wait(400);
-      expect(doc.getElementById("pp-success").classList.contains("visible")).toBe(true);
+      const success = doc.getElementById("pp-success");
+      expect(success.classList.contains("visible")).toBe(true);
+      expect(success.getAttribute("role")).toBe("status");
+      await wait(150);
+      expect(success.textContent).toContain("2.5 g/cm³ is close to the density of glass.");
     });
   });
 
@@ -257,6 +413,221 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       expect(radios[0].closest("label").classList.contains("correct")).toBe(true);
       expect(fb.className).toBe("qr-feedback visible ok");
       expect(radios.every((r) => r.disabled)).toBe(true);
+    });
+  });
+
+  describe("science corrections", () => {
+    test("the practice block is not called wood and compares to glass", () => {
+      const practice = doc.getElementById("pp-step2-wrap").closest(".worked-example").textContent;
+      expect(practice).not.toMatch(/wooden|ebony/i);
+      expect(doc.getElementById("pp-success").textContent).toContain("2.5 g/cm³ is close to the density of glass.");
+    });
+
+    test("Density at Home uses a graduated cylinder with displacement steps and an in-class fallback", () => {
+      const desc = doc.querySelector("#continue .cont-card.ext .cont-desc");
+      expect(desc.textContent).not.toMatch(/measuring cup/i);
+      const steps = [...desc.querySelectorAll("ol > li")].map((li) => li.textContent);
+      expect(steps).toHaveLength(6);
+      expect(steps[1]).toContain("graduated cylinder");
+      expect(steps[1]).toContain("initial volume");
+      expect(steps[2]).toContain("completely underwater");
+      expect(steps[3]).toContain("final water volume");
+      expect(steps[4]).toContain("final volume minus initial volume");
+      expect(steps[4]).toContain("milliliters (mL)");
+      expect(desc.textContent).toContain("No graduated cylinder at home? Do this investigation in class.");
+    });
+  });
+
+  describe("narrative precision", () => {
+    const text = (sel) => doc.querySelector(sel).textContent.replace(/\s+/g, " ").trim();
+
+    test("speaks of mass, not weight or heaviness, and notes the difference once", () => {
+      const lesson = doc.querySelector("#hook").textContent + doc.querySelector("#matter").textContent;
+      expect(lesson).not.toMatch(/heavier|have weight|weighs/i);
+      expect(doc.querySelector("#main").textContent).not.toMatch(/almost no mass|measured two ways/);
+      expect(text('.predict-gated[data-gate="qp-air"]')).toContain(
+        "Mass is not the same as weight. Weight is the pull of gravity on an object's mass."
+      );
+      expect(text("#hook .section-desc")).toBe(
+        "Before you use those new words, think like a scientist about these three everyday objects. Select each card and think about the question."
+      );
+    });
+
+    test("the ship explanation names overall density", () => {
+      const synth = text("#dl-synthesis");
+      expect(synth).toContain("including all that air-filled space, its overall density comes out less than water's");
+      expect(synth).toContain("A pebble is small but solid rock all the way through");
+      expect(text(".wrapup-beat-1 .wrapup-beat-body")).toBe(
+        "Its overall density, counting the steel and all the air inside the hull, is less than water's. A pebble is solid rock, so its density is greater than water's."
+      );
+    });
+
+    test("the wrap-up answers what the puzzles share and keeps only the goals table", () => {
+      expect(text("#synthesis .section-desc")).toContain(
+        "What they have in common: each one is solved by comparing an object's mass to its volume."
+      );
+      expect([...doc.querySelectorAll("#synthesis .wbc")].map((c) => c.textContent)).toEqual([
+        "Mass · g", "Volume · cm³ or mL", "Density · g/cm³ or g/mL",
+      ]);
+      const tables = [...doc.querySelectorAll("#synthesis .summary-table")];
+      expect(tables).toHaveLength(1);
+      expect(tables[0].querySelector("th").textContent).toBe("Learning Goals");
+      const evidence = [...tables[0].querySelectorAll("tbody tr td:last-child")].map((td) => td.textContent);
+      expect(evidence[0]).toContain("measured volume by water displacement");
+      expect(evidence[1]).toContain("saw why a steel ship floats");
+      expect(evidence[1]).not.toContain("explained");
+    });
+  });
+
+  describe("particle model of density", () => {
+    test("the density Key Idea pictures same-size blocks with different particle packing", () => {
+      const card = [...doc.querySelectorAll(".name-it")].find(
+        (c) => c.querySelector(".name-it-label").textContent === "Key idea: Density"
+      );
+      const svg = card.querySelector("svg.dens-particles");
+      expect(svg.getAttribute("role")).toBe("img");
+      expect(svg.getAttribute("aria-label")).toBe(
+        "Two same-size blocks. Block A has a few particles spread apart. Block B has many particles packed closely, so it has more mass in the same volume and a higher density."
+      );
+      const [blockA, blockB] = [...svg.querySelectorAll("rect")];
+      expect([blockA.getAttribute("width"), blockA.getAttribute("height")]).toEqual([
+        blockB.getAttribute("width"), blockB.getAttribute("height"),
+      ]);
+      const [dotsA, dotsB] = [...svg.querySelectorAll("g")].map((g) => g.querySelectorAll("circle").length);
+      expect(dotsA).toBeLessThan(dotsB);
+      expect(svg.previousElementSibling.textContent).toBe(
+        "Picture it with particles. All matter is made of particles too small to see. The two blocks below are the same size, but Block B has more particles packed into that space. More matter in the same volume means more mass, so Block B has a higher density."
+      );
+      const all = [...doc.querySelectorAll("#density *")];
+      expect(all.indexOf(svg)).toBeLessThan(all.indexOf(doc.querySelector("#density .observe-row")));
+    });
+  });
+
+  describe("polish", () => {
+    test("documents the Vocabulary Explorer as an intentional exception", () => {
+      expect(html).toContain("KEY VOCABULARY - Vocabulary Explorer. Intentional, documented exception");
+      expect(html).not.toContain("glossary cards - click to expand only");
+    });
+
+    test("uses a rock, not a magnet, for density", () => {
+      expect(doc.querySelector(".process-card.step3 .process-icon").textContent).toBe("🪨");
+      expect(doc.querySelector("#main").textContent).not.toContain("🧲");
+    });
+
+    test("More Learning previews the extension's concepts and Connections names the relationship", () => {
+      const intro = doc.querySelector("#continue .continue-intro");
+      expect(intro.textContent).toBe(
+        "A ruler can find the volume of a block, but what about a rock? Use water displacement to measure irregular objects, then calculate their density at home or in class."
+      );
+      expect([...intro.querySelectorAll("strong")].map((s) => s.textContent)).toEqual([
+        "water displacement", "irregular objects", "density",
+      ]);
+      expect(doc.querySelector("#connections .connections-intro").textContent).toBe(
+        "Mass, volume, and density describe any piece of matter. This lesson shows where those measurements lead."
+      );
+    });
+
+    test("Learning Science badges describe what this lesson actually does", () => {
+      const badges = [...doc.querySelectorAll(".ls-focus .ls-badge")];
+      const labels = badges.map((b) => b.textContent);
+      expect(labels).toContain("🔤 Vocabulary Preview");
+      expect(labels).not.toContain("🏷️ Label After Learning");
+      const tip = (label) => badges.find((b) => b.textContent === label).getAttribute("data-tip");
+      expect(tip("🔍 Phenomenon First")).toMatch(/^After a brief vocabulary preview, the lesson opens with three real puzzles/);
+      expect(tip("🔤 Vocabulary Preview")).toBe(
+        "Six key terms are previewed one at a time before the lesson begins, then revisited in context as students use them. A brief preview lowers the load of new words when they reappear in explanations and tasks. (Beck, McKeown, & Kucan, 2013)"
+      );
+    });
+  });
+
+  describe("Show Your Thinking and Tool Match wording", () => {
+    test("Tool Match Q3 offers a one-side ruler distractor and asks about tool and method", () => {
+      const q3 = doc.querySelectorAll(".tm-question")[2];
+      expect(q3.querySelector(".tm-q-text").textContent).toBe(
+        "3. You need the volume of a rectangular block (a solid with straight sides). Which tool and method do you use?"
+      );
+      expect([...q3.querySelectorAll(".tm-btn")].map((b) => b.textContent)).toEqual([
+        "Ruler - measure length, width, and height", "Triple beam balance", "Ruler - measure only the longest side",
+      ]);
+    });
+
+    test("Show Your Thinking allows two sentences and models overall density", () => {
+      const box = doc.getElementById("mm-think");
+      expect(box.querySelector(".think-prompt").textContent).toBe(
+        "In one or two sentences, explain what decides whether an object floats or sinks in water. Then use that idea to explain how a giant steel ship floats while a tiny pebble sinks. Use the word density."
+      );
+      expect(doc.getElementById("mm-thinking").getAttribute("placeholder")).toBe("Write your explanation here...");
+      const model = doc.getElementById("mm-think-model").textContent.replace(/\s+/g, " ");
+      expect(model).toContain("its overall density, counting the steel and all the air inside its hull, is less than water's");
+      expect(model).not.toContain("mostly air");
+      expect(box.textContent).not.toMatch(/one sentence/i);
+    });
+  });
+
+  describe("measurement cards", () => {
+    test("use the concise approved wording with tool, formula, and unit lines", () => {
+      const cards = [...doc.querySelectorAll(".process-card")];
+      expect(cards.map((c) => c.querySelector(".process-body").textContent)).toEqual([
+        "Mass is the amount of matter in an object. It is measured using a triple beam balance or digital scale.",
+        "Volume is the amount of space an object takes up. Use a ruler to calculate the volume of a regular-shaped object, or a graduated cylinder to measure the volume of a liquid or an irregularly shaped object using water displacement.",
+        "Density describes how much mass is packed into a certain volume. It is the ratio of mass to volume and is calculated by dividing an object's mass by its volume.",
+      ]);
+      expect(cards.map((c) => [...c.querySelectorAll(".process-mini .pm-line")].map((l) => l.textContent))).toEqual([
+        ["Tools: Triple Beam Balance or Digital Scale", "Unit: grams (g)"],
+        ["Tools: Ruler or Graduated Cylinder", "Units: cm³ or mL"],
+        ["Formula: Mass ÷ Volume", "Units: g/cm³ or g/mL"],
+      ]);
+      expect(html).toContain(".pm-line { display: block; }");
+      expect(html).toContain(".pm-keep { white-space: nowrap; }");
+    });
+  });
+
+  describe("states of matter cards", () => {
+    test("groups the six examples into Solid, Liquid, and Gas cards", () => {
+      const block = doc.querySelector("#matter .states-block");
+      expect(block.querySelector("h3").textContent).toBe("Matter Is All Around You");
+      expect(block.querySelector(".states-intro").textContent).toBe(
+        "Matter exists in three common states. Look at these everyday examples."
+      );
+      const cards = [...block.querySelectorAll(".state-grid > li.state-card")];
+      expect(cards.map((c) => c.querySelector("h4").textContent)).toEqual(["Solid", "Liquid", "Gas"]);
+      expect(cards.map((c) => [...c.querySelectorAll(".state-examples li")].map((li) => li.textContent))).toEqual([
+        ["🪨Rock", "🧊Ice cube"], ["💧Water", "🥤Juice"], ["🎈Air in a balloon", "H2OWater vapor"],
+      ]);
+      for (const icon of block.querySelectorAll(".state-icon:not(.state-formula)")) expect(icon.getAttribute("aria-hidden")).toBe("true");
+      const formula = block.querySelector(".state-gas .state-formula");
+      expect(formula.innerHTML).toBe("H<sub>2</sub>O");
+      expect(formula.hasAttribute("aria-hidden")).toBe(false);
+      expect(block.querySelectorAll("button, [role=button], [tabindex]")).toHaveLength(0);
+      expect(doc.querySelector("#matter").textContent).not.toMatch(/steam/i);
+      expect(doc.querySelectorAll(".example-chip, .example-grid")).toHaveLength(0);
+    });
+
+    test("cards stack on narrow screens without fixed heights", () => {
+      expect(html).toMatch(/\.state-grid \{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+      expect(html).toContain("@media (max-width: 720px) { .state-grid { grid-template-columns: minmax(0, 1fr); } }");
+      expect(html).not.toMatch(/\.state-(card|grid|examples)[^{]*\{[^}]*(?<![-\w])(max-|min-)?height:/);
+    });
+  });
+
+  describe("reflow at enlarged text", () => {
+    // jsdom has no layout, so guard the CSS that prevents the verified
+    // overflow: plain 1fr tracks cannot shrink below their longest word.
+    test("multi-column grids use shrinkable tracks", () => {
+      expect(html).toMatch(/\.process-grid \{[^}]*grid-template-columns: repeat\(auto-fit, minmax\(min\(100%, 16rem\), 1fr\)\)/);
+      expect(html).toContain("@media (max-width: 960px) {\n  .process-grid { grid-template-columns: minmax(0, 1fr); }");
+      expect(html).toMatch(/\.wrapup-beats \{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+      expect(html).toMatch(/\.vol-grid \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+      expect(html).toMatch(/\.vol-slider-row input\[type=range\] \{[^}]*min-width: 0/);
+      expect(html).toMatch(/\.dl-sliders \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+      expect(html).toMatch(/\.dl-panels \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+      expect(html).toMatch(/\.dl-slider-row input\[type=range\] \{[^}]*min-width: 0/);
+    });
+
+    test("measurement tool labels can wrap", () => {
+      for (const mini of doc.querySelectorAll(".process-mini")) {
+        expect(mini.textContent).not.toContain(" ");
+      }
     });
   });
 });

@@ -603,6 +603,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .hook-card-icon { font-size: 2.8rem; margin-bottom: 0.6rem; display: block; line-height: 1; }
 .hook-card-name {
   font-family: 'Fredoka One', cursive;
+  font-weight: 400;
   font-size: 1.2rem;
   color: var(--text);
   margin-bottom: 0.6rem;
@@ -621,31 +622,80 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   line-height: 1.5;
 }
 .hook-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
-.hook-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
 .hook-card.revealed { cursor: default; }
 .hook-card-prompt {
   display: inline-block;
   font-size: 0.8rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
   padding: 0.4rem 1rem;
   border: 1px dashed rgba(245,200,66,0.45);
   border-radius: 99px;
   margin-top: 0.4rem;
+  background: none;
+  font-family: inherit;
+  line-height: inherit;
+  cursor: pointer;
 }
 /* Prompt and revealed text share one grid cell, so every card always reserves
    its expanded height and revealing never changes the grid row height.
-   visibility:hidden keeps the inactive layer out of the accessibility tree. */
-.hook-card { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; }
-.hook-card-prompt { grid-area: 3 / 1; justify-self: center; align-self: center; }
+   visibility:hidden keeps the inactive layer out of the accessibility tree.
+   Cards join the parent grid's rows (subgrid), so icon, title and prompt rows
+   line up across all three cards; the prompt pins to the top of its row so
+   hidden-text length never moves it. */
+.hook-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  align-content: start;
+}
+@supports (grid-template-rows: subgrid) {
+  .hook-card { grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; }
+}
+.hook-card-prompt { grid-area: 3 / 1; justify-self: center; align-self: start; }
 .hook-card-reveal { grid-area: 3 / 1; visibility: hidden; }
 .hook-card.revealed .hook-card-prompt { visibility: hidden; }
 .hook-card.revealed .hook-card-reveal {
   visibility: visible;
   animation: predictFadeUp 0.4s ease both;
 }
+
+/* ── HOOK TRANSITION PANEL (end of Engage) ── */
+.hook-transition {
+  max-width: 760px;
+  margin: 0.4rem auto 0;
+  padding: 2rem 2.2rem;
+  text-align: center;
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 18px;
+}
+.hook-transition-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+}
+.hook-transition-title {
+  font-family: 'Fredoka One', cursive;
+  font-weight: 400;
+  font-size: clamp(1.35rem, 3.2vw, 1.75rem);
+  line-height: 1.25;
+  color: var(--text);
+  margin: 0 0 0.8rem;
+}
+.hook-transition-body {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  max-width: 620px;
+  margin: 0 auto;
+}
+@media (max-width: 480px) { .hook-transition { padding: 1.6rem 1.2rem; } }
 
 /* ── OBSERVE ROW ── */
 .observe-row {
@@ -705,45 +755,80 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .name-it.orange-it p strong { color: var(--orange); }
 
 /* ── EXAMPLE GRID ── */
-.example-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.9rem;
-  max-width: 100%;
-  margin: 0 auto 2rem;
+/* ── STATES OF MATTER CARDS (What Is Matter?) ── */
+.states-block { margin: 0 0 2rem; }
+.states-title {
+  font-family: 'Fredoka One', cursive;
+  font-weight: 400;
+  font-size: 1.65rem;
+  line-height: 1.25;
+  color: var(--text);
+  margin-bottom: 0.4rem;
 }
-@media (max-width: 600px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
-.example-chip {
+.states-intro { font-size: 1.05rem; line-height: 1.65; color: var(--text-muted); margin-bottom: 1.2rem; }
+.state-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+@media (max-width: 720px) { .state-grid { grid-template-columns: minmax(0, 1fr); } }
+.state-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 0.9rem 1rem;
+  border-top: 4px solid var(--state-accent);
+  border-radius: 16px;
+  padding: 1.1rem 1.3rem 1.2rem;
+  overflow-wrap: anywhere;
+}
+.state-solid  { --state-accent: var(--teal); }
+.state-liquid { --state-accent: var(--green); }
+.state-gas    { --state-accent: var(--orange); }
+.state-name {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--state-accent);
+  margin-bottom: 0.6rem;
+}
+.state-examples { list-style: none; display: grid; gap: 0.55rem; }
+.state-examples li {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  color: var(--text-muted);
   line-height: 1.4;
+  color: var(--text);
 }
-.example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+.state-icon { flex: 0 0 1.6rem; font-size: 1.35rem; text-align: center; }
+/* Chemical formula in the icon column: compact, muted, no wrapping. */
+.state-formula { font-size: 0.8rem; font-weight: 800; line-height: 1; color: var(--text-muted); white-space: nowrap; }
+.state-formula sub { font-size: 0.75em; line-height: 0; vertical-align: -0.25em; }
 
 /* ── THREE MEASUREMENTS STEP CARDS ── */
+/* Columns are sized in rem, so enlarged text drops to fewer columns instead
+   of squeezing three narrow cards; min(100%, ...) keeps one card from ever
+   exceeding the page. Below the canonical 960px breakpoint the cards stack. */
 .process-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   gap: 1.2rem;
   align-items: stretch;
   margin-bottom: 2rem;
 }
-@media (max-width: 760px) {
-  .process-grid { grid-template-columns: 1fr; }
+@media (max-width: 960px) {
+  .process-grid { grid-template-columns: minmax(0, 1fr); }
 }
 .process-card {
   border-radius: 18px;
   padding: 1.6rem 1.3rem;
   text-align: center;
+  overflow-wrap: anywhere;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .process-card.step1 { background: var(--mass-dim);    border: 1px solid var(--mass-border);    }
 .process-card.step2 { background: var(--volume-dim);  border: 1px solid var(--volume-border);  }
@@ -772,9 +857,14 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   color: var(--text-muted);
   line-height: 1.6;
 }
+.process-body { margin-bottom: 0.8rem; }
 .process-body strong { color: var(--text); }
+.pm-line { display: block; }
+.pm-keep { white-space: nowrap; }
+/* Tool, formula, and unit facts sit on their own lines, pinned to the card
+   bottom so the three cards line up; unit symbols never split. */
 .process-mini {
-  margin-top: 0.8rem;
+  margin-top: auto;
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -782,6 +872,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   border-radius: 12px;
   line-height: 1.45;
   display: inline-block;
+  max-width: 100%;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.12);
   color: var(--text-muted);
@@ -800,11 +891,54 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   margin-bottom: 0.4rem;
   line-height: 1.6;
 }
-.tm-question {
-  margin-top: 1.1rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid rgba(255,255,255,0.08);
+/* This Quick Check alone widens past the shared 760px shell so its three
+   independent question cards can sit side by side. Columns are sized in
+   rem, so narrower screens and enlarged text drop to two, then one. */
+.tool-match.check-card { max-width: 1100px; }
+.tm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 }
+/* Each card spans six shared rows (label, question, three answers,
+   feedback). With subgrid, cards in the same row share those row heights,
+   so answer groups, answer rows, and feedback zones line up. */
+.tm-question {
+  display: grid;
+  grid-row: span 6;
+  grid-template-rows: auto auto auto auto auto 1fr;
+  align-content: start;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 1.1rem 1.1rem;
+  overflow-wrap: anywhere;
+}
+.tm-question .tm-options { grid-row: span 3; grid-template-rows: auto auto auto; }
+@supports (grid-template-rows: subgrid) {
+  .tm-question { grid-template-rows: subgrid; row-gap: 0; }
+  .tm-question .tm-options { grid-template-rows: subgrid; }
+}
+/* The feedback zone stacks the live message over invisible copies of this
+   question's own feedback strings, so it always reserves room for the
+   longest real message at the current width and text size. */
+.tm-fb-zone { display: grid; margin-top: 0.7rem; }
+.tm-fb-zone > * { grid-area: 1 / 1; margin-top: 0; }
+.tm-fb-zone .tm-fb.tm-fb-sizer { display: block; visibility: hidden; }
+/* Phones stack one card per row, so feedback can simply grow there. */
+@media (max-width: 480px) { .tm-fb-zone .tm-fb.tm-fb-sizer { display: none; } }
+.tm-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.35rem;
+}
+.tm-question .check-q { margin-bottom: 0.7rem; }
+.tm-question .check-options { gap: 0.5rem; align-items: stretch; }
+@media (max-width: 480px) { .tm-question { padding: 0.85rem 0.75rem 0.9rem; } }
 .tm-fb {
   display: none;
   margin-top: 0.7rem;
@@ -855,11 +989,11 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .vol-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.4rem;
   align-items: center;
 }
-@media (max-width: 700px) { .vol-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .vol-grid { grid-template-columns: minmax(0, 1fr); } }
 .vol-sliders { display: flex; flex-direction: column; gap: 1rem; }
 .vol-slider-row { display: flex; align-items: center; gap: 0.8rem; }
 .vol-slider-label {
@@ -872,7 +1006,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .vol-slider-row.l .vol-slider-label { color: var(--teal); }
 .vol-slider-row.w .vol-slider-label { color: var(--green); }
 .vol-slider-row.h .vol-slider-label { color: var(--orange); }
-.vol-slider-row input[type=range] { flex: 1; cursor: pointer; }
+.vol-slider-row input[type=range] { flex: 1; min-width: 0; cursor: pointer; }
 .vol-slider-row.l input { accent-color: var(--teal); }
 .vol-slider-row.w input { accent-color: var(--green); }
 .vol-slider-row.h input { accent-color: var(--orange); }
@@ -905,6 +1039,98 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .vol-svg-wrap { text-align: center; }
 .vol-svg-wrap svg { width: 100%; max-width: 360px; height: auto; }
+
+/* ── WATER DISPLACEMENT LAB (ungraded, nothing stored) ── */
+.name-it p + p { margin-top: 0.6rem; }
+.dens-particles { display: block; width: 100%; max-width: 360px; height: auto; margin: 1rem auto 0; }
+.disp-lab {
+  background: var(--card);
+  border: 1px solid rgba(46,204,113,0.25);
+  border-radius: 20px;
+  padding: 2rem 1.8rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+}
+.disp-lab-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+.disp-lab-sub {
+  font-size: 1rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+.disp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem;
+  align-items: center;
+}
+@media (max-width: 720px) { .disp-grid { grid-template-columns: minmax(0, 1fr); } }
+.disp-svg-wrap { text-align: center; }
+.disp-svg-wrap svg { width: 100%; max-width: 220px; height: auto; }
+.disp-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 0.5rem;
+}
+.disp-objects {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+.disp-obj, .disp-action {
+  min-height: 44px;
+  padding: 0.55rem 0.8rem;
+  border-radius: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.3;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  transition: border-color 0.2s, background 0.2s;
+}
+.disp-obj {
+  background: rgba(255,255,255,0.03);
+  border: 2px solid var(--check-border);
+  color: var(--text);
+}
+.disp-obj:hover { border-color: var(--green); }
+.disp-obj[aria-pressed="true"] { border-color: var(--green); background: rgba(46,204,113,0.14); color: var(--green); }
+.disp-action {
+  width: 100%;
+  background: rgba(46,204,113,0.12);
+  border: 2px solid rgba(46,204,113,0.55);
+  color: var(--text);
+}
+.disp-action:hover { background: rgba(46,204,113,0.2); }
+.disp-readout {
+  margin-top: 1rem;
+  background: rgba(46,204,113,0.06);
+  border: 1px solid rgba(46,204,113,0.3);
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.disp-readings span { font-weight: 800; color: var(--green); }
+.disp-math { margin-top: 0.4rem; }
+.disp-math:empty { display: none; }
+.disp-math strong { color: var(--green); white-space: nowrap; }
+.disp-check { margin: 1.6rem auto 0; }
+@media (max-width: 480px) { .disp-lab { padding: 1.5rem 1.1rem; } }
 
 /* ── DENSITY LAB ── */
 .density-lab {
@@ -959,13 +1185,14 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .dl-sliders {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem 2rem;
   max-width: 640px;
   margin: 0 auto 1.4rem;
 }
-@media (max-width: 640px) { .dl-sliders { grid-template-columns: 1fr; } }
-.dl-slider-row { display: flex; align-items: center; gap: 0.8rem; }
+@media (max-width: 640px) { .dl-sliders { grid-template-columns: minmax(0, 1fr); } }
+/* Wraps the value under the slider only when enlarged text leaves no room. */
+.dl-slider-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
 .dl-slider-label {
   font-size: 0.72rem;
   font-weight: 900;
@@ -975,7 +1202,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .dl-slider-row.mass-row   .dl-slider-label { color: var(--mass); }
 .dl-slider-row.volume-row .dl-slider-label { color: var(--volume); }
-.dl-slider-row input[type=range] { flex: 1; cursor: pointer; }
+.dl-slider-row input[type=range] { flex: 1 1 4rem; min-width: 0; cursor: pointer; }
 .dl-slider-row.mass-row input   { accent-color: var(--mass); }
 .dl-slider-row.volume-row input { accent-color: var(--volume); }
 .dl-slider-val {
@@ -989,12 +1216,12 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .dl-slider-row.volume-row .dl-slider-val { color: var(--volume); }
 .dl-panels {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1.2rem;
   align-items: stretch;
 }
-@media (max-width: 640px) { .dl-panels { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .dl-panels { grid-template-columns: minmax(0, 1fr); } }
 .dl-panel {
   border-radius: 16px;
   padding: 1.1rem 1.1rem 1.2rem;
@@ -1043,6 +1270,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .dl-synthesis.visible { display: block; animation: predictFadeUp 0.4s ease both; }
 .dl-synthesis strong { color: var(--green); }
+.density-lab-sub strong { color: var(--gold); }
 
 /* ── WORKED EXAMPLE STEPPER ── */
 .worked-example {
@@ -1053,6 +1281,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   max-width: 860px;
   margin: 0 auto 2rem;
 }
+.we-eyebrow { text-align: center; }
 .we-title {
   font-family: 'Fredoka One', cursive;
   font-size: 1.2rem;
@@ -1196,17 +1425,18 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 /* ── WRAP-UP BEATS ── */
 .wrapup-beats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   max-width: 100%;
   margin: 0 auto;
 }
-@media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .wrapup-beats { grid-template-columns: minmax(0, 1fr); } }
 
 .wrapup-beat {
   border-radius: 16px;
   padding: 1.4rem 1.3rem;
   position: relative;
+  overflow-wrap: anywhere;
 }
 .wrapup-beat::before {
   content: '';
@@ -1262,6 +1492,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   margin-top: 0.75rem;
 }
 .wbc {
+  max-width: 100%;
   font-size: 0.85rem;
   font-weight: 800;
   padding: 0.22rem 0.65rem;
@@ -1344,7 +1575,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .gc-orange { --vx: var(--orange); }
 .gc-blue   { --vx: var(--matter); }
 .gc-green  { --vx: var(--green);  }
-.vx-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.vx-sr, .disp-sr, .predict-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .vx-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 0.75rem; }
 @media (max-width: 720px) { .vx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .vx-term {
@@ -1607,8 +1838,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real floating-ship mystery before naming any vocabulary. Encountering a genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
-  <span class="ls-badge" data-tip="Mass, volume, and density are introduced through observable comparisons before their vocabulary labels appear. Students build understanding, then receive the word that names it. (Willingham, 2009)">🏷️ Label After Learning</span>
+  <span class="ls-badge" data-tip="After a brief vocabulary preview, the lesson opens with three real puzzles, including a floating steel ship, before any explanation. Encountering a genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
+  <span class="ls-badge" data-tip="Six key terms are previewed one at a time before the lesson begins, then revisited in context as students use them. A brief preview lowers the load of new words when they reappear in explanations and tasks. (Beck, McKeown, &amp; Kucan, 2013)">🔤 Vocabulary Preview</span>
   <span class="ls-badge" data-tip="The density calculation is broken into explicit numbered steps, with a fully worked example shown before students try one independently. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
   <span class="ls-badge" data-tip="Students adjust mass and volume sliders, build block volumes, and solve a density problem themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
   <span class="ls-badge" data-tip="The quiz asks students to calculate volumes and densities for new objects rather than recall definitions. Transfer tasks require deeper processing and reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
@@ -1663,7 +1894,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     KEY VOCABULARY (glossary cards - click to expand only)
+     KEY VOCABULARY - Vocabulary Explorer. Intentional, documented exception
+     to the CLAUDE.md VOCABULARY card pattern (decided 2026-10-21): one
+     definition at a time through pressed-state word buttons instead of
+     collapsible cards, with the intro "Select a word to explore its
+     meaning." It keeps the canonical one-open-at-a-time behavior and reduces
+     extraneous load. Do not convert to glossary cards or restore Compare
+     mode without a new decision.
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
@@ -1694,7 +1931,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="vx-panel gc-green" id="vx-def-volume" data-term="volume" hidden>
           <h3 class="vx-panel-term">Volume</h3>
           <p class="gc-lead">The amount of space an object takes up.</p>
-          <p class="gc-support">Volume is measured in cubic centimeters (cm³) with a ruler or in milliliters (mL) with a graduated cylinder.</p>
+          <p class="gc-support">Volume is found in cubic centimeters (cm³) by multiplying length × width × height, or measured in milliliters (mL) with a graduated cylinder.</p>
         </div>
         <div class="vx-panel gc-orange" id="vx-def-density" data-term="density" hidden>
           <h3 class="vx-panel-term">Density</h3>
@@ -1704,7 +1941,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="vx-panel gc-teal" id="vx-def-balance" data-term="balance" hidden>
           <h3 class="vx-panel-term">Triple Beam Balance</h3>
           <p class="gc-lead">The lab tool scientists use to measure mass in grams.</p>
-          <p class="gc-support">You slide weights along three beams until the pointer balances.</p>
+          <p class="gc-support">You slide the riders along the three beams until the pointer lines up with zero.</p>
         </div>
         <div class="vx-panel gc-green" id="vx-def-cylinder" data-term="cylinder" hidden>
           <h3 class="vx-panel-term">Graduated Cylinder</h3>
@@ -1746,61 +1983,52 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Engage · Mystery</span>
     <h2 class="section-title">Three Objects. Three Puzzles.</h2>
-    <p class="section-desc">Before you learn a single new word, think like a scientist about these three everyday objects. Click each card and consider the question.</p>
+    <p class="section-desc">Before you use those new words, think like a scientist about these three everyday objects. Select each card and think about the question.</p>
 
     <div class="hook-grid">
 
-      <div class="hook-card c1" role="button" tabindex="0" aria-expanded="false">
-        <span class="hook-card-icon">🎳</span>
-        <div class="hook-card-name">Two Same-Size Balls</div>
-        <div class="hook-card-reveal">
+      <div class="hook-card c1">
+        <span class="hook-card-icon" aria-hidden="true">🎳</span>
+        <h3 class="hook-card-name" id="hook-name-1">Two Same-Size Balls</h3>
+        <div class="hook-card-reveal" id="hook-reveal-1" tabindex="-1">
           <div class="hook-card-observation">
             A bowling ball and a beach ball can be exactly the same size, but one of them is much, much harder to lift.
           </div>
           <div class="hook-card-question">If they take up the same space, what is different inside them?</div>
         </div>
-        <div class="hook-card-prompt">Click to look closer</div>
+        <button class="hook-card-prompt" type="button" aria-expanded="false" aria-controls="hook-reveal-1" aria-describedby="hook-name-1">Select to look closer</button>
       </div>
 
-      <div class="hook-card c2" role="button" tabindex="0" aria-expanded="false">
-        <span class="hook-card-icon">🎈</span>
-        <div class="hook-card-name">The Invisible Stuff</div>
-        <div class="hook-card-reveal">
+      <div class="hook-card c2">
+        <span class="hook-card-icon" aria-hidden="true">🎈</span>
+        <h3 class="hook-card-name" id="hook-name-2">The Invisible Stuff</h3>
+        <div class="hook-card-reveal" id="hook-reveal-2" tabindex="-1">
           <div class="hook-card-observation">
-            Blow up a balloon and it gets bigger and slightly heavier. But you can't see anything inside it - just air.
+            Blow up a balloon and it gets bigger and gains a tiny bit of mass. But you can't see anything inside it - just air.
           </div>
-          <div class="hook-card-question">Is air "stuff"? Does it really take up space and have weight?</div>
+          <div class="hook-card-question">Is air "stuff"? Does it really take up space and have mass?</div>
         </div>
-        <div class="hook-card-prompt">Click to look closer</div>
+        <button class="hook-card-prompt" type="button" aria-expanded="false" aria-controls="hook-reveal-2" aria-describedby="hook-name-2">Select to look closer</button>
       </div>
 
-      <div class="hook-card c3" role="button" tabindex="0" aria-expanded="false">
-        <span class="hook-card-icon">🚢</span>
-        <div class="hook-card-name">The Floating Giant</div>
-        <div class="hook-card-reveal">
+      <div class="hook-card c3">
+        <span class="hook-card-icon" aria-hidden="true">🚢</span>
+        <h3 class="hook-card-name" id="hook-name-3">The Floating Giant</h3>
+        <div class="hook-card-reveal" id="hook-reveal-3" tabindex="-1">
           <div class="hook-card-observation">
-            A steel cargo ship has a mass of millions of kilograms, yet it floats. A pebble has almost no mass, yet it sinks instantly.
+            A steel cargo ship has a mass of millions of kilograms, yet it floats. A pebble has very little mass, yet it sinks instantly.
           </div>
           <div class="hook-card-question">If heaviness decided floating, the ship should sink first. So what really decides?</div>
         </div>
-        <div class="hook-card-prompt">Click to look closer</div>
+        <button class="hook-card-prompt" type="button" aria-expanded="false" aria-controls="hook-reveal-3" aria-describedby="hook-name-3">Select to look closer</button>
       </div>
 
     </div>
 
-    <div class="observe-row">
-      <div class="observe-card">
-        <span class="observe-icon">💡</span>
-        <span><strong>One clue:</strong> none of these puzzles can be solved by one measurement alone. You need to compare how much "stuff" an object has with how much space it fills.</span>
-      </div>
-      <div class="observe-card">
-        <span class="observe-icon">🤔</span>
-        <span>Scientists have exact words and tools for "amount of stuff" and "amount of space." By the end of this lesson, you'll use them to solve all three puzzles.</span>
-      </div>
-    </div>
-
-    <div class="bridge-callout">
-      <strong>The question:</strong> Bowling balls, balloons, and cargo ships all follow the same rules of matter. This lesson is about learning to measure those rules.
+    <div class="hook-transition">
+      <div class="hook-transition-label">The Mystery Continues</div>
+      <h3 class="hook-transition-title">What do these puzzles have in common?</h3>
+      <p class="hook-transition-body">You've explored three surprising objects. As you learn about matter, mass, volume, and density, look for clues that help explain each mystery.</p>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -1821,7 +2049,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal each card, no hover</li><li>Icon and short observation per puzzle</li><li>No prior vocabulary required</li></ul>
+          <ul class="edu-note-text"><li>A real button per card, with the title as a heading; focus moves to the revealed text</li><li>Icon and short observation per puzzle</li><li>No prior vocabulary required</li></ul>
         </div>
       </div>
     </div>
@@ -1850,21 +2078,41 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <button class="predict-btn check-opt" type="button" aria-pressed="false">No - air is empty space</button>
         <button class="predict-btn check-opt" type="button" aria-pressed="false">Air is something in between</button>
       </div>
+      <p class="predict-sr" aria-live="polite" aria-atomic="true" data-announce="Prediction saved. The explanation is now below."></p>
     </div>
 
     <div class="name-it teal-it predict-gated" data-gate="qp-air">
       <div class="name-it-label">Key idea: Matter</div>
-      <p><strong>Matter</strong> is anything that has <strong>mass</strong> and takes up space (<strong>volume</strong>). That includes air! Air has mass (a filled balloon weighs slightly more than an empty one) and it takes up space (that's why the balloon gets bigger). The most common states of matter are <strong>solid</strong>, <strong>liquid</strong>, and <strong>gas</strong>.</p>
+      <p><strong>Check your prediction:</strong> air is matter, just like a rock.</p>
+      <p><strong>Matter</strong> is anything that has <strong>mass</strong> and takes up space (<strong>volume</strong>). That includes air! Air has mass (a filled balloon has slightly more mass than an empty one) and it takes up space (that's why the balloon gets bigger). <strong>Mass is not the same as weight.</strong> Weight is the pull of gravity on an object's mass. The most common states of matter are <strong>solid</strong>, <strong>liquid</strong>, and <strong>gas</strong>.</p>
     </div>
 
-    <p class="section-desc" style="margin-bottom: 1.2rem;">Matter is everywhere, in all three common states:</p>
-    <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">🪨</span>Rock - solid</div>
-      <div class="example-chip"><span class="example-chip-icon">🧊</span>Ice cube - solid</div>
-      <div class="example-chip"><span class="example-chip-icon">💧</span>Water - liquid</div>
-      <div class="example-chip"><span class="example-chip-icon">🥤</span>Juice - liquid</div>
-      <div class="example-chip"><span class="example-chip-icon">🎈</span>Air in a balloon - gas</div>
-      <div class="example-chip"><span class="example-chip-icon">💨</span>Steam - gas</div>
+    <div class="states-block">
+      <h3 class="states-title">Matter Is All Around You</h3>
+      <p class="states-intro">Matter exists in three common states. Look at these everyday examples.</p>
+      <ul class="state-grid">
+      <li class="state-card state-solid">
+        <h4 class="state-name">Solid</h4>
+        <ul class="state-examples">
+          <li><span class="state-icon" aria-hidden="true">🪨</span>Rock</li>
+          <li><span class="state-icon" aria-hidden="true">🧊</span>Ice cube</li>
+        </ul>
+      </li>
+      <li class="state-card state-liquid">
+        <h4 class="state-name">Liquid</h4>
+        <ul class="state-examples">
+          <li><span class="state-icon" aria-hidden="true">💧</span>Water</li>
+          <li><span class="state-icon" aria-hidden="true">🥤</span>Juice</li>
+        </ul>
+      </li>
+      <li class="state-card state-gas">
+        <h4 class="state-name">Gas</h4>
+        <ul class="state-examples">
+          <li><span class="state-icon" aria-hidden="true">🎈</span>Air in a balloon</li>
+          <li><span class="state-icon state-formula">H<sub>2</sub>O</span>Water vapor</li>
+        </ul>
+      </li>
+      </ul>
     </div>
 
     <div class="bridge-callout teal">
@@ -1891,7 +2139,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Prediction gates the explanation</li><li>Example chips with icons aid the three states</li><li>Short, plain definition</li></ul>
+          <ul class="edu-note-text"><li>Prediction gates the explanation</li><li>Three labeled state cards group the everyday examples</li><li>Short, plain definition</li></ul>
         </div>
       </div>
     </div>
@@ -1914,24 +2162,24 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="process-step-label">Measurement 1</div>
         <span class="process-icon">⚖️</span>
         <div id="mass-term" class="process-name">Mass</div>
-        <div class="process-body"><strong>Mass</strong> is the amount of matter in an object. It is measured in <strong>grams (g)</strong> with a <strong>triple beam balance</strong>.</div>
-        <span class="process-mini">Tool: Triple&nbsp;Beam&nbsp;Balance · Unit:&nbsp;g</span>
+        <div class="process-body"><strong>Mass</strong> is the amount of matter in an object. It is measured using a triple beam balance or digital scale.</div>
+        <div class="process-mini"><span class="pm-line">Tools: Triple Beam Balance or Digital Scale</span><span class="pm-line">Unit: <span class="pm-keep">grams (g)</span></span></div>
       </div>
 
       <div class="process-card step2">
         <div class="process-step-label">Measurement 2</div>
         <span class="process-icon">📦</span>
         <div id="volume-term" class="process-name">Volume</div>
-        <div class="process-body"><strong>Volume</strong> is the amount of space an object takes up. It is measured in <strong>cubic centimeters (cm³)</strong> with a ruler, or in <strong>milliliters (mL)</strong> with a <strong>graduated cylinder</strong>.</div>
-        <span class="process-mini">Tools: Ruler or Graduated&nbsp;Cylinder · Units:&nbsp;cm³&nbsp;or&nbsp;mL</span>
+        <div class="process-body"><strong>Volume</strong> is the amount of space an object takes up. Use a ruler to calculate the volume of a regular-shaped object, or a graduated cylinder to measure the volume of a liquid or an irregularly shaped object using water displacement.</div>
+        <div class="process-mini"><span class="pm-line">Tools: Ruler or Graduated Cylinder</span><span class="pm-line">Units: <span class="pm-keep">cm³</span> or <span class="pm-keep">mL</span></span></div>
       </div>
 
       <div class="process-card step3">
         <div class="process-step-label">Measurement 3</div>
-        <span class="process-icon">🧲</span>
+        <span class="process-icon">🪨</span>
         <div id="density-term" class="process-name">Density</div>
-        <div class="process-body"><strong>Density</strong> is a measure of how much matter is <strong>packed into a space</strong>. It combines the first two measurements: mass ÷ volume.</div>
-        <span class="process-mini">Units: g/cm³ or g/mL</span>
+        <div class="process-body"><strong>Density</strong> describes how much mass is packed into a certain volume. It is the ratio of mass to volume and is calculated by dividing an object's mass by its volume.</div>
+        <div class="process-mini"><span class="pm-line">Formula: Mass <span class="pm-keep">÷ Volume</span></span><span class="pm-line">Units: <span class="pm-keep">g/cm³</span> or <span class="pm-keep">g/mL</span></span></div>
       </div>
 
     </div>
@@ -1939,37 +2187,42 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <!-- Tool match interactive -->
     <div class="tool-match check-card">
       <div class="check-eyebrow">Quick Check · Not graded</div>
-      <div class="tool-match-title">🧰 Pick the Right Tool</div>
-      <div class="tool-match-sub">A real scientist's first decision is choosing the right tool and unit. Answer all three to prove you're lab-ready.</div>
+      <div class="tool-match-title">Pick the Right Tool</div>
+      <div class="tool-match-sub">Choose the best tool for each situation. Get immediate feedback and try again if needed.</div>
 
-      <div class="tm-question" data-correct="1">
-        <div class="tm-q-text check-q" id="tm-q1">1. You need to measure the mass of a wooden block. Which tool do you grab?</div>
-        <div class="tm-options check-options" role="group" aria-labelledby="tm-q1">
-          <button class="tm-btn check-opt" type="button">Ruler</button>
-          <button class="tm-btn check-opt" type="button">Triple beam balance</button>
-          <button class="tm-btn check-opt" type="button">Graduated cylinder</button>
+      <div class="tm-grid">
+        <div class="tm-question" data-correct="1">
+          <div class="tm-label">Question 1</div>
+          <div class="tm-q-text check-q" id="tm-q1">1. You need to measure the mass of a wooden block. Which tool do you grab?</div>
+          <div class="tm-options check-options" role="group" aria-labelledby="tm-q1">
+            <button class="tm-btn check-opt" type="button" data-fb="Not quite. A ruler measures length, not mass. Mass is the amount of matter, so you need a balance. Try again.">Ruler</button>
+            <button class="tm-btn check-opt" type="button" data-fb="Correct! A triple beam balance measures mass in grams (g).">Triple beam balance</button>
+            <button class="tm-btn check-opt" type="button" data-fb="Not quite. A graduated cylinder measures the volume of a liquid, not mass. Try again.">Graduated cylinder</button>
+          </div>
+          <div class="tm-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
         </div>
-        <div class="tm-fb" aria-live="polite"></div>
-      </div>
 
-      <div class="tm-question" data-correct="2">
-        <div class="tm-q-text check-q" id="tm-q2">2. You need to measure the volume of juice for an experiment. Which tool do you grab?</div>
-        <div class="tm-options check-options" role="group" aria-labelledby="tm-q2">
-          <button class="tm-btn check-opt" type="button">Triple beam balance</button>
-          <button class="tm-btn check-opt" type="button">Ruler</button>
-          <button class="tm-btn check-opt" type="button">Graduated cylinder</button>
+        <div class="tm-question" data-correct="2">
+          <div class="tm-label">Question 2</div>
+          <div class="tm-q-text check-q" id="tm-q2">2. You need to measure the volume of juice for an experiment. Which tool do you grab?</div>
+          <div class="tm-options check-options" role="group" aria-labelledby="tm-q2">
+            <button class="tm-btn check-opt" type="button" data-fb="Not quite. A balance measures mass, not volume. Juice is a liquid, so measure the space it takes up. Try again.">Triple beam balance</button>
+            <button class="tm-btn check-opt" type="button" data-fb="Not quite. Juice has no length, width, or height to measure. It takes the shape of its container. Try again.">Ruler</button>
+            <button class="tm-btn check-opt" type="button" data-fb="Correct! A graduated cylinder measures liquid volume in milliliters (mL).">Graduated cylinder</button>
+          </div>
+          <div class="tm-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
         </div>
-        <div class="tm-fb" aria-live="polite"></div>
-      </div>
 
-      <div class="tm-question" data-correct="0">
-        <div class="tm-q-text check-q" id="tm-q3">3. You need the volume of a rectangular block (a solid with straight sides). Which tool do you grab?</div>
-        <div class="tm-options check-options" role="group" aria-labelledby="tm-q3">
-          <button class="tm-btn check-opt" type="button">Ruler - measure length, width, and height</button>
-          <button class="tm-btn check-opt" type="button">Triple beam balance</button>
-          <button class="tm-btn check-opt" type="button">A bigger block to compare</button>
+        <div class="tm-question" data-correct="0">
+          <div class="tm-label">Question 3</div>
+          <div class="tm-q-text check-q" id="tm-q3">3. You need the volume of a rectangular block (a solid with straight sides). Which tool and method do you use?</div>
+          <div class="tm-options check-options" role="group" aria-labelledby="tm-q3">
+            <button class="tm-btn check-opt" type="button" data-fb="Correct! Measure length, width, and height with a ruler, then multiply to get cm³.">Ruler - measure length, width, and height</button>
+            <button class="tm-btn check-opt" type="button" data-fb="Not quite. A balance tells you the block&#x27;s mass, not how much space it takes up. Try again.">Triple beam balance</button>
+            <button class="tm-btn check-opt" type="button" data-fb="Not quite. One side gives you a length, not a volume. Measure length, width, and height, then multiply. Try again.">Ruler - measure only the longest side</button>
+          </div>
+          <div class="tm-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
         </div>
-        <div class="tm-fb" aria-live="polite"></div>
       </div>
 
       <div class="tm-done" id="tm-done" role="status">🏆 Three for three! Mass → triple beam balance (g). Liquid volume → graduated cylinder (mL). Block volume → ruler (cm³). You're lab-ready.</div>
@@ -2015,6 +2268,67 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
     </div>
 
+    <div class="bridge-callout green">
+      <strong>What about a rock?</strong> A ruler works for blocks with straight sides. Most objects aren't shaped like that. Here's how scientists measure them.
+    </div>
+
+    <div class="name-it green-it" style="margin-top: 2.5rem;">
+      <div class="name-it-label">Key idea: Water Displacement</div>
+      <p>When an object sinks completely underwater, it pushes aside, or <strong>displaces</strong>, its own volume of water. The water level rises by exactly that amount.</p>
+      <p><strong>Object's volume = final water volume minus initial water volume.</strong></p>
+    </div>
+
+    <!-- Water displacement lab -->
+    <div class="disp-lab" id="disp-lab">
+      <div class="disp-lab-title">💧 Water Displacement Lab</div>
+      <div class="disp-lab-sub">Choose an object and lower it into the graduated cylinder. Watch how far the water rises. The rise is the object's volume.</div>
+      <div class="disp-grid">
+        <div class="disp-svg-wrap">
+          <svg id="disp-svg" viewBox="0 0 180 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Graduated cylinder marked from 0 to 50 milliliters, showing that the water level rises by the volume of an object that sinks into it">
+            <g id="disp-scale"></g>
+            <rect id="disp-water" x="52" y="120" width="56" height="120" fill="rgba(59,130,246,0.28)" style="transition: y 0.5s ease, height 0.5s ease;"/>
+            <g id="disp-object" style="transition: transform 0.5s ease;"></g>
+            <path d="M50 30 V240 a6 6 0 0 0 6 6 H104 a6 6 0 0 0 6 -6 V30" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+            <rect x="34" y="246" width="92" height="6" rx="3" fill="rgba(255,255,255,0.3)"/>
+          </svg>
+        </div>
+        <div class="disp-controls">
+          <div class="disp-label" id="disp-objects-label">Choose an object</div>
+          <div class="disp-objects" role="group" aria-labelledby="disp-objects-label">
+            <button class="disp-obj" type="button" aria-pressed="false" data-obj="marble">Marble</button>
+            <button class="disp-obj" type="button" aria-pressed="false" data-obj="bolt">Metal bolt</button>
+            <button class="disp-obj" type="button" aria-pressed="true" data-obj="rock">Small rock</button>
+            <button class="disp-obj" type="button" aria-pressed="false" data-obj="cork">Cork</button>
+          </div>
+          <button class="disp-action" id="disp-action" type="button">Lower it in</button>
+          <div class="disp-readout">
+            <div class="disp-readings">
+              <div>Initial volume: <span id="disp-initial">30 mL</span></div>
+              <div>Final volume: <span id="disp-final">30 mL</span></div>
+            </div>
+            <div class="disp-math" id="disp-math"></div>
+          </div>
+          <p class="disp-sr" id="disp-announce" aria-live="polite" aria-atomic="true"></p>
+        </div>
+      </div>
+
+      <div class="check-card disp-check" id="disp-check" hidden>
+        <div class="check-eyebrow">Quick Check · Not graded</div>
+        <div class="check-q" id="disp-q">The water rose from 30 mL to 39 mL. What is the rock's volume?</div>
+        <div class="check-options" role="group" aria-labelledby="disp-q">
+          <button class="disp-opt check-opt" type="button">39 mL</button>
+          <button class="disp-opt check-opt" type="button">9 mL</button>
+          <button class="disp-opt check-opt" type="button">69 mL</button>
+        </div>
+        <div class="tm-fb" id="disp-fb" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="name-it green-it">
+      <div class="name-it-label">Key idea: Same Space, Two Units</div>
+      <p><strong>1 mL and 1 cm³ are exactly the same amount of space.</strong> So the rock's volume is 9 mL, or 9 cm³. That's why density can be written in g/mL or g/cm³, and why water's density of 1 g/mL is the same as 1 g/cm³.</p>
+    </div>
+
     <div class="bridge-callout orange">
       <strong>You now have two of the three measurements.</strong> Mass tells you how much matter. Volume tells you how much space. The third measurement - density - is where the floating-ship mystery gets solved.
     </div>
@@ -2025,7 +2339,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect each property to its tool and unit (measurement reasoning).</li><li>Show with the block builder why l x w x h yields a volume.</li></ul>
+          <ul class="edu-note-text"><li>Connect each property to its tool and unit (measurement reasoning).</li><li>Show with the block builder why l x w x h yields a volume.</li><li>Measure irregular solids by water displacement, and catch the "final reading is the volume" slip.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -2056,7 +2370,16 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <div class="name-it orange-it">
       <div class="name-it-label">Key idea: Density</div>
-      <p><strong>Density</strong> is the ratio of <strong style="color:var(--mass);">mass</strong> to <strong style="color:var(--volume);">volume</strong>: how much matter is packed into a space. It can be measured two ways: in <strong>g/cm³</strong> (triple beam balance + ruler) or in <strong>g/mL</strong> (triple beam balance + graduated cylinder).</p>
+      <p><strong>Density</strong> is the ratio of <strong style="color:var(--mass);">mass</strong> to <strong style="color:var(--volume);">volume</strong>: how much matter is packed into a space. It can be calculated two ways: in <strong>g/cm³</strong> (triple beam balance + ruler) or in <strong>g/mL</strong> (triple beam balance + graduated cylinder).</p>
+      <p><strong>Picture it with particles.</strong> All matter is made of particles too small to see. The two blocks below are the same size, but Block B has more particles packed into that space. More matter in the same volume means more mass, so Block B has a higher density.</p>
+      <svg class="dens-particles" viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two same-size blocks. Block A has a few particles spread apart. Block B has many particles packed closely, so it has more mass in the same volume and a higher density.">
+        <rect x="15" y="10" width="120" height="90" rx="10" fill="rgba(230,126,34,0.06)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+        <rect x="165" y="10" width="120" height="90" rx="10" fill="rgba(230,126,34,0.06)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+        <g><circle cx="40" cy="32" r="5" fill="#e67e22"/><circle cx="100" cy="28" r="5" fill="#e67e22"/><circle cx="70" cy="58" r="5" fill="#e67e22"/><circle cx="36" cy="80" r="5" fill="#e67e22"/><circle cx="108" cy="78" r="5" fill="#e67e22"/></g>
+        <g><circle cx="186" cy="25" r="5" fill="#e67e22"/><circle cx="210" cy="25" r="5" fill="#e67e22"/><circle cx="234" cy="25" r="5" fill="#e67e22"/><circle cx="258" cy="25" r="5" fill="#e67e22"/><circle cx="198" cy="44" r="5" fill="#e67e22"/><circle cx="222" cy="44" r="5" fill="#e67e22"/><circle cx="246" cy="44" r="5" fill="#e67e22"/><circle cx="270" cy="44" r="5" fill="#e67e22"/><circle cx="186" cy="63" r="5" fill="#e67e22"/><circle cx="210" cy="63" r="5" fill="#e67e22"/><circle cx="234" cy="63" r="5" fill="#e67e22"/><circle cx="258" cy="63" r="5" fill="#e67e22"/><circle cx="198" cy="82" r="5" fill="#e67e22"/><circle cx="222" cy="82" r="5" fill="#e67e22"/><circle cx="246" cy="82" r="5" fill="#e67e22"/><circle cx="270" cy="82" r="5" fill="#e67e22"/></g>
+        <text x="75" y="121" fill="#8aafca" font-size="12" font-weight="800" font-family="Nunito, sans-serif" text-anchor="middle">Block A · lower density</text>
+        <text x="225" y="121" fill="#8aafca" font-size="12" font-weight="800" font-family="Nunito, sans-serif" text-anchor="middle">Block B · higher density</text>
+      </svg>
     </div>
 
     <div class="observe-row">
@@ -2066,7 +2389,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
       <div class="observe-card green-card">
         <span class="observe-icon">🏖️</span>
-        <span><strong>Beach ball:</strong> almost no mass spread across the same volume → low density.</span>
+        <span><strong>Beach ball:</strong> very little mass spread across the same volume → low density.</span>
       </div>
     </div>
 
@@ -2082,11 +2405,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <button class="predict-btn check-opt" type="button" aria-pressed="false">It floats if its density is less than water's</button>
         <button class="predict-btn check-opt" type="button" aria-pressed="false">Big objects always float</button>
       </div>
+      <p class="predict-sr" aria-live="polite" aria-atomic="true" data-announce="Prediction saved. The Density Lab is now open below."></p>
     </div>
 
     <div class="density-lab predict-gated" data-gate="qp-density">
       <div class="density-lab-title">🎛️ The Density Lab</div>
-      <div class="density-lab-sub">Drag the sliders to set your object's mass and volume. The lab calculates the density live and drops the object into a tank of water (density = 1 g/mL).</div>
+      <div class="density-lab-sub">Drag the sliders to set your object's mass and volume. The lab calculates the density live and drops the object into a tank of water (density = 1 g/mL).<br><strong>Try this:</strong> Make your object sink. Then change only one slider to make it float again.</div>
 
       <div class="dl-sliders">
         <div class="dl-slider-row mass-row">
@@ -2121,8 +2445,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
       </div>
 
-      <div class="dl-synthesis" id="dl-synthesis">
-        <strong>That's the answer to the ship mystery.</strong> Floating isn't decided by mass alone - it's decided by density. A steel ship is huge and full of air, so its overall mass divided by its enormous volume comes out below 1 g/mL, and it floats. A pebble is small but tightly packed, so its density is well above 1 g/mL, and it sinks.
+      <div class="dl-synthesis" id="dl-synthesis" role="status">
+        <strong>Check your prediction, and solve the ship mystery.</strong> Floating isn't decided by mass alone. It's decided by density. A steel ship's hull surrounds a huge amount of air. When you divide the ship's total mass by its total volume, including all that air-filled space, its overall density comes out less than water's, so it floats. A pebble is small but solid rock all the way through, so its density is greater than water's, and it sinks.
       </div>
     </div>
 
@@ -2140,7 +2464,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Cause-and-effect modeling (density decides floating)</li><li>Misconception checking (density means heavy)</li><li>Dual coding with the live tank model</li></ul>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling (density decides floating)</li><li>Misconception checking (density means heavy)</li><li>Static particle-packing model links the D = m ÷ V ratio to the particle picture used in Physical Properties</li><li>Dual coding with the live tank model</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -2197,8 +2521,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <!-- Practice problem II: student solves with stepwise gates -->
     <div class="worked-example" style="border-color: rgba(245,200,66,0.3);">
+      <div class="check-eyebrow we-eyebrow">Practice · Not graded</div>
       <div class="we-title">✏️ Your Turn: Density Practice Problem</div>
-      <div class="we-sub">You have a wooden block with a mass of 60 grams. You measure it with a ruler: 4 cm long, 3 cm wide, and 2 cm tall. What is the density of the wooden block?</div>
+      <div class="we-sub">You have a block with a mass of 60 grams. You measure it with a ruler: 4 cm long, 3 cm wide, and 2 cm tall. What is the density of the block?</div>
       <div class="we-given">
         <span class="we-chip mass-chip">Mass = 60 g</span>
         <span class="we-chip volume-chip">Dimensions = 4 cm × 3 cm × 2 cm</span>
@@ -2230,7 +2555,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
       </div>
 
-      <div class="we-success" id="pp-success">🏆 You did it! Density = 60 ÷ 24 = 2.5 g/cm³. That's denser than water, so this "wooden" block would sink - it must be a very dense wood, like ebony. You just calculated density exactly the way a scientist does.</div>
+      <div class="we-success" id="pp-success" role="status">🏆 You did it! Density = 60 ÷ 24 = 2.5 g/cm³. That's denser than water, so this block would sink. 2.5 g/cm³ is close to the density of glass. You just calculated density exactly the way a scientist does.</div>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -2269,7 +2594,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Quick Recall</span>
     <h2 class="section-title">Brain Check</h2>
-    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+    <p class="section-desc">Two quick questions before we put it all together. Pulling answers from memory now will help them stick.</p>
 
     <div class="qr-card check-card" id="qrCard1">
       <div class="qr-eyebrow check-eyebrow">Quick Recall · 1 of 2</div>
@@ -2336,14 +2661,14 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Explain · Wrap-Up</span>
     <h2 class="section-title">Back to the Floating Giant</h2>
-    <p class="section-desc">You started this lesson with three puzzles: same-size balls with different heft, invisible air, and a steel ship that floats. Now you can solve all three.</p>
+    <p class="section-desc">You started this lesson with three puzzles: same-size balls with different heft, invisible air, and a steel ship that floats. <strong>What they have in common:</strong> each one is solved by comparing an object's mass to its volume.</p>
 
     <div class="wrapup-beats">
 
       <div class="wrapup-beat wrapup-beat-1">
         <div class="wrapup-beat-label">The Answer</div>
         <div class="wrapup-beat-answer">The ship floats because its density, not its mass, is less than water's.</div>
-        <div class="wrapup-beat-body">A ship's hull is mostly air, so its total mass divided by its huge volume comes out below 1 g/mL. The pebble's matter is tightly packed, so its density is far above 1 g/mL - down it goes.</div>
+        <div class="wrapup-beat-body">Its overall density, counting the steel and all the air inside the hull, is less than water's. A pebble is solid rock, so its density is greater than water's.</div>
       </div>
 
       <div class="wrapup-beat wrapup-beat-2">
@@ -2353,7 +2678,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="wrapup-behavior-chips">
           <span class="wbc wbc-mass">Mass · g</span>
           <span class="wbc wbc-volume">Volume · cm³ or mL</span>
-          <span class="wbc wbc-density">Density · m ÷ V</span>
+          <span class="wbc wbc-density">Density · g/cm³ or g/mL</span>
         </div>
       </div>
 
@@ -2367,24 +2692,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <!-- Lesson recap (folded into the wrap-up) -->
     <div style="margin-top: 3rem; margin-bottom: 1rem;">
-      <h3 style="font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--text); margin-bottom: 0.4rem;">Everything in One Place</h3>
-      <p class="section-desc" style="margin-bottom: 0;">The words to know and the goals you worked toward, gathered in one spot.</p>
-    </div>
-
-    <div class="summary-table-wrap">
-      <table class="summary-table">
-        <thead>
-          <tr><th>Term</th><th>Student-Friendly Definition</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="term">Matter</td><td>Anything that has mass and takes up space (volume). The most common states are solid, liquid, and gas.</td></tr>
-          <tr><td class="term">Mass</td><td>The amount of matter in an object, measured in grams (g) with a triple beam balance.</td></tr>
-          <tr><td class="term">Volume</td><td>The amount of space an object takes up, measured in cm³ with a ruler (V = l × w × h) or in mL with a graduated cylinder.</td></tr>
-          <tr><td class="term">Density</td><td>How much matter is packed into a space: the ratio of mass to volume (D = m ÷ V), in g/cm³ or g/mL.</td></tr>
-          <tr><td class="term">Triple beam balance</td><td>The lab tool used to measure mass in grams.</td></tr>
-          <tr><td class="term">Graduated cylinder</td><td>The marked container used to measure liquid volume in milliliters.</td></tr>
-        </tbody>
-      </table>
+      <h3 style="font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--text); margin-bottom: 0.4rem;">Your Learning Goals</h3>
+      <p class="section-desc" style="margin-bottom: 0;">The goals you worked toward, and how you showed them.</p>
     </div>
 
     <div class="summary-table-wrap">
@@ -2395,11 +2704,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <tbody>
           <tr>
             <td class="term" style="white-space: normal;">Define matter and explain how scientists measure it using mass and volume with the right tools (6.MS-PS1-7 MA).</td>
-            <td>You predicted whether air is matter, matched tools to measurements, and built block volumes with V = l × w × h.</td>
+            <td>You predicted whether air is matter, matched tools to measurements, built block volumes with V = l × w × h, and measured volume by water displacement.</td>
           </tr>
           <tr>
             <td class="term" style="white-space: normal;">Calculate density from mass and volume and use it to explain sinking and floating (6.MS-PS1-7 MA).</td>
-            <td>You ran the Density Lab, solved a two-step density problem by hand, and explained why a steel ship floats while a pebble sinks.</td>
+            <td>You ran the Density Lab, solved a two-step density problem by hand, and saw why a steel ship floats while a pebble sinks.</td>
           </tr>
         </tbody>
       </table>
@@ -2415,7 +2724,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Resolve all three opening puzzles with one coherent explanation.</li><li>Gather terms and goals so the throughline is visible at a glance.</li></ul>
+          <ul class="edu-note-text"><li>Resolve all three opening puzzles with one coherent explanation.</li><li>Gather the goals and how students showed them at a glance.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -2427,7 +2736,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Summary tables put terms and goals in one place</li><li>Color-coded chips reinforce the three measurements</li><li>Short, parallel wrap-up beats</li></ul>
+          <ul class="edu-note-text"><li>Goals table pairs each goal with its evidence</li><li>Color-coded chips reinforce the three measurements</li><li>Short, parallel wrap-up beats</li></ul>
         </div>
       </div>
     </div>
@@ -2791,11 +3100,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="think-eyebrow">🧠 Show Your Thinking</div>
       <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
       <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
-      <p class="think-prompt">In one sentence, explain what actually decides whether an object floats or sinks in water, then use it to explain how a giant steel ship floats while a tiny pebble sinks. Use the word <strong>density</strong>.</p>
-      <textarea class="think-input" id="mm-thinking" placeholder="Write your one-sentence explanation here..." aria-label="Explain what decides whether an object floats or sinks and how a steel ship floats"></textarea>
+      <p class="think-prompt">In one or two sentences, explain what decides whether an object floats or sinks in water. Then use that idea to explain how a giant steel ship floats while a tiny pebble sinks. Use the word <strong>density</strong>.</p>
+      <textarea class="think-input" id="mm-thinking" placeholder="Write your explanation here..." aria-label="Explain what decides whether an object floats or sinks and how a steel ship floats"></textarea>
       <div class="think-model" id="mm-think-model">
         <span class="tm-label">One strong way to say it</span>
-        What decides floating or sinking is <strong>density</strong>, not mass or size: an object floats when its density is less than water's (1 g/cm³) and sinks when it is greater. A giant steel ship floats because its hull is mostly air, so its large mass spread over a huge volume gives it a low overall density, while a pebble packs its matter tightly into a small volume, giving it a density well above water's. If your sentence names density as the deciding factor and uses it to explain both, you have it.
+        What decides floating or sinking is <strong>density</strong>, not mass or size: an object floats when its density is less than water's (1 g/cm³) and sinks when it is greater. A giant steel ship floats because its overall density, counting the steel and all the air inside its hull, is less than water's. A pebble is solid rock packed into a small volume, so its density is greater than water's. If your answer names density as the deciding factor and uses it to explain both objects, you have it.
       </div>
     </div>
 
@@ -2904,6 +3213,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 .cont-card.ext .cont-cat { color: #b47fff; }
 .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
 .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+.cont-desc p { margin-bottom: 0.6rem; }
+.cont-desc p:last-child { margin-bottom: 0; }
+.cont-desc ol { margin: 0 0 0.6rem; padding-left: 1.3rem; }
+.cont-desc li { margin-bottom: 0.3rem; }
 .cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
 .cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
@@ -2938,13 +3251,26 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">You measured matter with <strong>mass</strong>, <strong>volume</strong>, and <strong>density</strong>. Take those tools off the screen and put them to work with a hands-on challenge at home.</p>
+    <p class="continue-intro">A ruler can find the volume of a block, but what about a rock? Use <strong>water displacement</strong> to measure <strong>irregular objects</strong>, then calculate their <strong>density</strong> at home or in class.</p>
     <div class="continue-grid">
       <div class="cont-card ext">
         <div class="cont-icon">⚖️</div>
         <div class="cont-cat">Extension</div>
         <div class="cont-name">Density at Home</div>
-        <div class="cont-desc">Find the density of an irregular object: measure its mass on a kitchen scale, then lower it into a measuring cup of water and read how many milliliters the water rises (that rise is its volume). Then rank five household objects from least to most dense and test your ranking in a sink of water.</div>
+        <div class="cont-desc">
+          <p>Find the density of a small object with an irregular shape, like a rock or a metal bolt.</p>
+          <ol>
+            <li>Measure the object's mass in grams on a balance or kitchen scale. Record it.</li>
+            <li>Fill a graduated cylinder about halfway with water. Read the level at eye level, at the bottom of the curved water surface. Record this initial volume.</li>
+            <li>Tilt the cylinder and gently slide the object in until it is completely underwater. Don't drop it in.</li>
+            <li>Read and record the final water volume.</li>
+            <li>Subtract: final volume minus initial volume. The difference is the object's volume in milliliters (mL).</li>
+            <li>Divide mass by volume to find its density in g/mL.</li>
+          </ol>
+          <p>Choose objects that fit inside the cylinder, sink on their own, and don't soak up water, dissolve, or react with water. Good choices: a marble, a small rock, a metal nut or bolt, or a few coins. Skip sponges, wood, sugar cubes, chalk, and anything electronic. If an object floats, you already know its density is less than 1 g/mL.</p>
+          <p>Then predict which of five household objects will float and which will sink. Test your predictions in a bowl of water. Do the results match what you'd expect from comparing each object's density to water's?</p>
+          <p>No graduated cylinder at home? Do this investigation in class.</p>
+        </div>
       </div>
     </div>
 
@@ -2978,7 +3304,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Connections</span>
     <h2 class="section-title">Connections</h2>
-    <p class="connections-intro">These lessons build on what you just learned about measuring matter.</p>
+    <p class="connections-intro">Mass, volume, and density describe any piece of matter. This lesson shows where those measurements lead.</p>
 
     <div class="connections-grid">
 
@@ -3043,17 +3369,23 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 })();
 </script>
 
-<!-- ===== HOOK CARDS (click or Enter/Space to reveal) ===== -->
+<!-- ===== HOOK CARDS (button or card click to reveal) ===== -->
 <script>
 (function(){
   document.querySelectorAll('.hook-card').forEach(function(card){
-    function reveal(){
+    var btn = card.querySelector('.hook-card-prompt');
+    var reveal = card.querySelector('.hook-card-reveal');
+    function open(moveFocus){
+      if (card.classList.contains('revealed')) return;
       card.classList.add('revealed');
-      card.setAttribute('aria-expanded', 'true');
+      btn.setAttribute('aria-expanded', 'true');
+      /* The button hides once used, so hand focus to what it revealed. */
+      if (moveFocus) reveal.focus();
     }
-    card.addEventListener('click', reveal);
-    card.addEventListener('keydown', function(e){
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); }
+    btn.addEventListener('click', function(){ open(true); });
+    /* Mouse and touch users can still select anywhere on the card. */
+    card.addEventListener('click', function(e){
+      if (!btn.contains(e.target)) open(false);
     });
   });
 })();
@@ -3072,6 +3404,9 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
         pause.querySelectorAll('.predict-btn').forEach(b => { if (b !== btn) b.setAttribute('aria-disabled', 'true'); });
         pause.classList.add('locked');
         if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+        /* Content appears below without moving focus, so say so politely. */
+        const sr = pause.querySelector('.predict-sr');
+        if (sr) setTimeout(() => { sr.textContent = sr.getAttribute('data-announce'); }, 100);
       });
     });
   });
@@ -3087,6 +3422,14 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     var correct = parseInt(q.getAttribute('data-correct'), 10);
     var fb = q.querySelector('.tm-fb');
     var btns = q.querySelectorAll('.tm-btn');
+    /* Invisible copies of this question's feedback reserve its height. */
+    btns.forEach(function(btn){
+      var sizer = document.createElement('div');
+      sizer.className = 'tm-fb visible tm-fb-sizer ' + (btn.getAttribute('data-fb').indexOf('Correct!') === 0 ? 'ok' : 'no');
+      sizer.setAttribute('aria-hidden', 'true');
+      sizer.textContent = btn.getAttribute('data-fb');
+      fb.parentNode.appendChild(sizer);
+    });
     var done = false;
     btns.forEach(function(btn, i){
       btn.addEventListener('click', function(){
@@ -3098,7 +3441,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
           solved++;
           btn.classList.add('right');
           fb.className = 'tm-fb visible ok';
-          fb.textContent = 'Correct! That\'s the right tool for the job.';
+          fb.textContent = btn.getAttribute('data-fb') || 'Correct! That\'s the right tool for the job.';
           btns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
           if (solved === questions.length) {
             var tmDone = document.getElementById('tm-done');
@@ -3111,7 +3454,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
           btn.classList.add('wrong');
           btn.setAttribute('aria-disabled', 'true');
           fb.className = 'tm-fb visible no';
-          fb.textContent = 'Not quite. Think about what is being measured: amount of matter, liquid space, or block space. Try again.';
+          fb.textContent = btn.getAttribute('data-fb') || 'Not quite. Think about what is being measured: amount of matter, liquid space, or block space. Try again.';
         }
       });
     });
@@ -3175,6 +3518,157 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 })();
 </script>
 
+<!-- ===== WATER DISPLACEMENT LAB (ungraded, nothing stored) ===== -->
+<script>
+(function(){
+  var lab = document.getElementById('disp-lab');
+  if (!lab) return;
+  /* One scale for the cylinder: 0 mL sits at y = 240 and each mL is 4 px,
+     so 50 mL is at y = 40. Shapes are drawn with their bottom at y = 0 and
+     moved into place with a translate. */
+  var BASE = 240, PX = 4, START = 30, OUT_Y = 28;
+  var OBJECTS = {
+    marble: { name: 'marble', label: 'Marble', rise: 2, sinks: true,
+      shape: '<circle cx="80" cy="-6" r="6" fill="#7cc8f8" stroke="#3bc8e8" stroke-width="1.5"/>' },
+    bolt: { name: 'metal bolt', label: 'Metal bolt', rise: 5, sinks: true,
+      shape: '<rect x="76" y="-23" width="8" height="23" fill="#b8c4cf" stroke="#8a9aa8" stroke-width="1.5"/>' +
+             '<rect x="71" y="-28" width="18" height="6" rx="1.5" fill="#b8c4cf" stroke="#8a9aa8" stroke-width="1.5"/>' },
+    rock: { name: 'rock', label: 'Rock', rise: 9, sinks: true,
+      shape: '<polygon points="66,0 62,-9 69,-19 84,-22 96,-15 98,-4 90,0" fill="#9a8f84" stroke="#6f655c" stroke-width="1.5" stroke-linejoin="round"/>' },
+    cork: { name: 'cork', label: 'Cork', rise: 2, sinks: false,
+      shape: '<rect x="70" y="-14" width="20" height="14" rx="3" fill="#c9a26b" stroke="#a07c48" stroke-width="1.5"/>' }
+  };
+  var CORK_NOTE = 'The cork floats, so only part of it is underwater. The water rose 2 mL, but that is not the cork\'s whole volume. To measure a floating object, you\'d have to push it completely under.';
+
+  var scale = document.getElementById('disp-scale');
+  var water = document.getElementById('disp-water');
+  var objectG = document.getElementById('disp-object');
+  var objBtns = [].slice.call(lab.querySelectorAll('.disp-obj'));
+  var action = document.getElementById('disp-action');
+  var initialOut = document.getElementById('disp-initial');
+  var finalOut = document.getElementById('disp-final');
+  var mathOut = document.getElementById('disp-math');
+  var announcer = document.getElementById('disp-announce');
+  var check = document.getElementById('disp-check');
+  var checkQ = document.getElementById('disp-q');
+  var checkFb = document.getElementById('disp-fb');
+  var checkBtns = [].slice.call(check.querySelectorAll('.disp-opt'));
+
+  var selected = 'rock';
+  var lowered = false;
+  var checkAsked = false;
+  var passed = false;
+  var announceTimer;
+
+  var ticks = '';
+  for (var v = 0; v <= 50; v++) {
+    var y = BASE - v * PX;
+    var len = v % 10 === 0 ? 14 : (v % 5 === 0 ? 10 : 6);
+    ticks += '<line x1="50" y1="' + y + '" x2="' + (50 + len) + '" y2="' + y + '" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>';
+    if (v % 10 === 0) {
+      ticks += '<text x="44" y="' + (y + 3.5) + '" fill="#8aafca" font-size="10" font-weight="700" font-family="Nunito, sans-serif" text-anchor="end">' + v + (v === 50 ? ' mL' : '') + '</text>';
+    }
+  }
+  scale.innerHTML = ticks;
+
+  function announce(msg) {
+    clearTimeout(announceTimer);
+    announcer.textContent = '';
+    announceTimer = setTimeout(function(){ announcer.textContent = msg; }, 100);
+  }
+
+  function render() {
+    var o = OBJECTS[selected];
+    var level = START + (lowered ? o.rise : 0);
+    water.setAttribute('y', BASE - level * PX);
+    water.setAttribute('height', level * PX);
+    objectG.innerHTML = o.shape;
+    /* Out: resting above the mouth. In: on the bottom if it sinks, or
+       half underwater at the surface if it floats. */
+    var ty = !lowered ? OUT_Y : (o.sinks ? BASE - 1 : BASE - level * PX + 7);
+    objectG.style.transform = 'translateY(' + ty + 'px)';
+    initialOut.textContent = START + ' mL';
+    finalOut.textContent = level + ' mL';
+    if (lowered && !o.sinks) {
+      mathOut.textContent = CORK_NOTE;
+    } else if (lowered && passed) {
+      mathOut.innerHTML = o.label + '\'s volume = ' + level + ' mL minus ' + START + ' mL = <strong>' + o.rise + ' mL</strong>';
+    } else {
+      mathOut.textContent = '';
+    }
+    action.textContent = lowered ? 'Take it out' : 'Lower it in';
+  }
+
+  function askCheck(key) {
+    var o = OBJECTS[key];
+    var final = START + o.rise;
+    checkAsked = true;
+    checkQ.textContent = 'The water rose from ' + START + ' mL to ' + final + ' mL. What is the ' + o.name + '\'s volume?';
+    var options = [
+      { text: final + ' mL', ok: false,
+        fb: 'Not quite. ' + final + ' mL is the final water level. Subtract the starting level to find how much the water rose.' },
+      { text: o.rise + ' mL', ok: true,
+        fb: 'Correct! ' + final + ' mL minus ' + START + ' mL = ' + o.rise + ' mL. The ' + o.name + ' pushed aside ' + o.rise + ' mL of water, so its volume is ' + o.rise + ' mL.' },
+      { text: (START + final) + ' mL', ok: false,
+        fb: 'Not quite. Adding the two readings counts the water twice. Subtract: final minus initial.' }
+    ];
+    checkBtns.forEach(function(btn, i){
+      btn.textContent = options[i].text;
+      btn.setAttribute('data-ok', options[i].ok ? '1' : '0');
+      btn.setAttribute('data-fb', options[i].fb);
+    });
+    check.hidden = false;
+  }
+
+  objBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var key = btn.getAttribute('data-obj');
+      if (key === selected && !lowered) return;
+      selected = key;
+      lowered = false;
+      objBtns.forEach(function(b){ b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+      render();
+    });
+  });
+
+  action.addEventListener('click', function(){
+    var o = OBJECTS[selected];
+    lowered = !lowered;
+    render();
+    if (!lowered) {
+      announce('The ' + o.name + ' is out. The water is back at ' + START + ' mL.');
+    } else if (o.sinks) {
+      announce('The water rose from ' + START + ' mL to ' + (START + o.rise) + ' mL.');
+      if (!checkAsked) askCheck(selected);
+    } else {
+      announce('The cork floats. The water rose from ' + START + ' mL to ' + (START + o.rise) + ' mL, but only part of the cork is underwater.');
+    }
+  });
+
+  /* Answered options use aria-disabled, not disabled, so keyboard focus
+     stays on the control the student just pressed. */
+  checkBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (passed || btn.getAttribute('aria-disabled') === 'true') return;
+      checkFb.textContent = btn.getAttribute('data-fb');
+      if (btn.getAttribute('data-ok') === '1') {
+        passed = true;
+        btn.classList.add('right');
+        checkFb.className = 'tm-fb visible ok';
+        checkBtns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
+        render();
+      } else {
+        btn.classList.add('wrong');
+        btn.setAttribute('aria-disabled', 'true');
+        checkFb.className = 'tm-fb visible no';
+      }
+    });
+  });
+
+  render();
+})();
+</script>
+
 <!-- ===== DENSITY LAB ===== -->
 <script>
 (function(){
@@ -3221,7 +3715,13 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       setVerdict('sink', '✗ Sinks - density above 1 g/mL');
       triedBoth.sink = true;
     }
-    if (triedBoth.sink && triedBoth.float) synth.classList.add('visible');
+    /* Reveal once, then refill the status region so it is announced. */
+    if (triedBoth.sink && triedBoth.float && !synth.classList.contains('visible')) {
+      var synthHtml = synth.innerHTML;
+      synth.innerHTML = '';
+      synth.classList.add('visible');
+      setTimeout(function(){ synth.innerHTML = synthHtml; }, 100);
+    }
   }
 
   massIn.addEventListener('input', render);
@@ -3265,7 +3765,14 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
   wireStep('pp-step2', 'pp-fb2',
     'Correct! 60 ÷ 24 = 2.5 g/cm³.',
     'Not quite. Density is mass ÷ volume: 60 ÷ 24. Try again.',
-    function(){ document.getElementById('pp-success').classList.add('visible'); });
+    function(){
+      /* Refill the status region after revealing it so it is announced. */
+      var success = document.getElementById('pp-success');
+      var successText = success.textContent;
+      success.textContent = '';
+      success.classList.add('visible');
+      setTimeout(function(){ success.textContent = successText; }, 100);
+    });
 })();
 </script>
 

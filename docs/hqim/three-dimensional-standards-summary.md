@@ -249,7 +249,10 @@ The instructional focus is using a particulate model of matter to explain densit
 using proportional reasoning to compare relative densities. Students enact
 Using Mathematics and Computational Thinking in lesson_measuring-matter.html,
 computing volume and density step by step and reasoning proportionally (same
-volume, ten times the mass means ten times the density), and Constructing
+volume, ten times the mass means ten times the density), with only a brief
+static particle-packing model in its density Key Idea, while the
+particle-packing reasoning task itself lives in lesson_physical-properties.html,
+and Constructing
 Explanations in both that lesson and lesson_physical-properties.html, where
 the floating-ship, sinking-coin, and floating-ice discrepant events are
 resolved by density and buoyancy reasoning. The reasoning runs through Scale,
