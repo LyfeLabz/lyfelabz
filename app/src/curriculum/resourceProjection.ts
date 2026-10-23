@@ -100,7 +100,9 @@ const IDENTIFIED_UNIT_TYPES: ReadonlySet<ResourceType> = new Set([
 // Registry validation guarantees a lesson's identifier equals its unit
 // slug and every other identified filename is "<type>_<stem>.html" with a
 // valid stem; this applies the same mapping without re-validating.
-function canonicalId(unit: CurriculumUnit, resource: CurriculumResource): string {
+// Exported so a catalog view that lists registry resources directly (the
+// Curriculum resource tabs) names them by the same identifier.
+export function canonicalId(unit: CurriculumUnit, resource: CurriculumResource): string {
   if (resource.type === "lesson") return unit.slug;
   const stem = resource.filename.slice(
     `${resource.type}_`.length,

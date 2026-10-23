@@ -2587,6 +2587,21 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     );
   });
 
+  test("Curriculum card actions are pill-shaped, scoped to Curriculum, radius only (Milestone 2A polish)", () => {
+    const stripped = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
+    const pillMatch = stripped.match(
+      /\.shell-curriculum-grid \.shell-lesson-assign,\s*\.shell-curriculum-grid \.shell-lesson-preview,\s*\.shell-curriculum-grid \.shell-resource-row-actions > \.shell-lesson-resource-open\s*\{([^}]+)\}/,
+    );
+    expect(pillMatch).not.toBeNull();
+    // Radius only: size, color, hover and focus stay with the existing rules.
+    expect(pillMatch![1].trim()).toBe("border-radius: var(--tw-radius-pill, 999px);");
+    // The unscoped rules keep their corners, so My Units and other surfaces
+    // that reuse these classes are unchanged.
+    expect(stripped).toMatch(/\n\s*\.shell-lesson-preview\s*\{[^}]*border-radius:\s*4px/);
+    expect(stripped).toMatch(/\n\s*\.shell-lesson-resource-open\s*\{[^}]*border-radius:\s*4px/);
+    expect(stripped).not.toMatch(/\n\s*\.shell-lesson-(assign|preview|resource-open)\s*\{[^}]*radius-pill/);
+  });
+
   test("Curriculum is one full-width card per row at every width (Teacher Units UX Milestone 1)", () => {
     // Replaces the Sprint 28.6H four-column grid: a single column of shared
     // resource rows, with no breakpoint that re-introduces columns.

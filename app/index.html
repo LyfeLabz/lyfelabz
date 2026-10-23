@@ -5683,6 +5683,141 @@
   @media (max-width: 480px) {
     .shell-curriculum-grid .shell-lesson-title-row > .shell-lesson-resource-type + .shell-lesson-view-summary::before { display: none; }
   }
+  /* Milestone 2A polish: Curriculum card actions (Assign, Manage, Preview,
+     and the resource tabs' Open) are pill-shaped. Radius only; size, color,
+     hover and focus are unchanged. Scoped to card actions inside
+     .shell-curriculum-grid, so My Units and the lesson Resources disclosure
+     keep their existing corners. */
+  .shell-curriculum-grid .shell-lesson-assign,
+  .shell-curriculum-grid .shell-lesson-preview,
+  .shell-curriculum-grid .shell-resource-row-actions > .shell-lesson-resource-open {
+    border-radius: var(--tw-radius-pill, 999px);
+  }
+  /* Milestone 2A: Curriculum resource selection (shown only while My Units
+     is available). The checkbox leads the title row, so it comes before the
+     card's actions in keyboard order. The selection toolbar and the Add to
+     Unit outcome notice share one dock under the filters that stays in view
+     while the list scrolls. Existing canonical tokens and the Assign
+     dialog's buttons; no new design system. */
+  .shell-resource-select {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    flex: 0 0 auto;
+    margin-right: 0.15rem;
+    cursor: pointer;
+  }
+  .shell-resource-select input {
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    accent-color: #356b52;
+    cursor: pointer;
+  }
+  .shell-resource-select input:focus-visible { outline: var(--tw-focus-outline, 2px solid #1a5f6f); outline-offset: 2px; }
+  .shell-curriculum-selection-dock {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .shell-curriculum-selection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    flex-wrap: wrap;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--tw-surface, #fff);
+    border: 1px solid var(--tw-hairline, rgba(0, 0, 0, 0.09));
+    border-radius: var(--tw-radius-card, 10px);
+    box-shadow: 0 2px 8px rgba(28, 39, 51, 0.08);
+  }
+  .shell-curriculum-selection-count { margin: 0; font-weight: 600; color: var(--tw-ink, #1c2733); }
+  .shell-curriculum-selection-actions,
+  .shell-curriculum-unit-notice-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .shell-curriculum-selection-actions button,
+  .shell-curriculum-unit-notice-actions button { margin: 0; }
+  .shell-curriculum-unit-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    flex-wrap: wrap;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--tw-surface-alt, #faf9f6);
+    border: 1px solid var(--tw-hairline, rgba(0, 0, 0, 0.09));
+    border-left: 3px solid #356b52;
+    border-radius: var(--tw-radius-card, 10px);
+  }
+  .shell-curriculum-unit-notice-text { margin: 0; color: var(--tw-ink, #1c2733); overflow-wrap: anywhere; }
+  /* The Add to Unit dialog (teacherUnitsPanel.ts openAddToUnitDialog). */
+  .shell-units-add-dialog { max-width: 34rem; }
+  .shell-units-add-dialog .shell-assign-title:focus { outline: none; }
+  .shell-units-add-summary { margin: 0 0 0.6rem 0; color: var(--tw-ink-soft, #3a4653); }
+  .shell-units-add-grades { margin-bottom: 0.5rem; }
+  .shell-units-add-note { margin: 0 0 0.6rem 0; font-size: 0.85rem; color: var(--tw-ink-muted, #566472); }
+  .shell-units-add-choices { margin: 0; padding: 0; border: none; min-width: 0; }
+  .shell-units-add-choices legend { margin-bottom: 0.4rem; padding: 0; font-weight: 600; }
+  .shell-units-add-list-state { margin: 0 0 0.4rem 0; color: var(--tw-ink-muted, #566472); }
+  .shell-units-add-options { display: grid; gap: 0.35rem; max-height: 18rem; overflow-y: auto; margin-bottom: 0.35rem; }
+  .shell-units-add-option {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.6rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--tw-hairline, rgba(0, 0, 0, 0.09));
+    border-radius: var(--tw-radius-control, 6px);
+    cursor: pointer;
+  }
+  .shell-units-add-option:has(input:checked) { border-color: #356b52; background: rgba(53, 107, 82, 0.06); }
+  .shell-units-add-option input { margin: 0; accent-color: #356b52; flex: none; }
+  .shell-units-add-option input:focus-visible { outline: var(--tw-focus-outline, 2px solid #1a5f6f); outline-offset: 2px; }
+  .shell-units-add-option-title { font-weight: 600; color: var(--tw-ink, #1c2733); overflow-wrap: anywhere; min-width: 0; }
+  .shell-units-add-option-meta { margin-left: auto; font-size: 0.85rem; color: var(--tw-ink-muted, #566472); }
+  .shell-units-add-new { display: grid; gap: 0.25rem; margin: 0.5rem 0 0 0; }
+  .shell-units-add-new input {
+    font: inherit;
+    padding: 0.4rem 0.5rem;
+    min-height: 36px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: var(--tw-radius-control, 6px);
+  }
+  .shell-units-add-problem {
+    margin: 0.6rem 0 0 0;
+    padding: 0.5rem 0.7rem;
+    color: var(--tw-callout-error-ink);
+    background: var(--tw-callout-error-bg);
+    border: 1px solid var(--tw-callout-error-edge);
+    border-radius: var(--tw-radius-control, 6px);
+  }
+  .shell-units-add-open-units { margin-top: 0.5rem; }
+  .shell-units-add-status { margin: 0.5rem 0 0 0; min-height: 1.2em; color: var(--tw-ink-soft, #3a4653); }
+  .shell-units-add-dialog [aria-disabled="true"] { opacity: 0.6; cursor: not-allowed; }
+  /* display rules above would otherwise beat the [hidden] attribute. */
+  .shell-curriculum-selection[hidden],
+  .shell-curriculum-unit-notice[hidden],
+  .shell-units-add-dialog [hidden] { display: none !important; }
+  @media (max-width: 480px) {
+    .shell-curriculum-selection,
+    .shell-curriculum-unit-notice { align-items: stretch; flex-direction: column; }
+    .shell-curriculum-selection-actions button,
+    .shell-curriculum-unit-notice-actions button { flex: 1 1 auto; }
+    .shell-units-add-option-meta { margin-left: 0; flex-basis: 100%; }
+  }
+  @media (pointer: coarse) {
+    .shell-resource-select { min-width: 44px; min-height: 44px; justify-content: center; margin: -0.5rem 0; }
+    .shell-units-add-option,
+    .shell-units-add-new input,
+    .shell-curriculum-selection button,
+    .shell-curriculum-unit-notice button { min-height: 44px; }
+  }
+  @media (forced-colors: active) {
+    .shell-curriculum-selection,
+    .shell-curriculum-unit-notice { border: 1px solid CanvasText; }
+  }
   .shell-resource-row-footer { grid-area: footer; min-width: 0; }
   @media (max-width: 720px) {
     .shell-card.shell-resource-row,

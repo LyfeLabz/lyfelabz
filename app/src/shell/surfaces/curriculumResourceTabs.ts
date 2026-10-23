@@ -35,7 +35,9 @@ import {
   type CurriculumResourceTab,
   type CurriculumTab,
 } from "../navigationHistory";
+import { canonicalId } from "../../curriculum/resourceProjection";
 import { buildResourceCard, buildResourceOpenLink } from "./resourceCard";
+import type { CurriculumSelection } from "./curriculumSelection";
 
 const TAB_RESOURCE_TYPE: Readonly<
   Record<CurriculumResourceTab, FormalResourceType>
@@ -86,6 +88,12 @@ export function createCurriculumTabs(input: {
   readonly lessonsPanel: HTMLElement;
   readonly getFilters: () => CurriculumFilterSelection;
   readonly onUserSelect: (tab: CurriculumTab) => void;
+  // Milestone 2A: when present, each resource card carries a selection
+  // checkbox bound to this selection (null while My Units is unavailable).
+  readonly selection?: CurriculumSelection | null;
+  // Called after the visible resources change (tab switch or filters), so
+  // the selection toolbar can recount what is not shown.
+  readonly onViewChange?: () => void;
 }): CurriculumTabs {
   const { doc, lessonsPanel } = input;
   const tabs: ReadonlyArray<CurriculumTab> = [
@@ -168,7 +176,7 @@ export function createCurriculumTabs(input: {
     list.setAttribute("data-testid", "curriculum-resource-grid");
     list.setAttribute("role", "list");
     for (const entry of getResourcesByType(TAB_RESOURCE_TYPE[tab])) {
-      list.appendChild(renderResourceCard(doc, entry));
+      list.appendChild(renderResourceCard(doc, entry, input.selection ?? null));
     }
     resourcePanel.appendChild(list);
 
@@ -179,10 +187,15 @@ export function createCurriculumTabs(input: {
     empty.textContent = `No ${TAB_LABEL[tab].toLowerCase()} match the current filters. Adjust a filter to see more.`;
     resourcePanel.appendChild(empty);
 
-    applyFilters();
+    filterResources();
   };
 
   const applyFilters = (): void => {
+    filterResources();
+    input.onViewChange?.();
+  };
+
+  const filterResources = (): void => {
     if (current === "lessons") return;
     const { grade, topic } = input.getFilters();
     let visible = 0;
@@ -214,6 +227,7 @@ export function createCurriculumTabs(input: {
       resourcePanel.hidden = false;
     }
     syncTabs();
+    input.onViewChange?.();
     return true;
   };
 
@@ -235,9 +249,11 @@ export function createCurriculumTabs(input: {
 function renderResourceCard(
   doc: Document,
   entry: SurfaceableUnitResource,
+  selection: CurriculumSelection | null,
 ): HTMLElement {
   const { resource, unit } = entry;
   const typeLabel = FORMAL_RESOURCE_LABEL[resource.type as FormalResourceType];
+  const resourceId = canonicalId(unit, resource);
 
   const row = buildResourceCard(doc, {
     className: "shell-card shell-resource-card",
@@ -247,6 +263,14 @@ function renderResourceCard(
     title: resource.label,
     titleTag: "h3",
     typePlacement: "title",
+    select:
+      selection !== null
+        ? {
+            resourceId,
+            label: `Select ${resource.label} (${typeLabel})`,
+            testid: `resource-select-${resource.filename}`,
+          }
+        : null,
     testIds: {
       grade: "resource-grade",
       topic: "resource-topic",
@@ -256,6 +280,12 @@ function renderResourceCard(
   });
   const card = row.card;
   card.setAttribute("data-testid", `resource-card-${resource.filename}`);
+  card.setAttribute("data-resource-id", resourceId);
+  const checkbox = row.checkbox;
+  if (checkbox !== null && selection !== null) {
+    checkbox.checked = selection.has(resourceId);
+    checkbox.addEventListener("change", () => selection.set(resourceId, checkbox.checked));
+  }
   card.setAttribute("data-resource-type", resource.type);
   card.setAttribute("data-grade", unit.grade);
   card.setAttribute("data-topic", unit.topic);

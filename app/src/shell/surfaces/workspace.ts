@@ -1,6 +1,7 @@
 import type { Session } from "../../session/types";
 import type { TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
 import type { ListClasses } from "../../classes/listClasses";
+import type { MyUnitsOpenUnitIntent } from "./myUnits";
 import type {
   UpdateTeacherClassOrder,
   ReadTeacherClassColors,
@@ -196,6 +197,11 @@ export type WorkspaceDeps = {
   readonly unitsHistory?: NestedPageHistorySeam<UnitsHistoryController> | null;
   readonly consumeArchivedUnitsIntent?: (() => boolean) | null;
   readonly openArchivedUnits?: (() => void) | null;
+  // Milestone 2A: Curriculum's "View unit" opener (null unless My Units is
+  // enabled; it then opens My Units on the unit, or on the plain surface
+  // when no unit is named) and the one-shot My Units consumes.
+  readonly openMyUnits?: ((target: MyUnitsOpenUnitIntent | null) => void) | null;
+  readonly consumeOpenUnitIntent?: (() => MyUnitsOpenUnitIntent | null) | null;
   // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned
   // student-selection intent seam (see shell.ts `classesStudentIntent`).
   // The Classes surface reads it once on mount to open Student Detail
@@ -258,6 +264,8 @@ export const WORKSPACE_SURFACES: Readonly<
         assignmentSummary: deps.assignmentSummary ?? null,
         lessonSummary: deps.lessonSummary ?? null,
         curriculumHistory: deps.curriculumHistory ?? null,
+        teacherUnits: deps.teacherUnits ?? null,
+        openMyUnits: deps.openMyUnits ?? null,
       }),
   }),
   units: Object.freeze({
@@ -271,6 +279,7 @@ export const WORKSPACE_SURFACES: Readonly<
         teacherUnits: deps.teacherUnits ?? null,
         unitsHistory: deps.unitsHistory ?? null,
         consumeArchivedIntent: deps.consumeArchivedUnitsIntent ?? null,
+        consumeOpenUnitIntent: deps.consumeOpenUnitIntent ?? null,
       }),
   }),
   classes: Object.freeze({

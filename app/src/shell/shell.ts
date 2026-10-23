@@ -1,5 +1,6 @@
 import type { Session } from "../session/types";
 import type { TeacherUnitsSurfaceSeam } from "../teacherUnits/unitsController";
+import type { MyUnitsOpenUnitIntent } from "./surfaces/myUnits";
 import type { ListClasses } from "../classes/listClasses";
 import type {
   UpdateTeacherClassOrder,
@@ -286,6 +287,9 @@ export function mountTeacherShell(
   // One-shot: the next My Units mount opens on its archived view (Settings >
   // Units, or a restored archived-view history entry).
   let archivedUnitsIntent = false;
+  // Milestone 2A one-shot: the next My Units mount opens on this unit
+  // (Curriculum's "View unit" after Add to Unit).
+  let openUnitIntent: MyUnitsOpenUnitIntent | null = null;
 
   // Browser Back/Forward: the single push/replace path for every history
   // state, so each entry's URL is derived by the one mapping in
@@ -443,6 +447,21 @@ export function mountTeacherShell(
       archivedUnitsIntent = false;
       return intent;
     },
+    consumeOpenUnitIntent: (): MyUnitsOpenUnitIntent | null => {
+      const intent = openUnitIntent;
+      openUnitIntent = null;
+      return intent;
+    },
+    // Milestone 2A: Curriculum's "View unit" (and "Open My Units" from the
+    // Add to Unit dialog). The same transition as the My Units nav item, so
+    // it pushes one My Units history entry.
+    openMyUnits: unitsEnabled
+      ? (target: MyUnitsOpenUnitIntent | null): void => {
+          openUnitIntent = target;
+          navigateTo("units");
+          openUnitIntent = null;
+        }
+      : null,
     // Settings > Units: open My Units on its archived view. One history
     // entry (the archived view), like any other real navigation.
     openArchivedUnits: unitsEnabled

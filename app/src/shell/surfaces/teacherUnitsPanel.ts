@@ -12,6 +12,7 @@ import {
   type CreateBlockedReason,
   type CreateRecoveryEntry,
   type TeacherUnitsController,
+  type TeacherUnitsSurfaceSeam,
   type TeacherUnitsViewState,
   type ResourceMoveDirection,
   type UnitMutationResult,
@@ -32,6 +33,7 @@ import type {
   PendingMutationResolution,
 } from "../../teacherUnits/pendingMutations";
 import type { PendingUnitMutationRecord } from "../../teacherUnits/mutationReconciliation";
+import { registerOpenModal } from "../openModals";
 import {
   buildLessonPreviewLink,
   buildResourceCard,
@@ -83,6 +85,10 @@ export type TeacherUnitsPanelOptions = {
   readonly unitsInitiallyExpanded?: boolean;
   // The teacher left the archived view from inside the panel.
   readonly onArchivedViewExit?: () => void;
+  // Milestone 2A ("View unit" after Add to Unit): this unit opens when its
+  // card first appears, and takes focus if focus is still on the page's
+  // entry point (the heading) or lost.
+  readonly focusUnitId?: string | null;
 };
 
 function gradeLabel(g: TeacherUnitGrade): string {
@@ -823,6 +829,8 @@ export function renderTeacherUnitsPanel(
   // the created unit whose card takes focus once listed.
   const expandOnArrival = new Set<string>();
   let createdFocus: string | null = null;
+  let arrivalFocus: string | null = options.focusUnitId ?? null;
+  if (arrivalFocus !== null) expandOnArrival.add(arrivalFocus);
   let prevConfirmed: TeacherUnitsViewState["lastConfirmed"] = null;
 
   const renderCreate = (s: TeacherUnitsViewState): void => {
@@ -2363,6 +2371,19 @@ export function renderTeacherUnitsPanel(
         if (doc.activeElement === createOpen) focus(q(created, `units-toggle-${created.unit.unitId}`));
       }
     }
+    if (arrivalFocus !== null) {
+      const target = cards.get(arrivalFocus);
+      if (target !== undefined) {
+        const a = doc.activeElement;
+        if (a === null || a === doc.body || a === heading) focus(q(target, `units-toggle-${target.unit.unitId}`));
+      }
+      // One chance: the first ready list either shows the unit or it is not
+      // in this view (archived, or gone), and the entry focus stays.
+      if (target !== undefined || s.list.kind === "ready") {
+        if (target === undefined) expandOnArrival.delete(arrivalFocus);
+        arrivalFocus = null;
+      }
+    }
   };
 
   // ---------- Unconfirmed changes (A3-4 S2) ----------
@@ -2725,4 +2746,513 @@ export function renderTeacherUnitsPanel(
   };
   render();
   return Object.freeze({ dispose });
+}
+
+// ---------- Milestone 2A: Add to Unit from Curriculum ----------
+//
+// The dialog Curriculum opens for its resource selection
+// (TEACHER_UNITS.md "Milestone 2A"). It is a second client of the same units
+// controller My Units uses: the controller is created when the dialog opens
+// (one authoritative list read) and disposed when it closes. Membership is
+// one `addResources` request (the held list plus the ids it lacks, with the
+// held `expectedRevision`); a new unit is the durable `submitCreate`
+// followed, once the create is confirmed, by that same request. Nothing is
+// resent automatically and nothing is shown as added until the server
+// confirms it. Selection state is Curriculum's; the dialog only reports a
+// confirmed outcome through `onAdded`.
+
+export type AddToUnitOutcome = {
+  readonly unitId: string;
+  readonly grade: TeacherUnitGrade;
+  readonly title: string;
+  // Resources this request added, and selected resources the unit already
+  // held. Both come from the confirmed request, never from a later read.
+  readonly added: number;
+  readonly alreadyPresent: number;
+  readonly created: boolean;
+};
+
+export type AddToUnitDialogInput = {
+  readonly seam: TeacherUnitsSurfaceSeam;
+  readonly uid: string;
+  readonly schoolId: string;
+  // Canonical RA-1 ids, in the order the unit should receive them.
+  readonly resourceIds: ReadonlyArray<string>;
+  readonly initialGrade: TeacherUnitGrade;
+  // Where focus returns when the dialog closes without a confirmed addition.
+  readonly returnFocus: HTMLElement | null;
+  readonly onAdded: (outcome: AddToUnitOutcome) => void;
+  // Opens My Units (on a unit when one is named). Null when unavailable.
+  readonly openMyUnits: ((target: { readonly unitId: string; readonly grade: TeacherUnitGrade } | null) => void) | null;
+};
+
+const ADD_CREATE_BLOCKED: Partial<Record<CreateBlockedReason, string>> = Object.freeze({
+  recoveryPending:
+    "You have a unit request that LyfeLabz couldn't confirm. Open My Units to check it before creating another unit.",
+  checkRequired: "Open My Units and choose Check my units before creating another unit.",
+  storageUnavailable:
+    "LyfeLabz couldn't save this request in your browser, so it wasn't sent. Check that this browser allows site data, then try again.",
+  noSession: "Your sign-in changed. Reload the page and sign in to continue.",
+});
+
+const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+
+export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput): { readonly close: () => void } {
+  requireTeacherUnitsAvailable();
+  const ids = input.resourceIds;
+  const controller = input.seam.createController({
+    uid: input.uid,
+    schoolId: input.schoolId,
+    initialGrade: input.initialGrade,
+  });
+
+  const el = <K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    className?: string,
+    text?: string,
+  ): HTMLElementTagNameMap[K] => {
+    const e = doc.createElement(tag);
+    if (className) e.className = className;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  };
+  const tid = (e: HTMLElement, id: string): void => e.setAttribute("data-testid", id);
+
+  const overlay = el("div", "shell-assign-overlay shell-units-add-overlay");
+  tid(overlay, "units-add-overlay");
+  const dialog = el("div", "shell-assign-dialog shell-units-add-dialog");
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "units-add-title");
+  tid(dialog, "units-add-dialog");
+  overlay.appendChild(dialog);
+
+  const title = el("h3", "shell-assign-title", "Add to a unit");
+  title.id = "units-add-title";
+  title.tabIndex = -1;
+  dialog.appendChild(title);
+  const summary = el("p", "shell-units-add-summary", `${plural(ids.length, "resource", "resources")} selected.`);
+  tid(summary, "units-add-summary");
+  dialog.appendChild(summary);
+
+  const body = el("div", "shell-assign-body");
+  dialog.appendChild(body);
+
+  const gradeRow = el("div", "shell-filter-row shell-units-add-grades");
+  gradeRow.setAttribute("role", "group");
+  gradeRow.setAttribute("aria-label", "Unit grade");
+  const gradeButtons = new Map<TeacherUnitGrade, HTMLButtonElement>();
+  for (const g of TEACHER_UNIT_GRADES) {
+    const b = el("button", "shell-filter-pill", gradeLabel(g));
+    b.type = "button";
+    tid(b, `units-add-grade-${g}`);
+    b.addEventListener("click", () => {
+      if (pending || controller.getState().grade === g) return;
+      chosen = null;
+      clearProblem();
+      controller.setGrade(g);
+    });
+    gradeButtons.set(g, b);
+    gradeRow.appendChild(b);
+  }
+  body.appendChild(gradeRow);
+
+  const gradeNote = el("p", "shell-units-add-note");
+  tid(gradeNote, "units-add-grade-note");
+  gradeNote.hidden = true;
+  body.appendChild(gradeNote);
+
+  const fieldset = el("fieldset", "shell-units-add-choices");
+  const legend = el("legend", undefined, "Choose a unit");
+  fieldset.appendChild(legend);
+  const listState = el("p", "shell-units-add-list-state");
+  tid(listState, "units-add-list-state");
+  fieldset.appendChild(listState);
+  const retry = el("button", "shell-assign-cancel", "Try again");
+  retry.type = "button";
+  tid(retry, "units-add-retry");
+  retry.hidden = true;
+  retry.addEventListener("click", () => void controller.refresh());
+  fieldset.appendChild(retry);
+  const choices = el("div", "shell-units-add-options");
+  fieldset.appendChild(choices);
+
+  const radioName = "units-add-choice";
+  const newRow = el("label", "shell-units-add-option");
+  const newRadio = el("input");
+  newRadio.type = "radio";
+  newRadio.name = radioName;
+  newRadio.value = "new";
+  tid(newRadio, "units-add-choice-new");
+  newRow.appendChild(newRadio);
+  newRow.appendChild(el("span", "shell-units-add-option-title", "Create a new unit"));
+  fieldset.appendChild(newRow);
+  const newField = el("div", "shell-units-add-new");
+  const newLabel = el("label", undefined, "New unit name");
+  newLabel.htmlFor = "units-add-new-title";
+  const newTitle = el("input");
+  newTitle.type = "text";
+  newTitle.id = "units-add-new-title";
+  newTitle.maxLength = TEACHER_UNIT_TITLE_MAX_LENGTH;
+  newTitle.autocomplete = "off";
+  tid(newTitle, "units-add-new-title");
+  newField.append(newLabel, newTitle);
+  newField.hidden = true;
+  fieldset.appendChild(newField);
+  body.appendChild(fieldset);
+
+  const problem = el("p", "shell-units-add-problem");
+  problem.id = "units-add-problem";
+  problem.setAttribute("role", "alert");
+  tid(problem, "units-add-problem");
+  problem.hidden = true;
+  body.appendChild(problem);
+  const openUnits = el("button", "shell-assign-cancel shell-units-add-open-units", "Open My Units");
+  openUnits.type = "button";
+  tid(openUnits, "units-add-open-units");
+  openUnits.hidden = true;
+  body.appendChild(openUnits);
+  const status = el("p", "shell-units-add-status");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  tid(status, "units-add-status");
+  body.appendChild(status);
+
+  const footer = el("div", "shell-assign-footer");
+  const cancel = el("button", "shell-assign-cancel", "Cancel");
+  cancel.type = "button";
+  tid(cancel, "units-add-cancel");
+  const confirm = el("button", "shell-assign-confirm", "Add to unit");
+  confirm.type = "button";
+  tid(confirm, "units-add-confirm");
+  footer.append(cancel, confirm);
+  dialog.appendChild(footer);
+
+  // `chosen`: a unit id, "new", or nothing yet. The unit whose ids are named
+  // in a pending request is fixed until it settles.
+  let chosen: string | null = null;
+  let pending = false;
+  let closed = false;
+  let openUnitsTarget: { readonly unitId: string; readonly grade: TeacherUnitGrade } | null = null;
+  let renderedList: TeacherUnitsViewState["list"] | null = null;
+
+  const clearProblem = (): void => {
+    problem.hidden = true;
+    problem.textContent = "";
+    openUnits.hidden = true;
+    newTitle.removeAttribute("aria-invalid");
+    newTitle.removeAttribute("aria-describedby");
+  };
+  const showProblem = (
+    text: string,
+    options: { readonly myUnits?: boolean; readonly target?: { readonly unitId: string; readonly grade: TeacherUnitGrade } | null } = {},
+  ): void => {
+    problem.textContent = text;
+    problem.hidden = false;
+    openUnits.hidden = !(options.myUnits === true && input.openMyUnits !== null);
+    openUnitsTarget = options.target ?? null;
+  };
+  const setPending = (message: string | null): void => {
+    pending = message !== null;
+    status.textContent = message ?? "";
+    confirm.setAttribute("aria-disabled", pending ? "true" : "false");
+    confirm.setAttribute("aria-busy", pending ? "true" : "false");
+    newTitle.readOnly = pending;
+    for (const r of Array.from(dialog.querySelectorAll<HTMLInputElement>("input[type=radio]"))) {
+      r.setAttribute("aria-disabled", pending ? "true" : "false");
+    }
+    for (const b of gradeButtons.values()) b.setAttribute("aria-disabled", pending ? "true" : "false");
+  };
+
+  const unitMeta = (u: TeacherUnit): string => {
+    const present = ids.filter((id) => u.resourceIds.includes(id)).length;
+    const count = plural(u.resourceIds.length, "resource", "resources");
+    if (present === 0) return count;
+    if (present === ids.length) return `${count} · already has ${ids.length === 1 ? "this resource" : "all of these"}`;
+    return `${count} · already has ${present} of these`;
+  };
+
+  const renderChoices = (s: TeacherUnitsViewState): void => {
+    const list = s.list;
+    if (list === renderedList) {
+      // Same records: refresh labels in place (a confirmed write replaces the
+      // list object, so this only covers busy-state renders).
+      return;
+    }
+    renderedList = list;
+    const hadFocus = choices.contains(doc.activeElement);
+    choices.textContent = "";
+    retry.hidden = list.kind !== "error";
+    if (list.kind === "loading") {
+      listState.textContent = `Loading your ${gradeLabel(s.grade)} units...`;
+      listState.hidden = false;
+      return;
+    }
+    if (list.kind === "error") {
+      listState.textContent = `Your ${gradeLabel(s.grade)} units couldn't be loaded.`;
+      listState.hidden = false;
+      return;
+    }
+    const units = list.units.filter((u) => u.status === "active");
+    listState.hidden = units.length > 0;
+    listState.textContent = units.length > 0 ? "" : `No ${gradeLabel(s.grade)} units yet.`;
+    if (chosen !== null && chosen !== "new" && !units.some((u) => u.unitId === chosen)) chosen = null;
+    if (units.length === 0 && chosen === null) chosen = "new";
+    for (const u of units) {
+      const row = el("label", "shell-units-add-option");
+      const radio = el("input");
+      radio.type = "radio";
+      radio.name = radioName;
+      radio.value = u.unitId;
+      tid(radio, `units-add-choice-${u.unitId}`);
+      radio.checked = chosen === u.unitId;
+      radio.setAttribute("aria-disabled", pending ? "true" : "false");
+      row.appendChild(radio);
+      row.appendChild(el("span", "shell-units-add-option-title", u.title));
+      const meta = el("span", "shell-units-add-option-meta", unitMeta(u));
+      tid(meta, `units-add-choice-meta-${u.unitId}`);
+      row.appendChild(meta);
+      choices.appendChild(row);
+    }
+    if (hadFocus) {
+      const target =
+        choices.querySelector<HTMLInputElement>("input:checked") ?? choices.querySelector<HTMLInputElement>("input");
+      (target ?? newRadio).focus();
+    }
+  };
+
+  const render = (): void => {
+    if (closed) return;
+    const s = controller.getState();
+    for (const [g, b] of gradeButtons) {
+      const active = g === s.grade;
+      b.setAttribute("aria-pressed", active ? "true" : "false");
+      b.classList.toggle("shell-filter-pill-active", active);
+    }
+    const otherGrade = ids.filter((id) => {
+      const g = getPlaceableResources().find((r) => r.id === id)?.grade ?? null;
+      return g !== null && g !== s.grade;
+    }).length;
+    gradeNote.hidden = otherGrade === 0;
+    gradeNote.textContent =
+      otherGrade === 0
+        ? ""
+        : `${otherGrade === ids.length ? (ids.length === 1 ? "This resource is" : "These resources are") : `${otherGrade} of these resources are`} from another grade. A unit can hold resources from any grade.`;
+    renderChoices(s);
+    newRadio.checked = chosen === "new";
+    newField.hidden = chosen !== "new";
+  };
+
+  fieldset.addEventListener("change", (ev) => {
+    const t = ev.target;
+    if (!(t instanceof HTMLInputElement) || t.type !== "radio") return;
+    if (pending) {
+      // Keep the choice a pending request was sent for.
+      for (const r of Array.from(fieldset.querySelectorAll<HTMLInputElement>("input[type=radio]"))) {
+        r.checked = r.value === chosen;
+      }
+      return;
+    }
+    chosen = t.value;
+    clearProblem();
+    render();
+  });
+
+  const close = (): void => {
+    if (closed) return;
+    closed = true;
+    overlay.remove();
+    doc.removeEventListener("keydown", onKey);
+    unregisterModal();
+    unsubscribe();
+    controller.dispose();
+  };
+  const dismiss = (): void => {
+    close();
+    try {
+      input.returnFocus?.focus();
+    } catch {
+      // ignored
+    }
+  };
+  const onKey = (ev: KeyboardEvent): void => {
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      dismiss();
+    }
+  };
+
+  // Reports a settled membership request. Returns true when the dialog closed.
+  const settle = (unitId: string, result: UnitMutationResult, created: TeacherUnit | null): boolean => {
+    const unit = created ?? controller.getKnownUnit(unitId);
+    const name = unit !== null ? `"${unit.title}"` : "this unit";
+    const grade = unit?.grade ?? controller.getState().grade;
+    const createdPrefix = created !== null ? `Created ${name}, but ` : "";
+    const lead = (rest: string): string =>
+      createdPrefix === "" ? rest.charAt(0).toUpperCase() + rest.slice(1) : `${createdPrefix}${rest}`;
+    switch (result.kind) {
+      case "saved": {
+        const added = result.committed
+          ? result.committed.resourceIds.length - result.committed.previous.length
+          : 0;
+        close();
+        input.onAdded(
+          Object.freeze({
+            unitId,
+            grade,
+            title: result.unit.title,
+            added,
+            alreadyPresent: ids.length - added,
+            created: created !== null,
+          }),
+        );
+        return true;
+      }
+      case "conflict":
+        showProblem(
+          lead(
+            "this unit changed since it was loaded here, so LyfeLabz couldn't confirm whether anything was added. Check the unit below, then choose Add to unit again.",
+          ),
+        );
+        return false;
+      case "archived":
+        showProblem(lead("this unit was archived, so nothing was added. Restore it in My Units to add resources."), {
+          myUnits: true,
+          target: null,
+        });
+        return false;
+      case "uncertain": {
+        const latest = result.latest;
+        const now =
+          latest === null
+            ? "Its latest version couldn't be loaded."
+            : ids.every((id) => latest.resourceIds.includes(id))
+              ? `${ids.length === 1 ? "This resource is" : "All of these resources are"} in ${name} now. You can clear your selection.`
+              : `${name.charAt(0).toUpperCase()}${name.slice(1)} doesn't have all of these resources now.`;
+        showProblem(`${lead("LyfeLabz couldn't confirm whether the resources were added.")} ${now}`, {
+          myUnits: true,
+          target: { unitId, grade },
+        });
+        return false;
+      }
+      case "busy":
+        showProblem(lead("another change to this unit is still being saved. Try again in a moment."));
+        return false;
+      case "needsCheck":
+      case "capacity":
+        showProblem(
+          lead("an earlier change to this unit hasn't been confirmed yet. Open My Units and choose Check for changes, then try again."),
+          { myUnits: true, target: { unitId, grade } },
+        );
+        return false;
+      case "error":
+        showProblem(createdPrefix === "" ? result.error.message : `${createdPrefix}${result.error.message}`);
+        return false;
+      case "invalid":
+        showProblem(result.message);
+        return false;
+      case "stale":
+        close();
+        return true;
+    }
+  };
+
+  const submit = async (): Promise<void> => {
+    if (pending || closed) return;
+    clearProblem();
+    if (chosen === null) {
+      showProblem("Choose a unit, or create a new one.");
+      (choices.querySelector<HTMLInputElement>("input") ?? newRadio).focus();
+      return;
+    }
+    if (chosen !== "new") {
+      const unitId = chosen;
+      setPending("Adding resources...");
+      const result = await controller.addResources(unitId, ids);
+      if (closed) return;
+      setPending(null);
+      if (!settle(unitId, result, null)) render();
+      return;
+    }
+    const titleError = validateUnitTitle(newTitle.value);
+    if (titleError !== null) {
+      showProblem(titleError);
+      newTitle.setAttribute("aria-invalid", "true");
+      newTitle.setAttribute("aria-describedby", problem.id);
+      newTitle.focus();
+      return;
+    }
+    const grade = controller.getState().grade;
+    const name = newTitle.value.trim();
+    const before = controller.getState().create.kind;
+    if (before === "created" || before === "rejected" || before === "abandoned") controller.beginNewUnit();
+    setPending("Creating your unit...");
+    await controller.submitCreate({ grade, title: name, description: "" });
+    if (closed) return;
+    const s = controller.getState();
+    if (s.createBlocked !== null) {
+      setPending(null);
+      showProblem(ADD_CREATE_BLOCKED[s.createBlocked] ?? "LyfeLabz couldn't create this unit, so nothing was saved. Try again.", {
+        myUnits: s.createBlocked === "recoveryPending" || s.createBlocked === "checkRequired",
+        target: null,
+      });
+      return;
+    }
+    const create = s.create;
+    if (create.kind === "rejected") {
+      setPending(null);
+      showProblem(
+        create.error.category === "invalidField"
+          ? create.error.message
+          : "LyfeLabz couldn't create this unit, so nothing was saved. Check the unit name, then try again.",
+      );
+      return;
+    }
+    if (create.kind !== "created") {
+      setPending(null);
+      showProblem(
+        `LyfeLabz couldn't confirm whether "${name}" was created, so nothing was added. Open My Units to check it. Your selection is kept.`,
+        { myUnits: true, target: null },
+      );
+      return;
+    }
+    const unit = create.unit;
+    chosen = unit.unitId;
+    newTitle.value = "";
+    setPending("Adding resources...");
+    const result = await controller.addResources(unit.unitId, ids);
+    if (closed) return;
+    setPending(null);
+    if (!settle(unit.unitId, result, unit)) render();
+  };
+
+  // Activation of an aria-disabled control is ignored (it keeps focus).
+  confirm.addEventListener("click", () => void submit());
+  newTitle.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      void submit();
+    }
+  });
+  cancel.addEventListener("click", dismiss);
+  overlay.addEventListener("click", (ev) => {
+    if (ev.target === overlay) dismiss();
+  });
+  openUnits.addEventListener("click", () => {
+    const target = openUnitsTarget;
+    close();
+    input.openMyUnits?.(target);
+  });
+  doc.addEventListener("keydown", onKey);
+  const unregisterModal = registerOpenModal(close);
+  const unsubscribe = controller.subscribe(render);
+
+  doc.body.appendChild(overlay);
+  render();
+  try {
+    title.focus({ preventScroll: true });
+  } catch {
+    // ignored
+  }
+  return Object.freeze({ close });
 }

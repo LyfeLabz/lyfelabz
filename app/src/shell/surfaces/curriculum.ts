@@ -42,6 +42,12 @@ import type {
 } from "../navigationHistory";
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { createCurriculumTabs, type CurriculumTabs } from "./curriculumResourceTabs";
+import type { TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
+import type { TeacherUnitGrade } from "../../teacherUnits/types";
+import { getFlatResourceById } from "../../curriculum/resourceProjection";
+import { curriculumSelectionFor, isSelectableResourceId, type CurriculumSelection } from "./curriculumSelection";
+import { openAddToUnitDialog, teacherUnitsSurfaceEnabled, type AddToUnitOutcome } from "./teacherUnitsPanel";
+import type { MyUnitsOpenUnitIntent } from "./myUnits";
 import { buildResourceCard, buildLessonPreviewLink } from "./resourceCard";
 import { mintAssignmentId } from "./shared/assignmentId";
 import { formatLocalDate, formatLocalTime } from "./shared/activeAssignments";
@@ -228,6 +234,12 @@ export type CurriculumSurfaceDeps = {
   // Browser Back/Forward: shell-owned seam for the nested Lesson Summary page
   // (see navigationHistory.ts). Absent in harnesses without history.
   readonly curriculumHistory?: NestedPageHistorySeam<CurriculumHistoryController> | null;
+  // Milestone 2A: the Teacher Units seam. When it is present and the release
+  // boundary is open, resource cards are selectable and the selection can be
+  // added to a unit; otherwise (every closed release) Curriculum is unchanged.
+  readonly teacherUnits?: TeacherUnitsSurfaceSeam | null;
+  // Opens My Units, on a unit when one is named. Null unless My Units is enabled.
+  readonly openMyUnits?: ((target: MyUnitsOpenUnitIntent | null) => void) | null;
 };
 
 // Teacher Units UX Milestone 1: My Units is its own workspace surface and
@@ -1151,9 +1163,19 @@ export function renderCurriculumSurface(
   // Lessons tab panel unchanged; the formal-resource panel follows it.
   const lessonsPanel = doc.createElement("div");
   lessonsPanel.className = "shell-curriculum-lessons-panel";
+  // Milestone 2A: the resource selection, only while My Units is available.
+  const unitsSeam = deps.teacherUnits ?? null;
+  const selection: CurriculumSelection | null =
+    unitsSeam !== null && teacherUnitsSurfaceEnabled(unitsSeam)
+      ? curriculumSelectionFor(unitsSeam, session.uid)
+      : null;
+  let updateSelectionBar: () => void = () => undefined;
+
   const curriculumTabs = createCurriculumTabs({
     doc,
     lessonsPanel,
+    selection,
+    onViewChange: () => updateSelectionBar(),
     getFilters: () => ({ grade: state.grade, topic: state.topic }),
     onUserSelect: (tab) => {
       curriculumHistory?.push(
@@ -1282,6 +1304,22 @@ export function renderCurriculumSurface(
 
   renderControls();
 
+  if (selection !== null && unitsSeam !== null) {
+    const bar = renderSelectionBar({
+      doc,
+      view: curriculumView,
+      selection,
+      seam: unitsSeam,
+      session,
+      gradeFilter: () => state.grade,
+      openMyUnits: deps.openMyUnits ?? null,
+      focusAfterClear: () =>
+        curriculumTabs.tablist.querySelector<HTMLElement>("[aria-selected=true]") ?? welcome,
+    });
+    controls.after(bar.dock);
+    updateSelectionBar = bar.update;
+  }
+
   const openAssignDialog = (lesson: SurfaceableLesson, card: HTMLElement): void => {
     void openDialog({
       doc,
@@ -1312,7 +1350,7 @@ export function renderCurriculumSurface(
     const card = renderLessonCard(doc, lesson, state.activation, openAssignDialog, {
       showViewSummary: lessonSummary !== null,
       onViewSummary: openLessonSummary,
-    });
+    }, selection);
     refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
     grid.appendChild(card);
   }
@@ -1329,6 +1367,193 @@ export function renderCurriculumSurface(
   returnLink.className = "shell-return-link";
   returnLink.setAttribute("data-testid", "return-link");
   curriculumView.appendChild(returnLink);
+}
+
+// Milestone 2A: Curriculum's resource selection toolbar and the Add to Unit
+// outcome notice (TEACHER_UNITS.md "Milestone 2A"). The toolbar shows only
+// while something is selected; the selection itself lives in
+// curriculumSelection.ts and survives tab, filter, and surface changes. A
+// confirmed addition (reported by the Add to Unit dialog) clears the
+// selection and leaves a notice with a way to open the unit; nothing else
+// clears it except Clear Selection.
+type SelectionBarInput = {
+  readonly doc: Document;
+  // The Curriculum view: its selection checkboxes are kept in step and
+  // counted for "not shown".
+  readonly view: HTMLElement;
+  readonly selection: CurriculumSelection;
+  readonly seam: TeacherUnitsSurfaceSeam;
+  readonly session: ActiveTeacher;
+  readonly gradeFilter: () => GradeFilter;
+  readonly openMyUnits: ((target: MyUnitsOpenUnitIntent | null) => void) | null;
+  readonly focusAfterClear: () => HTMLElement;
+};
+
+const UNIT_GRADES: ReadonlyArray<TeacherUnitGrade> = ["6", "7", "8"];
+const asUnitGrade = (g: string | null | undefined): TeacherUnitGrade | null =>
+  UNIT_GRADES.find((u) => u === g) ?? null;
+
+function renderSelectionBar(input: SelectionBarInput): {
+  readonly dock: HTMLElement;
+  readonly update: () => void;
+} {
+  const { doc, view, selection } = input;
+  // One sticky dock holds the toolbar and the outcome notice, so both stay
+  // where the teacher is working in a long list and never overlap.
+  const dock = doc.createElement("div");
+  dock.className = "shell-curriculum-selection-dock";
+  dock.setAttribute("data-testid", "curriculum-selection-dock");
+  const region = doc.createElement("div");
+  region.className = "shell-curriculum-selection";
+  region.setAttribute("role", "region");
+  region.setAttribute("aria-label", "Selected resources");
+  region.setAttribute("data-testid", "curriculum-selection-bar");
+  region.hidden = true;
+
+  const count = doc.createElement("p");
+  count.className = "shell-curriculum-selection-count";
+  count.setAttribute("role", "status");
+  count.setAttribute("aria-live", "polite");
+  count.setAttribute("data-testid", "curriculum-selection-count");
+  region.appendChild(count);
+
+  const actions = doc.createElement("div");
+  actions.className = "shell-curriculum-selection-actions";
+  region.appendChild(actions);
+
+  const clear = doc.createElement("button");
+  clear.type = "button";
+  clear.className = "shell-assign-cancel shell-curriculum-selection-clear";
+  clear.setAttribute("data-testid", "curriculum-selection-clear");
+  clear.textContent = "Clear Selection";
+  actions.appendChild(clear);
+
+  const add = doc.createElement("button");
+  add.type = "button";
+  add.className = "shell-assign-confirm shell-curriculum-selection-add";
+  add.setAttribute("data-testid", "curriculum-selection-add");
+  add.textContent = "Add to Unit";
+  actions.appendChild(add);
+
+  // The latest Add to Unit outcome. Stays until dismissed or replaced.
+  const notice = doc.createElement("div");
+  notice.className = "shell-curriculum-unit-notice";
+  notice.setAttribute("data-testid", "curriculum-unit-notice");
+  notice.hidden = true;
+  const noticeText = doc.createElement("p");
+  noticeText.className = "shell-curriculum-unit-notice-text";
+  noticeText.setAttribute("role", "status");
+  noticeText.setAttribute("aria-live", "polite");
+  noticeText.setAttribute("data-testid", "curriculum-unit-notice-text");
+  notice.appendChild(noticeText);
+  const noticeActions = doc.createElement("div");
+  noticeActions.className = "shell-curriculum-unit-notice-actions";
+  notice.appendChild(noticeActions);
+  const viewUnit = doc.createElement("button");
+  viewUnit.type = "button";
+  viewUnit.className = "shell-assign-confirm shell-curriculum-unit-notice-view";
+  viewUnit.setAttribute("data-testid", "curriculum-unit-notice-view");
+  viewUnit.textContent = "View unit";
+  viewUnit.hidden = input.openMyUnits === null;
+  noticeActions.appendChild(viewUnit);
+  const dismiss = doc.createElement("button");
+  dismiss.type = "button";
+  dismiss.className = "shell-assign-cancel shell-curriculum-unit-notice-dismiss";
+  dismiss.setAttribute("data-testid", "curriculum-unit-notice-dismiss");
+  dismiss.textContent = "Dismiss";
+  noticeActions.appendChild(dismiss);
+
+  let lastOutcome: AddToUnitOutcome | null = null;
+  let lastCountText = "";
+
+  const checkboxes = (): HTMLInputElement[] =>
+    Array.from(view.querySelectorAll<HTMLInputElement>("input[type=checkbox][data-resource-id]"));
+
+  const update = (): void => {
+    const size = selection.size();
+    let shown = 0;
+    for (const box of checkboxes()) {
+      const id = box.getAttribute("data-resource-id") ?? "";
+      const on = selection.has(id);
+      if (box.checked !== on) box.checked = on;
+      if (on && box.closest("[hidden]") === null) shown += 1;
+    }
+    region.hidden = size === 0;
+    const hidden = size - shown;
+    const text = size === 0 ? "" : `${size} selected${hidden > 0 ? ` (${hidden} not shown)` : ""}`;
+    // Only real changes are written, so the polite region is not re-announced.
+    if (text !== lastCountText) {
+      lastCountText = text;
+      count.textContent = text;
+    }
+  };
+
+  const unsubscribe = selection.subscribe(() => {
+    // The selection outlives this Curriculum view; stop once it is gone.
+    if (!view.isConnected) {
+      unsubscribe();
+      return;
+    }
+    update();
+  });
+
+  clear.addEventListener("click", () => {
+    selection.clear();
+    input.focusAfterClear().focus();
+  });
+
+  const defaultGrade = (ids: ReadonlyArray<string>): TeacherUnitGrade => {
+    const grades = new Set(ids.map((id) => getFlatResourceById(id)?.grade ?? null));
+    const only = grades.size === 1 ? asUnitGrade(Array.from(grades)[0]) : null;
+    return only ?? asUnitGrade(input.gradeFilter()) ?? "6";
+  };
+
+  const outcomeText = (o: AddToUnitOutcome): string => {
+    const where = `"${o.title}" (Grade ${o.grade})`;
+    const resources = (n: number): string => `${n} ${n === 1 ? "resource" : "resources"}`;
+    if (o.created) return `Created ${where} and added ${resources(o.added)}.`;
+    if (o.added === 0) {
+      return `${where} already has ${o.alreadyPresent === 1 ? "this resource" : `all ${o.alreadyPresent} of these resources`}. Nothing was changed.`;
+    }
+    const already = o.alreadyPresent > 0 ? ` ${o.alreadyPresent} ${o.alreadyPresent === 1 ? "was" : "were"} already there.` : "";
+    return `Added ${resources(o.added)} to ${where}.${already}`;
+  };
+
+  add.addEventListener("click", () => {
+    const ids = selection.ids();
+    if (ids.length === 0) return;
+    openAddToUnitDialog(doc, {
+      seam: input.seam,
+      uid: input.session.uid,
+      schoolId: input.session.schoolId,
+      resourceIds: ids,
+      initialGrade: defaultGrade(ids),
+      returnFocus: add,
+      openMyUnits: input.openMyUnits,
+      onAdded: (outcome) => {
+        lastOutcome = outcome;
+        noticeText.textContent = outcomeText(outcome);
+        notice.hidden = false;
+        // Cleared only now, after the server confirmed the addition.
+        selection.clear();
+        (viewUnit.hidden ? dismiss : viewUnit).focus();
+      },
+    });
+  });
+
+  viewUnit.addEventListener("click", () => {
+    if (lastOutcome === null) return;
+    input.openMyUnits?.({ unitId: lastOutcome.unitId, grade: lastOutcome.grade });
+  });
+  dismiss.addEventListener("click", () => {
+    notice.hidden = true;
+    noticeText.textContent = "";
+    lastOutcome = null;
+    input.focusAfterClear().focus();
+  });
+
+  dock.append(region, notice);
+  return { dock, update };
 }
 
 function applyAssignState(
@@ -1429,10 +1654,20 @@ function renderLessonCard(
   activation: Map<string, boolean>,
   onAssign: (lesson: SurfaceableLesson, card: HTMLElement) => void,
   viewSummary?: ViewSummaryOptions,
+  selection: CurriculumSelection | null = null,
 ): HTMLElement {
+  // Milestone 2A: a lesson's canonical resource id is its slug.
+  const selectable = selection !== null && isSelectableResourceId(lesson.slug);
   // Teacher Units UX Milestone 1: the lesson card is a shared full-width
   // resource row (resourceCard.ts); its controls below are unchanged.
   const row = buildResourceCard(doc, {
+    select: selectable
+      ? {
+          resourceId: lesson.slug,
+          label: `Select ${lesson.title} (Lesson)`,
+          testid: `lesson-select-${lesson.slug}`,
+        }
+      : null,
     className: "shell-card shell-lesson-card",
     grade: lesson.grade,
     topic: lesson.topic,
@@ -1449,6 +1684,11 @@ function renderLessonCard(
   const card = row.card;
   card.setAttribute("data-testid", `lesson-card-${lesson.slug}`);
   card.setAttribute("data-lesson-slug", lesson.slug);
+  const checkbox = row.checkbox;
+  if (checkbox !== null && selection !== null) {
+    checkbox.checked = selection.has(lesson.slug);
+    checkbox.addEventListener("change", () => selection.set(lesson.slug, checkbox.checked));
+  }
   card.setAttribute("data-grade", lesson.grade);
   card.setAttribute("data-topic", lesson.topic);
   card.setAttribute("role", "listitem");

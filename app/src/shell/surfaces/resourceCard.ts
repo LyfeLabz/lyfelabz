@@ -39,6 +39,15 @@ export type ResourceCardInput = {
     readonly type?: string;
     readonly title?: string;
   };
+  // Milestone 2A: an optional selection checkbox at the start of the title
+  // row, so it precedes the card's actions in keyboard order. The caller
+  // owns its state and wiring (Curriculum's resource selection).
+  readonly select?: {
+    readonly resourceId: string;
+    // Accessible name, for example "Select Earth's Layers (Lesson)".
+    readonly label: string;
+    readonly testid: string;
+  } | null;
 };
 
 export type ResourceCard = {
@@ -48,6 +57,7 @@ export type ResourceCard = {
   readonly titleRow: HTMLElement;
   readonly title: HTMLElement;
   readonly actions: HTMLElement;
+  readonly checkbox: HTMLInputElement | null;
 };
 
 export function buildResourceCard(doc: Document, input: ResourceCardInput): ResourceCard {
@@ -86,6 +96,18 @@ export function buildResourceCard(doc: Document, input: ResourceCardInput): Reso
 
   const titleRow = doc.createElement("div");
   titleRow.className = "shell-lesson-title-row";
+  let checkbox: HTMLInputElement | null = null;
+  if (input.select != null) {
+    const wrap = doc.createElement("label");
+    wrap.className = "shell-resource-select";
+    checkbox = doc.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.setAttribute("data-resource-id", input.select.resourceId);
+    checkbox.setAttribute("data-testid", input.select.testid);
+    checkbox.setAttribute("aria-label", input.select.label);
+    wrap.appendChild(checkbox);
+    titleRow.appendChild(wrap);
+  }
   const title = doc.createElement(input.titleTag);
   title.className = "shell-lesson-title";
   if (input.testIds?.title) title.setAttribute("data-testid", input.testIds.title);
@@ -98,7 +120,7 @@ export function buildResourceCard(doc: Document, input: ResourceCardInput): Reso
   actions.className = "shell-resource-row-actions";
   card.appendChild(actions);
 
-  return { card, main, header, titleRow, title, actions };
+  return { card, main, header, titleRow, title, actions, checkbox };
 }
 
 // The optional informational status line beneath the title. `null` removes

@@ -27,6 +27,14 @@ export type MyUnitsSurfaceDeps = {
   readonly unitsHistory?: NestedPageHistorySeam<UnitsHistoryController> | null;
   // One-shot from Settings > Units: open on the archived view.
   readonly consumeArchivedIntent?: (() => boolean) | null;
+  // Milestone 2A one-shot from Curriculum's "View unit": open on this unit's
+  // grade with the unit expanded and focused.
+  readonly consumeOpenUnitIntent?: (() => MyUnitsOpenUnitIntent | null) | null;
+};
+
+export type MyUnitsOpenUnitIntent = {
+  readonly unitId: string;
+  readonly grade: TeacherUnitGrade;
 };
 
 // My Units opens on the active Curriculum grade filter. "All" has no single
@@ -52,10 +60,13 @@ export function renderMyUnitsSurface(
   const seam = deps.teacherUnits;
   if (seam === null || !teacherUnitsSurfaceEnabled(seam)) return;
 
+  const openUnit = deps.consumeOpenUnitIntent?.() ?? null;
   const initialGrade =
-    lastGrade !== null && lastGrade.uid === session.uid
-      ? lastGrade.grade
-      : initialTeacherUnitsGrade(readCurriculumGradeFilter(session.uid));
+    openUnit !== null
+      ? openUnit.grade
+      : lastGrade !== null && lastGrade.uid === session.uid
+        ? lastGrade.grade
+        : initialTeacherUnitsGrade(readCurriculumGradeFilter(session.uid));
   const controller = seam.createController({
     uid: session.uid,
     schoolId: session.schoolId,
@@ -74,6 +85,7 @@ export function renderMyUnitsSurface(
   mount.setAttribute("aria-labelledby", "units-heading");
   renderTeacherUnitsPanel(mount, controller, {
     onArchivedViewExit: () => history?.push({ kind: "shell-surface", surface: "units" }),
+    focusUnitId: openUnit?.unitId ?? null,
   });
   history?.registerController({
     restoreArchived: (show) => {
