@@ -31,9 +31,8 @@ const SCRIPT_HEADERS = [
   "<!-- ===== PREDICT BEFORE REVEAL ===== -->",
   "<!-- ===== TOOL MATCH GAME ===== -->",
   "<!-- ===== WATER DISPLACEMENT LAB (ungraded, nothing stored) ===== -->",
+  "<!-- ===== DENSITY EXPLORER (ungraded, nothing stored) ===== -->",
   "<!-- ===== DENSITY LAB ===== -->",
-  "<!-- ===== PRACTICE PROBLEM STEPPER ===== -->",
-  "<!-- ===== QUICK RECALL CHECKPOINTS ===== -->",
 ];
 
 function scriptsOf(html) {
@@ -145,14 +144,8 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
 
   describe("Quick Check shell", () => {
     test("each formative activity says it is not graded exactly once", () => {
-      expect(doc.querySelector("#recall .section-desc").textContent).toBe(
-        "Two quick questions before we put it all together. Pulling answers from memory now will help them stick."
-      );
-      const practice = doc.getElementById("pp-step2-wrap").closest(".worked-example");
-      expect(practice.querySelector(".check-eyebrow").textContent).toBe("Practice · Not graded");
       const activities = [
-        doc.querySelector(".tool-match"), doc.getElementById("disp-check"), practice,
-        doc.getElementById("qrCard1"), doc.getElementById("qrCard2"),
+        doc.querySelector(".tool-match"), doc.getElementById("disp-check"), doc.getElementById("dx-check"),
       ];
       for (const el of activities) expect(el.textContent.match(/not graded/gi)).toHaveLength(1);
     });
@@ -160,14 +153,16 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
     test("wraps every formative check outside the quiz with an eyebrow", () => {
       const eyebrows = [...doc.querySelectorAll(".check-card > .check-eyebrow")].map((e) => e.textContent);
       expect(eyebrows).toEqual([
-        "Predict", "Quick Check · Not graded", "Quick Check · Not graded", "Predict", "Quick Recall · 1 of 2", "Quick Recall · 2 of 2",
+        "Predict", "Quick Check · Not graded", "Quick Check · Not graded",
+        "Step 1 · Predict", "Step 3 · Check Your Understanding · Not graded",
+        "Predict",
       ]);
       expect(doc.querySelectorAll("#quiz .check-card, #quiz .check-opt")).toHaveLength(0);
     });
 
     test("labels every option group by its question and styles every option", () => {
       const groups = [...doc.querySelectorAll('.check-card [role="group"], .worked-example [role="group"]')];
-      expect(groups).toHaveLength(10);
+      expect(groups).toHaveLength(8);
       for (const g of groups) {
         const label = doc.getElementById(g.getAttribute("aria-labelledby"));
         expect(label).not.toBeNull();
@@ -250,7 +245,7 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       expect(synth.classList.contains("visible")).toBe(true);
       expect(synth.textContent.trim()).toBe("");
       await wait(150);
-      expect(synth.querySelector("strong").textContent).toBe("Check your prediction, and solve the ship mystery.");
+      expect(synth.querySelector("strong").textContent).toBe("Check your prediction.");
       const filled = synth.innerHTML;
       set("dl-mass", 20);
       set("dl-mass", 180);
@@ -375,57 +370,18 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
     });
   });
 
-  describe("density practice problem", () => {
-    test("step 2 stays hidden until step 1 is answered correctly", async () => {
-      const step2 = doc.getElementById("pp-step2-wrap");
-      const s1 = [...doc.querySelectorAll("#pp-step1 .we-opt-btn")];
-      click(s1[0]);
-      expect(s1[0].getAttribute("aria-disabled")).toBe("true");
-      expect(doc.getElementById("pp-fb1").className).toBe("we-fb visible no");
-      await wait(400);
-      expect(step2.classList.contains("visible")).toBe(false);
-      click(s1[1]);
-      await wait(400);
-      expect(step2.classList.contains("visible")).toBe(true);
-      const s2 = [...doc.querySelectorAll("#pp-step2 .we-opt-btn")];
-      click(s2[2]);
-      await wait(400);
-      const success = doc.getElementById("pp-success");
-      expect(success.classList.contains("visible")).toBe(true);
-      expect(success.getAttribute("role")).toBe("status");
-      await wait(150);
-      expect(success.textContent).toContain("2.5 g/cm³ is close to the density of glass.");
-    });
-  });
-
   describe("Quick Recall", () => {
-    test("a wrong answer offers Try Again, which resets, and a right answer locks", () => {
-      const radios = [...doc.querySelectorAll("#qr1Opts input")];
-      const fb = doc.getElementById("qr1Feedback");
-      const retry = doc.getElementById("qr1Retry");
-      radios[1].checked = true;
-      click(doc.getElementById("qr1Check"));
-      expect(radios[1].closest("label").classList.contains("wrong")).toBe(true);
-      expect(fb.className).toBe("qr-feedback visible no");
-      expect(retry.style.display).toBe("inline-flex");
-      click(retry);
-      expect(radios.every((r) => !r.checked && !r.disabled)).toBe(true);
-      expect(radios[1].closest("label").className).toBe("check-opt");
-      radios[0].checked = true;
-      click(doc.getElementById("qr1Check"));
-      expect(radios[0].closest("label").classList.contains("correct")).toBe(true);
-      expect(fb.className).toBe("qr-feedback visible ok");
-      expect(radios.every((r) => r.disabled)).toBe(true);
+    // Retired in the density streamlining pass: Lab 4, the Density
+    // Challenge, the practice problem, and the quiz cover the same ideas.
+    test("the two-question Brain Check and its script are gone", () => {
+      expect(doc.getElementById("recall")).toBeNull();
+      expect(doc.querySelectorAll(".qr-card, #qrCard1, #qrCard2")).toHaveLength(0);
+      expect(html).not.toContain("QUICK RECALL CHECKPOINTS");
+      expect(doc.querySelector("#main").textContent).not.toContain("Brain Check");
     });
   });
 
   describe("science corrections", () => {
-    test("the practice block is not called wood and compares to glass", () => {
-      const practice = doc.getElementById("pp-step2-wrap").closest(".worked-example").textContent;
-      expect(practice).not.toMatch(/wooden|ebony/i);
-      expect(doc.getElementById("pp-success").textContent).toContain("2.5 g/cm³ is close to the density of glass.");
-    });
-
     test("Density at Home uses a graduated cylinder with displacement steps and an in-class fallback", () => {
       const desc = doc.querySelector("#continue .cont-card.ext .cont-desc");
       expect(desc.textContent).not.toMatch(/measuring cup/i);
@@ -456,53 +412,30 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       );
     });
 
-    test("the ship explanation names overall density", () => {
-      const synth = text("#dl-synthesis");
-      expect(synth).toContain("including all that air-filled space, its overall density comes out less than water's");
-      expect(synth).toContain("A pebble is small but solid rock all the way through");
-      expect(text(".wrapup-beat-1 .wrapup-beat-body")).toBe(
-        "Its overall density, counting the steel and all the air inside the hull, is less than water's. A pebble is solid rock, so its density is greater than water's."
+    test("the ship explanation names overall density and keeps steel denser than water", () => {
+      // The standalone wrap-up is retired; the Show Your Thinking model
+      // answer now carries the full explanation (see the sequence suite).
+      const model = text("#mm-think-model");
+      expect(model).toContain("Steel itself is denser than water");
+      expect(model).toContain("average density is less than water's");
+      expect(model).not.toMatch(/steel is less dense|steel (itself )?floats/i);
+      expect(text("#dl-synthesis")).toBe(
+        "Check your prediction. Floating isn't decided by mass or size alone. It's decided by density. An object floats when its density is less than water's 1 g/mL and sinks when its density is greater."
       );
-    });
-
-    test("the wrap-up answers what the puzzles share and keeps only the goals table", () => {
-      expect(text("#synthesis .section-desc")).toContain(
-        "What they have in common: each one is solved by comparing an object's mass to its volume."
-      );
-      expect([...doc.querySelectorAll("#synthesis .wbc")].map((c) => c.textContent)).toEqual([
-        "Mass · g", "Volume · cm³ or mL", "Density · g/cm³ or g/mL",
-      ]);
-      const tables = [...doc.querySelectorAll("#synthesis .summary-table")];
-      expect(tables).toHaveLength(1);
-      expect(tables[0].querySelector("th").textContent).toBe("Learning Goals");
-      const evidence = [...tables[0].querySelectorAll("tbody tr td:last-child")].map((td) => td.textContent);
-      expect(evidence[0]).toContain("measured volume by water displacement");
-      expect(evidence[1]).toContain("saw why a steel ship floats");
-      expect(evidence[1]).not.toContain("explained");
+      expect(doc.getElementById("synthesis")).toBeNull();
     });
   });
 
   describe("particle model of density", () => {
-    test("the density Key Idea pictures same-size blocks with different particle packing", () => {
+    test("the dot model lives in Lab 4, not in a static Key Idea picture", () => {
+      // Lab 4's own suite (measuring-matter-density-explorer.test.js) covers the model.
       const card = [...doc.querySelectorAll(".name-it")].find(
         (c) => c.querySelector(".name-it-label").textContent === "Key idea: Density"
       );
-      const svg = card.querySelector("svg.dens-particles");
-      expect(svg.getAttribute("role")).toBe("img");
-      expect(svg.getAttribute("aria-label")).toBe(
-        "Two same-size blocks. Block A has a few particles spread apart. Block B has many particles packed closely, so it has more mass in the same volume and a higher density."
-      );
-      const [blockA, blockB] = [...svg.querySelectorAll("rect")];
-      expect([blockA.getAttribute("width"), blockA.getAttribute("height")]).toEqual([
-        blockB.getAttribute("width"), blockB.getAttribute("height"),
-      ]);
-      const [dotsA, dotsB] = [...svg.querySelectorAll("g")].map((g) => g.querySelectorAll("circle").length);
-      expect(dotsA).toBeLessThan(dotsB);
-      expect(svg.previousElementSibling.textContent).toBe(
-        "Picture it with particles. All matter is made of particles too small to see. The two blocks below are the same size, but Block B has more particles packed into that space. More matter in the same volume means more mass, so Block B has a higher density."
-      );
-      const all = [...doc.querySelectorAll("#density *")];
-      expect(all.indexOf(svg)).toBeLessThan(all.indexOf(doc.querySelector("#density .observe-row")));
+      expect(card.querySelector("svg")).toBeNull();
+      expect(doc.querySelectorAll("svg.dens-particles")).toHaveLength(0);
+      expect(card.closest(".dz-idea").nextElementSibling).toBe(doc.getElementById("dx-lab"));
+      expect(doc.querySelectorAll("#dx-lab .dx-dot").length).toBeGreaterThan(0);
     });
   });
 
@@ -554,14 +487,14 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       ]);
     });
 
-    test("Show Your Thinking allows two sentences and models overall density", () => {
+    test("Show Your Thinking poses the Floating Giant Mystery and models overall density", () => {
       const box = doc.getElementById("mm-think");
       expect(box.querySelector(".think-prompt").textContent).toBe(
-        "In one or two sentences, explain what decides whether an object floats or sinks in water. Then use that idea to explain how a giant steel ship floats while a tiny pebble sinks. Use the word density."
+        "How can a giant steel ship float while a tiny pebble sinks? Explain your thinking using the words mass, volume, and density. Consider how the ship's shape and the water it displaces help it float."
       );
       expect(doc.getElementById("mm-thinking").getAttribute("placeholder")).toBe("Write your explanation here...");
       const model = doc.getElementById("mm-think-model").textContent.replace(/\s+/g, " ");
-      expect(model).toContain("its overall density, counting the steel and all the air inside its hull, is less than water's");
+      expect(model).toContain("its average density is less than water's");
       expect(model).not.toContain("mostly air");
       expect(box.textContent).not.toMatch(/one sentence/i);
     });
@@ -619,7 +552,6 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
     test("multi-column grids use shrinkable tracks", () => {
       expect(html).toMatch(/\.process-grid \{[^}]*grid-template-columns: repeat\(auto-fit, minmax\(min\(100%, 16rem\), 1fr\)\)/);
       expect(html).toContain("@media (max-width: 960px) {\n  .process-grid { grid-template-columns: minmax(0, 1fr); }");
-      expect(html).toMatch(/\.wrapup-beats \{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
       expect(html).toMatch(/\.vol-grid \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
       expect(html).toMatch(/\.vol-slider-row input\[type=range\] \{[^}]*min-width: 0/);
       expect(html).toMatch(/\.dl-sliders \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);

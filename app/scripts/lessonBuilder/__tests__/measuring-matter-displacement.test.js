@@ -77,7 +77,7 @@ describe.each(FILES)("Measuring Matter Water Displacement Lab in %s", (rel) => {
     expect(measure.querySelector(".mlab").contains(measure.querySelector(".mlab-next"))).toBe(false);
     expect(measure.querySelectorAll(".bridge-callout")).toHaveLength(1);
     const labels = [...measure.querySelectorAll(".name-it-label")].map((l) => l.textContent);
-    expect(labels).toEqual(["Key idea · Same Space, Two Units"]);
+    expect(labels).toEqual(["Remember · Volume Units"]);
     // The displacement explanation introduces Lab 3 itself.
     expect($("disp-lab").querySelector(".disp-lab-sub").textContent).toContain(
       "When an object is fully submerged, it displaces a volume of water equal to its own volume."
@@ -85,13 +85,13 @@ describe.each(FILES)("Measuring Matter Water Displacement Lab in %s", (rel) => {
     expect(measure.textContent).toContain("Object's volume = final water volume minus initial water volume.");
   });
 
-  test("the unit key idea is general, and the old standalone panels are gone", () => {
+  test("the unit reminder is compact and general, and the old standalone panels are gone", () => {
     const units = $("measure").querySelector(".disp-units");
     expect([...units.querySelectorAll("p")].map((p) => p.textContent)).toEqual([
       "1 mL = 1 cm³",
-      "A milliliter and a cubic centimeter measure the same amount of space. If an object's volume is 9 mL, its volume is also 9 cm³.",
-      "This is why density can be measured in g/mL or g/cm³.",
+      "Both measure the same amount of space. Use cm³ to report the volume of a solid.",
     ]);
+    expect(units.textContent).not.toMatch(/9 mL|g\/mL|density/);
     expect(units.textContent).not.toMatch(/rock|marble|bolt|cork|water's density/i);
     const next = $("measure").querySelector(".mlab-next");
     expect(next.querySelector(".mlab-next-label").textContent).toBe("Next up · Density");

@@ -255,6 +255,10 @@
     margin-bottom: 1rem;
     color: var(--text);
   }
+  /* Large headings break inside a word only when that one word is wider
+     than its column (very large text on a phone); otherwise they wrap at
+     spaces exactly as before. */
+  .hero h1, .section-title, .mlab-heading { overflow-wrap: break-word; }
   .section-desc {
     font-size: 1.05rem;
     color: var(--text-muted);
@@ -1164,7 +1168,6 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 
 /* ── WATER DISPLACEMENT LAB (ungraded, nothing stored) ── */
 .name-it p + p { margin-top: 0.6rem; }
-.dens-particles { display: block; width: 100%; max-width: 360px; height: auto; margin: 1rem auto 0; }
 .disp-lab {
   background: var(--card);
   border: 1px solid rgba(46,204,113,0.25);
@@ -1251,13 +1254,221 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
    when the Lab 3 card gets narrow (see the disp-card container query). */
 .disp-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 /* Same Space, Two Units: a compact key idea that closes Lab 3. */
-.disp-units { margin: 1.2rem 0 0; padding: 1rem 1.2rem; max-width: none; }
-.disp-units p { font-size: 0.95rem; line-height: 1.6; }
-.name-it.disp-units p.disp-units-eq { font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--green); line-height: 1.3; }
+.disp-units { margin: 0.9rem 0 0; padding: 0.6rem 0.9rem; max-width: none; }
+.disp-units .name-it-label { margin-bottom: 0.25rem; }
+.disp-units-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.9rem; }
+.name-it.disp-units p { font-size: 0.92rem; line-height: 1.45; flex: 1 1 14rem; }
+.name-it.disp-units p.disp-units-eq { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--green); line-height: 1.3; flex: 0 0 auto; white-space: nowrap; }
 /* Next Up: one full-width transition from the lab into density. */
 .mlab-next { max-width: none; margin: 1.6rem 0 0; padding: 1rem 1.3rem; }
 .mlab-next-label { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--orange); margin-bottom: 0.3rem; }
 @media (max-width: 480px) { .disp-lab { padding: 1.5rem 1.1rem; } }
+
+/* ── DENSITY SEQUENCE LAYOUT (big idea and challenge) ──
+   Rows wrap by rem, so enlarged text stacks them like a narrow screen. */
+.section-desc.dz-desc { margin-bottom: 1.4rem; }
+.dz-idea { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.6rem; }
+.name-it.dz-key { flex: 3 1 24rem; min-width: 0; max-width: none; margin: 0; padding: 1rem 1.3rem 1.1rem; }
+.name-it p.dz-formula { font-family: 'Fredoka One', cursive; font-size: 1.5rem; line-height: 1.3; color: var(--density); margin-bottom: 0.35rem; }
+.name-it.dz-key p + p { margin-top: 0; }
+.observe-row.dz-balls { flex: 2 1 16rem; min-width: 0; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; margin: 0; align-content: center; }
+.dz-balls .observe-card { padding: 0.75rem 1rem; }
+.dz-challenge {
+  background: var(--card);
+  border: 1px solid var(--density-border);
+  border-radius: 20px;
+  padding: 1.6rem 1.6rem 1.7rem;
+}
+.dz-challenge .mlab-tag { color: var(--density); }
+.dz-challenge-sub { font-size: 1rem; line-height: 1.6; color: var(--text-muted); max-width: 760px; margin: 0 0 1rem; }
+.check-card.dz-predict { max-width: none; margin: 0; padding: 1rem 1.2rem 1.1rem; }
+.dz-predict .predict-buttons { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); margin-top: 0.8rem; }
+/* Inside the challenge card the tank lab drops its own card chrome. */
+.dz-challenge .density-lab { max-width: none; margin: 1.1rem 0 0; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+.dz-challenge .density-lab::before { display: none; }
+.dz-challenge .density-lab-sub { text-align: left; max-width: none; margin: 0 0 1rem; }
+.dz-challenge .dl-sliders { max-width: none; margin: 0 0 1rem; }
+.dz-challenge .dl-panels { margin-bottom: 0.9rem; }
+@media (max-width: 480px) { .dz-challenge { padding: 1.2rem 0.9rem 1.3rem; } }
+/* Very large text on a phone: let words wrap and choice columns shrink. */
+.dz-predict .question-pause-text, .dz-challenge { min-width: 0; overflow-wrap: anywhere; }
+
+/* ── DENSITY EXPLORER (Lab 4; ungraded, nothing stored) ── */
+/* One card: a mode switch, a prediction, the two blocks beside the one
+   active slider, then a check. Its grids answer to the card's own width,
+   so enlarged text stacks them the same way a narrow screen does. */
+.dx-lab {
+  background: var(--card);
+  border: 1px solid var(--density-border);
+  border-radius: 20px;
+  padding: 1.6rem 1.6rem 1.7rem;
+  margin: 0 0 2rem;
+  container-type: inline-size;
+  container-name: dx-lab;
+}
+.dx-lab .mlab-tag { color: var(--density); }
+.dx-intro { font-size: 1rem; line-height: 1.6; color: var(--text-muted); max-width: 760px; margin: 0 0 1rem; }
+.dx-modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0.3rem;
+  max-width: 640px;
+  padding: 0.3rem;
+  margin-bottom: 1.1rem;
+  border: 1px solid var(--density-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.02);
+}
+.dx-mode {
+  min-height: 48px;
+  padding: 0.45rem 0.8rem;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.dx-mode:hover { color: var(--text); border-color: var(--density-border); }
+.dx-mode[aria-pressed="true"] { color: var(--text); background: rgba(230,126,34,0.16); border-color: var(--density); }
+.dx-mode-tag { display: block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--density); }
+/* Title and intro share a row with the mode switch. */
+.dx-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.8rem 1.4rem; margin-bottom: 0.9rem; }
+.dx-top-text { flex: 1 1 26rem; min-width: 0; }
+.dx-top .dx-intro { margin: 0; }
+.dx-top .dx-modes { flex: 0 1 auto; grid-template-columns: repeat(2, minmax(0, auto)); margin: 0; }
+@container dx-lab (max-width: 30rem) { .dx-top .dx-modes { flex: 1 1 100%; grid-template-columns: minmax(0, 1fr); } }
+.dx-mode-title { font-family: 'Fredoka One', cursive; font-weight: 400; font-size: 1.15rem; line-height: 1.3; color: var(--text); margin-bottom: 0.6rem; }
+.dx-step.check-card { max-width: none; margin: 0 0 1rem; padding: 0.9rem 1.2rem 1rem; }
+.dx-step .check-q { margin-bottom: 0.6rem; }
+.dx-options { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 0.5rem; }
+.dx-check .dx-options { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+/* The note sits over hidden copies of every note this prediction can
+   show, so saving or checking a prediction never pushes the lab down. */
+.dx-note-zone { display: grid; margin-top: 0.6rem; }
+.dx-note-zone > * { grid-area: 1 / 1; }
+.dx-note-zone .dx-note-sizer { visibility: hidden; }
+.dx-predict-note { font-size: 0.95rem; line-height: 1.5; color: var(--text-muted); }
+.dx-predict-note strong { color: var(--text); }
+/* One workspace: blocks on the left, the active control on the right,
+   divided by a single rule instead of separate bordered cards. */
+.dx-work {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1rem 1.4rem;
+  align-items: start;
+  margin-bottom: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+@container dx-lab (max-width: 46rem) { .dx-work { grid-template-columns: minmax(0, 1fr); } }
+.dx-blocks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.dx-block { margin: 0; min-width: 0; text-align: center; }
+.dx-block-name { font-size: 0.78rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.dx-yours .dx-block-name { color: var(--density); }
+.dx-svg { display: block; width: 100%; max-width: 230px; height: auto; margin: 0.2rem auto 0.3rem; }
+/* Mass and volume share a quiet row; density sits below, largest. */
+.dx-vals { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 1rem; font-size: 0.95rem; line-height: 1.45; }
+.dx-val { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 0.35rem; align-items: baseline; min-width: 0; }
+.dx-val dt { font-weight: 800; color: var(--text-muted); }
+.dx-val dd { font-weight: 900; min-width: 0; overflow-wrap: anywhere; }
+.dx-val.m dd { color: var(--mass); }
+.dx-val.v dd { color: var(--volume); }
+.dx-val.d { flex-basis: 100%; justify-content: center; margin-top: 0.1rem; }
+.dx-val.d dd { font-family: 'Fredoka One', cursive; font-weight: 400; font-size: 1.35rem; line-height: 1.25; color: var(--density); }
+.dx-key { display: flex; align-items: baseline; justify-content: center; gap: 0.5rem; margin-top: 0.7rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); }
+.dx-key-dot { flex: 0 0 auto; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--density); }
+.dx-controls { min-width: 0; }
+.dx-explore-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.4rem 0.8rem; margin-bottom: 0.4rem; }
+.dx-step-label { font-size: 0.75rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--density); }
+.dx-instruct { font-size: 1rem; font-weight: 800; line-height: 1.5; color: var(--text); margin-bottom: 0.2rem; }
+.dx-var { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.8rem; min-height: 48px; }
+.dx-var[hidden] { display: none; }
+.dx-var-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; min-width: 4.2rem; }
+.dx-var.m .dx-var-label { color: var(--mass); }
+.dx-var.v .dx-var-label { color: var(--volume); }
+.dx-var input[type=range] { flex: 1 1 6rem; min-width: 0; min-height: 44px; cursor: pointer; }
+.dx-var.m input { accent-color: var(--mass); }
+.dx-var.v input { accent-color: var(--volume); }
+.dx-var-val { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 900; min-width: 4.6rem; text-align: right; }
+.dx-var.m .dx-var-val { color: var(--mass); }
+.dx-var.v .dx-var-val { color: var(--volume); }
+.dx-calc { margin-top: 0.5rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.12); line-height: 1.6; }
+.dx-formula { display: block; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); }
+.dx-math { display: block; font-size: 1.1rem; font-weight: 800; color: var(--text); }
+.dx-math .m { color: var(--mass); }
+.dx-math .v { color: var(--volume); }
+.dx-math strong { color: var(--density); white-space: nowrap; }
+.dx-about { margin-top: 0.6rem; font-size: 0.9rem; color: var(--text-muted); }
+.dx-about summary { display: inline-flex; align-items: center; min-height: 44px; font-weight: 800; color: var(--text); cursor: pointer; }
+.dx-result { display: flex; align-items: baseline; gap: 0.5rem; margin: 0.5rem 0 0; font-size: 1rem; font-weight: 800; line-height: 1.5; color: var(--text); }
+.dx-result-sign {
+  flex: 0 0 auto;
+  min-width: 1.6rem;
+  border-radius: 6px;
+  background: var(--density-dim);
+  border: 1px solid var(--density-border);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--density);
+}
+.dx-reset {
+  min-height: 44px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  border: 2px solid var(--check-border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.dx-reset:hover { border-color: var(--density); background: var(--density-dim); }
+.dx-check.check-card { margin-bottom: 0; }
+/* Wide cards: question and its feedback on the left, choices stacked on
+   the right, so the reserved feedback space sits beside the choices. */
+@container dx-lab (min-width: 46rem) {
+  .dx-check.check-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto 1fr; column-gap: 1.2rem; }
+  .dx-check > .check-eyebrow { grid-column: 1 / -1; }
+  .dx-check > .check-q { grid-column: 1; grid-row: 2; }
+  .dx-check > .tm-fb-zone { grid-column: 1; grid-row: 3; align-self: start; margin-top: 0; }
+  .dx-check > .dx-options { grid-column: 2; grid-row: 2 / 4; grid-template-columns: minmax(0, 1fr); align-self: start; }
+}
+.dx-limit { font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); }
+@media (max-width: 480px) { .dx-lab { padding: 1.2rem 0.9rem 1.3rem; } }
+/* Phones keep the two blocks side by side, so the comparison stays in
+   view; the slider takes its own full-width line under its label. */
+@container dx-lab (max-width: 22rem) {
+  .dx-work { padding: 0.8rem 0.7rem; }
+  .dx-blocks { gap: 0.6rem; }
+  .dx-vals { flex-direction: column; align-items: center; }
+  .dx-var input[type=range] { order: 3; flex-basis: 100%; }
+  .dx-var-val { margin-left: auto; }
+}
+@container dx-lab (max-width: 15rem) { .dx-blocks { grid-template-columns: minmax(0, 1fr); } }
+/* Very large text on a phone leaves only a few words per line; let long
+   words and the option icon gutter give way instead of overflowing. */
+.dx-lab .check-eyebrow, .dx-lab .check-opt, .dx-step-label, .dx-reset,
+.dx-formula, .dx-math, .dx-result, .dx-block-name, .dx-instruct, .dx-about { overflow-wrap: anywhere; min-width: 0; }
+.dx-reset { max-width: 100%; }
+@container dx-lab (max-width: 18rem) {
+  .dx-lab .check-opt { padding-right: 2rem; }
+  .dx-lab .check-opt::after { right: 0.6rem; }
+  .dx-step.check-card { padding-left: 0.7rem; padding-right: 0.7rem; }
+  .dx-math strong { white-space: normal; }
+}
 
 /* ── DENSITY LAB ── */
 .density-lab {
@@ -1399,268 +1610,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .dl-synthesis strong { color: var(--green); }
 .density-lab-sub strong { color: var(--gold); }
 
-/* ── WORKED EXAMPLE STEPPER ── */
-.worked-example {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 2rem 1.8rem;
-  max-width: 860px;
-  margin: 0 auto 2rem;
-}
-.we-eyebrow { text-align: center; }
-.we-title {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.2rem;
-  color: var(--text);
-  text-align: center;
-  margin-bottom: 0.3rem;
-}
-.we-sub {
-  font-size: 1rem;
-  color: var(--text-muted);
-  text-align: center;
-  max-width: 620px;
-  margin: 0 auto 1.4rem;
-  line-height: 1.6;
-}
-.we-given {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-bottom: 1.4rem;
-}
-.we-chip {
-  font-size: 0.9rem;
-  font-weight: 800;
-  padding: 0.35rem 1rem;
-  border-radius: 99px;
-  border: 1px solid;
-}
-.we-chip.mass-chip   { color: var(--mass);   background: var(--mass-dim);   border-color: var(--mass-border); }
-.we-chip.volume-chip { color: var(--volume); background: var(--volume-dim); border-color: var(--volume-border); }
-.we-step {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
-  padding: 1.1rem 1.3rem;
-  margin-bottom: 0.9rem;
-  display: flex;
-  gap: 0.8rem;
-  align-items: flex-start;
-}
-.we-step-num {
-  flex-shrink: 0;
-  font-family: 'Fredoka One', cursive;
-  width: 1.8rem; height: 1.8rem;
-  border-radius: 50%;
-  background: rgba(245,200,66,0.12);
-  border: 1px solid rgba(245,200,66,0.35);
-  color: var(--gold);
-  font-size: 0.85rem;
-  display: flex; align-items: center; justify-content: center;
-  margin-top: 0.1rem;
-}
-.we-step-body { flex: 1; font-size: 1rem; line-height: 1.65; color: var(--text-muted); }
-.we-step-body strong { color: var(--text); }
-.we-step-body .we-math {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.92rem;
-  letter-spacing: 0.03em;
-  display: block;
-  margin-top: 0.35rem;
-  color: var(--text);
-}
-.we-step-body .we-math .m { color: var(--mass); }
-.we-step-body .we-math .v { color: var(--volume); }
-.we-step-body .we-math .d { color: var(--density); }
-.we-reveal-btn {
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.84rem;
-  font-weight: 800;
-  background: rgba(245,200,66,0.08);
-  border: 1px dashed rgba(245,200,66,0.45);
-  color: var(--gold);
-  padding: 0.45rem 1.2rem;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 0.4rem;
-}
-.we-reveal-btn:hover { background: rgba(245,200,66,0.16); }
-.we-hidden { display: none; }
-.we-hidden.visible { display: block; animation: predictFadeUp 0.35s ease both; }
 
-/* answer-choice buttons inside practice problem (Quick Check option rows,
-   math kept in Orbitron) */
-.we-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 0.6rem;
-  margin-top: 0.7rem;
-}
-.we-opt-btn {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.92rem;
-  letter-spacing: 0.04em;
-}
-.we-fb {
-  display: none;
-  margin-top: 0.6rem;
-  font-size: 1rem;
-  line-height: 1.6;
-  padding: 0.65rem 0.95rem;
-  border-radius: 10px;
-}
-.we-fb.visible { display: block; animation: predictFadeUp 0.35s ease both; }
-.we-fb.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
-.we-fb.no { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.3);  color: #ecb3b3; }
-.we-success {
-  display: none;
-  margin-top: 0.4rem;
-  padding: 0.9rem 1.2rem;
-  border-radius: 12px;
-  background: rgba(46,204,113,0.1);
-  border: 1px solid rgba(46,204,113,0.35);
-  color: #a8e6c4;
-  font-size: 1rem;
-  font-weight: 700;
-}
-.we-success.visible { display: block; animation: predictFadeUp 0.4s ease both; }
-@media (max-width: 480px) {
-  .worked-example { padding: 1.4rem 1rem; }
-  .we-step { flex-direction: column; gap: 0.5rem; padding: 1rem; }
-}
-
-/* ── QUICK RECALL (Quick Check shell) ── */
-.qr-sub { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
-.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
-.qr-options input[type=radio] { accent-color: var(--teal); flex-shrink: 0; width: 1.1rem; height: 1.1rem; }
-.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.95rem; border-radius: 10px; font-size: 1rem; line-height: 1.55; }
-.qr-feedback.visible { display: block; }
-.qr-feedback:focus { outline: none; }
-.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
-.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
-.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
-.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
-.qr-actions button:hover { transform: translateY(-1px); }
-.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
-.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
-.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
-
-/* ── WRAP-UP BEATS ── */
-.wrapup-beats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  max-width: 100%;
-  margin: 0 auto;
-}
-@media (max-width: 760px) { .wrapup-beats { grid-template-columns: minmax(0, 1fr); } }
-
-.wrapup-beat {
-  border-radius: 16px;
-  padding: 1.4rem 1.3rem;
-  position: relative;
-  overflow-wrap: anywhere;
-}
-.wrapup-beat::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  border-radius: 16px 16px 0 0;
-}
-.wrapup-beat-1 {
-  background: rgba(245,200,66,0.06);
-  border: 1px solid rgba(245,200,66,0.25);
-}
-.wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
-.wrapup-beat-2 {
-  background: rgba(59,200,232,0.05);
-  border: 1px solid rgba(59,200,232,0.2);
-}
-.wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
-.wrapup-beat-3 {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.18);
-}
-.wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
-
-.wrapup-beat-label {
-  font-size: 0.8rem;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  margin-bottom: 0.6rem;
-}
-.wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
-.wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
-.wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
-
-.wrapup-beat-answer {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.05rem;
-  line-height: 1.3;
-  margin-bottom: 0.75rem;
-  color: var(--text);
-}
-.wrapup-beat-body {
-  font-size: 1rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-.wrapup-beat-body strong { color: var(--text); font-weight: 800; }
-.wrapup-behavior-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
-}
-.wbc {
-  max-width: 100%;
-  font-size: 0.85rem;
-  font-weight: 800;
-  padding: 0.22rem 0.65rem;
-  border-radius: 99px;
-  border: 1px solid;
-}
-.wbc-mass    { color: var(--mass);    background: var(--mass-dim);    border-color: var(--mass-border);    }
-.wbc-volume  { color: var(--volume);  background: var(--volume-dim);  border-color: var(--volume-border);  }
-.wbc-density { color: var(--density); background: var(--density-dim); border-color: var(--density-border); }
-
-/* ── SUMMARY TABLES ── */
-.summary-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
-.summary-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  font-size: 0.9rem;
-}
-.summary-table th {
-  text-align: left;
-  font-size: 0.8rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold);
-  background: rgba(245,200,66,0.07);
-  padding: 0.8rem 1.2rem;
-  border-bottom: 1px solid rgba(245,200,66,0.25);
-}
-.summary-table td {
-  padding: 0.75rem 1.2rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  color: var(--text-muted);
-  line-height: 1.6;
-  vertical-align: top;
-}
-.summary-table tr:last-child td { border-bottom: none; }
-.summary-table td.term { color: var(--teal); font-weight: 800; white-space: nowrap; }
 </style>
 
 <!-- ── Pilot Layout: Learning Goals + Glossary Cards ── -->
@@ -1702,7 +1652,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .gc-orange { --vx: var(--orange); }
 .gc-blue   { --vx: var(--matter); }
 .gc-green  { --vx: var(--green);  }
-.vx-sr, .disp-sr, .predict-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.vx-sr, .disp-sr, .predict-sr, .dx-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .vx-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 0.75rem; }
 @media (max-width: 720px) { .vx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .vx-term {
@@ -1967,8 +1917,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
   <span class="ls-badge" data-tip="After a brief vocabulary preview, the lesson opens with three real puzzles, including a floating steel ship, before any explanation. Encountering a genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
   <span class="ls-badge" data-tip="Six key terms are previewed one at a time before the lesson begins, then revisited in context as students use them. A brief preview lowers the load of new words when they reappear in explanations and tasks. (Beck, McKeown, &amp; Kucan, 2013)">🔤 Vocabulary Preview</span>
-  <span class="ls-badge" data-tip="The density calculation is broken into explicit numbered steps, with a fully worked example shown before students try one independently. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
-  <span class="ls-badge" data-tip="Students adjust mass and volume sliders, build block volumes, and solve a density problem themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
+  <span class="ls-badge" data-tip="Density is built in explicit numbered steps: predict, change one variable at a time, then check, before students apply it in the float-or-sink challenge. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
+  <span class="ls-badge" data-tip="Students adjust mass and volume sliders, build block volumes, and measure by water displacement themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
   <span class="ls-badge" data-tip="The quiz asks students to calculate volumes and densities for new objects rather than recall definitions. Transfer tasks require deeper processing and reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
 </div>
 
@@ -2533,10 +2483,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
 
         <div class="name-it green-it disp-units">
-          <div class="name-it-label">Key idea · Same Space, Two Units</div>
-          <p class="disp-units-eq">1 mL = 1 cm³</p>
-          <p>A milliliter and a cubic centimeter measure the same amount of space. If an object's volume is 9 mL, its volume is also 9 cm³.</p>
-          <p>This is why density can be measured in g/mL or g/cm³.</p>
+          <div class="name-it-label">Remember · Volume Units</div>
+          <div class="disp-units-row">
+            <p class="disp-units-eq">1 mL = 1 cm³</p>
+            <p>Both measure the same amount of space. Use cm³ to report the volume of a solid.</p>
+          </div>
         </div>
         </div>
       </div>
@@ -2576,96 +2527,192 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <!-- ═══════════════════════════════════════════════════════════════════════
      EXPLAIN - DENSITY
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="density" style="background: var(--dark);">
+<section id="density" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem;">
   <div class="container">
     <span class="section-label" style="color: var(--orange); background: var(--density-dim); border-color: var(--density-border);">Explore · Packing It In</span>
     <h2 class="section-title">Density: The Ratio of Mass to Volume</h2>
-    <p class="section-desc">Remember the bowling ball and the beach ball? Same size, totally different heft. Density is the measurement that explains why.</p>
+    <p class="section-desc dz-desc">Remember the bowling ball and the beach ball? Same size, totally different heft. Density is the measurement that explains why.</p>
 
-    <div class="name-it orange-it">
-      <div class="name-it-label">Key idea: Density</div>
-      <p><strong>Density</strong> is the ratio of <strong style="color:var(--mass);">mass</strong> to <strong style="color:var(--volume);">volume</strong>: how much matter is packed into a space. It can be calculated two ways: in <strong>g/cm³</strong> (triple beam balance + ruler) or in <strong>g/mL</strong> (triple beam balance + graduated cylinder).</p>
-      <p><strong>Picture it with particles.</strong> All matter is made of particles too small to see. The two blocks below are the same size, but Block B has more particles packed into that space. More matter in the same volume means more mass, so Block B has a higher density.</p>
-      <svg class="dens-particles" viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two same-size blocks. Block A has a few particles spread apart. Block B has many particles packed closely, so it has more mass in the same volume and a higher density.">
-        <rect x="15" y="10" width="120" height="90" rx="10" fill="rgba(230,126,34,0.06)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
-        <rect x="165" y="10" width="120" height="90" rx="10" fill="rgba(230,126,34,0.06)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
-        <g><circle cx="40" cy="32" r="5" fill="#e67e22"/><circle cx="100" cy="28" r="5" fill="#e67e22"/><circle cx="70" cy="58" r="5" fill="#e67e22"/><circle cx="36" cy="80" r="5" fill="#e67e22"/><circle cx="108" cy="78" r="5" fill="#e67e22"/></g>
-        <g><circle cx="186" cy="25" r="5" fill="#e67e22"/><circle cx="210" cy="25" r="5" fill="#e67e22"/><circle cx="234" cy="25" r="5" fill="#e67e22"/><circle cx="258" cy="25" r="5" fill="#e67e22"/><circle cx="198" cy="44" r="5" fill="#e67e22"/><circle cx="222" cy="44" r="5" fill="#e67e22"/><circle cx="246" cy="44" r="5" fill="#e67e22"/><circle cx="270" cy="44" r="5" fill="#e67e22"/><circle cx="186" cy="63" r="5" fill="#e67e22"/><circle cx="210" cy="63" r="5" fill="#e67e22"/><circle cx="234" cy="63" r="5" fill="#e67e22"/><circle cx="258" cy="63" r="5" fill="#e67e22"/><circle cx="198" cy="82" r="5" fill="#e67e22"/><circle cx="222" cy="82" r="5" fill="#e67e22"/><circle cx="246" cy="82" r="5" fill="#e67e22"/><circle cx="270" cy="82" r="5" fill="#e67e22"/></g>
-        <text x="75" y="121" fill="#8aafca" font-size="12" font-weight="800" font-family="Nunito, sans-serif" text-anchor="middle">Block A · lower density</text>
-        <text x="225" y="121" fill="#8aafca" font-size="12" font-weight="800" font-family="Nunito, sans-serif" text-anchor="middle">Block B · higher density</text>
-      </svg>
-    </div>
-
-    <div class="observe-row">
-      <div class="observe-card">
-        <span class="observe-icon">🎳</span>
-        <span><strong>Bowling ball:</strong> lots of mass packed into its volume → high density.</span>
+    <!-- The big idea: formula and units beside the two balls that motivate it. -->
+    <div class="dz-idea">
+      <div class="name-it orange-it dz-key">
+        <div class="name-it-label">Key idea: Density</div>
+        <p class="dz-formula">Density = Mass ÷ Volume</p>
+        <p><strong>Density</strong> is the ratio of <strong style="color:var(--mass);">mass</strong> to <strong style="color:var(--volume);">volume</strong>: how much matter is packed into a space. With mass in grams and volume in cm³, density is in <strong>g/cm³</strong>. A volume in mL gives <strong>g/mL</strong>, the same number, because 1 mL = 1 cm³.</p>
       </div>
-      <div class="observe-card green-card">
-        <span class="observe-icon">🏖️</span>
-        <span><strong>Beach ball:</strong> very little mass spread across the same volume → low density.</span>
-      </div>
-    </div>
-
-    <!-- Predict before the density lab -->
-    <div class="question-pause predict-pause check-card check-predict" id="qp-density" style="margin-top: 2.5rem;">
-      <div class="check-eyebrow">Predict</div>
-      <div class="qp-row">
-        <span class="question-pause-icon">🧪</span>
-        <div class="question-pause-text" id="qp-density-q"><strong>Density Lab:</strong> Water has a density of 1 g/mL. You're about to build an object and drop it in a tank. What do you think decides whether it floats? Make a prediction to unlock the lab.</div>
-      </div>
-      <div class="predict-buttons" role="group" aria-labelledby="qp-density-q">
-        <button class="predict-btn check-opt" type="button" aria-pressed="false">Heavy objects always sink</button>
-        <button class="predict-btn check-opt" type="button" aria-pressed="false">It floats if its density is less than water's</button>
-        <button class="predict-btn check-opt" type="button" aria-pressed="false">Big objects always float</button>
-      </div>
-      <p class="predict-sr" aria-live="polite" aria-atomic="true" data-announce="Prediction saved. The Density Lab is now open below."></p>
-    </div>
-
-    <div class="density-lab predict-gated" data-gate="qp-density">
-      <div class="density-lab-title">🎛️ The Density Lab</div>
-      <div class="density-lab-sub">Drag the sliders to set your object's mass and volume. The lab calculates the density live and drops the object into a tank of water (density = 1 g/mL).<br><strong>Try this:</strong> Make your object sink. Then change only one slider to make it float again.</div>
-
-      <div class="dl-sliders">
-        <div class="dl-slider-row mass-row">
-          <span class="dl-slider-label">Mass</span>
-          <input type="range" id="dl-mass" min="10" max="200" value="50" step="10" aria-label="Object mass in grams, from 10 to 200">
-          <span class="dl-slider-val" id="dl-mass-val">50 g</span>
+      <div class="observe-row dz-balls">
+        <div class="observe-card">
+          <span class="observe-icon">🎳</span>
+          <span><strong>Bowling ball:</strong> lots of mass packed into its volume → high density.</span>
         </div>
-        <div class="dl-slider-row volume-row">
-          <span class="dl-slider-label">Volume</span>
-          <input type="range" id="dl-vol" min="10" max="200" value="100" step="10" aria-label="Object volume in milliliters, from 10 to 200">
-          <span class="dl-slider-val" id="dl-vol-val">100 mL</span>
+        <div class="observe-card green-card">
+          <span class="observe-icon">🏖️</span>
+          <span><strong>Beach ball:</strong> very little mass spread across about the same volume → low density.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lab 4: one block held fixed, one block changed by a single slider.
+         Ungraded; nothing is stored or sent. -->
+    <div class="dx-lab" id="dx-lab">
+      <div class="dx-top">
+        <div class="dx-top-text">
+          <div class="mlab-head">
+            <span class="mlab-tag">Lab 4 · Density Explorer</span>
+            <h3 class="mlab-title">What Changes Density?</h3>
+          </div>
+          <p class="dx-intro">Density depends on both mass and volume. Change one measurement while keeping the other the same. Watch what happens to the block and its density.</p>
+        </div>
+      <div class="dx-modes" role="group" aria-label="Choose an investigation">
+        <button class="dx-mode" type="button" aria-pressed="true" data-mode="mass"><span class="dx-mode-tag">Investigation A:</span> <span class="dx-mode-name">Change Mass</span></button>
+        <button class="dx-mode" type="button" aria-pressed="false" data-mode="volume"><span class="dx-mode-tag">Investigation B:</span> <span class="dx-mode-name">Change Volume</span></button>
+      </div>
+      </div>
+
+      <h4 class="dx-mode-title" id="dx-mode-title">Change Mass, Keep Volume the Same</h4>
+
+      <div class="check-card check-predict dx-step" id="dx-predict">
+        <div class="check-eyebrow">Step 1 · Predict</div>
+        <div class="check-q" id="dx-predict-q">If volume stays the same but mass increases, what do you predict will happen to density?</div>
+        <div class="check-options dx-options" role="group" aria-labelledby="dx-predict-q">
+          <button class="check-opt dx-pred" type="button" aria-pressed="false" data-choice="up">Density increases.</button>
+          <button class="check-opt dx-pred" type="button" aria-pressed="false" data-choice="down">Density decreases.</button>
+          <button class="check-opt dx-pred" type="button" aria-pressed="false" data-choice="same">Density stays the same.</button>
+        </div>
+        <div class="dx-note-zone" id="dx-note-zone">
+          <p class="dx-predict-note" id="dx-predict-note" aria-live="polite"></p>
         </div>
       </div>
 
-      <div class="dl-panels">
-        <div class="dl-panel">
-          <div class="dl-panel-name">The Math</div>
-          <div class="dl-math">
-            D = <span class="m" id="dl-m-out">50</span> g ÷ <span class="v" id="dl-v-out">100</span> mL<br>
-            D = <span class="d" id="dl-d-out">0.5 g/mL</span>
+      <!-- One workspace: the two blocks beside the one active control. -->
+      <div class="dx-work" id="dx-work">
+        <div class="dx-compare">
+          <div class="dx-blocks">
+            <figure class="dx-block dx-original">
+              <figcaption class="dx-block-name">Original Block</figcaption>
+              <svg class="dx-svg" id="dx-orig-svg" viewBox="0 0 200 196" xmlns="http://www.w3.org/2000/svg" role="img" aria-label=""><g id="dx-orig-g"></g></svg>
+              <dl class="dx-vals">
+                <div class="dx-val m"><dt>Mass</dt><dd id="dx-orig-m"></dd></div>
+                <div class="dx-val v"><dt>Volume</dt><dd id="dx-orig-v"></dd></div>
+                <div class="dx-val d"><dt>Density</dt><dd id="dx-orig-d"></dd></div>
+              </dl>
+            </figure>
+            <figure class="dx-block dx-yours">
+              <figcaption class="dx-block-name">Your Block</figcaption>
+              <svg class="dx-svg" id="dx-your-svg" viewBox="0 0 200 196" xmlns="http://www.w3.org/2000/svg" role="img" aria-label=""><g id="dx-your-g"></g></svg>
+              <dl class="dx-vals">
+                <div class="dx-val m"><dt>Mass</dt><dd id="dx-your-m"></dd></div>
+                <div class="dx-val v"><dt>Volume</dt><dd id="dx-your-v"></dd></div>
+                <div class="dx-val d"><dt>Density</dt><dd id="dx-your-d"></dd></div>
+              </dl>
+            </figure>
+          </div>
+          <p class="dx-key"><span class="dx-key-dot" aria-hidden="true"></span>Each dot represents 5 g. The size of each block shows its volume.</p>
+        </div>
+
+        <div class="dx-controls">
+          <div class="dx-explore-head">
+            <div class="dx-step-label">Step 2 · Explore</div>
+            <button class="dx-reset" id="dx-reset" type="button">Reset Investigation</button>
+          </div>
+          <p class="dx-instruct" id="dx-instruct">Change mass. Volume stays at 20 cm³.</p>
+          <div class="dx-var m" id="dx-mass-row">
+            <label class="dx-var-label" for="dx-mass">Mass</label>
+            <input type="range" id="dx-mass" min="10" max="100" step="10" value="40">
+            <span class="dx-var-val" id="dx-mass-val">40 g</span>
+          </div>
+          <div class="dx-var v" id="dx-vol-row">
+            <label class="dx-var-label" for="dx-vol">Volume</label>
+            <input type="range" id="dx-vol" min="10" max="100" step="10" value="20">
+            <span class="dx-var-val" id="dx-vol-val">20 cm³</span>
+          </div>
+          <p class="dx-calc"><span class="dx-formula">Density = Mass ÷ Volume</span> <span class="dx-math" id="dx-math"></span></p>
+          <p class="dx-result" id="dx-result"></p>
+          <details class="dx-about">
+            <summary>About this model</summary>
+            <p class="dx-limit">This is a simplified model. It changes one measurement at a time so you can test the math. To change a real object's mass or volume this way, you would have to change what it is made of or its conditions, like temperature.</p>
+          </details>
+          <p class="dx-sr" id="dx-announce" aria-live="polite" aria-atomic="true"></p>
+        </div>
+      </div>
+
+      <div class="check-card dx-step dx-check" id="dx-check">
+        <div class="check-eyebrow">Step 3 · Check Your Understanding · Not graded</div>
+        <div class="check-q" id="dx-check-q"></div>
+        <div class="check-options dx-options" id="dx-check-options" role="group" aria-labelledby="dx-check-q">
+          <button class="check-opt dx-opt" type="button"></button>
+          <button class="check-opt dx-opt" type="button"></button>
+          <button class="check-opt dx-opt" type="button"></button>
+        </div>
+        <div class="tm-fb-zone" id="dx-fb-zone">
+          <div class="tm-fb" id="dx-fb" aria-live="polite"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Density Challenge: the prediction gates the tank, inside one card. -->
+    <div class="dz-challenge" id="dz-challenge">
+      <div class="mlab-head">
+        <span class="mlab-tag">Density Challenge</span>
+        <h3 class="mlab-title">Float or Sink?</h3>
+      </div>
+      <p class="dz-challenge-sub">Now use density. Water has a density of 1 g/mL. Predict what decides whether an object floats, then test it in the tank.</p>
+
+      <div class="question-pause predict-pause check-card check-predict dz-predict" id="qp-density">
+        <div class="check-eyebrow">Predict</div>
+        <div class="qp-row">
+          <span class="question-pause-icon">🧪</span>
+          <div class="question-pause-text" id="qp-density-q">What do you think decides whether an object floats in water? Make a prediction to unlock the Density Lab.</div>
+        </div>
+        <div class="predict-buttons" role="group" aria-labelledby="qp-density-q">
+          <button class="predict-btn check-opt" type="button" aria-pressed="false">Heavy objects always sink</button>
+          <button class="predict-btn check-opt" type="button" aria-pressed="false">It floats if its density is less than water's</button>
+          <button class="predict-btn check-opt" type="button" aria-pressed="false">Big objects always float</button>
+        </div>
+        <p class="predict-sr" aria-live="polite" aria-atomic="true" data-announce="Prediction saved. The Density Lab is now open below."></p>
+      </div>
+
+      <div class="density-lab predict-gated" data-gate="qp-density">
+        <div class="density-lab-sub">Set your object's mass and volume. The lab calculates its density and drops it into the tank. <strong>Try this:</strong> Make your object sink. Then change only one slider to make it float again.</div>
+
+        <div class="dl-sliders">
+          <div class="dl-slider-row mass-row">
+            <span class="dl-slider-label">Mass</span>
+            <input type="range" id="dl-mass" min="10" max="200" value="50" step="10" aria-label="Object mass in grams, from 10 to 200">
+            <span class="dl-slider-val" id="dl-mass-val">50 g</span>
+          </div>
+          <div class="dl-slider-row volume-row">
+            <span class="dl-slider-label">Volume</span>
+            <input type="range" id="dl-vol" min="10" max="200" value="100" step="10" aria-label="Object volume in milliliters, from 10 to 200">
+            <span class="dl-slider-val" id="dl-vol-val">100 mL</span>
           </div>
         </div>
-        <div class="dl-panel">
-          <div class="dl-panel-name">The Tank (water = 1 g/mL)</div>
-          <svg class="dl-tank-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A tank of water showing whether the object floats or sinks">
-            <rect x="10" y="10" width="180" height="130" rx="8" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
-            <rect x="12" y="55" width="176" height="83" rx="6" fill="rgba(59,130,246,0.18)"/>
-            <line x1="12" y1="55" x2="188" y2="55" stroke="rgba(124,200,248,0.6)" stroke-width="2"/>
-            <rect id="dl-object" x="80" y="42" width="40" height="28" rx="5" fill="#f5c842" stroke="#e6b32e" stroke-width="2" style="transition: y 0.5s ease;"/>
-          </svg>
-          <div class="dl-verdict float" id="dl-verdict" aria-live="polite">✓ Floats - density below 1 g/mL</div>
+
+        <div class="dl-panels">
+          <div class="dl-panel">
+            <div class="dl-panel-name">The Math</div>
+            <div class="dl-math">
+              D = <span class="m" id="dl-m-out">50</span> g ÷ <span class="v" id="dl-v-out">100</span> mL<br>
+              D = <span class="d" id="dl-d-out">0.5 g/mL</span>
+            </div>
+          </div>
+          <div class="dl-panel">
+            <div class="dl-panel-name">The Tank (water = 1 g/mL)</div>
+            <svg class="dl-tank-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A tank of water showing whether the object floats or sinks">
+              <rect x="10" y="10" width="180" height="130" rx="8" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+              <rect x="12" y="55" width="176" height="83" rx="6" fill="rgba(59,130,246,0.18)"/>
+              <line x1="12" y1="55" x2="188" y2="55" stroke="rgba(124,200,248,0.6)" stroke-width="2"/>
+              <rect id="dl-object" x="80" y="42" width="40" height="28" rx="5" fill="#f5c842" stroke="#e6b32e" stroke-width="2" style="transition: y 0.5s ease;"/>
+            </svg>
+            <div class="dl-verdict float" id="dl-verdict" aria-live="polite">✓ Floats - density below 1 g/mL</div>
+          </div>
+        </div>
+
+        <div class="dl-synthesis" id="dl-synthesis" role="status">
+          <strong>Check your prediction.</strong> Floating isn't decided by mass or size alone. It's decided by density. An object floats when its density is less than water's 1 g/mL and sinks when its density is greater.
         </div>
       </div>
-
-      <div class="dl-synthesis" id="dl-synthesis" role="status">
-        <strong>Check your prediction, and solve the ship mystery.</strong> Floating isn't decided by mass alone. It's decided by density. A steel ship's hull surrounds a huge amount of air. When you divide the ship's total mass by its total volume, including all that air-filled space, its overall density comes out less than water's, so it floats. A pebble is small but solid rock all the way through, so its density is greater than water's, and it sinks.
-      </div>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Sliders are easy - now do it like a scientist.</strong> In the lab you get a balance, a ruler, and an unknown block. Time to calculate density by hand, step by step.
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -2674,11 +2721,11 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Build density as the ratio of mass to volume, not "heaviness".</li><li>Let students reason from two measurements to a float-or-sink result.</li></ul>
+          <ul class="edu-note-text"><li>Build density as the ratio of mass to volume, not "heaviness".</li><li>Let students reason from two measurements to a float-or-sink result.</li><li>One page of density: the big idea, Lab 4, then the float-or-sink challenge, with no separate transition panels.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Cause-and-effect modeling (density decides floating)</li><li>Misconception checking (density means heavy)</li><li>Static particle-packing model links the D = m ÷ V ratio to the particle picture used in Physical Properties</li><li>Dual coding with the live tank model</li></ul>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling (density decides floating)</li><li>Misconception checking (density means heavy)</li><li>Lab 4 controls one variable at a time: a fixed Original Block beside a changing block, with a dot model of matter and the live D = m ÷ V calculation</li><li>Predict, explore, then check, so the relationship is discovered before it is stated</li><li>Dual coding with the live tank model</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -2686,271 +2733,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Prediction gates the lab</li><li>Math panel and tank shown side by side</li><li>Compare cards contrast bowling ball and beach ball</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLAIN - WORKED EXAMPLE + PRACTICE PROBLEM
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="practice" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label" style="color: var(--teal); background: var(--mass-dim); border-color: var(--mass-border);">Explore · Worked Example</span>
-    <h2 class="section-title">Calculating Density, Step by Step</h2>
-    <p class="section-desc">Watch one problem solved completely. Then you solve the next one yourself, with the same two steps every time.</p>
-
-    <!-- Worked example: PDF practice problem 1 -->
-    <div class="worked-example">
-      <div class="we-title">📐 Worked Example</div>
-      <div class="we-sub">A block has a mass of 50 g. You measure it with a ruler: 5 cm long, 2 cm wide, 1 cm tall. What is its density?</div>
-      <div class="we-given">
-        <span class="we-chip mass-chip">Mass = 50 g</span>
-        <span class="we-chip volume-chip">Dimensions = 5 cm × 2 cm × 1 cm</span>
-      </div>
-
-      <div class="we-step">
-        <span class="we-step-num">1</span>
-        <div class="we-step-body">
-          <strong>Find the volume.</strong> A ruler gives you dimensions, not volume - so multiply them.
-          <span class="we-math"><span class="v">V</span> = length × width × height = 5 × 2 × 1 = <span class="v">10 cm³</span></span>
-        </div>
-      </div>
-
-      <div class="we-step">
-        <span class="we-step-num">2</span>
-        <div class="we-step-body">
-          <strong>Use the density formula.</strong> Divide mass by volume.
-          <span class="we-math"><span class="d">D</span> = <span class="m">m</span> ÷ <span class="v">V</span> = <span class="m">50 g</span> ÷ <span class="v">10 cm³</span> = <span class="d">5 g/cm³</span></span>
-        </div>
-      </div>
-
-      <div class="bridge-callout orange" style="margin-top: 1.4rem; max-width: 100%;">
-        <strong>Sanity check:</strong> 5 g/cm³ is much denser than water (1 g/cm³), so this block would sink. Always ask whether your answer makes sense.
-      </div>
-    </div>
-
-    <!-- Practice problem II: student solves with stepwise gates -->
-    <div class="worked-example" style="border-color: rgba(245,200,66,0.3);">
-      <div class="check-eyebrow we-eyebrow">Practice · Not graded</div>
-      <div class="we-title">✏️ Your Turn: Density Practice Problem</div>
-      <div class="we-sub">You have a block with a mass of 60 grams. You measure it with a ruler: 4 cm long, 3 cm wide, and 2 cm tall. What is the density of the block?</div>
-      <div class="we-given">
-        <span class="we-chip mass-chip">Mass = 60 g</span>
-        <span class="we-chip volume-chip">Dimensions = 4 cm × 3 cm × 2 cm</span>
-      </div>
-
-      <div class="we-step">
-        <span class="we-step-num">1</span>
-        <div class="we-step-body">
-          <span id="pp-q1"><strong>Find the volume.</strong> V = length × width × height = 4 × 3 × 2 = ?</span>
-          <div class="we-options" id="pp-step1" role="group" aria-labelledby="pp-q1">
-            <button class="we-opt-btn check-opt" type="button" data-ans="0">9 cm³</button>
-            <button class="we-opt-btn check-opt" type="button" data-ans="1">24 cm³</button>
-            <button class="we-opt-btn check-opt" type="button" data-ans="0">12 cm³</button>
-          </div>
-          <div class="we-fb" id="pp-fb1" aria-live="polite"></div>
-        </div>
-      </div>
-
-      <div class="we-step we-hidden" id="pp-step2-wrap">
-        <span class="we-step-num">2</span>
-        <div class="we-step-body">
-          <span id="pp-q2"><strong>Use the density formula.</strong> D = m ÷ V = 60 g ÷ 24 cm³ = ?</span>
-          <div class="we-options" id="pp-step2" role="group" aria-labelledby="pp-q2">
-            <button class="we-opt-btn check-opt" type="button" data-ans="0">0.4 g/cm³</button>
-            <button class="we-opt-btn check-opt" type="button" data-ans="0">3.6 g/cm³</button>
-            <button class="we-opt-btn check-opt" type="button" data-ans="1">2.5 g/cm³</button>
-          </div>
-          <div class="we-fb" id="pp-fb2" aria-live="polite"></div>
-        </div>
-      </div>
-
-      <div class="we-success" id="pp-success" role="status">🏆 You did it! Density = 60 ÷ 24 = 2.5 g/cm³. That's denser than water, so this block would sink. 2.5 g/cm³ is close to the density of glass. You just calculated density exactly the way a scientist does.</div>
-    </div>
-
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Model the full two-step calculation, then hand the next one to the student.</li><li>Reinforce volume first, density second, every time.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Worked-example effect</li><li>Procedural fluency through guided practice</li><li>Sanity-check step builds estimation habits</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step two unlocks only after step one is correct</li><li>Per-step feedback on each choice</li><li>Given values chipped and color coded</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     ELABORATE - BACK TO THE MYSTERY
-═══════════════════════════════════════════════════════════════════════ -->
-<!-- ═══════════════════════════════════════════════════════════════════════
-     QUICK RECALL
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
-  <div class="container">
-    <span class="section-label">Quick Recall</span>
-    <h2 class="section-title">Brain Check</h2>
-    <p class="section-desc">Two quick questions before we put it all together. Pulling answers from memory now will help them stick.</p>
-
-    <div class="qr-card check-card" id="qrCard1">
-      <div class="qr-eyebrow check-eyebrow">Quick Recall · 1 of 2</div>
-      <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q check-q" id="qr1Q">Two cubes are exactly the same size. Cube A has a mass of 270 g, and cube B has a mass of 27 g. Which statement is true?</div>
-      <div class="qr-options check-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label class="check-opt"><input type="radio" name="qr1" value="0"><span>Cube A has more matter packed into the same space, so it is denser</span></label>
-        <label class="check-opt"><input type="radio" name="qr1" value="1"><span>Cube B is denser because it is lighter</span></label>
-        <label class="check-opt"><input type="radio" name="qr1" value="2"><span>They have the same density because they are the same size</span></label>
-      </div>
-      <div class="qr-feedback" id="qr1Feedback" aria-live="polite" tabindex="-1"></div>
-      <div class="qr-actions">
-        <button class="qr-check" type="button" id="qr1Check">Check Answer</button>
-        <button class="qr-retry" type="button" id="qr1Retry" style="display:none;">Try Again</button>
-      </div>
-    </div>
-
-    <div class="qr-card check-card" id="qrCard2">
-      <div class="qr-eyebrow check-eyebrow">Quick Recall · 2 of 2</div>
-      <div class="qr-sub">One more brain check. Not graded.</div>
-      <div class="qr-q check-q" id="qr2Q">An ice cube floats in a glass of water. What must be true about the ice?</div>
-      <div class="qr-options check-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label class="check-opt"><input type="radio" name="qr2" value="0"><span>Its density is less than the density of liquid water</span></label>
-        <label class="check-opt"><input type="radio" name="qr2" value="1"><span>Its mass is less than the mass of the water in the glass</span></label>
-        <label class="check-opt"><input type="radio" name="qr2" value="2"><span>Its volume is bigger than the volume of the water</span></label>
-      </div>
-      <div class="qr-feedback" id="qr2Feedback" aria-live="polite" tabindex="-1"></div>
-      <div class="qr-actions">
-        <button class="qr-check" type="button" id="qr2Check">Check Answer</button>
-        <button class="qr-retry" type="button" id="qr2Retry" style="display:none;">Try Again</button>
-      </div>
-    </div>
-
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Pull density reasoning from memory before the synthesis.</li><li>Catch the "same size means same density" slip.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Retrieval practice</li><li>Productive struggle on low-stakes items</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes, stated plainly</li><li>Check then retry, with feedback</li><li>Two questions only, no overload</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLAIN - BACK TO THE MYSTERY (wrap-up + folded lesson summary)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="synthesis" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explain · Wrap-Up</span>
-    <h2 class="section-title">Back to the Floating Giant</h2>
-    <p class="section-desc">You started this lesson with three puzzles: same-size balls with different heft, invisible air, and a steel ship that floats. <strong>What they have in common:</strong> each one is solved by comparing an object's mass to its volume.</p>
-
-    <div class="wrapup-beats">
-
-      <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">The Answer</div>
-        <div class="wrapup-beat-answer">The ship floats because its density, not its mass, is less than water's.</div>
-        <div class="wrapup-beat-body">Its overall density, counting the steel and all the air inside the hull, is less than water's. A pebble is solid rock, so its density is greater than water's.</div>
-      </div>
-
-      <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">The Three Measurements</div>
-        <div class="wrapup-beat-answer">Every piece of matter can be described with the same three numbers.</div>
-        <div class="wrapup-beat-body">No matter the object, the measurements are:</div>
-        <div class="wrapup-behavior-chips">
-          <span class="wbc wbc-mass">Mass · g</span>
-          <span class="wbc wbc-volume">Volume · cm³ or mL</span>
-          <span class="wbc wbc-density">Density · g/cm³ or g/mL</span>
-        </div>
-      </div>
-
-      <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">The Other Two Puzzles</div>
-        <div class="wrapup-beat-answer">Same volume, different mass = different density.</div>
-        <div class="wrapup-beat-body">The bowling ball packs far more matter into the same volume as the beach ball - that's <strong>density</strong>. And air? It has mass and takes up space, so air is <strong>matter</strong> too, just a gas with very low density.</div>
-      </div>
-
-    </div>
-
-    <!-- Lesson recap (folded into the wrap-up) -->
-    <div style="margin-top: 3rem; margin-bottom: 1rem;">
-      <h3 style="font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--text); margin-bottom: 0.4rem;">Your Learning Goals</h3>
-      <p class="section-desc" style="margin-bottom: 0;">The goals you worked toward, and how you showed them.</p>
-    </div>
-
-    <div class="summary-table-wrap">
-      <table class="summary-table">
-        <thead>
-          <tr><th>Learning Goals</th><th>How You Showed It</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="term" style="white-space: normal;">Define matter and explain how scientists measure it using mass and volume with the right tools (6.MS-PS1-7 MA).</td>
-            <td>You predicted whether air is matter, matched tools to measurements, built block volumes with V = l × w × h, and measured volume by water displacement.</td>
-          </tr>
-          <tr>
-            <td class="term" style="white-space: normal;">Calculate density from mass and volume and use it to explain sinking and floating (6.MS-PS1-7 MA).</td>
-            <td>You ran the Density Lab, solved a two-step density problem by hand, and saw why a steel ship floats while a pebble sinks.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Essential question:</strong> How can a giant steel ship float while a tiny pebble sinks? If you can answer that with the words mass, volume, and density, you own this lesson.
-    </div>
-
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Resolve all three opening puzzles with one coherent explanation.</li><li>Gather the goals and how students showed them at a glance.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Coherent narrative back to the hook</li><li>Elaboration linking mass, volume, density</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Goals table pairs each goal with its evidence</li><li>Color-coded chips reinforce the three measurements</li><li>Short, parallel wrap-up beats</li></ul>
+          <ul class="edu-note-text"><li>Lab 4 marks the held variable with a lock and text, never color alone</li><li>Prediction gates the tank lab</li><li>Math panel and tank shown side by side</li><li>Compare cards contrast bowling ball and beach ball</li></ul>
         </div>
       </div>
     </div>
@@ -2979,7 +2762,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   margin-left: auto;
   margin-right: auto;
   box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  /* Never wider than its column: at large text on a phone the two
+     buttons wrap onto two rows instead of widening the page. */
+  max-width: 100%;
+  flex-wrap: wrap;
 }
+.quiz-mode-toggle .mode-btn { flex: 1 1 auto; }
 .mode-btn {
   padding: 0.65rem 1.8rem;
   border-radius: 10px;
@@ -3175,22 +2963,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--green); margin-bottom: 0.5rem; }
 .score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
 
-.mystery-loop {
-  max-width: 540px; margin: 0.4rem auto 1.5rem;
-  padding: 1.05rem 1.3rem;
-  background: rgba(245,200,66,0.08);
-  border: 1px solid rgba(245,200,66,0.3);
-  border-left: 4px solid var(--gold);
-  border-radius: 12px; text-align: left;
-  font-size: 0.92rem; line-height: 1.65; color: var(--text);
-}
-.mystery-loop .ml-label {
-  display: block; font-size: 0.66rem; font-weight: 900;
-  letter-spacing: 0.13em; text-transform: uppercase;
-  color: var(--gold); margin-bottom: 0.4rem;
-}
-.mystery-loop strong { color: var(--gold); }
-
 .score-submitted {
   display: block; font-size: 0.8rem; font-weight: 800;
   letter-spacing: 0.08em; text-transform: uppercase;
@@ -3312,13 +3084,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </style>
     <div class="think-box" id="mm-think">
       <div class="think-eyebrow">🧠 Show Your Thinking</div>
-      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-lead" id="mm-think-title">Solve the Floating Giant Mystery</p>
       <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
-      <p class="think-prompt">In one or two sentences, explain what decides whether an object floats or sinks in water. Then use that idea to explain how a giant steel ship floats while a tiny pebble sinks. Use the word <strong>density</strong>.</p>
-      <textarea class="think-input" id="mm-thinking" placeholder="Write your explanation here..." aria-label="Explain what decides whether an object floats or sinks and how a steel ship floats"></textarea>
+      <p class="think-prompt" id="mm-think-prompt"><strong>How can a giant steel ship float while a tiny pebble sinks?</strong> Explain your thinking using the words <strong>mass</strong>, <strong>volume</strong>, and <strong>density</strong>. Consider how the ship's shape and the water it displaces help it float.</p>
+      <textarea class="think-input" id="mm-thinking" placeholder="Write your explanation here..." aria-label="Explain how a giant steel ship can float while a tiny pebble sinks, using mass, volume, and density"></textarea>
       <div class="think-model" id="mm-think-model">
         <span class="tm-label">One strong way to say it</span>
-        What decides floating or sinking is <strong>density</strong>, not mass or size: an object floats when its density is less than water's (1 g/cm³) and sinks when it is greater. A giant steel ship floats because its overall density, counting the steel and all the air inside its hull, is less than water's. A pebble is solid rock packed into a small volume, so its density is greater than water's. If your answer names density as the deciding factor and uses it to explain both objects, you have it.
+        <strong>Steel itself is denser than water</strong>, so a solid block of steel sinks. A ship's hull is different: it is hollow and wide, so it surrounds a lot of space, much of it filled with air. Divide the ship's total mass by its whole volume, including that space, and its <strong>average density</strong> is less than water's. As the hull settles into the water, it pushes aside, or <strong>displaces</strong>, water, and the water pushes back up on the hull. This upward push is called the buoyant force. The ship settles until that upward push balances its weight, and then it floats. A pebble is solid rock, which is denser than water. When it is underwater, the upward push on it is smaller than its weight, so it sinks. A strong answer uses mass, volume, and density, and explains how the ship's shape lets it displace enough water to float.
       </div>
     </div>
 
@@ -3339,10 +3111,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <!-- Submission status sits directly under the score so the result and
            whether it was recorded are in view together, even on short screens. -->
       <div id="mm-submit-status"></div>
-      <div class="mystery-loop">
-        <span class="ml-label">🔍 The Mystery You Came In With</span>
-        You started this lesson with one question: <strong>"How can a giant steel ship float while a tiny pebble sinks?"</strong> If you can explain it using mass, volume, and density, you've solved the mystery.
-      </div>
       <button class="reset-btn" onclick="mmResetQuiz()">Try Again</button>
       <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
       <a class="return-assignments" id="back-to-assignments" href="/app/">Back to My Assignments</a>
@@ -4060,6 +3828,344 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 })();
 </script>
 
+<!-- ===== DENSITY EXPLORER (ungraded, nothing stored) ===== -->
+<script>
+(function(){
+  var lab = document.getElementById('dx-lab');
+  if (!lab) return;
+  /* The Original Block never changes. Your Block starts equal to it, and
+     each investigation moves one value while the other stays locked. */
+  var BASE = { m: 40, v: 20 };
+  /* Flat model: a square whose AREA stands for volume, so its side grows
+     with the square root of the volume (K px per square root of a cm³).
+     Each dot is the same 5 g of matter, so dots per area track density.
+     The largest square (100 cm³) fills the 200 x 196 viewBox; every square
+     sits on the same floor line so sizes compare at a glance. */
+  var K = 18, FLOOR = 190, MID = 100, G_PER_DOT = 5, PAD = 8, R = 3.6;
+  var MODES = {
+    mass: {
+      title: 'Change Mass, Keep Volume the Same',
+      predictQ: 'If volume stays the same but mass increases, what do you predict will happen to density?',
+      test: 'Now move the mass slider above 40 g to test it.',
+      evidence: 'With the volume locked at 20 cm³, more mass gave a greater density.',
+      answer: 'up',
+      checkQ: 'A block has a mass of 40 g and a volume of 20 cm³. Its mass doubles while its volume stays the same. What happens to its density?',
+      choices: [
+        { text: 'It stays the same at 2\u00a0g/cm³.',
+          fb: 'Not quite. The volume stayed the same, but the mass doubled to 80 g. Try 80 g ÷ 20 cm³.' },
+        { text: 'It doubles from 2\u00a0g/cm³ to 4\u00a0g/cm³.', ok: true,
+          fb: 'Correct! 80 g ÷ 20 cm³ = 4 g/cm³. Twice the mass in the same volume gives twice the density.' },
+        { text: 'It halves from 2\u00a0g/cm³ to 1\u00a0g/cm³.',
+          fb: 'Not quite. The volume did not change, and the mass went up to 80 g. Try 80 g ÷ 20 cm³.' }
+      ]
+    },
+    volume: {
+      title: 'Change Volume, Keep Mass the Same',
+      predictQ: 'If mass stays the same but volume increases, what do you predict will happen to density?',
+      test: 'Now move the volume slider above 20 cm³ to test it.',
+      evidence: 'With the mass locked at 40 g, more volume gave a smaller density.',
+      answer: 'down',
+      checkQ: 'A block has a mass of 40 g and a volume of 20 cm³. Its volume doubles while its mass stays the same. What happens to its density?',
+      choices: [
+        { text: 'It increases from 2\u00a0g/cm³ to 4\u00a0g/cm³.',
+          fb: 'Not quite. More space does not add matter, so the mass is still 40 g. Try 40 g ÷ 40 cm³.' },
+        { text: 'It stays the same at 2\u00a0g/cm³.',
+          fb: 'Not quite. The same 40 g of matter now fills twice the space. Try 40 g ÷ 40 cm³.' },
+        { text: 'It decreases from 2\u00a0g/cm³ to 1\u00a0g/cm³.', ok: true,
+          fb: 'Correct! 40 g ÷ 40 cm³ = 1 g/cm³. The same mass in twice the volume gives half the density.' }
+      ]
+    }
+  };
+  var PREDICTIONS = { up: 'density increases', down: 'density decreases', same: 'density stays the same' };
+  var START_NOTE = 'Make a prediction, then move the slider to test it.';
+  var COMPARE = {
+    more: { sign: '>', text: 'Your block is more dense than the original.' },
+    less: { sign: '<', text: 'Your block is less dense than the original.' },
+    same: { sign: '=', text: 'Both blocks have the same density.' }
+  };
+
+  var modeBtns = [].slice.call(lab.querySelectorAll('.dx-mode'));
+  var title = document.getElementById('dx-mode-title');
+  var instruct = document.getElementById('dx-instruct');
+  var predictQ = document.getElementById('dx-predict-q');
+  var predBtns = [].slice.call(lab.querySelectorAll('.dx-pred'));
+  var predictNote = document.getElementById('dx-predict-note');
+  var noteZone = document.getElementById('dx-note-zone');
+  var massIn = document.getElementById('dx-mass');
+  var volIn = document.getElementById('dx-vol');
+  var massVal = document.getElementById('dx-mass-val');
+  var volVal = document.getElementById('dx-vol-val');
+  var massRow = document.getElementById('dx-mass-row');
+  var volRow = document.getElementById('dx-vol-row');
+  var mathOut = document.getElementById('dx-math');
+  var result = document.getElementById('dx-result');
+  var resetBtn = document.getElementById('dx-reset');
+  var announcer = document.getElementById('dx-announce');
+  var origSvg = document.getElementById('dx-orig-svg');
+  var yourSvg = document.getElementById('dx-your-svg');
+  var checkQ = document.getElementById('dx-check-q');
+  var checkBtns = [].slice.call(lab.querySelectorAll('.dx-opt'));
+  var fbZone = document.getElementById('dx-fb-zone');
+  var fb = document.getElementById('dx-fb');
+
+  /* mode: the active investigation. m, v: Your Block. prediction and
+     observed belong to the active investigation only and are cleared on
+     every switch, so no feedback can carry over from the other one. */
+  var mode = 'mass';
+  var m = BASE.m, v = BASE.v;
+  var prediction = null;
+  var observed = false;
+  var passed = false;
+  var lastCompare = 'same';
+  var announceTimer;
+
+  function announce(msg) {
+    clearTimeout(announceTimer);
+    announcer.textContent = '';
+    announceTimer = setTimeout(function(){ announcer.textContent = msg; }, 100);
+  }
+
+  /* Density keeps full precision; only the display rounds, to two
+     decimal places, and says "about" (≈) when it had to round. */
+  function density(mass, vol) { return mass / vol; }
+  function shown(d) {
+    var r = Math.round(d * 100) / 100;
+    return { value: String(r), exact: Math.abs(r - d) < 1e-9 };
+  }
+  function densityText(mass, vol) {
+    var s = shown(density(mass, vol));
+    return (s.exact ? '' : '≈ ') + s.value + ' g/cm³';
+  }
+  function densityWords(mass, vol) {
+    var s = shown(density(mass, vol));
+    return (s.exact ? '' : 'about ') + s.value + ' grams per cubic centimeter';
+  }
+  /* Compared by cross-multiplying whole numbers, so the sentence always
+     agrees with the exact ratio, never with a rounded display value. */
+  function compare(mass, vol) {
+    var a = mass * BASE.v, b = BASE.m * vol;
+    return a > b ? 'more' : (a < b ? 'less' : 'same');
+  }
+
+  /* The first n points of the R2 low-discrepancy sequence, spread evenly
+     over a unit square. Adding mass adds dots without moving the others,
+     and more volume spreads the same dots over a bigger square. */
+  var G = 1.32471795724474602596;
+  function dotSpots(n) {
+    var spots = [];
+    for (var i = 0; i < n; i++) spots.push([(0.5 + i / G) % 1, (0.5 + i / (G * G)) % 1]);
+    return spots;
+  }
+  function side(vol) { return K * Math.sqrt(vol); }
+  function dotsFor(mass) { return mass / G_PER_DOT; }
+
+  function drawBlock(svg, mass, vol, yours) {
+    var s = side(vol), x = MID - s / 2, y = FLOOR - s, inner = s - 2 * PAD;
+    var html = '<line x1="4" y1="' + (FLOOR + 1) + '" x2="196" y2="' + (FLOOR + 1) + '" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>' +
+      '<rect class="dx-square" x="' + x + '" y="' + y + '" width="' + s + '" height="' + s + '" rx="6" fill="' +
+      (yours ? 'rgba(230,126,34,0.14)' : 'rgba(230,126,34,0.06)') + '" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>';
+    dotSpots(dotsFor(mass)).forEach(function(p){
+      html += '<circle class="dx-dot" cx="' + (x + PAD + p[0] * inner).toFixed(2) + '" cy="' + (y + PAD + p[1] * inner).toFixed(2) +
+        '" r="' + R + '" fill="#e67e22"/>';
+    });
+    svg.firstElementChild.innerHTML = html;
+  }
+
+  function describeYours() {
+    var n = dotsFor(m), base = dotsFor(BASE.m);
+    var size = v === BASE.v ? 'the same size as' : (v > BASE.v ? 'larger than' : 'smaller than');
+    var dots = n === base ? 'the same number of dots' : (n > base ? 'more dots' : 'fewer dots');
+    return 'Your Block model: ' + n + ' dots of matter (' + m + ' g) in a square that stands for ' + v +
+      ' cubic centimeters. It is ' + size + ' the Original Block and has ' + dots + '.';
+  }
+
+  function render() {
+    var cfg = MODES[mode];
+    var massMode = mode === 'mass';
+    massIn.value = String(m);
+    volIn.value = String(v);
+    massVal.textContent = m + ' g';
+    volVal.textContent = v + ' cm³';
+    massIn.hidden = !massMode;
+    massRow.hidden = !massMode;
+    volIn.hidden = massMode;
+    volRow.hidden = massMode;
+    massIn.setAttribute('aria-valuetext', m + ' grams. Density ' + densityWords(m, v) + '.');
+    volIn.setAttribute('aria-valuetext', v + ' cubic centimeters. Density ' + densityWords(m, v) + '.');
+
+    document.getElementById('dx-orig-m').textContent = BASE.m + ' g';
+    document.getElementById('dx-orig-v').textContent = BASE.v + ' cm³';
+    document.getElementById('dx-orig-d').textContent = densityText(BASE.m, BASE.v);
+    document.getElementById('dx-your-m').textContent = m + ' g';
+    document.getElementById('dx-your-v').textContent = v + ' cm³';
+    document.getElementById('dx-your-d').textContent = densityText(m, v);
+
+    drawBlock(origSvg, BASE.m, BASE.v, false);
+    drawBlock(yourSvg, m, v, true);
+    origSvg.setAttribute('aria-label', 'Original Block model: ' + dotsFor(BASE.m) + ' dots of matter (' + BASE.m +
+      ' g) in a square that stands for ' + BASE.v + ' cubic centimeters.');
+    yourSvg.setAttribute('aria-label', describeYours());
+
+    var s = shown(density(m, v));
+    mathOut.innerHTML = '<span class="m">' + m + ' g</span> ÷ <span class="v">' + v + ' cm³</span> ' +
+      (s.exact ? '=' : '≈') + ' <strong>' + s.value + '\u00a0g/cm³</strong>';
+    var c = COMPARE[compare(m, v)];
+    result.innerHTML = '<span class="dx-result-sign" aria-hidden="true">' + c.sign.replace('<', '&lt;').replace('>', '&gt;') +
+      '</span><span>' + c.text + '</span>';
+    title.textContent = cfg.title;
+    /* The one instruction names the changing and the held variable. */
+    instruct.textContent = massMode ? 'Change mass. Volume stays at ' + v + ' cm³.' : 'Change volume. Mass stays at ' + m + ' g.';
+    predictQ.textContent = cfg.predictQ;
+    renderPrediction();
+  }
+
+  function renderPrediction() {
+    var cfg = MODES[mode];
+    var reveal = prediction && observed;
+    predBtns.forEach(function(btn){
+      var on = btn.getAttribute('data-choice') === prediction;
+      btn.classList.toggle('chosen', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      /* Once the evidence has answered it, the prediction stays as made. */
+      if (reveal) btn.setAttribute('aria-disabled', 'true');
+      else btn.removeAttribute('aria-disabled');
+    });
+    var note = noteFor(prediction, reveal);
+    if (predictNote.innerHTML !== note) predictNote.innerHTML = note;
+  }
+
+  function noteFor(choice, reveal) {
+    var cfg = MODES[mode];
+    if (!choice) return START_NOTE;
+    if (!reveal) return '<strong>Prediction saved: ' + PREDICTIONS[choice] + '.</strong> ' + cfg.test;
+    if (choice === cfg.answer) return '<strong>Your prediction matches the evidence.</strong> ' + cfg.evidence;
+    return '<strong>You predicted ' + PREDICTIONS[choice] + '. The evidence shows something different.</strong> ' + cfg.evidence;
+  }
+
+  /* Hidden copies of every note the active investigation can show. */
+  function sizeNotes() {
+    [].slice.call(noteZone.querySelectorAll('.dx-note-sizer')).forEach(function(el){ el.remove(); });
+    var notes = [noteFor(null, false)];
+    Object.keys(PREDICTIONS).forEach(function(k){ notes.push(noteFor(k, false), noteFor(k, true)); });
+    notes.forEach(function(html){
+      var sizer = document.createElement('p');
+      sizer.className = 'dx-predict-note dx-note-sizer';
+      sizer.setAttribute('aria-hidden', 'true');
+      sizer.innerHTML = html;
+      noteZone.appendChild(sizer);
+    });
+  }
+
+  /* Writes the active investigation's question with no marks and no
+     feedback. Hidden copies of every feedback message reserve the space
+     the longest one needs, so answering never shifts the lab. */
+  function resetCheck() {
+    var cfg = MODES[mode];
+    passed = false;
+    checkQ.textContent = cfg.checkQ;
+    checkBtns.forEach(function(btn, i){
+      btn.textContent = cfg.choices[i].text;
+      btn.classList.remove('right', 'wrong');
+      btn.removeAttribute('aria-disabled');
+    });
+    fb.className = 'tm-fb';
+    fb.textContent = '';
+    [].slice.call(fbZone.querySelectorAll('.tm-fb-sizer')).forEach(function(el){ el.remove(); });
+    cfg.choices.forEach(function(ch){
+      var sizer = document.createElement('div');
+      sizer.className = 'tm-fb ok tm-fb-sizer';
+      sizer.setAttribute('aria-hidden', 'true');
+      sizer.textContent = ch.fb;
+      fbZone.appendChild(sizer);
+    });
+  }
+
+  /* Moving the active slider above its starting value is the evidence
+     the prediction asked about. Only a change in the comparison is
+     announced; each step is already read out by the slider's value text. */
+  function update() {
+    var c = compare(m, v);
+    if (mode === 'mass' ? m > BASE.m : v > BASE.v) observed = true;
+    render();
+    if (c !== lastCompare) announce(COMPARE[c].text);
+    lastCompare = c;
+  }
+
+  /* A locked slider is hidden, but if it ever fires it snaps back. */
+  massIn.addEventListener('input', function(){
+    if (mode === 'mass') m = parseInt(massIn.value, 10);
+    update();
+  });
+  volIn.addEventListener('input', function(){
+    if (mode === 'volume') v = parseInt(volIn.value, 10);
+    update();
+  });
+
+  function baseline() {
+    m = BASE.m;
+    v = BASE.v;
+    lastCompare = 'same';
+  }
+
+  resetBtn.addEventListener('click', function(){
+    baseline();
+    render();
+    announce('Your Block is back to ' + BASE.m + ' g and ' + BASE.v + ' cubic centimeters. ' + COMPARE.same.text);
+  });
+
+  modeBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var next = btn.getAttribute('data-mode');
+      if (next === mode) return;
+      mode = next;
+      baseline();
+      prediction = null;
+      observed = false;
+      modeBtns.forEach(function(b){ b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+      resetCheck();
+      sizeNotes();
+      render();
+      announce(next === 'mass'
+        ? 'Investigation A: Change Mass. The volume is locked at ' + BASE.v + ' cubic centimeters. Your Block starts at ' + BASE.m + ' g.'
+        : 'Investigation B: Change Volume. The mass is locked at ' + BASE.m + ' g. Your Block starts at ' + BASE.v + ' cubic centimeters.');
+    });
+  });
+
+  predBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (btn.getAttribute('aria-disabled') === 'true') return;
+      prediction = btn.getAttribute('data-choice');
+      renderPrediction();
+    });
+  });
+
+  /* Unlimited retries: a wrong choice is marked and explained, and any
+     choice can be tried next. Options use aria-disabled, not disabled,
+     so focus stays on the button the student pressed. */
+  checkBtns.forEach(function(btn, i){
+    btn.addEventListener('click', function(){
+      var choice = MODES[mode].choices[i];
+      if (passed || btn.getAttribute('aria-disabled') === 'true') return;
+      checkBtns.forEach(function(b){ b.classList.remove('wrong'); });
+      fb.textContent = choice.fb;
+      if (choice.ok) {
+        passed = true;
+        btn.classList.add('right');
+        fb.className = 'tm-fb visible ok';
+        checkBtns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
+      } else {
+        btn.classList.add('wrong');
+        fb.className = 'tm-fb visible no';
+      }
+    });
+  });
+
+  resetCheck();
+  sizeNotes();
+  render();
+})();
+</script>
+
 <!-- ===== DENSITY LAB ===== -->
 <script>
 (function(){
@@ -4121,110 +4227,6 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 })();
 </script>
 
-<!-- ===== PRACTICE PROBLEM STEPPER ===== -->
-<script>
-(function(){
-  function wireStep(optsId, fbId, okMsg, noMsg, onCorrect) {
-    var opts = document.getElementById(optsId);
-    var fb   = document.getElementById(fbId);
-    var done = false;
-    opts.querySelectorAll('.we-opt-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        if (done || btn.getAttribute('aria-disabled') === 'true') return;
-        if (btn.getAttribute('data-ans') === '1') {
-          done = true;
-          btn.classList.add('right');
-          fb.className = 'we-fb visible ok';
-          fb.textContent = okMsg;
-          opts.querySelectorAll('.we-opt-btn').forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
-          if (onCorrect) setTimeout(onCorrect, 350);
-        } else {
-          btn.classList.add('wrong');
-          btn.setAttribute('aria-disabled', 'true');
-          fb.className = 'we-fb visible no';
-          fb.textContent = noMsg;
-        }
-      });
-    });
-  }
-
-  wireStep('pp-step1', 'pp-fb1',
-    'Correct! 4 × 3 × 2 = 24 cm³. Now you have both numbers the formula needs.',
-    'Not quite. Multiply all three dimensions: 4 × 3 first, then × 2. Try again.',
-    function(){ document.getElementById('pp-step2-wrap').classList.add('visible'); });
-
-  wireStep('pp-step2', 'pp-fb2',
-    'Correct! 60 ÷ 24 = 2.5 g/cm³.',
-    'Not quite. Density is mass ÷ volume: 60 ÷ 24. Try again.',
-    function(){
-      /* Refill the status region after revealing it so it is announced. */
-      var success = document.getElementById('pp-success');
-      var successText = success.textContent;
-      success.textContent = '';
-      success.classList.add('visible');
-      setTimeout(function(){ success.textContent = successText; }, 100);
-    });
-})();
-</script>
-
-<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
-<script>
-(function(){
-  function wireQR(prefix, correctIdx, okMsg, noMsg) {
-    var opts = document.getElementById(prefix + 'Opts');
-    var fb = document.getElementById(prefix + 'Feedback');
-    var checkBtn = document.getElementById(prefix + 'Check');
-    var retryBtn = document.getElementById(prefix + 'Retry');
-
-    opts.addEventListener('change', function(e){
-      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
-      e.target.closest('label').classList.add('selected');
-    });
-    checkBtn.addEventListener('click', function(){
-      var sel = opts.querySelector('input[type=radio]:checked');
-      if (!sel) {
-        fb.className = 'qr-feedback visible no';
-        fb.textContent = 'Pick an answer first.';
-        return;
-      }
-      var val = parseInt(sel.value, 10);
-      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
-      if (val === correctIdx) {
-        sel.closest('label').classList.add('correct');
-        fb.className = 'qr-feedback visible ok';
-        fb.textContent = okMsg;
-        checkBtn.style.display = 'none';
-        retryBtn.style.display = 'none';
-        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
-        fb.focus();
-      } else {
-        sel.closest('label').classList.add('wrong');
-        fb.className = 'qr-feedback visible no';
-        fb.textContent = noMsg;
-        checkBtn.style.display = 'none';
-        retryBtn.style.display = 'inline-flex';
-        retryBtn.focus();
-      }
-    });
-    retryBtn.addEventListener('click', function(){
-      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
-      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
-      fb.className = 'qr-feedback';
-      fb.textContent = '';
-      retryBtn.style.display = 'none';
-      checkBtn.style.display = 'inline-flex';
-      opts.querySelector('input').focus();
-    });
-  }
-
-  wireQR('qr1', 0,
-    'Correct! Same volume but ten times the mass means ten times the density. Density compares mass to volume, not just one of them.',
-    'Not quite. Both cubes fill the same space, so the one with more mass has more matter packed in - it is denser.');
-  wireQR('qr2', 0,
-    'Correct! Floating is decided by comparing densities. Ice is slightly less dense than liquid water, so it floats - mass and volume alone don\'t decide it.',
-    'Not quite. Mass alone and volume alone don\'t decide floating. Compare densities: the ice must be less dense than the water.');
-})();
-</script>
 
 <!-- ===== QUIZ ===== -->
 <script>
