@@ -201,6 +201,37 @@ describe("pointer drag (mouse, pen, touch)", () => {
     expect(order(host, a.unitId)).toEqual([R2.id, R3.id, R1.id]);
   });
 
+  test("a slow save is shown as in progress, never as an unconfirmed change, and is confirmed only by the server", async () => {
+    const a = unit({ title: "Test Unit", resourceIds: [R1.id, R2.id, R3.id] });
+    const { host, c, ctl, units } = await panel([a]);
+    let release: () => void = () => {};
+    const real = c.setResources.getMockImplementation()!;
+    c.setResources.mockImplementationOnce((req) => new Promise((res) => { release = () => res(real(req)); }));
+    const pendingRegion = q(host, "units-pending")!;
+    const { h } = drag(host, a.unitId, R3.id, 120, 45);
+    pointer(h, "pointerup", 45);
+    await flush();
+    expect(c.setResources).toHaveBeenCalledTimes(1);
+    // Waiting for the response: busy handles and the in-progress status only.
+    expect(status(host)).toBe(`Moving "${R3.title}" to position 2 of 3 in "Test Unit"...`);
+    expect(handle(host, a.unitId, R1.id).getAttribute("aria-disabled")).toBe("true");
+    expect(pendingRegion.hidden).toBe(true);
+    expect(host.textContent).not.toMatch(/Unconfirmed changes|couldn't confirm|still waiting for a response/);
+    expect(order(host, a.unitId)).toEqual([R1.id, R2.id, R3.id]);
+    release();
+    await flush();
+    expect(order(host, a.unitId)).toEqual([R1.id, R3.id, R2.id]);
+    expect(status(host)).toBe(`Moved "${R3.title}" to position 2 of 3.`);
+    expect(pendingRegion.hidden).toBe(true);
+    expect(host.textContent).not.toMatch(/Unconfirmed changes|couldn't confirm/);
+    expect(handle(host, a.unitId, R1.id).getAttribute("aria-disabled")).not.toBe("true");
+    // What a reload would read is the server's order.
+    expect(units.get(a.unitId)!.resourceIds).toEqual([R1.id, R3.id, R2.id]);
+    await ctl.refresh();
+    await flush();
+    expect(order(host, a.unitId)).toEqual([R1.id, R3.id, R2.id]);
+  });
+
   test("a non-primary button does not start a drag", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const { host, c } = await panel([a]);

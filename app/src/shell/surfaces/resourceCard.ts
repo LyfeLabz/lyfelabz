@@ -33,6 +33,9 @@ export type ResourceCardInput = {
   // Where the resource-type label sits: in the metadata header (default,
   // My Units) or directly after the title (Curriculum, Milestone 1 polish).
   readonly typePlacement?: "header" | "title";
+  // Metadata pill order: grade then topic (default, My Units), or topic
+  // then grade (Curriculum, Milestone 2B refinement).
+  readonly pillOrder?: "gradeFirst" | "topicFirst";
   readonly testIds?: {
     readonly grade?: string;
     readonly topic?: string;
@@ -86,19 +89,22 @@ export function buildResourceCard(doc: Document, input: ResourceCardInput): Reso
 
   const header = doc.createElement("div");
   header.className = "shell-lesson-header";
+  let grade: HTMLElement | null = null;
   if (input.grade !== null) {
-    const grade = doc.createElement("span");
+    grade = doc.createElement("span");
     grade.className = "shell-lesson-badge shell-lesson-grade";
     if (input.testIds?.grade) grade.setAttribute("data-testid", input.testIds.grade);
     grade.textContent = `G${input.grade}`;
-    header.appendChild(grade);
   }
+  let topic: HTMLElement | null = null;
   if (input.topic !== null) {
-    const topic = doc.createElement("span");
+    topic = doc.createElement("span");
     topic.className = `shell-lesson-badge shell-lesson-topic shell-lesson-topic-${input.topic}`;
     if (input.testIds?.topic) topic.setAttribute("data-testid", input.testIds.topic);
     topic.textContent = TOPIC_LABEL[input.topic];
-    header.appendChild(topic);
+  }
+  for (const pill of input.pillOrder === "topicFirst" ? [topic, grade] : [grade, topic]) {
+    if (pill !== null) header.appendChild(pill);
   }
   let type: HTMLElement | null = null;
   if (input.typeLabel !== null) {

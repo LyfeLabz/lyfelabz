@@ -364,10 +364,13 @@ export function renderTeacherUnitsPanel(
   root.appendChild(outcomes);
   // A3-4 S2 Unconfirmed changes: every pending non-create request of this
   // teacher and school, from the controller (which reads the seam-owned
-  // registry, so the list survives leaving and reopening My Units). Each
-  // entry states what was asked and what the unit looks like now; it never
-  // says whether the request was saved. Controls only read (Check current
-  // state) or acknowledge (Dismiss); nothing here resends a request.
+  // registry, so the list survives leaving and reopening My Units), except
+  // this panel's own requests still waiting for their response (their card
+  // already shows them as in progress). Each entry states what was asked
+  // and what the unit looks like now; it never says whether the request was
+  // saved. Requests an earlier panel sent that are still waiting are listed
+  // separately, as waiting, never as unconfirmed. Controls only read (Check
+  // current state) or acknowledge (Dismiss); nothing here resends a request.
   const pendingBox = el("div", "shell-units-recovery shell-units-pending");
   pendingBox.setAttribute("data-testid", "units-pending");
   pendingBox.setAttribute("role", "region");
@@ -2720,13 +2723,17 @@ export function renderTeacherUnitsPanel(
     // Never rewritten with the same words: no repeated announcement (F5).
     if ((pendingStatus.textContent ?? "") !== text) pendingStatus.textContent = text;
   };
-  const announcePendingUpdates = (s: TeacherUnitsViewState): void => {
+  // What the region lists: every pending entry except this panel's own
+  // requests that are still waiting for their response.
+  const listedPending = (s: TeacherUnitsViewState): ReadonlyArray<PendingMutationEntry> =>
+    s.pending.filter((e) => !(e.status === "inFlight" && s.ownInFlight.has(e.record.id)));
+  const announcePendingUpdates = (s: TeacherUnitsViewState, listed: ReadonlyArray<PendingMutationEntry>): void => {
     const messages: string[] = [];
     const about = new Set<string>();
-    const present = new Set(s.pending.map((e) => e.record.id));
+    const present = new Set(listed.map((e) => e.record.id));
     if (pendingSeen === null) {
       pendingSeen = new Map();
-      for (const e of s.pending) {
+      for (const e of listed) {
         restoredIds.add(e.record.id);
         about.add(e.record.id);
         pendingSeen.set(e.record.id, {
@@ -2736,12 +2743,16 @@ export function renderTeacherUnitsPanel(
         });
       }
       resolutionSeen = s.resolutions.reduce((m, r) => Math.max(m, r.seq), 0);
-      const n = s.pending.length;
+      const n = listed.filter((e) => e.status === "uncertain").length;
       if (n > 0) {
         messages.push(n === 1 ? "One change is listed under Unconfirmed changes." : `${n} changes are listed under Unconfirmed changes.`);
       }
+      // A request an earlier panel sent that has no response yet is waiting,
+      // not unconfirmed.
+      const w = listed.length - n;
+      if (w > 0) messages.push(w === 1 ? "One change is waiting for a response." : `${w} changes are waiting for a response.`);
     } else {
-      for (const e of s.pending) {
+      for (const e of listed) {
         const id = e.record.id;
         const prev = pendingSeen.get(id);
         const text = findingText(e);
@@ -2777,56 +2788,76 @@ export function renderTeacherUnitsPanel(
   };
   let pendingKey = "";
   const renderPending = (s: TeacherUnitsViewState): void => {
-    announcePendingUpdates(s);
+    const listed = listedPending(s);
+    announcePendingUpdates(s, listed);
     // Shown while it lists anything or holds the latest update.
-    pendingBox.hidden = s.pending.length === 0 && (pendingStatus.textContent ?? "") === "";
-    const key = JSON.stringify(s.pending.map((e) => [e.record.id, pendingText(e), e.status, e.checking]));
+    pendingBox.hidden = listed.length === 0 && (pendingStatus.textContent ?? "") === "";
+    const unconfirmed = listed.filter((e) => e.status === "uncertain");
+    const waiting = listed.filter((e) => e.status === "inFlight");
+    pendingBox.setAttribute(
+      "aria-label",
+      unconfirmed.length === 0 && waiting.length > 0 ? "Changes waiting for a response" : "Unconfirmed changes",
+    );
+    const key = JSON.stringify(listed.map((e) => [e.record.id, pendingText(e), e.status, e.checking]));
     if (key === pendingKey) return;
     pendingKey = key;
+    const item = (e: PendingMutationEntry): HTMLElement => {
+      const id = e.record.id;
+      const li = el("li", "shell-units-recovery-item");
+      li.setAttribute("data-testid", `units-pending-${id}`);
+      li.setAttribute("data-unit-id", e.record.unitId);
+      li.setAttribute("data-status", e.status);
+      li.setAttribute("data-finding", e.status === "inFlight" ? "pending" : e.evaluation.finding);
+      li.appendChild(el("p", "shell-units-recovery-message", pendingText(e)));
+      if (e.status === "uncertain") {
+        const actions = el("div", "shell-units-actions");
+        const check = button("Check current state");
+        check.setAttribute("data-testid", `units-pending-check-${id}`);
+        setAriaDisabled(check, e.checking);
+        check.addEventListener("click", () => {
+          if (isInert(check)) return;
+          void controller.checkPendingMutation(id);
+        });
+        const dismiss = button("Dismiss");
+        dismiss.setAttribute("data-testid", `units-pending-dismiss-${id}`);
+        dismiss.setAttribute("aria-label", `Dismiss unconfirmed change to "${e.record.titleAtRequest}"`);
+        dismiss.addEventListener("click", () => {
+          controller.dismissPendingMutation(id);
+        });
+        actions.appendChild(check);
+        actions.appendChild(dismiss);
+        li.appendChild(actions);
+      }
+      return li;
+    };
     rebuildKeepingFocus(
       pendingBody,
       () => {
-        if (s.pending.length === 0) return;
-        const h = el("h4", "shell-units-subheading", "Unconfirmed changes");
-        h.id = "units-pending-heading";
-        pendingBody.appendChild(h);
-        pendingBody.appendChild(
-          el(
-            "p",
-            "shell-units-recovery-intro",
-            "LyfeLabz couldn't confirm these changes. Each one shows what the unit looks like now, which can't tell you whether your request was saved. This list is kept while you stay on this page. Reloading the page clears it, but doesn't confirm or undo anything.",
-          ),
-        );
-        const ul = el("ul", "shell-units-recovery-list");
-        pendingBody.appendChild(ul);
-        for (const e of s.pending) {
-          const id = e.record.id;
-          const li = el("li", "shell-units-recovery-item");
-          li.setAttribute("data-testid", `units-pending-${id}`);
-          li.setAttribute("data-unit-id", e.record.unitId);
-          li.setAttribute("data-status", e.status);
-          li.setAttribute("data-finding", e.status === "inFlight" ? "pending" : e.evaluation.finding);
-          li.appendChild(el("p", "shell-units-recovery-message", pendingText(e)));
-          if (e.status === "uncertain") {
-            const actions = el("div", "shell-units-actions");
-            const check = button("Check current state");
-            check.setAttribute("data-testid", `units-pending-check-${id}`);
-            setAriaDisabled(check, e.checking);
-            check.addEventListener("click", () => {
-              if (isInert(check)) return;
-              void controller.checkPendingMutation(id);
-            });
-            const dismiss = button("Dismiss");
-            dismiss.setAttribute("data-testid", `units-pending-dismiss-${id}`);
-            dismiss.setAttribute("aria-label", `Dismiss unconfirmed change to "${e.record.titleAtRequest}"`);
-            dismiss.addEventListener("click", () => {
-              controller.dismissPendingMutation(id);
-            });
-            actions.appendChild(check);
-            actions.appendChild(dismiss);
-            li.appendChild(actions);
-          }
-          ul.appendChild(li);
+        // Only an uncertain outcome is introduced as unconfirmed.
+        if (unconfirmed.length > 0) {
+          const h = el("h4", "shell-units-subheading", "Unconfirmed changes");
+          h.id = "units-pending-heading";
+          pendingBody.appendChild(h);
+          pendingBody.appendChild(
+            el(
+              "p",
+              "shell-units-recovery-intro",
+              "LyfeLabz couldn't confirm these changes. Each one shows what the unit looks like now, which can't tell you whether your request was saved. This list is kept while you stay on this page. Reloading the page clears it, but doesn't confirm or undo anything.",
+            ),
+          );
+          const ul = el("ul", "shell-units-recovery-list");
+          pendingBody.appendChild(ul);
+          for (const e of unconfirmed) ul.appendChild(item(e));
+        }
+        // Requests an earlier panel sent that have no response yet.
+        if (waiting.length > 0) {
+          const h = el("h4", "shell-units-subheading", "Changes waiting for a response");
+          h.id = "units-waiting-heading";
+          pendingBody.appendChild(h);
+          const ul = el("ul", "shell-units-recovery-list");
+          ul.setAttribute("data-testid", "units-waiting-list");
+          pendingBody.appendChild(ul);
+          for (const e of waiting) ul.appendChild(item(e));
         }
       },
       (tid) =>

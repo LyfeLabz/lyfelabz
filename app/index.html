@@ -5832,7 +5832,21 @@
     position: sticky;
     top: 0;
     z-index: 20;
+    /* The toolbar keeps its space while inactive, and the outcome notice
+       shares that space, so neither moves the cards. Only an active
+       toolbar and a notice together take two rows. */
+    display: grid;
+    pointer-events: none;
   }
+  .shell-curriculum-selection,
+  .shell-curriculum-unit-notice { grid-area: 1 / 1; min-width: 0; pointer-events: auto; }
+  .shell-curriculum-selection-dock-both .shell-curriculum-unit-notice { grid-area: 2 / 1; }
+  .shell-curriculum-selection[data-active="false"] { visibility: hidden; pointer-events: none; }
+  .shell-curriculum-unit-notice-already { color: var(--tw-ink-muted, #566472); }
+  /* Keyboard focus keeps the shared ring; focus moved after a pointer
+     action shows none. */
+  .shell-curriculum-unit-notice-actions button:focus:not(:focus-visible) { box-shadow: none; outline: none; }
+  .shell-curriculum-unit-notice-actions button:focus-visible { outline: var(--tw-focus-outline, 2px solid #1a5f6f); outline-offset: 2px; }
   .shell-curriculum-selection {
     display: flex;
     align-items: center;
@@ -5875,6 +5889,27 @@
     border-radius: var(--tw-radius-card, 10px);
   }
   .shell-curriculum-unit-notice-text { margin: 0; font-size: 0.9rem; color: var(--tw-ink, #1c2733); overflow-wrap: anywhere; }
+  /* The toolbar and the outcome notice share one slot with one structure:
+     a text area that reserves two lines (centred), then the actions; a row
+     above 480px, stacked below. With equal padding they are the same height
+     whenever the notice text fits two lines, so showing, dismissing,
+     selecting, or clearing never moves the cards. Longer text grows the
+     slot instead of being clipped (min-height, never a fixed height). */
+  .shell-curriculum-selection,
+  .shell-curriculum-unit-notice {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  .shell-curriculum-selection .shell-curriculum-selection-count,
+  .shell-curriculum-unit-notice .shell-curriculum-unit-notice-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0;
+    line-height: 1.4;
+    min-height: 2.8em;
+  }
   /* The Add to Unit dialog (teacherUnitsPanel.ts openAddToUnitDialog):
      content height up to the shared dialog maximum, the unit list scrolling
      inside it. */
@@ -5933,6 +5968,8 @@
   .shell-units-add-dialog [hidden] { display: none !important; }
   @media (max-width: 480px) {
     .shell-curriculum-selection { border-radius: var(--tw-radius-card, 10px); }
+    .shell-curriculum-selection,
+    .shell-curriculum-unit-notice { grid-template-columns: minmax(0, 1fr); }
     .shell-curriculum-selection-actions,
     .shell-curriculum-unit-notice-actions { flex: 1 1 100%; }
     .shell-curriculum-selection-actions button,

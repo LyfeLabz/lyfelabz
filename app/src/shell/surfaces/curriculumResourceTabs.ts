@@ -263,6 +263,7 @@ function renderResourceCard(
     title: resource.label,
     titleTag: "h3",
     typePlacement: "title",
+    pillOrder: "topicFirst",
     select:
       selection !== null
         ? {

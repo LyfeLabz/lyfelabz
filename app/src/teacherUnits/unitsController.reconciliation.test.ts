@@ -426,6 +426,58 @@ describe("lifecycle above the controller (approved decision D1)", () => {
   });
 });
 
+describe("ownInFlight: the sending controller's own requests that have no response yet", () => {
+  test("listed while its own request is outstanding, never after a response, never for another controller's request", async () => {
+    const registry = createPendingMutationRegistry();
+    const s = scripted();
+    const u = unit();
+    const v = unit();
+    const ctl = await mount(s, [u, v], { registry });
+    const seen: string[][] = [];
+    ctl.subscribe(() => {
+      const st = ctl.getState();
+      // Every render that lists an in-flight entry of this controller's own
+      // unit already marks it as its own: never a frame where it is not.
+      for (const e of st.pending) {
+        if (e.status === "inFlight" && e.record.unitId === u.unitId) seen.push([e.record.id, String(st.ownInFlight.has(e.record.id))]);
+      }
+    });
+    const saved = ctl.updateUnit(u.unitId, { title: "Seeds" });
+    await tick();
+    const [entry] = ctl.getState().pending;
+    expect(entry.status).toBe("inFlight");
+    expect(ctl.getState().ownInFlight).toEqual(new Set([entry.record.id]));
+    last(s, "update").d.resolve({ unit: at(u, { title: "Seeds", revision: 4 }), noop: false });
+    expect((await saved).kind).toBe("saved");
+    expect(ctl.getState().pending).toEqual([]);
+    expect(ctl.getState().ownInFlight.size).toBe(0);
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.every(([, own]) => own === "true")).toBe(true);
+
+    // An uncertain outcome is no longer in flight, so it is never own.
+    const lost = ctl.archiveUnit(v.unitId);
+    await tick();
+    expect(ctl.getState().ownInFlight.size).toBe(1);
+    last(s, "archive").d.reject(fb("unavailable"));
+    await tick();
+    expect(ctl.getState().pending[0].status).toBe("uncertain");
+    expect(ctl.getState().ownInFlight.size).toBe(0);
+    last(s, "get").d.resolve({ unit: v });
+    await lost;
+
+    // Another controller's in-flight request is shown to this one, not as its own.
+    const w = unit();
+    const sender = await mount(s, [w], { registry });
+    void sender.updateUnit(w.unitId, { title: "Theirs" });
+    await tick();
+    const receiver = await mount(s, [w], { registry });
+    const theirs = receiver.getState().pending.find((e) => e.record.unitId === w.unitId)!;
+    expect(theirs.status).toBe("inFlight");
+    expect(receiver.getState().ownInFlight.has(theirs.record.id)).toBe(false);
+    expect(sender.getState().ownInFlight.has(theirs.record.id)).toBe(true);
+  });
+});
+
 describe("no automatic resend (structural)", () => {
   const src = fs.readFileSync(path.join(__dirname, "unitsController.ts"), "utf8");
   const coord = fs.readFileSync(path.join(__dirname, "saveCoordination.ts"), "utf8");

@@ -1390,8 +1390,8 @@ export function renderCurriculumSurface(
 
 // Milestone 2B: unit-name membership pills. Each Curriculum card whose
 // resource is in one of the teacher's active units shows those units' saved
-// names in its metadata row (two at most, then "+N more"); each opens that
-// unit in My Units. Membership comes only from the units controller's
+// names first in its metadata row, before the topic and grade pills (two at
+// most, then "+N more"); each opens that unit in My Units. Membership comes only from the units controller's
 // accepted records (one all-grades active read per Curriculum visit, plus
 // every confirmed write it makes), never from the selection, and nothing is
 // requested per card. Returning to this browser tab re-reads it, at most
@@ -1470,7 +1470,7 @@ function createUnitMembership(input: UnitMembershipInput): { readonly render: ()
       more.addEventListener("click", () => setExpanded(more.getAttribute("aria-expanded") !== "true"));
       slot.append(more, extra);
     }
-    header.appendChild(slot);
+    header.prepend(slot);
     if (focusedUnit !== null) {
       const target =
         focusedUnit === "more"
@@ -1538,8 +1538,10 @@ function createUnitMembership(input: UnitMembershipInput): { readonly render: ()
 }
 
 // Milestone 2A: Curriculum's resource selection toolbar and the Add to Unit
-// outcome notice (TEACHER_UNITS.md "Milestone 2A"). The toolbar shows only
-// while something is selected; the selection itself lives in
+// outcome notice (TEACHER_UNITS.md "Milestone 2A"). The toolbar is active
+// only while something is selected; inactive, it keeps its space but is
+// invisible and inert, so selecting or clearing never moves the cards. The
+// outcome notice shares that space. The selection itself lives in
 // curriculumSelection.ts and survives tab, filter, and surface changes. A
 // confirmed addition (reported by the Add to Unit dialog) clears the
 // selection and leaves a notice with a way to open the unit; nothing else
@@ -1562,11 +1564,41 @@ const UNIT_GRADES: ReadonlyArray<TeacherUnitGrade> = ["6", "7", "8"];
 const asUnitGrade = (g: string | null | undefined): TeacherUnitGrade | null =>
   UNIT_GRADES.find((u) => u === g) ?? null;
 
+// Whether the latest interaction with the document was a pointer press, so
+// focus moved for the teacher after a mouse or touch action shows no
+// keyboard focus ring. Tracked once per document.
+const lastInputWasPointer = new WeakMap<Document, boolean>();
+function trackInputModality(doc: Document): void {
+  if (lastInputWasPointer.has(doc)) return;
+  lastInputWasPointer.set(doc, false);
+  doc.addEventListener("pointerdown", () => lastInputWasPointer.set(doc, true), true);
+  doc.addEventListener("keydown", () => lastInputWasPointer.set(doc, false), true);
+}
+const focusForLastInput = (el: HTMLElement): void => {
+  if (lastInputWasPointer.get(el.ownerDocument) === true) el.focus({ focusVisible: false } as FocusOptions);
+  else el.focus();
+};
+
+// "lesson" / "lessons" when every selected resource has one type, else
+// "resource" / "resources".
+export function resourceNoun(ids: ReadonlyArray<string>): (n: number) => string {
+  const labels = new Set(
+    ids.map((id) => {
+      const type = getFlatResourceById(id)?.type;
+      if (type === "lesson") return "Lesson";
+      return (type !== undefined ? FORMAL_RESOURCE_LABEL[type as FormalResourceType] : undefined) ?? "Resource";
+    }),
+  );
+  const word = labels.size === 1 ? Array.from(labels)[0]!.toLowerCase() : "resource";
+  return (n) => `${n} ${n === 1 ? word : `${word}s`}`;
+}
+
 function renderSelectionBar(input: SelectionBarInput): {
   readonly dock: HTMLElement;
   readonly update: () => void;
 } {
   const { doc, view, selection } = input;
+  trackInputModality(doc);
   // One sticky dock holds the toolbar and the outcome notice, so both stay
   // where the teacher is working in a long list and never overlap.
   const dock = doc.createElement("div");
@@ -1577,7 +1609,12 @@ function renderSelectionBar(input: SelectionBarInput): {
   region.setAttribute("role", "region");
   region.setAttribute("aria-label", "Selected resources");
   region.setAttribute("data-testid", "curriculum-selection-bar");
-  region.hidden = true;
+  const setBarActive = (on: boolean): void => {
+    region.setAttribute("data-active", on ? "true" : "false");
+    if (on) region.removeAttribute("inert");
+    else region.setAttribute("inert", "");
+    dock.classList.toggle("shell-curriculum-selection-dock-both", on && !notice.hidden);
+  };
 
   const count = doc.createElement("p");
   count.className = "shell-curriculum-selection-count";
@@ -1615,6 +1652,13 @@ function renderSelectionBar(input: SelectionBarInput): {
   noticeText.setAttribute("aria-live", "polite");
   noticeText.setAttribute("data-testid", "curriculum-unit-notice-text");
   notice.appendChild(noticeText);
+  const noticeAdded = doc.createElement("span");
+  noticeAdded.className = "shell-curriculum-unit-notice-added";
+  noticeAdded.setAttribute("data-testid", "curriculum-unit-notice-added");
+  const noticeAlready = doc.createElement("span");
+  noticeAlready.className = "shell-curriculum-unit-notice-already";
+  noticeAlready.setAttribute("data-testid", "curriculum-unit-notice-already");
+  noticeText.append(noticeAdded, noticeAlready);
   const noticeActions = doc.createElement("div");
   noticeActions.className = "shell-curriculum-unit-notice-actions";
   notice.appendChild(noticeActions);
@@ -1634,6 +1678,7 @@ function renderSelectionBar(input: SelectionBarInput): {
 
   let lastOutcome: AddToUnitOutcome | null = null;
   let lastCountText = "";
+  setBarActive(false);
 
   const checkboxes = (): HTMLInputElement[] =>
     Array.from(view.querySelectorAll<HTMLInputElement>("input[type=checkbox][data-resource-id]"));
@@ -1647,7 +1692,7 @@ function renderSelectionBar(input: SelectionBarInput): {
       if (box.checked !== on) box.checked = on;
       if (on && box.closest("[hidden]") === null) shown += 1;
     }
-    region.hidden = size === 0;
+    setBarActive(size > 0);
     const hidden = size - shown;
     const text = size === 0 ? "" : `${size} selected${hidden > 0 ? ` (${hidden} not shown)` : ""}`;
     // Only real changes are written, so the polite region is not re-announced.
@@ -1677,15 +1722,20 @@ function renderSelectionBar(input: SelectionBarInput): {
     return only ?? asUnitGrade(input.gradeFilter()) ?? "6";
   };
 
-  const outcomeText = (o: AddToUnitOutcome): string => {
+  // What was newly added, and (separately) what the unit already held.
+  const outcomeText = (o: AddToUnitOutcome, ids: ReadonlyArray<string>): { added: string; already: string } => {
     const where = `"${o.title}" (Grade ${o.grade})`;
-    const resources = (n: number): string => `${n} ${n === 1 ? "resource" : "resources"}`;
-    if (o.created) return `Created ${where} and added ${resources(o.added)}.`;
+    const noun = resourceNoun(ids);
+    if (o.created) return { added: `Created ${where} and added ${noun(o.added)}.`, already: "" };
     if (o.added === 0) {
-      return `${where} already has ${o.alreadyPresent === 1 ? "this resource" : `all ${o.alreadyPresent} of these resources`}. Nothing was changed.`;
+      const word = noun(o.alreadyPresent).replace(/^\d+ /, "");
+      const all = o.alreadyPresent === 1 ? `this ${word}` : `all ${o.alreadyPresent} of these ${word}`;
+      return { added: `${where} already has ${all}. Nothing was changed.`, already: "" };
     }
-    const already = o.alreadyPresent > 0 ? ` ${o.alreadyPresent} ${o.alreadyPresent === 1 ? "was" : "were"} already there.` : "";
-    return `Added ${resources(o.added)} to ${where}.${already}`;
+    return {
+      added: `Added ${noun(o.added)} to ${where}.`,
+      already: o.alreadyPresent > 0 ? ` Already in this unit: ${noun(o.alreadyPresent)}.` : "",
+    };
   };
 
   add.addEventListener("click", () => {
@@ -1702,11 +1752,14 @@ function renderSelectionBar(input: SelectionBarInput): {
       openMyUnits: input.openMyUnits,
       onAdded: (outcome) => {
         lastOutcome = outcome;
-        noticeText.textContent = outcomeText(outcome);
+        const text = outcomeText(outcome, ids);
+        noticeAdded.textContent = text.added;
+        noticeAlready.textContent = text.already;
+        noticeAlready.hidden = text.already === "";
         notice.hidden = false;
         // Cleared only now, after the server confirmed the addition.
         selection.clear();
-        (viewUnit.hidden ? dismiss : viewUnit).focus();
+        focusForLastInput(viewUnit.hidden ? dismiss : viewUnit);
       },
     });
   });
@@ -1717,8 +1770,10 @@ function renderSelectionBar(input: SelectionBarInput): {
   });
   dismiss.addEventListener("click", () => {
     notice.hidden = true;
-    noticeText.textContent = "";
+    noticeAdded.textContent = "";
+    noticeAlready.textContent = "";
     lastOutcome = null;
+    setBarActive(selection.size() > 0);
     input.focusAfterClear().focus();
   });
 
@@ -1845,6 +1900,7 @@ function renderLessonCard(
     title: lesson.title,
     titleTag: "h3",
     typePlacement: "title",
+    pillOrder: "topicFirst",
     testIds: {
       grade: `lesson-grade-${lesson.slug}`,
       topic: `lesson-topic-${lesson.slug}`,

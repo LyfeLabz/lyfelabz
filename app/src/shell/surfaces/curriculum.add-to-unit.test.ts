@@ -150,7 +150,11 @@ const choose = (id: string) => {
 const activeSurface = (root: HTMLElement) =>
   q(root, "workspace-outlet")?.getAttribute("data-active-surface") ?? null;
 const countText = (root: ParentNode) => q(root, "curriculum-selection-count")?.textContent ?? "";
-const barHidden = (root: ParentNode) => (q(root, "curriculum-selection-bar") as HTMLElement).hidden;
+// Inactive: the toolbar keeps its space but is invisible and inert.
+const barHidden = (root: ParentNode) => {
+  const bar = q(root, "curriculum-selection-bar") as HTMLElement;
+  return bar.getAttribute("data-active") === "false" && bar.hasAttribute("inert");
+};
 
 async function curriculumWith(units: TeacherUnit[]) {
   const s = server(units);
@@ -302,7 +306,7 @@ describe("Add to Unit", () => {
     await flush();
     expect(callables.setResources.mock.calls[0]![0].resourceIds).toEqual([LESSON_A.slug, LESSON_B.slug]);
     expect(q(root, "curriculum-unit-notice-text")?.textContent).toBe(
-      `Added 1 resource to "Earth Systems" (Grade 6). 1 was already there.`,
+      `Added 1 lesson to "Earth Systems" (Grade 6). Already in this unit: 1 lesson.`,
     );
   });
 
@@ -317,7 +321,7 @@ describe("Add to Unit", () => {
     await flush();
     expect(callables.setResources).not.toHaveBeenCalled();
     expect(q(root, "curriculum-unit-notice-text")?.textContent).toBe(
-      `"Earth Systems" (Grade 6) already has all 2 of these resources. Nothing was changed.`,
+      `"Earth Systems" (Grade 6) already has all 2 of these lessons. Nothing was changed.`,
     );
     expect(barHidden(root)).toBe(true);
   });
@@ -392,7 +396,7 @@ describe("Add to Unit", () => {
     expect(callables.setResources).toHaveBeenCalledTimes(1);
     expect(callables.setResources.mock.calls[0]![0].resourceIds).toEqual([LESSON_A.slug]);
     expect(q(root, "curriculum-unit-notice-text")?.textContent).toBe(
-      `Created "Plate Tectonics" (Grade 6) and added 1 resource.`,
+      `Created "Plate Tectonics" (Grade 6) and added 1 lesson.`,
     );
   });
 
@@ -559,7 +563,7 @@ describe("unit-name membership pills", () => {
     const onlyA = pillsOf(root, LESSON_A.slug)[0]!;
     expect(onlyA.tagName).toBe("BUTTON");
     expect(onlyA.getAttribute("aria-label")).toBe("Open unit Unit 1: Properties of Matter in My Units");
-    // The pill is in the metadata row, after the grade and topic pills.
+    // The pill is in the metadata row, before the topic and grade pills.
     expect(onlyA.closest(".shell-lesson-header")).toBe(q(root, `lesson-card-${LESSON_A.slug}`)!.querySelector(".shell-lesson-header"));
 
     const cardB = q(root, `lesson-card-${LESSON_B.slug}`)!;
@@ -628,5 +632,140 @@ describe("unit-name membership pills", () => {
     expect(html).toMatch(/\.shell-curriculum-grid \.shell-lesson-view-summary\s*\{[^}]*border-radius:\s*var\(--tw-radius-pill/);
     expect(html).toMatch(/\.shell-curriculum-selection-actions button,\s*\.shell-curriculum-unit-notice-actions button,\s*\.shell-units-add-dialog \.shell-assign-footer button,[^{]*\{[^}]*border-radius:\s*var\(--tw-radius-pill/);
     expect(html).toMatch(/\.shell-card\.shell-resource-row\.shell-resource-row-selectable\s*\{[^}]*"select main actions"/);
+  });
+});
+
+describe("Build Units refinements", () => {
+  const metaOrder = (root: ParentNode, testid: string) =>
+    Array.from(q(root, testid)!.querySelector(".shell-lesson-header")!.children, (el) =>
+      el.classList.contains("shell-resource-units")
+        ? "units"
+        : el.classList.contains("shell-lesson-topic")
+          ? "topic"
+          : el.classList.contains("shell-lesson-grade")
+            ? "grade"
+            : el.className,
+    );
+
+  test("metadata pills read unit names, topic, grade; topic then grade without a membership, on lesson and resource-tab cards", async () => {
+    const u1 = unit({ title: "Matter", resourceIds: [LESSON_A.slug] });
+    const u2 = unit({ title: "Review", resourceIds: [LESSON_A.slug] });
+    const u3 = unit({ title: "Third", resourceIds: [LESSON_A.slug] });
+    const { root } = await curriculumWith([u1, u2, u3]);
+    expect(metaOrder(root, `lesson-card-${LESSON_A.slug}`)).toEqual(["units", "topic", "grade"]);
+    const slot = q(root, `lesson-card-${LESSON_A.slug}`)!.querySelector(".shell-resource-units")!;
+    expect(Array.from(slot.querySelectorAll(".shell-resource-unit-pill"), (p) => p.textContent)).toEqual(["Matter", "Review", "Third"]);
+    expect(slot.querySelector("[data-testid=resource-units-more]")?.textContent).toBe("+1 more");
+    expect(metaOrder(root, `lesson-card-${LESSON_B.slug}`)).toEqual(["topic", "grade"]);
+    click(root, "curriculum-tab-simulations");
+    const simCard = q(root, `resource-select-${SIM_ENTRY.resource.filename}`)!.closest<HTMLElement>(".shell-resource-row")!;
+    const order = Array.from(simCard.querySelector(".shell-lesson-header")!.children, (el) => el.className.match(/shell-lesson-(topic|grade)\b/)?.[1]);
+    expect(order).toEqual(["topic", "grade"]);
+  });
+
+  test("My Units resource cards keep grade then topic", () => {
+    const src = fs.readFileSync(path.join(__dirname, "teacherUnitsPanel.ts"), "utf8");
+    expect(src).not.toMatch(/pillOrder/);
+  });
+
+  test("the toolbar keeps its place while inactive: invisible, inert, never removed from layout", async () => {
+    const { root } = await curriculumWith([]);
+    const bar = q(root, "curriculum-selection-bar")!;
+    const dock = q(root, "curriculum-selection-dock")!;
+    expect(bar.hidden).toBe(false);
+    expect(bar.getAttribute("data-active")).toBe("false");
+    expect(bar.hasAttribute("inert")).toBe(true);
+    toggle(root, `lesson-select-${LESSON_A.slug}`);
+    expect(bar.hidden).toBe(false);
+    expect(bar.getAttribute("data-active")).toBe("true");
+    expect(bar.hasAttribute("inert")).toBe(false);
+    expect(countText(root)).toBe("1 selected");
+    click(root, "curriculum-selection-clear");
+    expect(bar.hidden).toBe(false);
+    expect(bar.getAttribute("data-active")).toBe("false");
+    expect(bar.hasAttribute("inert")).toBe(true);
+    expect(dock.firstElementChild).toBe(bar);
+  });
+
+  test("toolbar and notice styles: one shared slot, inactive toolbar hidden from view and pointer, two rows only when both are shown", () => {
+    const html = fs.readFileSync(path.join(__dirname, "../../../index.html"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(html).toMatch(/\.shell-curriculum-selection-dock\s*\{[^}]*display:\s*grid;[^}]*pointer-events:\s*none;/);
+    expect(html).toMatch(/\.shell-curriculum-selection,\s*\.shell-curriculum-unit-notice\s*\{\s*grid-area:\s*1 \/ 1;[^}]*pointer-events:\s*auto;/);
+    expect(html).toMatch(/\.shell-curriculum-selection-dock-both \.shell-curriculum-unit-notice\s*\{\s*grid-area:\s*2 \/ 1;/);
+    expect(html).toMatch(/\.shell-curriculum-selection\[data-active="false"\]\s*\{\s*visibility:\s*hidden;\s*pointer-events:\s*none;/);
+    // One structure for both: a two-line text area, then the actions; a row
+    // above 480px, stacked below. Reserved with min-height, never a fixed
+    // height, so long text grows instead of being clipped.
+    expect(html).toMatch(/\.shell-curriculum-selection,\s*\.shell-curriculum-unit-notice\s*\{\s*display:\s*grid;\s*grid-template-columns:\s*minmax\(0, 1fr\) auto;/);
+    expect(html).toMatch(/\.shell-curriculum-selection \.shell-curriculum-selection-count,\s*\.shell-curriculum-unit-notice \.shell-curriculum-unit-notice-text\s*\{[^}]*line-height:\s*1\.4;\s*min-height:\s*2\.8em;/);
+    expect(html).toMatch(/@media \(max-width: 480px\)\s*\{[^@]*\.shell-curriculum-selection,\s*\.shell-curriculum-unit-notice\s*\{\s*grid-template-columns:\s*minmax\(0, 1fr\);/);
+    const slotRules = html.match(/\.shell-curriculum-(selection|unit-notice)[^{]*\{[^}]*\}/g)!.join("\n");
+    expect(slotRules).not.toMatch(/(^|[^-])height:\s*\d/m);
+    expect(slotRules).not.toMatch(/max-height|overflow:\s*hidden/);
+    expect(html).toMatch(/\.shell-curriculum-unit-notice-actions button:focus:not\(:focus-visible\)\s*\{\s*box-shadow:\s*none;\s*outline:\s*none;/);
+    // Keyboard focus keeps a visible outline, as on the unit pills.
+    expect(html).toMatch(/\.shell-curriculum-unit-notice-actions button:focus-visible\s*\{\s*outline:\s*var\(--tw-focus-outline, 2px solid #1a5f6f\);\s*outline-offset:\s*2px;/);
+  });
+
+  test("the notice separates new from already-present resources and names a single type; mixed types read resource", async () => {
+    const lessons = unit({ title: "Earth Systems", resourceIds: [LESSON_A.slug] });
+    const { root } = await curriculumWith([lessons]);
+    toggle(root, `lesson-select-${LESSON_A.slug}`);
+    toggle(root, `lesson-select-${LESSON_B.slug}`);
+    let dialog = await openDialog(root);
+    choose(`units-add-choice-${lessons.unitId}`);
+    click(dialog, "units-add-confirm");
+    await flush();
+    expect(q(root, "curriculum-unit-notice-added")?.textContent).toBe(`Added 1 lesson to "Earth Systems" (Grade 6).`);
+    expect(q(root, "curriculum-unit-notice-already")?.textContent).toBe(" Already in this unit: 1 lesson.");
+    expect(q(root, "curriculum-unit-notice-already")?.hidden).toBe(false);
+    expect(q(root, "curriculum-unit-notice-view")?.hidden).toBe(false);
+    expect(q(root, "curriculum-unit-notice-dismiss")).not.toBeNull();
+
+    // Mixed: a lesson already there and a simulation.
+    toggle(root, `lesson-select-${LESSON_A.slug}`);
+    click(root, "curriculum-tab-simulations");
+    toggle(root, `resource-select-${SIM_ENTRY.resource.filename}`);
+    // Notice and active toolbar together take two rows.
+    expect(q(root, "curriculum-selection-dock")!.classList.contains("shell-curriculum-selection-dock-both")).toBe(true);
+    dialog = await openDialog(root);
+    choose(`units-add-choice-${lessons.unitId}`);
+    click(dialog, "units-add-confirm");
+    await flush();
+    expect(q(root, "curriculum-unit-notice-text")?.textContent).toBe(
+      `Added 1 resource to "Earth Systems" (Grade 6). Already in this unit: 1 resource.`,
+    );
+    expect(q(root, "curriculum-selection-dock")!.classList.contains("shell-curriculum-selection-dock-both")).toBe(false);
+
+    // Nothing already there: no second part.
+    const fresh = unit({ title: "Weather" });
+    const second = await curriculumWith([fresh]);
+    toggle(second.root, `lesson-select-${LESSON_A.slug}`);
+    dialog = await openDialog(second.root);
+    choose(`units-add-choice-${fresh.unitId}`);
+    click(dialog, "units-add-confirm");
+    await flush();
+    expect(q(second.root, "curriculum-unit-notice-text")?.textContent).toBe(`Added 1 lesson to "Weather" (Grade 6).`);
+    expect(q(second.root, "curriculum-unit-notice-already")?.hidden).toBe(true);
+  });
+
+  test("after a pointer confirm, View unit is focused without a keyboard ring; after a keyboard confirm, with one", async () => {
+    const existing = unit({ title: "Earth Systems" });
+    const { root } = await curriculumWith([existing]);
+    const spy = jest.spyOn(HTMLElement.prototype, "focus");
+    for (const via of ["pointer", "keyboard"] as const) {
+      spy.mockClear();
+      toggle(root, `lesson-select-${via === "pointer" ? LESSON_A.slug : LESSON_B.slug}`);
+      const dialog = await openDialog(root);
+      choose(`units-add-choice-${existing.unitId}`);
+      document.dispatchEvent(new Event(via === "pointer" ? "pointerdown" : "keydown", { bubbles: true }));
+      click(dialog, "units-add-confirm");
+      await flush();
+      const view = q(root, "curriculum-unit-notice-view")!;
+      expect(document.activeElement).toBe(view);
+      const call = spy.mock.contexts.findIndex((c) => c === view);
+      expect(spy.mock.calls[call]![0]).toEqual(via === "pointer" ? { focusVisible: false } : undefined);
+    }
+    spy.mockRestore();
   });
 });

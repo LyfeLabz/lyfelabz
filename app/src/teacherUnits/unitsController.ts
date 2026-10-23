@@ -140,6 +140,10 @@ export type TeacherUnitsViewState = {
   // finding. Memory only: kept across Curriculum navigation and panel
   // remounts in one signed-in session, never across a browser reload.
   readonly pending: ReadonlyArray<PendingMutationEntry>;
+  // Ids of the `pending` entries this controller dispatched that have no
+  // response yet. The sending card already shows them as in progress, so
+  // they are not unconfirmed; entries another controller sent are not here.
+  readonly ownInFlight: ReadonlySet<string>;
   // A3-4 S2: requests whose response arrived after the controller that sent
   // them was replaced, oldest first (bounded). Announced once by the panel.
   readonly resolutions: ReadonlyArray<PendingMutationResolution>;
@@ -478,6 +482,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     lastConfirmed: null,
     busyUnitIds: new Set<string>(),
     pending: pending.list(),
+    ownInFlight: new Set<string>(),
     resolutions: pending.resolutions(),
   });
 
@@ -490,6 +495,16 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     const prev = state.busyUnitIds;
     return prev.size === ids.size && Array.from(ids).every((id) => prev.has(id)) ? prev : ids;
   };
+  // Derived, never tracked per request (third remediation F4): a unit has
+  // at most one in-flight entry (`mutate` refuses while any controller has
+  // one), so while this controller's own request for a unit is outstanding
+  // that unit's in-flight entry is the one it sent.
+  const ownInFlightNow = (): ReadonlySet<string> => {
+    const ids = new Set<string>();
+    for (const e of pending.list()) if (e.status === "inFlight" && ownBusy.has(e.record.unitId)) ids.add(e.record.id);
+    const prev = state.ownInFlight;
+    return prev.size === ids.size && Array.from(ids).every((id) => prev.has(id)) ? prev : ids;
+  };
 
   const set = (patch: Partial<TeacherUnitsViewState>): void => {
     const recoveryCheck = patch.recoveryCheck ?? state.recoveryCheck;
@@ -498,6 +513,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       ...patch,
       busyUnitIds: busyNow(),
       pending: pending.list(),
+      ownInFlight: ownInFlightNow(),
       resolutions: pending.resolutions(),
       create: primary.state(),
       storage,
@@ -923,13 +939,18 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     if (full !== null) return { kind: "capacity", reason: full };
     const at = tick();
     const step = plan(current);
-    const entryId = pending.begin({
-      unitId,
-      expectedRevision: current.revision,
-      intent: step.intent,
-      titleAtRequest: current.title,
-      ownerActive: alive,
-    });
+    // Opened quietly: this controller renders it only once its unit is
+    // marked busy below, so the sending panel never lists its own request
+    // as unconfirmed. Other controllers are still notified.
+    const entryId = quietly(() =>
+      pending.begin({
+        unitId,
+        expectedRevision: current.revision,
+        intent: step.intent,
+        titleAtRequest: current.title,
+        ownerActive: alive,
+      }),
+    );
     // Never sent without its record (scope changed, or capacity reached).
     if (entryId === null) {
       return alive() ? { kind: "capacity", reason: pending.capacityReason(unitId) ?? "pending" } : { kind: "stale" };

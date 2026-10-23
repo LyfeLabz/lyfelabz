@@ -294,7 +294,7 @@ describe("certification remediation: panel behavior", () => {
     first.view.dispose();
     const second = await h.open([u]);
     const status = liveStatus(second.host);
-    expect(status.textContent).toBe("One change is listed under Unconfirmed changes.");
+    expect(status.textContent).toBe("One change is waiting for a response.");
     h.last("archive").d.reject(LOST());
     await tick();
     expect(status.textContent).toContain("You asked to archive \"Plants\". This change wasn't confirmed.");
@@ -584,5 +584,114 @@ describe("seventh remediation P2: panel never says Saved for a non-advancing wri
     await tick();
     expect(h.s.c.update).toHaveBeenCalledTimes(1);
     expect(h.mutations()).toBe(1);
+  });
+});
+
+describe("in-flight requests are never shown as unconfirmed", () => {
+  const liveStatus = (host: HTMLElement) => q(host, "units-pending-status") as HTMLElement;
+  const UNCONFIRMED = /Unconfirmed changes|couldn't confirm/;
+
+  test("this panel's own request: nothing is listed while it waits, its controls are busy, and success leaves nothing behind", async () => {
+    const h = harness();
+    const u = unit();
+    const p = await h.open([u]);
+    (q(p.host, `units-archive-${u.unitId}`) as HTMLButtonElement).click();
+    await tick();
+    expect(h.s.c.archive).toHaveBeenCalledTimes(1);
+    // The request is outstanding: the card shows it as in progress, and the
+    // region neither appears nor announces anything.
+    expect(p.ctl.getState().pending.map((e) => e.status)).toEqual(["inFlight"]);
+    expect(region(p.host).hidden).toBe(true);
+    expect(entries(p.host)).toHaveLength(0);
+    expect(p.host.textContent).not.toMatch(UNCONFIRMED);
+    expect(liveStatus(p.host).textContent).toBe("");
+    expect(q(p.host, `units-archive-${u.unitId}`)!.getAttribute("aria-disabled")).toBe("true");
+    h.last("archive").d.resolve({ unit: { ...u, status: "archived", archivedAtMillis: 9, revision: 4 }, noop: false });
+    await tick();
+    expect(region(p.host).hidden).toBe(true);
+    expect(p.host.textContent).not.toMatch(UNCONFIRMED);
+    expect(liveStatus(p.host).textContent).toBe("");
+    expect(h.mutations()).toBe(1);
+  });
+
+  test("this panel's own request becomes an unconfirmed change only when its outcome is uncertain", async () => {
+    const h = harness();
+    const u = unit();
+    const p = await h.open([u]);
+    (q(p.host, `units-archive-${u.unitId}`) as HTMLButtonElement).click();
+    await tick();
+    expect(region(p.host).hidden).toBe(true);
+    h.last("archive").d.reject(LOST());
+    await tick();
+    expect(region(p.host).hidden).toBe(false);
+    expect(region(p.host).getAttribute("aria-label")).toBe("Unconfirmed changes");
+    expect(region(p.host).querySelector("h4")?.textContent).toBe("Unconfirmed changes");
+    expect(region(p.host).textContent).toContain("LyfeLabz couldn't confirm these changes.");
+    const [li] = entries(p.host);
+    expect(li.getAttribute("data-status")).toBe("uncertain");
+    expect(li.textContent).toContain(`You asked to archive "Plants". This change wasn't confirmed.`);
+    expect(h.mutations()).toBe(1);
+  });
+
+  test("a request an earlier panel sent is listed as waiting, never introduced as unconfirmed, until its outcome is uncertain", async () => {
+    const h = harness();
+    const u = unit();
+    const first = await h.open([u]);
+    (q(first.host, `units-archive-${u.unitId}`) as HTMLButtonElement).click();
+    await tick();
+    first.host.remove();
+    first.view.dispose();
+    const second = await h.open([u]);
+    const box = region(second.host);
+    expect(box.hidden).toBe(false);
+    expect(box.getAttribute("aria-label")).toBe("Changes waiting for a response");
+    expect(Array.from(box.querySelectorAll("h4"), (x) => x.textContent)).toEqual(["Changes waiting for a response"]);
+    expect(box.textContent).not.toMatch(UNCONFIRMED);
+    expect(liveStatus(second.host).textContent).toBe("One change is waiting for a response.");
+    const [waiting] = entries(second.host);
+    expect(waiting.getAttribute("data-status")).toBe("inFlight");
+    expect(q(second.host, "units-waiting-list")!.contains(waiting)).toBe(true);
+    expect(waiting.querySelectorAll("button")).toHaveLength(0);
+    h.last("archive").d.reject(LOST());
+    await tick();
+    expect(box.getAttribute("aria-label")).toBe("Unconfirmed changes");
+    expect(Array.from(box.querySelectorAll("h4"), (x) => x.textContent)).toEqual(["Unconfirmed changes"]);
+    expect(box.textContent).toContain("LyfeLabz couldn't confirm these changes.");
+    expect(q(second.host, "units-waiting-list")).toBeNull();
+    expect(h.mutations()).toBe(1);
+  });
+
+  test("mixed: unconfirmed and waiting entries are listed apart; this panel's own request is not listed at all", async () => {
+    const h = harness();
+    const a = unit({ title: "Alpha" });
+    const b = unit({ title: "Beta" });
+    const c = unit({ title: "Gamma" });
+    const first = await h.open([a, b, c]);
+    (q(first.host, `units-archive-${a.unitId}`) as HTMLButtonElement).click();
+    (q(first.host, `units-archive-${b.unitId}`) as HTMLButtonElement).click();
+    await tick();
+    h.s.calls.archive[0].d.reject(LOST());
+    await tick();
+    h.last("get").d.resolve({ unit: a });
+    await tick();
+    first.host.remove();
+    first.view.dispose();
+    const second = await h.open([a, b, c]);
+    expect(liveStatus(second.host).textContent).toBe(
+      "One change is listed under Unconfirmed changes. One change is waiting for a response.",
+    );
+    (q(second.host, `units-archive-${c.unitId}`) as HTMLButtonElement).click();
+    await tick();
+    const box = region(second.host);
+    expect(Array.from(box.querySelectorAll("h4"), (x) => x.textContent)).toEqual([
+      "Unconfirmed changes",
+      "Changes waiting for a response",
+    ]);
+    expect(entries(second.host).map((li) => [li.getAttribute("data-unit-id"), li.getAttribute("data-status")])).toEqual([
+      [a.unitId, "uncertain"],
+      [b.unitId, "inFlight"],
+    ]);
+    expect(box.textContent).not.toContain("Gamma");
+    expect(h.mutations()).toBe(3);
   });
 });
