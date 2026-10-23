@@ -4,7 +4,7 @@
  * Teacher Units UX Milestone 1: the compact My Units panel. Create Unit opens
  * and closes the create form; units are compact expandable containers whose
  * resources use the shared full-width resource card; the archived view
- * replaces the Show archived units checkbox; Check for changes is quiet and
+ * replaces the Show archived units checkbox; Refresh units is quiet and
  * returning to the tab refreshes automatically.
  */
 import * as fs from "fs";
@@ -112,9 +112,10 @@ describe("page copy", () => {
     expect(open.textContent).not.toMatch(/\d/);
   });
 
-  test("Check for changes stays available as a quiet secondary control", async () => {
+  test("Refresh units stays available as a quiet secondary control", async () => {
     const { host } = await panel([]);
     const check = q(host, "units-check-changes") as HTMLButtonElement;
+    expect(check.textContent).toBe("Refresh units");
     expect(check.classList.contains("shell-units-check-changes")).toBe(true);
     expect(check.classList.contains("shell-btn-primary")).toBe(false);
   });
@@ -225,6 +226,9 @@ describe("compact unit containers", () => {
     expect(lessonCard.querySelector(".shell-lesson-grade")?.textContent).toBe("G7");
     expect(lessonCard.querySelector(".shell-lesson-topic")).not.toBeNull();
     expect(lessonCard.querySelector(".shell-lesson-resource-type")?.textContent).toBe("Lesson");
+    // Milestone 2B: as in Curriculum, the type label follows the title.
+    expect(lessonCard.querySelector(".shell-lesson-title-row > .shell-lesson-resource-type")?.textContent).toBe("Lesson");
+    expect(lessonCard.querySelector(".shell-lesson-header > .shell-lesson-resource-type")).toBeNull();
     expect(lessonCard.querySelector(".shell-lesson-title")?.textContent).toBe(LESSON.title);
     const preview = q(lessonRow, `units-resource-preview-${u.unitId}-${LESSON.id}`) as HTMLAnchorElement;
     expect(preview.textContent).toBe("Preview");
@@ -236,7 +240,10 @@ describe("compact unit containers", () => {
     // Membership controls live in the card's actions; nothing assigns here.
     const actions = lessonCard.querySelector(".shell-resource-row-actions") as HTMLElement;
     expect(actions.contains(q(host, `units-resource-remove-${u.unitId}-${LESSON.id}`))).toBe(true);
-    expect(actions.contains(q(host, `units-resource-move-down-${u.unitId}-${LESSON.id}`))).toBe(true);
+    // Milestone 2B: the drag handle leads the row, outside the card's actions.
+    const handle = q(host, `units-resource-handle-${u.unitId}-${LESSON.id}`) as HTMLElement;
+    expect(lessonRow.firstElementChild).toBe(handle);
+    expect(actions.contains(handle)).toBe(false);
     expect(host.querySelector(".shell-lesson-assign")).toBeNull();
     expect(host.textContent).not.toMatch(/\bAssign\b/);
     if (ORGANIZE_ONLY) {

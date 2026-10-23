@@ -1,8 +1,9 @@
 /**
  * @jest-environment jsdom
  *
- * U2.4 My Units resource ordering UI (TEACHER_UNITS.md §9.6): Move up /
- * Move down per resource row, saved immediately through
+ * U2.4 My Units resource ordering UI (TEACHER_UNITS.md §9.6), since
+ * Milestone 2B through a drag handle per resource row (keyboard here; the
+ * pointer path in teacherUnits.dragdrop.test.ts), saved immediately through
  * teacherUnitsSetResources; the row moves only on the server's response;
  * aria-disabled boundary and pending controls; focus retention; move notices
  * (historical position vs present position); conflicts, uncertainty,
@@ -103,8 +104,18 @@ const order = (host: HTMLElement, unitId: string) =>
   Array.from(host.querySelectorAll<HTMLElement>(`[data-testid="units-resource-list-${unitId}"] > li`)).map((r) =>
     r.getAttribute("data-resource-id"),
   );
-const mv = (host: HTMLElement, unitId: string, dir: "up" | "down", id: string) =>
-  q(host, `units-resource-move-${dir}-${unitId}-${id}`) as HTMLButtonElement | null;
+const handle = (host: HTMLElement, unitId: string, id: string) =>
+  q(host, `units-resource-handle-${unitId}-${id}`) as HTMLButtonElement | null;
+const key = (el: HTMLElement, k: string) =>
+  el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+// One keyboard step through the handle: pick up, one arrow, drop.
+const step = (host: HTMLElement, unitId: string, dir: "up" | "down", id: string) => {
+  const h = handle(host, unitId, id)!;
+  h.focus();
+  key(h, " ");
+  key(h, dir === "up" ? "ArrowUp" : "ArrowDown");
+  key(h, " ");
+};
 const status = (host: HTMLElement) => q(host, "units-status")?.textContent ?? "";
 const noticeOf = (host: HTMLElement, unitId: string) =>
   q(host, `units-card-${unitId}`)?.querySelector<HTMLElement>(":scope > .shell-units-notice") ?? null;
@@ -115,29 +126,37 @@ beforeEach(() => {
 });
 
 describe("controls", () => {
-  test("each row gets named native Move up / Move down buttons; boundaries are aria-disabled, not disabled", async () => {
+  test("each row gets a named native drag handle described by the reorder instructions; no Move up / Move down", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id, R3.id] });
     const { host } = await panel([a]);
-    const up1 = mv(host, a.unitId, "up", R1.id)!;
-    const down3 = mv(host, a.unitId, "down", R3.id)!;
-    expect(up1.tagName).toBe("BUTTON");
-    expect(up1.type).toBe("button");
-    expect(up1.getAttribute("aria-label")).toBe(`Move ${R1.title} up in ${a.title}`);
-    expect(mv(host, a.unitId, "down", R2.id)!.getAttribute("aria-label")).toBe(`Move ${R2.title} down in ${a.title}`);
-    expect(up1.getAttribute("aria-disabled")).toBe("true");
-    expect(up1.disabled).toBe(false);
-    expect(down3.getAttribute("aria-disabled")).toBe("true");
-    expect(mv(host, a.unitId, "up", R2.id)!.hasAttribute("aria-disabled")).toBe(false);
-    // Ordered-list semantics are kept.
+    const h1 = handle(host, a.unitId, R1.id)!;
+    expect(h1.tagName).toBe("BUTTON");
+    expect(h1.type).toBe("button");
+    expect(h1.getAttribute("aria-label")).toBe(`Reorder ${R1.title}, position 1 of 3 in ${a.title}`);
+    expect(handle(host, a.unitId, R3.id)!.getAttribute("aria-label")).toBe(`Reorder ${R3.title}, position 3 of 3 in ${a.title}`);
+    const help = document.getElementById(h1.getAttribute("aria-describedby")!)!;
+    expect(help.textContent).toContain("press Space or Enter to pick up");
+    expect(help.textContent).toContain("Press Escape to cancel");
+    // The handle leads the row, before the card (and its Preview / Remove).
+    expect(h1.parentElement?.firstElementChild).toBe(h1);
+    expect(host.querySelector("[data-testid^=units-resource-move-]")).toBeNull();
+    expect(host.textContent).not.toMatch(/Move (up|down)/);
+    // Remove stays its own control; ordered-list semantics are kept.
+    expect(q(host, `units-resource-remove-${a.unitId}-${R1.id}`)).not.toBeNull();
     expect(q(host, `units-resource-list-${a.unitId}`)!.tagName).toBe("OL");
   });
 
-  test("activating an aria-disabled boundary control sends nothing", async () => {
+  test("a move past either end, or a drop in place, sends nothing", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const { host, c } = await panel([a]);
-    mv(host, a.unitId, "up", R1.id)!.click();
-    mv(host, a.unitId, "down", R2.id)!.click();
+    const h = handle(host, a.unitId, R1.id)!;
+    h.focus();
+    key(h, " ");
+    key(h, "ArrowUp");
+    expect(status(host)).toBe(`"${R1.title}" is already at the top, position 1 of 2.`);
+    key(h, " ");
     await flush();
+    expect(status(host)).toBe(`"${R1.title}" was dropped in its original position. Nothing was changed.`);
     expect(c.setResources).not.toHaveBeenCalled();
     expect(order(host, a.unitId)).toEqual([R1.id, R2.id]);
   });
@@ -175,38 +194,36 @@ describe("moving", () => {
     let release: () => void = () => {};
     const real = c.setResources.getMockImplementation()!;
     c.setResources.mockImplementationOnce((req) => new Promise((res) => { release = () => res(real(req)); }));
-    const btn = mv(host, a.unitId, "down", R1.id)!;
-    btn.focus();
-    btn.click();
+    step(host, a.unitId, "down", R1.id);
     await flush();
     expect(c.setResources).toHaveBeenCalledWith({ unitId: a.unitId, expectedRevision: 5, resourceIds: [R2.id, R1.id, R3.id] });
-    // Pending: order unchanged, every move control blocked but focusable, focus kept.
+    // Pending: order unchanged, every handle blocked but focusable, focus kept.
     expect(order(host, a.unitId)).toEqual([R1.id, R2.id, R3.id]);
-    expect(status(host)).toContain(`Moving "${R1.title}" down`);
+    expect(status(host)).toContain(`Moving "${R1.title}" to position 2 of 3 in "${a.title}"`);
     for (const b of Array.from(host.querySelectorAll<HTMLButtonElement>("[data-action=move-resource]"))) {
       expect(b.getAttribute("aria-disabled")).toBe("true");
     }
-    expect(document.activeElement).toBe(mv(host, a.unitId, "down", R1.id));
-    // A click while pending sends nothing more.
-    mv(host, a.unitId, "down", R1.id)!.click();
-    mv(host, a.unitId, "up", R3.id)!.click();
+    expect(document.activeElement).toBe(handle(host, a.unitId, R1.id));
+    // No second move can start while one is pending.
+    step(host, a.unitId, "down", R1.id);
+    step(host, a.unitId, "up", R3.id);
     expect(c.setResources).toHaveBeenCalledTimes(1);
     release();
     await flush();
     await flush();
     expect(order(host, a.unitId)).toEqual([R2.id, R1.id, R3.id]);
     expect(status(host)).toBe(`Moved "${R1.title}" to position 2 of 3.`);
-    expect(document.activeElement).toBe(mv(host, a.unitId, "down", R1.id));
-    expect(mv(host, a.unitId, "down", R1.id)!.hasAttribute("aria-disabled")).toBe(false);
+    expect(document.activeElement).toBe(handle(host, a.unitId, R1.id));
+    expect(handle(host, a.unitId, R1.id)!.hasAttribute("aria-disabled")).toBe(false);
   });
 
   test("sequential moves carry the updated revision", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id, R3.id], revision: 2 });
     const { host, c } = await panel([a]);
-    mv(host, a.unitId, "up", R3.id)!.click();
+    step(host, a.unitId, "up", R3.id);
     await flush();
     await flush();
-    mv(host, a.unitId, "up", R3.id)!.click();
+    step(host, a.unitId, "up", R3.id);
     await flush();
     await flush();
     expect(c.setResources.mock.calls.map((x) => x[0].expectedRevision)).toEqual([2, 3]);
@@ -214,18 +231,15 @@ describe("moving", () => {
     expect(status(host)).toBe(`Moved "${R3.title}" to position 1 of 3.`);
   });
 
-  test("reaching a boundary moves focus to the opposite control of the same resource", async () => {
+  test("after a move, focus returns to the same resource's handle, never the page", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const { host } = await panel([a]);
-    const btn = mv(host, a.unitId, "up", R2.id)!;
-    btn.focus();
-    btn.click();
+    step(host, a.unitId, "up", R2.id);
     await flush();
     await flush();
     expect(order(host, a.unitId)).toEqual([R2.id, R1.id]);
-    expect(mv(host, a.unitId, "up", R2.id)!.getAttribute("aria-disabled")).toBe("true");
-    expect(document.activeElement).toBe(mv(host, a.unitId, "down", R2.id));
-    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement).toBe(handle(host, a.unitId, R2.id));
+    expect(handle(host, a.unitId, R2.id)!.getAttribute("aria-label")).toBe(`Reorder ${R2.title}, position 1 of 2 in ${a.title}`);
   });
 
   test("move after an add keeps the added resource", async () => {
@@ -233,7 +247,7 @@ describe("moving", () => {
     const { host, c, ctl } = await panel([a]);
     await ctl.addResources(a.unitId, [R3.id]);
     await flush();
-    mv(host, a.unitId, "up", R3.id)!.click();
+    step(host, a.unitId, "up", R3.id);
     await flush();
     await flush();
     expect(c.setResources).toHaveBeenLastCalledWith({ unitId: a.unitId, expectedRevision: 2, resourceIds: [R1.id, R3.id, R2.id] });
@@ -246,9 +260,7 @@ describe("conflicts and uncertainty", () => {
     const a = unit({ resourceIds: [R1.id, R2.id], revision: 3 });
     const { host, units, c } = await panel([a]);
     units.set(a.unitId, { ...a, resourceIds: [R1.id, R2.id, R3.id], revision: 4 });
-    const btn = mv(host, a.unitId, "up", R2.id)!;
-    btn.focus();
-    btn.click();
+    step(host, a.unitId, "up", R2.id);
     await flush();
     await flush();
     expect(c.setResources).toHaveBeenCalledTimes(1);
@@ -256,7 +268,7 @@ describe("conflicts and uncertainty", () => {
     const notice = noticeOf(host, a.unitId)?.textContent ?? "";
     expect(notice).toContain("This unit changed since it was loaded here, so LyfeLabz couldn't confirm whether it was moved.");
     expect(notice).toContain("Its current resources are shown. Review them, then try again.");
-    expect(document.activeElement).toBe(mv(host, a.unitId, "up", R2.id));
+    expect(document.activeElement).toBe(handle(host, a.unitId, R2.id));
   });
 
   test("uncertain write: re-read, not resent, reported as unconfirmed", async () => {
@@ -265,7 +277,7 @@ describe("conflicts and uncertainty", () => {
     c.setResources.mockImplementationOnce(async () => {
       throw NETWORK();
     });
-    mv(host, a.unitId, "up", R2.id)!.click();
+    step(host, a.unitId, "up", R2.id);
     await flush();
     await flush();
     expect(c.setResources).toHaveBeenCalledTimes(1);
@@ -279,7 +291,7 @@ describe("conflicts and uncertainty", () => {
     c.setResources.mockImplementationOnce(async () => {
       throw { code: "functions/permission-denied", details: { code: "role-forbidden" } };
     });
-    mv(host, a.unitId, "up", R2.id)!.click();
+    step(host, a.unitId, "up", R2.id);
     await flush();
     await flush();
     expect(noticeOf(host, a.unitId)?.textContent).toContain("couldn't confirm whether your change was saved");
@@ -290,7 +302,7 @@ describe("historical versus present wording", () => {
   test("a later change elsewhere: the move stays historical, the present position is derived anew", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id, R3.id], revision: 1 });
     const { host, units, ctl } = await panel([a]);
-    mv(host, a.unitId, "down", R1.id)!.click();
+    step(host, a.unitId, "down", R1.id);
     await flush();
     await flush();
     expect(status(host)).toBe(`Moved "${R1.title}" to position 2 of 3.`);
@@ -310,7 +322,7 @@ describe("historical versus present wording", () => {
   test("an unchanged re-render does not rewrite the status text", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const { host, ctl } = await panel([a]);
-    mv(host, a.unitId, "down", R1.id)!.click();
+    step(host, a.unitId, "down", R1.id);
     await flush();
     await flush();
     const node = q(host, "units-status")!;
@@ -326,7 +338,7 @@ describe("grade transitions", () => {
   test("changing the grade filter while a move is pending neither breaks nor misplaces the result", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id], revision: 1 });
     const { host, ctl, units } = await panel([a]);
-    mv(host, a.unitId, "up", R2.id)!.click();
+    step(host, a.unitId, "up", R2.id);
     ctl.setGrade("6");
     await flush();
     await flush();

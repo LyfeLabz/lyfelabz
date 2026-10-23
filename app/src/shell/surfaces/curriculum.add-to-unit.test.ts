@@ -370,8 +370,12 @@ describe("Add to Unit", () => {
     const { root, callables } = await curriculumWith([]);
     toggle(root, `lesson-select-${LESSON_A.slug}`);
     const dialog = await openDialog(root);
-    expect(q(dialog, "units-add-list-state")?.textContent).toBe("No Grade 6 units yet.");
+    // No empty-state sentence or lone radio: the new unit's name is the step.
+    expect(q(dialog, "units-add-list-state")?.hidden).toBe(true);
+    expect(dialog.querySelector("legend")?.textContent).toBe("New Grade 6 unit");
     expect(box(dialog, "units-add-choice-new").checked).toBe(true);
+    expect((box(dialog, "units-add-choice-new").closest("label") as HTMLElement).hidden).toBe(true);
+    expect(q(dialog, "units-add-confirm")?.textContent).toBe("Create Unit & Add");
 
     click(dialog, "units-add-confirm");
     const title = box(dialog, "units-add-new-title");
@@ -506,7 +510,123 @@ describe("styles", () => {
 
   test("the toolbar stays in view, hidden states win over display rules, and touch targets are 44px", () => {
     expect(html).toMatch(/\.shell-curriculum-selection-dock\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;/);
-    expect(html).toMatch(/\.shell-curriculum-selection\[hidden\],\s*\.shell-curriculum-unit-notice\[hidden\],\s*\.shell-units-add-dialog \[hidden\]\s*\{\s*display:\s*none !important;/);
-    expect(html).toMatch(/@media \(pointer: coarse\)\s*\{\s*\.shell-resource-select\s*\{[^}]*min-width:\s*44px;[^}]*min-height:\s*44px;/);
+    expect(html).toMatch(/\.shell-curriculum-selection\[hidden\],\s*\.shell-curriculum-unit-notice\[hidden\],\s*\.shell-resource-units-extra\[hidden\],\s*\.shell-units-add-dialog \[hidden\]\s*\{\s*display:\s*none !important;/);
+    expect(html).toMatch(/@media \(pointer: coarse\)\s*\{[^@]*\.shell-resource-select\s*\{\s*min-width:\s*44px;\s*min-height:\s*44px;/);
+  });
+});
+
+describe("Milestone 2B card refinements", () => {
+  test("the checkbox has its own leading column; the metadata pills and title share the next one", async () => {
+    const { root } = await curriculumWith([]);
+    const card = q(root, `lesson-card-${LESSON_A.slug}`)!;
+    expect(card.classList.contains("shell-resource-row-selectable")).toBe(true);
+    const first = card.firstElementChild as HTMLElement;
+    expect(first.classList.contains("shell-resource-select")).toBe(true);
+    expect(first.querySelector("input")).toBe(box(root, `lesson-select-${LESSON_A.slug}`));
+    const main = card.querySelector(".shell-resource-row-main")!;
+    expect(main.querySelector(".shell-lesson-header")).not.toBeNull();
+    expect(main.querySelector(".shell-lesson-title-row")).not.toBeNull();
+    expect(main.querySelector(".shell-resource-select")).toBeNull();
+  });
+
+  test("an existing unit choice reads Add to Unit; a new unit reads Create Unit & Add", async () => {
+    const existing = unit();
+    const { root } = await curriculumWith([existing]);
+    toggle(root, `lesson-select-${LESSON_A.slug}`);
+    const dialog = await openDialog(root);
+    expect(q(dialog, "units-add-confirm")?.textContent).toBe("Add to Unit");
+    choose(`units-add-choice-${existing.unitId}`);
+    expect(q(dialog, "units-add-confirm")?.textContent).toBe("Add to Unit");
+    choose("units-add-choice-new");
+    expect(q(dialog, "units-add-confirm")?.textContent).toBe("Create Unit & Add");
+    expect(dialog.querySelector(".shell-units-add-head")?.contains(q(dialog, "units-add-summary"))).toBe(true);
+  });
+});
+
+describe("unit-name membership pills", () => {
+  const pillsOf = (root: ParentNode, slug: string) =>
+    Array.from(q(root, `lesson-card-${slug}`)!.querySelectorAll<HTMLElement>(".shell-resource-unit-pill"));
+
+  test("show the saved names of the active units a resource is in: one, two, or two and +N more; archived units are not memberships", async () => {
+    const u1 = unit({ title: "Unit 1: Properties of Matter", resourceIds: [LESSON_A.slug, LESSON_B.slug] });
+    const u2 = unit({ title: "Matter Review", resourceIds: [LESSON_B.slug] });
+    const u3 = unit({ grade: "7", title: "Cross-grade", resourceIds: [LESSON_B.slug] });
+    const u4 = unit({ title: "Bonus", resourceIds: [LESSON_B.slug] });
+    const gone = unit({ title: "Old unit", status: "archived", resourceIds: [LESSON_A.slug] });
+    const { root } = await curriculumWith([u1, u2, u3, u4, gone]);
+
+    expect(pillsOf(root, LESSON_A.slug).map((p) => p.textContent)).toEqual(["Unit 1: Properties of Matter"]);
+    const onlyA = pillsOf(root, LESSON_A.slug)[0]!;
+    expect(onlyA.tagName).toBe("BUTTON");
+    expect(onlyA.getAttribute("aria-label")).toBe("Open unit Unit 1: Properties of Matter in My Units");
+    // The pill is in the metadata row, after the grade and topic pills.
+    expect(onlyA.closest(".shell-lesson-header")).toBe(q(root, `lesson-card-${LESSON_A.slug}`)!.querySelector(".shell-lesson-header"));
+
+    const cardB = q(root, `lesson-card-${LESSON_B.slug}`)!;
+    const more = cardB.querySelector<HTMLButtonElement>("[data-testid=resource-units-more]")!;
+    expect(more.textContent).toBe("+2 more");
+    expect(more.getAttribute("aria-expanded")).toBe("false");
+    const extra = document.getElementById(more.getAttribute("aria-controls")!)!;
+    expect(extra.hidden).toBe(true);
+    expect(pillsOf(root, LESSON_B.slug)).toHaveLength(4);
+    more.click();
+    expect(more.getAttribute("aria-expanded")).toBe("true");
+    expect(extra.hidden).toBe(false);
+    expect(more.textContent).toBe("Show fewer");
+
+    // No membership, no pill; nothing comes from the checkbox selection.
+    const other = getSurfaceableLessons().find((l) => l.grade === "6" && l.slug !== LESSON_A.slug && l.slug !== LESSON_B.slug)!;
+    toggle(root, `lesson-select-${other.slug}`);
+    expect(pillsOf(root, other.slug)).toHaveLength(0);
+  });
+
+  test("one all-grades read per Curriculum visit, not one per card", async () => {
+    const { callables } = await curriculumWith([unit({ resourceIds: [LESSON_A.slug] })]);
+    const allGrades = callables.list.mock.calls.filter((c) => c[0]?.grade === undefined);
+    expect(allGrades).toHaveLength(1);
+    expect(allGrades[0]![0]).toEqual({ includeArchived: false });
+    expect(callables.list.mock.calls.length).toBeLessThanOrEqual(2);
+    expect(callables.get).not.toHaveBeenCalled();
+  });
+
+  test("a pill opens My Units on that unit's grade with the unit expanded and focused", async () => {
+    const target = unit({ grade: "7", title: "Earth Systems", resourceIds: [LESSON_7.slug] });
+    const { root } = await curriculumWith([target]);
+    (pillsOf(root, LESSON_7.slug)[0] as HTMLButtonElement).click();
+    await flush();
+    expect(activeSurface(root)).toBe("units");
+    expect(q(root, "units-grade-7")?.getAttribute("aria-pressed")).toBe("true");
+    const toggleBtn = q(root, `units-toggle-${target.unitId}`)!;
+    expect(toggleBtn.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement).toBe(toggleBtn);
+  });
+
+  test("updates after a confirmed addition, and after a removal or archive once Curriculum is shown again", async () => {
+    const existing = unit({ title: "Weather" });
+    const { root, store } = await curriculumWith([existing]);
+    expect(pillsOf(root, LESSON_A.slug)).toHaveLength(0);
+    toggle(root, `lesson-select-${LESSON_A.slug}`);
+    const dialog = await openDialog(root);
+    choose(`units-add-choice-${existing.unitId}`);
+    click(dialog, "units-add-confirm");
+    await flush();
+    expect(pillsOf(root, LESSON_A.slug).map((p) => p.textContent)).toEqual(["Weather"]);
+
+    // Changed elsewhere (My Units, another session): the next visit reads it.
+    const now = store.get(existing.unitId)!;
+    store.set(existing.unitId, { ...now, status: "archived", revision: now.revision + 1 });
+    click(root, "nav-classes");
+    click(root, "nav-curriculum");
+    await flush();
+    expect(pillsOf(root, LESSON_A.slug)).toHaveLength(0);
+  });
+
+  test("pill styles: compact, truncating, distinct from the topic pill, with a visible focus outline", () => {
+    const html = fs.readFileSync(path.join(__dirname, "../../../index.html"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(html).toMatch(/\.shell-resource-unit-pill\s*\{[^}]*max-width:\s*14rem;[^}]*text-overflow:\s*ellipsis;/);
+    expect(html).toMatch(/\.shell-resource-unit-pill:focus-visible,\s*\.shell-resource-units-more:focus-visible\s*\{\s*outline:/);
+    expect(html).toMatch(/\.shell-curriculum-grid \.shell-lesson-view-summary\s*\{[^}]*border-radius:\s*var\(--tw-radius-pill/);
+    expect(html).toMatch(/\.shell-curriculum-selection-actions button,\s*\.shell-curriculum-unit-notice-actions button,\s*\.shell-units-add-dialog \.shell-assign-footer button,[^{]*\{[^}]*border-radius:\s*var\(--tw-radius-pill/);
+    expect(html).toMatch(/\.shell-card\.shell-resource-row\.shell-resource-row-selectable\s*\{[^}]*"select main actions"/);
   });
 });

@@ -42,8 +42,8 @@ import type {
 } from "../navigationHistory";
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { createCurriculumTabs, type CurriculumTabs } from "./curriculumResourceTabs";
-import type { TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
-import type { TeacherUnitGrade } from "../../teacherUnits/types";
+import type { TeacherUnitsController, TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
+import type { TeacherUnit, TeacherUnitGrade } from "../../teacherUnits/types";
 import { getFlatResourceById } from "../../curriculum/resourceProjection";
 import { curriculumSelectionFor, isSelectableResourceId, type CurriculumSelection } from "./curriculumSelection";
 import { openAddToUnitDialog, teacherUnitsSurfaceEnabled, type AddToUnitOutcome } from "./teacherUnitsPanel";
@@ -1170,12 +1170,16 @@ export function renderCurriculumSurface(
       ? curriculumSelectionFor(unitsSeam, session.uid)
       : null;
   let updateSelectionBar: () => void = () => undefined;
+  let renderUnitPills: () => void = () => undefined;
 
   const curriculumTabs = createCurriculumTabs({
     doc,
     lessonsPanel,
     selection,
-    onViewChange: () => updateSelectionBar(),
+    onViewChange: () => {
+      updateSelectionBar();
+      renderUnitPills();
+    },
     getFilters: () => ({ grade: state.grade, topic: state.topic }),
     onUserSelect: (tab) => {
       curriculumHistory?.push(
@@ -1305,11 +1309,26 @@ export function renderCurriculumSurface(
   renderControls();
 
   if (selection !== null && unitsSeam !== null) {
+    // Milestone 2B: one controller per Curriculum visit. It reads every
+    // grade's active units once for the unit-name pills and is the Add to
+    // Unit dialog's controller, so a confirmed addition updates the pills.
+    const unitsController = unitsSeam.createController({
+      uid: session.uid,
+      schoolId: session.schoolId,
+      initialGrade: asUnitGrade(state.grade) ?? "6",
+    });
+    renderUnitPills = createUnitMembership({
+      doc,
+      view: curriculumView,
+      controller: unitsController,
+      openMyUnits: deps.openMyUnits ?? null,
+    }).render;
     const bar = renderSelectionBar({
       doc,
       view: curriculumView,
       selection,
       seam: unitsSeam,
+      controller: unitsController,
       session,
       gradeFilter: () => state.grade,
       openMyUnits: deps.openMyUnits ?? null,
@@ -1369,6 +1388,155 @@ export function renderCurriculumSurface(
   curriculumView.appendChild(returnLink);
 }
 
+// Milestone 2B: unit-name membership pills. Each Curriculum card whose
+// resource is in one of the teacher's active units shows those units' saved
+// names in its metadata row (two at most, then "+N more"); each opens that
+// unit in My Units. Membership comes only from the units controller's
+// accepted records (one all-grades active read per Curriculum visit, plus
+// every confirmed write it makes), never from the selection, and nothing is
+// requested per card. Returning to this browser tab re-reads it, at most
+// once per 30 seconds, like My Units.
+type UnitMembershipInput = {
+  readonly doc: Document;
+  readonly view: HTMLElement;
+  readonly controller: TeacherUnitsController;
+  readonly openMyUnits: ((target: MyUnitsOpenUnitIntent | null) => void) | null;
+};
+
+const MEMBERSHIP_REFRESH_MIN_MS = 30_000;
+const UNIT_PILLS_SHOWN = 2;
+
+function createUnitMembership(input: UnitMembershipInput): { readonly render: () => void } {
+  const { doc, view, controller } = input;
+  let ready = false;
+  let disposed = false;
+  let wasConnected = false;
+  let lastRead = 0;
+  let seq = 0;
+
+  const pill = (u: TeacherUnit): HTMLElement => {
+    const open = input.openMyUnits;
+    const p = doc.createElement(open !== null ? "button" : "span");
+    p.className = "shell-resource-unit-pill";
+    p.setAttribute("data-unit-id", u.unitId);
+    p.setAttribute("data-testid", `resource-unit-pill-${u.unitId}`);
+    p.textContent = u.title;
+    p.title = u.title;
+    if (open !== null) {
+      (p as HTMLButtonElement).type = "button";
+      p.setAttribute("aria-label", `Open unit ${u.title} in My Units`);
+      p.addEventListener("click", () => open({ unitId: u.unitId, grade: u.grade }));
+    }
+    return p;
+  };
+
+  const renderCard = (card: HTMLElement, units: ReadonlyArray<TeacherUnit>): void => {
+    const header = card.querySelector<HTMLElement>(".shell-lesson-header");
+    if (header === null) return;
+    const old = header.querySelector<HTMLElement>(":scope > .shell-resource-units");
+    const active = doc.activeElement;
+    const focusedUnit =
+      old !== null && active instanceof HTMLElement && old.contains(active)
+        ? (active.getAttribute("data-unit-id") ?? "more")
+        : null;
+    const wasExpanded = old?.querySelector("[aria-expanded=true]") != null;
+    old?.remove();
+    if (units.length === 0) return;
+    const slot = doc.createElement("span");
+    slot.className = "shell-resource-units";
+    slot.setAttribute("data-testid", "resource-units");
+    for (const u of units.slice(0, UNIT_PILLS_SHOWN)) slot.appendChild(pill(u));
+    const rest = units.slice(UNIT_PILLS_SHOWN);
+    if (rest.length > 0) {
+      const extra = doc.createElement("span");
+      extra.className = "shell-resource-units-extra";
+      extra.id = `resource-units-extra-${card.getAttribute("data-resource-id") ?? ""}`;
+      for (const u of rest) extra.appendChild(pill(u));
+      const more = doc.createElement("button");
+      more.type = "button";
+      more.className = "shell-resource-units-more";
+      more.setAttribute("data-testid", "resource-units-more");
+      more.setAttribute("aria-controls", extra.id);
+      const setExpanded = (on: boolean): void => {
+        more.setAttribute("aria-expanded", on ? "true" : "false");
+        more.textContent = on ? "Show fewer" : `+${rest.length} more`;
+        more.setAttribute(
+          "aria-label",
+          on ? "Show fewer units" : `Show ${rest.length} more ${rest.length === 1 ? "unit" : "units"}`,
+        );
+        extra.hidden = !on;
+      };
+      setExpanded(wasExpanded);
+      more.addEventListener("click", () => setExpanded(more.getAttribute("aria-expanded") !== "true"));
+      slot.append(more, extra);
+    }
+    header.appendChild(slot);
+    if (focusedUnit !== null) {
+      const target =
+        focusedUnit === "more"
+          ? slot.querySelector<HTMLElement>(".shell-resource-units-more")
+          : slot.querySelector<HTMLElement>(`[data-unit-id="${focusedUnit}"]`);
+      (target ?? card.querySelector<HTMLElement>("input, button, a"))?.focus();
+    }
+  };
+
+  const render = (): void => {
+    if (disposed) return;
+    // The Curriculum view was torn down: release the controller.
+    if (view.isConnected) wasConnected = true;
+    else if (wasConnected) {
+      dispose();
+      return;
+    }
+    if (!ready) return;
+    const byResource = new Map<string, TeacherUnit[]>();
+    for (const u of controller.activeUnits()) {
+      for (const id of u.resourceIds) {
+        const list = byResource.get(id);
+        if (list === undefined) byResource.set(id, [u]);
+        else list.push(u);
+      }
+    }
+    for (const card of Array.from(view.querySelectorAll<HTMLElement>(".shell-resource-row[data-resource-id]"))) {
+      const units = byResource.get(card.getAttribute("data-resource-id") ?? "") ?? [];
+      // Rebuilt only when the units or their names change, so focus and an
+      // open "+N more" survive unrelated updates.
+      const key = units.map((u) => `${u.unitId}\u0000${u.title}`).join("\u0001");
+      if (card.getAttribute("data-units-key") === key) continue;
+      card.setAttribute("data-units-key", key);
+      renderCard(card, units);
+    }
+  };
+
+  const read = (): void => {
+    lastRead = Date.now();
+    const mine = ++seq;
+    void controller.loadActiveUnits().then((ok) => {
+      if (disposed || mine !== seq || !ok) return;
+      ready = true;
+      render();
+    });
+  };
+
+  const onVisibility = (): void => {
+    if (disposed) return;
+    render();
+    if (doc.visibilityState === "visible" && Date.now() - lastRead >= MEMBERSHIP_REFRESH_MIN_MS) read();
+  };
+
+  const unsubscribe = controller.subscribe(render);
+  doc.addEventListener("visibilitychange", onVisibility);
+  const dispose = (): void => {
+    if (disposed) return;
+    disposed = true;
+    unsubscribe();
+    doc.removeEventListener("visibilitychange", onVisibility);
+    controller.dispose();
+  };
+  read();
+  return { render };
+}
+
 // Milestone 2A: Curriculum's resource selection toolbar and the Add to Unit
 // outcome notice (TEACHER_UNITS.md "Milestone 2A"). The toolbar shows only
 // while something is selected; the selection itself lives in
@@ -1383,6 +1551,7 @@ type SelectionBarInput = {
   readonly view: HTMLElement;
   readonly selection: CurriculumSelection;
   readonly seam: TeacherUnitsSurfaceSeam;
+  readonly controller: TeacherUnitsController;
   readonly session: ActiveTeacher;
   readonly gradeFilter: () => GradeFilter;
   readonly openMyUnits: ((target: MyUnitsOpenUnitIntent | null) => void) | null;
@@ -1524,6 +1693,7 @@ function renderSelectionBar(input: SelectionBarInput): {
     if (ids.length === 0) return;
     openAddToUnitDialog(doc, {
       seam: input.seam,
+      controller: input.controller,
       uid: input.session.uid,
       schoolId: input.session.schoolId,
       resourceIds: ids,
@@ -1684,6 +1854,7 @@ function renderLessonCard(
   const card = row.card;
   card.setAttribute("data-testid", `lesson-card-${lesson.slug}`);
   card.setAttribute("data-lesson-slug", lesson.slug);
+  if (selectable) card.setAttribute("data-resource-id", lesson.slug);
   const checkbox = row.checkbox;
   if (checkbox !== null && selection !== null) {
     checkbox.checked = selection.has(lesson.slug);

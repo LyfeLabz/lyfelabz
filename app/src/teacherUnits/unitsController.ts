@@ -15,7 +15,7 @@ import {
 } from "./saveCoordination";
 import { validateUnitDescription, validateUnitTitle } from "./fieldRules";
 import { getPlaceableResourceById } from "./placeableResources";
-import { moveIdByStep } from "./unitOrderMath";
+import { moveIdByStep, moveIndex } from "./unitOrderMath";
 import {
   isUncertainMutationFailure,
   shouldRereadAfter,
@@ -213,7 +213,7 @@ export type UnitMutationResult =
   // and no authoritative state has been accepted since, so nothing was sent.
   // This is also returned instead of any answer computed from held state
   // (a local no-op, an archived or unavailable-resource refusal).
-  // A read (Check current state, Check for changes) restores eligibility;
+  // A read (Check current state, Refresh units) restores eligibility;
   // the teacher then decides again. Unsaved input is the caller's to keep.
   | { readonly kind: "needsCheck" }
   // The controller was disposed or the account changed; ignore.
@@ -225,6 +225,15 @@ export type TeacherUnitsController = {
   readonly setGrade: (grade: TeacherUnitGrade) => void;
   readonly setShowArchived: (show: boolean) => void;
   readonly refresh: () => Promise<void>;
+  // Milestone 2B: one authoritative read of this teacher's active units in
+  // every grade (`teacherUnitsList` without a grade), accepted through the
+  // same evidence ordering as any list. It never changes the grade view.
+  // Resolves true when the read succeeded and was applied.
+  readonly loadActiveUnits: () => Promise<boolean>;
+  // Every unit the latest accepted evidence holds as present and active, in
+  // every grade, canonical order (grade, then unit order). Read-only
+  // projections (Curriculum's unit-name pills) use it; it is never evidence.
+  readonly activeUnits: () => ReadonlyArray<TeacherUnit>;
   // The last server state seen for a unit, even when it is not in the
   // current list (for example archived while archived units are hidden).
   readonly getKnownUnit: (unitId: string) => TeacherUnit | null;
@@ -279,6 +288,15 @@ export type TeacherUnitsController = {
     unitId: string,
     resourceId: string,
     direction: ResourceMoveDirection,
+  ) => Promise<UnitMutationResult>;
+  // Milestone 2B drag-and-drop: moves one resource to index `toIndex` of the
+  // held list in one request (a permutation, same path and guards as
+  // `moveResource`). Unknown ids, out-of-range indexes, and the resource's
+  // own position are no-ops without a call.
+  readonly moveResourceTo: (
+    unitId: string,
+    resourceId: string,
+    toIndex: number,
   ) => Promise<UnitMutationResult>;
   // A3-4 S2: one deliberate authoritative read (a get, never a mutation) of
   // a pending entry's unit, re-evaluating its present-state finding.
@@ -1106,6 +1124,27 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       void load();
     },
     refresh: () => load(),
+    loadActiveUnits: async () => {
+      if (!alive()) return false;
+      const at = tick();
+      const scope = { grade: null, includeArchived: false } as const;
+      const outcome = await runTeacherUnitMutation(() => deps.callables.list({ includeArchived: false }));
+      if (!alive()) {
+        if (outcome.ok) shareList(outcome.result.units, at, scope);
+        return false;
+      }
+      if (!outcome.ok) return false;
+      acceptList(outcome.result.units, at, scope);
+      if (state.list.kind === "ready") set({ list: listedNow() });
+      else set({});
+      return true;
+    },
+    activeUnits: () =>
+      Object.freeze(
+        unitsWhere(["present"])
+          .filter((u) => u.status === "active")
+          .sort((a, b) => (a.grade === b.grade ? compareTeacherUnits(a, b) : a.grade < b.grade ? -1 : 1)),
+      ),
     getKnownUnit: (unitId: string) => heldUnit(unitId) ?? null,
     getUnitState: (unitId: string): UnitStateView => {
       const p = presence.get(unitId);
@@ -1336,6 +1375,17 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
       // the stale list instead of dropping it.
       return setMembership(unitId, "move", (u) => {
         const next = moveIdByStep(u.resourceIds, resourceId, direction === "up" ? -1 : 1);
+        return next === u.resourceIds ? null : next;
+      });
+    },
+    moveResourceTo: (unitId, resourceId, toIndex) => {
+      const guarded = heldStateBlock(unitId);
+      if (guarded !== null) return Promise.resolve(guarded);
+      const blocked = retiredBlock(unitId, null);
+      if (blocked !== null) return Promise.resolve(blocked);
+      // Computed from the record held at dispatch, like `moveResource`.
+      return setMembership(unitId, "move", (u) => {
+        const next = moveIndex(u.resourceIds, u.resourceIds.indexOf(resourceId), toIndex);
         return next === u.resourceIds ? null : next;
       });
     },

@@ -523,7 +523,7 @@ describe("fifth remediation P3: capacity guidance names only an action that can 
       for (let i = 0; i < UNCERTAINTY_MAX; i++) guard(v, `Ret${String(i).padStart(17, "0")}`, true);
     });
     expect(r.notice).toContain("reached its limit for keeping track of earlier unconfirmed changes");
-    expect(r.notice).toContain("Checking for changes or dismissing notices won't make room.");
+    expect(r.notice).toContain("Refreshing your units or dismissing notices won't make room.");
     expect(r.notice).toContain("doesn't confirm or undo any earlier change");
     // Sixth remediation: reloading never cancels requests already sent.
     expect(r.notice).toContain("it doesn't cancel changes already sent, which may still finish");
@@ -538,7 +538,7 @@ describe("fifth remediation P3: capacity guidance names only an action that can 
     const r = await panelWith((v) => {
       for (let i = 0; i < GUARDS_MAX; i++) guard(v, `Blk${String(i).padStart(17, "0")}`, false);
     });
-    expect(r.notice).toContain("Choose Check for changes");
+    expect(r.notice).toContain("Choose Refresh units");
     expect(r.notice).not.toMatch(/dismiss/i);
     expect(r.sent).toBe(0);
   });

@@ -296,14 +296,16 @@ describe("grade selection", () => {
     click(root, "filter-grade-7");
     click(root, "nav-units");
     await flush();
-    expect(created[0].initialGrade).toBe("7");
+    // Milestone 2B: Curriculum creates its own controller (unit-name pills)
+    // first, so the My Units controller is the latest one.
+    expect(created[created.length - 1].initialGrade).toBe("7");
     expect(q(root, "units-grade-7")?.getAttribute("aria-pressed")).toBe("true");
     click(root, "units-grade-8");
     await flush();
     click(root, "nav-classes");
     click(root, "nav-units");
     await flush();
-    expect(created[1].initialGrade).toBe("8");
+    expect(created[created.length - 1].initialGrade).toBe("8");
     expect(q(root, "units-grade-8")?.getAttribute("aria-pressed")).toBe("true");
   });
 });

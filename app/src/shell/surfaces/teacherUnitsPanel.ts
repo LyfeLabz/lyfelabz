@@ -14,7 +14,6 @@ import {
   type TeacherUnitsController,
   type TeacherUnitsSurfaceSeam,
   type TeacherUnitsViewState,
-  type ResourceMoveDirection,
   type UnitMutationResult,
 } from "../../teacherUnits/unitsController";
 import {
@@ -33,6 +32,7 @@ import type {
   PendingMutationResolution,
 } from "../../teacherUnits/pendingMutations";
 import type { PendingUnitMutationRecord } from "../../teacherUnits/mutationReconciliation";
+import { moveIndex } from "../../teacherUnits/unitOrderMath";
 import { registerOpenModal } from "../openModals";
 import {
   buildLessonPreviewLink,
@@ -257,7 +257,7 @@ export function renderTeacherUnitsPanel(
   heading.tabIndex = -1;
   root.appendChild(heading);
 
-  // Grade selector, Create Unit, and Check for changes. Show archived units
+  // Grade selector, Create Unit, and Refresh units. Show archived units
   // moved to Settings > Units (Milestone 1); the archived view is entered
   // from there and left with the banner below.
   const toolbar = el("div", "shell-units-toolbar");
@@ -287,13 +287,13 @@ export function renderTeacherUnitsPanel(
   createOpen.appendChild(doc.createTextNode(" Create Unit"));
   createOpen.setAttribute("aria-expanded", "false");
   toolbar.appendChild(createOpen);
-  // U2.5 Check for changes: the controller's own list read (`refresh`),
+  // U2.5 Refresh units: the controller's own list read (`refresh`),
   // which accepts only evidence newer than what is held. Never a page
   // reload, never a replay of an unconfirmed change. Milestone 1 keeps it
   // (recovery and conflict notices direct the teacher to it) as a quiet
   // secondary control; ordinary freshness is automatic (every My Units
   // visit reads the list, and so does returning to this browser tab).
-  const checkChanges = button("Check for changes");
+  const checkChanges = button("Refresh units");
   checkChanges.classList.add("shell-units-check-changes");
   checkChanges.setAttribute("data-testid", "units-check-changes");
   toolbar.appendChild(checkChanges);
@@ -317,7 +317,7 @@ export function renderTeacherUnitsPanel(
   archivedView.appendChild(archivedExit);
   root.appendChild(archivedView);
   let checking = false;
-  // The list read this Check for changes started, and whether any other
+  // The list read this Refresh units started, and whether any other
   // list read began after it. Success is announced only when that read
   // itself produced the list now shown.
   let checkRead: { readonly started: unknown; superseded: boolean } | null = null;
@@ -827,6 +827,16 @@ export function renderTeacherUnitsPanel(
   let prevCreateKind: TeacherUnitsViewState["create"]["kind"] = "idle";
   // Units to open when their card first appears (a just-created unit), and
   // the created unit whose card takes focus once listed.
+  // Milestone 2B: the reorder instructions every drag handle describes.
+  const reorderHelpId = uid("reorder-help");
+  const reorderHelp = el(
+    "span",
+    undefined,
+    "To reorder, press Space or Enter to pick up, use the up and down arrow keys to move, then press Space or Enter to drop. Press Escape to cancel. With a mouse or touch, drag the handle.",
+  );
+  reorderHelp.id = reorderHelpId;
+  reorderHelp.hidden = true;
+  host.appendChild(reorderHelp);
   const expandOnArrival = new Set<string>();
   let createdFocus: string | null = null;
   let arrivalFocus: string | null = options.focusUnitId ?? null;
@@ -1194,7 +1204,7 @@ export function renderTeacherUnitsPanel(
     const view = controller.getState();
     if (st.kind === "absent") return "This unit is no longer in your units.";
     if (st.kind !== "active" && st.kind !== "archived") {
-      return "This unit's current state hasn't been confirmed. Choose Check for changes to see it.";
+      return "This unit's current state hasn't been confirmed. Choose Refresh units to see it.";
     }
     const card = cards.get(unitId);
     const editorOpen = card?.editor != null;
@@ -1207,7 +1217,7 @@ export function renderTeacherUnitsPanel(
     if (card?.li.isConnected && !card.gone && card.unit === st.unit) return null;
     if (view.list.kind === "loading") return "The unit list is loading. These details are from the latest version LyfeLabz has loaded.";
     if (view.list.kind === "error") return "The unit list couldn't be refreshed. These details are from the latest version LyfeLabz has loaded.";
-    return isListed(unitId) ? null : "This unit isn't in your current list. Choose Check for changes to see its resources.";
+    return isListed(unitId) ? null : "This unit isn't in your current list. Choose Refresh units to see its resources.";
   };
   const contextOf = (unitId: string): NoticeContext => {
     const st = controller.getUnitState(unitId);
@@ -1245,7 +1255,7 @@ export function renderTeacherUnitsPanel(
   const uncertainUnread = (base: number): NoticeText => contextualNotice(UNCERTAIN_HISTORY, (ctx) =>
     (ctx.unit !== null && ctx.unit.revision > base) || ctx.absent
       ? uncertainNext(ctx)
-      : sentences(["The unit couldn't be loaded after that request.", ctx.where, ctx.archived ? "Restore it before making further changes." : ctx.active ? "Choose Check for changes before trying again." : null]),
+      : sentences(["The unit couldn't be loaded after that request.", ctx.where, ctx.archived ? "Restore it before making further changes." : ctx.active ? "Choose Refresh units before trying again." : null]),
   );
   type Saved = Extract<UnitMutationResult, { kind: "saved" }>;
   const baseRevision = (result: Saved): number => result.committed?.revision ?? result.unit.revision;
@@ -1296,8 +1306,8 @@ export function renderTeacherUnitsPanel(
           : `"${cur.title}" has no unavailable resources now.`
         : !newer
           ? write
-            ? "Your change was saved, but the latest loaded resources don't show it yet. Choose Check for changes to see them."
-            : "The latest loaded resources don't show this request's result yet. Choose Check for changes to see them."
+            ? "Your change was saved, but the latest loaded resources don't show it yet. Choose Refresh units to see them."
+            : "The latest loaded resources don't show this request's result yet. Choose Refresh units to see them."
           : action === "move" ? (cur.resourceIds.includes(targets[0]) ? `${positionNow(cur)}, after this unit changed.` : positionNow(cur))
           : action === "add" ? `"${cur.title}" changed since that request, so not every resource you ${write ? "added" : "chose"} is in it now.`
           : action === "remove" ? `"${name}" is in "${cur.title}"${write ? " again" : ""} after this unit changed.`
@@ -1391,7 +1401,7 @@ export function renderTeacherUnitsPanel(
               : "Restore it to change its resources.",
         ];
       } else if (ctx.active && loaded === null) {
-        next = [ctx.where ?? "Choose Check for changes, then try again."];
+        next = [ctx.where ?? "Choose Refresh units, then try again."];
       } else if (ctx.active) {
         next = editing
           ? [ctx.where, "Your edits are still here. Review them, then save again."]
@@ -1443,8 +1453,8 @@ export function renderTeacherUnitsPanel(
           editing,
           ctx.where,
           op === "edit"
-            ? "Choose Check for changes to see its current state before trying again."
-            : "Choose Check for changes to see its current state.",
+            ? "Choose Refresh units to see its current state before trying again."
+            : "Choose Refresh units to see its current state.",
         ]);
       }
       const now = op === "edit"
@@ -1459,7 +1469,7 @@ export function renderTeacherUnitsPanel(
     contextualNotice("An earlier change to this unit wasn't confirmed, so LyfeLabz didn't send this one.", () =>
       sentences([
         card.editor !== null ? "Your edits are still here." : null,
-        "Choose Check current state under Unconfirmed changes, or Check for changes, to load the unit's current state. Then review it and try again.",
+        "Choose Check current state under Unconfirmed changes, or Refresh units, to load the unit's current state. Then review it and try again.",
       ]),
     );
   // Bounded tracking (pendingMutations.ts): this request was not sent.
@@ -1477,13 +1487,13 @@ export function renderTeacherUnitsPanel(
         if (reason === "retained") {
           return sentences([
             editing,
-            "Checking for changes or dismissing notices won't make room. Reloading the page starts a new visit and clears what LyfeLabz is keeping track of here, but it doesn't confirm or undo any earlier change, and it doesn't cancel changes already sent, which may still finish. Anything you haven't saved on this page will be lost, so copy it first.",
+            "Refreshing your units or dismissing notices won't make room. Reloading the page starts a new visit and clears what LyfeLabz is keeping track of here, but it doesn't confirm or undo any earlier change, and it doesn't cancel changes already sent, which may still finish. Anything you haven't saved on this page will be lost, so copy it first.",
           ]);
         }
         if (reason === "blocking") {
           return sentences([
             editing,
-            "Too many units have unconfirmed changes whose current state hasn't been loaded. Choose Check for changes for the grades they're in (choose View archived units in Settings > Units to include archived units), then try again.",
+            "Too many units have unconfirmed changes whose current state hasn't been loaded. Choose Refresh units for the grades they're in (choose View archived units in Settings > Units to include archived units), then try again.",
           ]);
         }
         const dismissible = controller.getState().pending.some((e) => e.status === "uncertain");
@@ -1818,28 +1828,103 @@ export function renderTeacherUnitsPanel(
     });
   };
 
-  // U2.4. One move per click, saved at once; the row moves only when the
-  // server's response is accepted. Focus stays on the same resource: the
-  // same direction's control, or the opposite one at a boundary.
-  const moveTestId = (unitId: string, dir: ResourceMoveDirection, resourceId: string): string =>
-    `units-resource-move-${dir}-${unitId}-${resourceId}`;
-  const moveFocusTarget = (card: CardView, resourceId: string, dir: ResourceMoveDirection): HTMLElement | null => {
-    const unitId = card.unit.unitId;
-    const same = card.li.querySelector<HTMLElement>(`[data-testid="${moveTestId(unitId, dir, resourceId)}"]`);
-    const other = card.li.querySelector<HTMLElement>(
-      `[data-testid="${moveTestId(unitId, dir === "up" ? "down" : "up", resourceId)}"]`,
-    );
-    if (same !== null && !same.hasAttribute("data-edge")) return same;
-    if (other !== null && !other.hasAttribute("data-edge")) return other;
-    return same ?? other ??
-      card.li.querySelector<HTMLElement>(`[data-testid="units-resource-remove-${unitId}-${resourceId}"]`) ??
-      addButtonOf(card);
+  // U2.4 ordering, Milestone 2B interaction: a six-dot drag handle at the
+  // left of each row replaces Move up / Move down. A completed move is one
+  // `moveResourceTo` request (the held list as a permutation, with its
+  // revision); a move back to the same position sends nothing. The row
+  // moves only when the server's response is accepted. Focus returns to the
+  // same resource's handle.
+  //
+  // Pointer (mouse, pen, touch): press the handle and drag; an insertion
+  // line shows where the resource will go; release to save. The handle has
+  // `touch-action: none` and captures the pointer, so dragging it never
+  // scrolls the page or activates Preview or Remove.
+  //
+  // Keyboard: Space or Enter on the handle picks the resource up; Up/Down
+  // (Home/End) move it in a live preview; Space or Enter drops it; Escape,
+  // Tab, or leaving the handle cancels. Every step is announced in the
+  // panel's polite status region.
+  const handleTestId = (unitId: string, resourceId: string): string =>
+    `units-resource-handle-${unitId}-${resourceId}`;
+  const handleOf = (card: CardView, resourceId: string): HTMLElement | null =>
+    card.li.querySelector<HTMLElement>(`[data-testid="${handleTestId(card.unit.unitId, resourceId)}"]`);
+
+  type ResourceDrag = {
+    readonly card: CardView;
+    readonly resourceId: string;
+    readonly name: string;
+    readonly handle: HTMLElement;
+    readonly list: HTMLElement;
+    readonly from: number;
+    readonly count: number;
+    readonly mode: "keyboard" | "pointer";
+    to: number;
+    pointerId: number | null;
+    startY: number;
+    moved: boolean;
   };
-  const moveResource = (card: CardView, resourceId: string, name: string, dir: ResourceMoveDirection): void => {
+  let drag: ResourceDrag | null = null;
+
+  const rowsOf = (list: HTMLElement): HTMLElement[] =>
+    Array.from(list.querySelectorAll<HTMLElement>(":scope > li"));
+  const clearDragPresentation = (d: ResourceDrag): void => {
+    for (const li of rowsOf(d.list)) {
+      li.style.order = "";
+      li.classList.remove("shell-units-resource-dragging", "shell-units-drop-before", "shell-units-drop-after");
+    }
+    d.list.classList.remove("shell-units-resource-list-sorting");
+    d.handle.removeAttribute("aria-pressed");
+  };
+  // Keyboard preview: the visual order follows the pending position (CSS
+  // `order`, so the focused handle never leaves the document).
+  const previewOrder = (d: ResourceDrag): void => {
+    const rows = rowsOf(d.list);
+    const ids = rows.map((li) => li.getAttribute("data-resource-id"));
+    const next = moveIndex(ids, d.from, d.to);
+    rows.forEach((li) => {
+      li.style.order = String(next.indexOf(li.getAttribute("data-resource-id")));
+    });
+  };
+  // Pointer feedback: a line before or after the row the resource will land
+  // next to (rows stay in server order while dragging).
+  const showInsertion = (d: ResourceDrag): void => {
+    const others = rowsOf(d.list).filter((li) => li.getAttribute("data-resource-id") !== d.resourceId);
+    for (const li of others) li.classList.remove("shell-units-drop-before", "shell-units-drop-after");
+    if (d.to === d.from) return;
+    if (d.to === 0) others[0]?.classList.add("shell-units-drop-before");
+    else others[d.to - 1]?.classList.add("shell-units-drop-after");
+  };
+  const positionText = (d: ResourceDrag): string => `position ${d.to + 1} of ${d.count}`;
+
+  const endDrag = (announcement: string | null): void => {
+    const d = drag;
+    if (d === null) return;
+    drag = null;
+    clearDragPresentation(d);
+    if (d.pointerId !== null) {
+      try {
+        d.handle.releasePointerCapture(d.pointerId);
+      } catch {
+        // ignored
+      }
+    }
+    if (announcement !== null) announce(announcement);
+  };
+  // A card body rebuilt mid-move (a newer record arrived) ends the move.
+  const endDetachedDrag = (): void => {
+    if (drag !== null && !drag.handle.isConnected) {
+      endDrag(`Move cancelled. "${drag.name}" wasn't moved because this unit's resources changed.`);
+    }
+  };
+
+  const commitDrag = (d: ResourceDrag): void => {
+    const { card, resourceId, name } = d;
     const unitTitle = card.unit.title;
     const base = baseOf(card);
-    const clearPending = announcePending(`Moving "${name}" ${dir} in "${unitTitle}"...`);
-    void controller.moveResource(card.unit.unitId, resourceId, dir).then((result) => {
+    const to = d.to;
+    endDrag(null);
+    const clearPending = announcePending(`Moving "${name}" to position ${to + 1} of ${d.count} in "${unitTitle}"...`);
+    void controller.moveResourceTo(card.unit.unitId, resourceId, to).then((result) => {
       if (disposed) return;
       clearPending();
       if (result.kind === "stale" || result.kind === "busy") return;
@@ -1848,8 +1933,146 @@ export function renderTeacherUnitsPanel(
       } else {
         membershipNotice(card, result, "move", base);
       }
-      settleFocus(card, moveFocusTarget(card, resourceId, dir));
+      settleFocus(card, handleOf(card, resourceId));
     });
+  };
+
+  const beginDrag = (
+    card: CardView,
+    handle: HTMLElement,
+    resourceId: string,
+    name: string,
+    mode: ResourceDrag["mode"],
+  ): ResourceDrag | null => {
+    if (drag !== null || isInert(handle)) return null;
+    const list = handle.closest<HTMLElement>("ol");
+    if (list === null) return null;
+    const ids = rowsOf(list).map((li) => li.getAttribute("data-resource-id"));
+    const from = ids.indexOf(resourceId);
+    if (from === -1) return null;
+    drag = { card, resourceId, name, handle, list, from, count: ids.length, mode, to: from, pointerId: null, startY: 0, moved: false };
+    return drag;
+  };
+
+  const onHandleKey = (card: CardView, handle: HTMLElement, resourceId: string, name: string, ev: KeyboardEvent): void => {
+    const d = drag !== null && drag.handle === handle && drag.mode === "keyboard" ? drag : null;
+    const pick = ev.key === " " || ev.key === "Enter";
+    if (d === null) {
+      if (!pick || ev.repeat) return;
+      ev.preventDefault();
+      const started = beginDrag(card, handle, resourceId, name, "keyboard");
+      if (started === null) return;
+      handle.setAttribute("aria-pressed", "true");
+      started.list.classList.add("shell-units-resource-list-sorting");
+      handle.closest("li")?.classList.add("shell-units-resource-dragging");
+      announce(
+        `Picked up "${name}", ${positionText(started)}. Use the up and down arrow keys to move it, Space to drop it, or Escape to cancel.`,
+      );
+      return;
+    }
+    if (pick) {
+      ev.preventDefault();
+      if (ev.repeat) return;
+      if (d.to === d.from) {
+        endDrag(`"${name}" was dropped in its original position. Nothing was changed.`);
+        return;
+      }
+      commitDrag(d);
+      return;
+    }
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      ev.stopPropagation();
+      endDrag(`Move cancelled. "${name}" is back at position ${d.from + 1} of ${d.count}.`);
+      return;
+    }
+    if (ev.key === "Tab") {
+      endDrag(`Move cancelled. "${name}" is back at position ${d.from + 1} of ${d.count}.`);
+      return;
+    }
+    const next =
+      ev.key === "ArrowUp" ? d.to - 1
+        : ev.key === "ArrowDown" ? d.to + 1
+          : ev.key === "Home" ? 0
+            : ev.key === "End" ? d.count - 1
+              : null;
+    if (next === null) return;
+    ev.preventDefault();
+    const to = Math.max(0, Math.min(d.count - 1, next));
+    if (to === d.to) {
+      announce(`"${name}" is already at ${to === 0 ? "the top" : "the bottom"}, ${positionText(d)}.`);
+      return;
+    }
+    d.to = to;
+    previewOrder(d);
+    announce(`"${name}", ${positionText(d)}.`);
+  };
+
+  const DRAG_THRESHOLD_PX = 4;
+  const EDGE_SCROLL_PX = 48;
+  const scrollerOf = (el: HTMLElement): HTMLElement | null => {
+    for (let n = el.parentElement; n !== null; n = n.parentElement) {
+      const oy = doc.defaultView?.getComputedStyle(n).overflowY ?? "";
+      if ((oy === "auto" || oy === "scroll") && n.scrollHeight > n.clientHeight) return n;
+    }
+    return (doc.scrollingElement as HTMLElement | null) ?? null;
+  };
+  const attachPointerDrag = (card: CardView, handle: HTMLElement, resourceId: string, name: string): void => {
+    handle.addEventListener("pointerdown", (ev: PointerEvent) => {
+      if (ev.button !== 0 || !ev.isPrimary) return;
+      const d = beginDrag(card, handle, resourceId, name, "pointer");
+      if (d === null) return;
+      // No text selection, no click on the row, no page scroll from this press.
+      ev.preventDefault();
+      d.pointerId = ev.pointerId;
+      d.startY = ev.clientY;
+      try {
+        handle.setPointerCapture(ev.pointerId);
+      } catch {
+        // ignored
+      }
+    });
+    handle.addEventListener("pointermove", (ev: PointerEvent) => {
+      const d = drag;
+      if (d === null || d.handle !== handle || d.pointerId !== ev.pointerId) return;
+      if (!d.moved) {
+        if (Math.abs(ev.clientY - d.startY) < DRAG_THRESHOLD_PX) return;
+        d.moved = true;
+        d.list.classList.add("shell-units-resource-list-sorting");
+        handle.closest("li")?.classList.add("shell-units-resource-dragging");
+      }
+      ev.preventDefault();
+      const others = rowsOf(d.list).filter((li) => li.getAttribute("data-resource-id") !== resourceId);
+      let before = 0;
+      for (const li of others) {
+        const r = li.getBoundingClientRect();
+        if (ev.clientY > r.top + r.height / 2) before += 1;
+      }
+      d.to = before;
+      showInsertion(d);
+      // Near the viewport edge, scroll so long units stay reachable.
+      const view = doc.defaultView;
+      const scroller = scrollerOf(d.list);
+      if (view !== null && scroller !== null) {
+        if (ev.clientY < EDGE_SCROLL_PX) scroller.scrollTop -= 12;
+        else if (ev.clientY > view.innerHeight - EDGE_SCROLL_PX) scroller.scrollTop += 12;
+      }
+    });
+    const finish = (ev: PointerEvent, cancelled: boolean): void => {
+      const d = drag;
+      if (d === null || d.handle !== handle || d.pointerId !== ev.pointerId) return;
+      if (cancelled || !d.moved) {
+        endDrag(cancelled && d.moved ? `Move cancelled. "${name}" wasn't moved.` : null);
+        return;
+      }
+      if (d.to === d.from) {
+        endDrag(`"${name}" was dropped in its original position. Nothing was changed.`);
+        return;
+      }
+      commitDrag(d);
+    };
+    handle.addEventListener("pointerup", (ev: PointerEvent) => finish(ev, false));
+    handle.addEventListener("pointercancel", (ev: PointerEvent) => finish(ev, true));
   };
 
   const isUnavailable = (id: string): boolean => resolveUnitResources([id])[0].status === "unavailable";
@@ -1972,6 +2195,8 @@ export function renderTeacherUnitsPanel(
             typeLabel: resourceTypeLabel(entry.resource),
             title: name,
             titleTag: "span",
+            // Milestone 2B: the type follows the title, as in Curriculum.
+            typePlacement: "title",
           })
           : buildResourceCard(doc, {
             className: "shell-units-resource-card",
@@ -1994,31 +2219,30 @@ export function renderTeacherUnitsPanel(
             : buildResourceOpenLink(doc, r.openHref, `Open ${name} (opens in a new tab)`, `units-resource-open-${u.unitId}-${r.id}`);
           if (view !== null) cardActions.appendChild(view);
         }
-        // U2.4 ordering: only while every resource is placeable (the server
-        // refuses any list that still names a retired id) and there is
-        // something to reorder. Boundary and pending controls stay focusable
-        // (aria-disabled) and ignore activation.
+        // U2.4 ordering (Milestone 2B drag handle): only while every resource
+        // is placeable (the server refuses any list that still names a
+        // retired id) and there is something to reorder. A pending handle
+        // stays focusable (aria-disabled) and refuses to start a move.
         if (u.status === "active" && entry.status === "available" && retired === 0 && resolved.length > 1) {
-          const moves = el("span", "shell-units-resource-moves");
-          for (const dir of ["up", "down"] as const) {
-            const label = dir === "up" ? "Move up" : "Move down";
-            const move = button(label);
-            move.setAttribute("data-action", "move-resource");
-            move.setAttribute("data-testid", moveTestId(u.unitId, dir, entry.id));
-            move.setAttribute("aria-label", `Move ${name} ${dir} in ${u.title}`);
-            move.setAttribute("data-busy-gate", "");
-            const edge = dir === "up" ? i === 0 : i === resolved.length - 1;
-            if (edge) move.setAttribute("data-edge", "");
-            move.addEventListener("click", (ev) => {
-              if (isInert(move)) {
-                ev.preventDefault();
-                return;
-              }
-              moveResource(card, entry.id, name, dir);
-            });
-            moves.appendChild(move);
-          }
-          cardActions.appendChild(moves);
+          const handle = button("");
+          handle.className = "shell-units-drag-handle";
+          handle.setAttribute("data-action", "move-resource");
+          handle.setAttribute("data-testid", handleTestId(u.unitId, entry.id));
+          handle.setAttribute("aria-label", `Reorder ${name}, position ${i + 1} of ${resolved.length} in ${u.title}`);
+          handle.setAttribute("aria-describedby", reorderHelpId);
+          handle.setAttribute("data-busy-gate", "");
+          handle.appendChild(el("span", "shell-units-drag-grip")).setAttribute("aria-hidden", "true");
+          // A plain click (no drag, no key) does nothing.
+          handle.addEventListener("click", (ev) => ev.preventDefault());
+          handle.addEventListener("keydown", (ev) => onHandleKey(card, handle, entry.id, name, ev));
+          handle.addEventListener("blur", () => {
+            if (drag !== null && drag.handle === handle && drag.mode === "keyboard") {
+              endDrag(`Move cancelled. "${name}" is back at position ${drag.from + 1} of ${drag.count}.`);
+            }
+          });
+          attachPointerDrag(card, handle, entry.id, name);
+          li.classList.add("shell-units-resource-sortable");
+          li.insertBefore(handle, row.card);
         }
         // Retired rows are removed together (below); one at a time would be
         // refused while another retired id remains.
@@ -2248,6 +2472,7 @@ export function renderTeacherUnitsPanel(
     }
     if (card.picker !== null) renderPickerOptions(card);
     applyBusy(card);
+    endDetachedDrag();
     if (refocus) {
       focusFirst(retiredButtonOf(card), addButtonOf(card), cardAction(card), heading);
     }
@@ -2660,7 +2885,7 @@ export function renderTeacherUnitsPanel(
   checkChanges.addEventListener("click", () => {
     if (isInert(checkChanges)) return;
     checking = true;
-    const clearPending = announcePending("Checking for changes...");
+    const clearPending = announcePending("Refreshing your units...");
     render();
     const done = controller.refresh();
     // `refresh` sets a new loading list synchronously when it dispatches; a
@@ -2679,7 +2904,7 @@ export function renderTeacherUnitsPanel(
       // not failed (a failure shows in the list's own alert).
       const now = controller.getState().list;
       if (read.started !== null && !read.superseded && now.kind === "ready") {
-        announce("Your units were checked for changes.");
+        announce("Your units were refreshed.");
       }
       render();
     });
@@ -2716,7 +2941,7 @@ export function renderTeacherUnitsPanel(
   };
 
   // Milestone 1 automatic freshness: returning to this browser tab reads
-  // the list again through the same `refresh` as Check for changes (same
+  // the list again through the same `refresh` as Refresh units (same
   // ordering, revision, and account guards; nothing is resent). Silent, at
   // most once per AUTO_REFRESH_MIN_MS, and only while a loaded list is shown
   // and no other read is running. No polling.
@@ -2776,6 +3001,10 @@ export type AddToUnitDialogInput = {
   readonly seam: TeacherUnitsSurfaceSeam;
   readonly uid: string;
   readonly schoolId: string;
+  // Milestone 2B: the Curriculum visit's own controller, so a confirmed
+  // addition updates its unit-name pills at once. The dialog then never
+  // disposes it. Without one, the dialog creates and disposes its own.
+  readonly controller?: TeacherUnitsController | null;
   // Canonical RA-1 ids, in the order the unit should receive them.
   readonly resourceIds: ReadonlyArray<string>;
   readonly initialGrade: TeacherUnitGrade;
@@ -2800,11 +3029,19 @@ const plural = (n: number, one: string, many: string): string => `${n} ${n === 1
 export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput): { readonly close: () => void } {
   requireTeacherUnitsAvailable();
   const ids = input.resourceIds;
-  const controller = input.seam.createController({
-    uid: input.uid,
-    schoolId: input.schoolId,
-    initialGrade: input.initialGrade,
-  });
+  const shared = input.controller ?? null;
+  const controller =
+    shared ??
+    input.seam.createController({
+      uid: input.uid,
+      schoolId: input.schoolId,
+      initialGrade: input.initialGrade,
+    });
+  // A shared controller already holds a list; read the chosen grade afresh.
+  if (shared !== null) {
+    if (shared.getState().grade !== input.initialGrade) shared.setGrade(input.initialGrade);
+    else void shared.refresh();
+  }
 
   const el = <K extends keyof HTMLElementTagNameMap>(
     tag: K,
@@ -2827,13 +3064,16 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   tid(dialog, "units-add-dialog");
   overlay.appendChild(dialog);
 
+  // Milestone 2B: the selection count sits beside the heading.
+  const head = el("div", "shell-units-add-head");
   const title = el("h3", "shell-assign-title", "Add to a unit");
   title.id = "units-add-title";
   title.tabIndex = -1;
-  dialog.appendChild(title);
+  head.appendChild(title);
   const summary = el("p", "shell-units-add-summary", `${plural(ids.length, "resource", "resources")} selected.`);
   tid(summary, "units-add-summary");
-  dialog.appendChild(summary);
+  head.appendChild(summary);
+  dialog.appendChild(head);
 
   const body = el("div", "shell-assign-body");
   dialog.appendChild(body);
@@ -2868,7 +3108,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   const listState = el("p", "shell-units-add-list-state");
   tid(listState, "units-add-list-state");
   fieldset.appendChild(listState);
-  const retry = el("button", "shell-assign-cancel", "Try again");
+  const retry = el("button", "shell-assign-cancel shell-units-add-retry", "Try again");
   retry.type = "button";
   tid(retry, "units-add-retry");
   retry.hidden = true;
@@ -2922,7 +3162,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   const cancel = el("button", "shell-assign-cancel", "Cancel");
   cancel.type = "button";
   tid(cancel, "units-add-cancel");
-  const confirm = el("button", "shell-assign-confirm", "Add to unit");
+  const confirm = el("button", "shell-assign-confirm", "Add to Unit");
   confirm.type = "button";
   tid(confirm, "units-add-confirm");
   footer.append(cancel, confirm);
@@ -2935,6 +3175,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   let closed = false;
   let openUnitsTarget: { readonly unitId: string; readonly grade: TeacherUnitGrade } | null = null;
   let renderedList: TeacherUnitsViewState["list"] | null = null;
+  let hasUnits = true;
 
   const clearProblem = (): void => {
     problem.hidden = true;
@@ -2994,10 +3235,14 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
       return;
     }
     const units = list.units.filter((u) => u.status === "active");
-    listState.hidden = units.length > 0;
-    listState.textContent = units.length > 0 ? "" : `No ${gradeLabel(s.grade)} units yet.`;
+    // Milestone 2B: with no units, creating one is the only next step, so
+    // the fieldset is just the new unit's name (no empty-state sentence and
+    // no lone radio button).
+    listState.hidden = true;
+    listState.textContent = "";
+    hasUnits = units.length > 0;
     if (chosen !== null && chosen !== "new" && !units.some((u) => u.unitId === chosen)) chosen = null;
-    if (units.length === 0 && chosen === null) chosen = "new";
+    if (units.length === 0) chosen = "new";
     for (const u of units) {
       const row = el("label", "shell-units-add-option");
       const radio = el("input");
@@ -3041,6 +3286,12 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     renderChoices(s);
     newRadio.checked = chosen === "new";
     newField.hidden = chosen !== "new";
+    const emptyGrade = s.list.kind === "ready" && !hasUnits;
+    newRow.hidden = emptyGrade;
+    const legendText = emptyGrade ? `New ${gradeLabel(s.grade)} unit` : "Choose a unit";
+    if (legend.textContent !== legendText) legend.textContent = legendText;
+    const confirmText = chosen === "new" ? "Create Unit & Add" : "Add to Unit";
+    if (confirm.textContent !== confirmText) confirm.textContent = confirmText;
   };
 
   fieldset.addEventListener("change", (ev) => {
@@ -3065,7 +3316,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     doc.removeEventListener("keydown", onKey);
     unregisterModal();
     unsubscribe();
-    controller.dispose();
+    if (shared === null) controller.dispose();
   };
   const dismiss = (): void => {
     close();
@@ -3111,7 +3362,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
       case "conflict":
         showProblem(
           lead(
-            "this unit changed since it was loaded here, so LyfeLabz couldn't confirm whether anything was added. Check the unit below, then choose Add to unit again.",
+            "this unit changed since it was loaded here, so LyfeLabz couldn't confirm whether anything was added. Check the unit below, then choose Add to Unit again.",
           ),
         );
         return false;
@@ -3141,7 +3392,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
       case "needsCheck":
       case "capacity":
         showProblem(
-          lead("an earlier change to this unit hasn't been confirmed yet. Open My Units and choose Check for changes, then try again."),
+          lead("an earlier change to this unit hasn't been confirmed yet. Open My Units and choose Refresh units, then try again."),
           { myUnits: true, target: { unitId, grade } },
         );
         return false;

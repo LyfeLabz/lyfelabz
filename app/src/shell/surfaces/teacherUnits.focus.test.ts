@@ -4,7 +4,7 @@
  * U2.5 accessibility and UX remediation (TEACHER_UNITS.md "U2.5").
  *
  * Focus ownership before, during and after asynchronous operations; card
- * departure; stable card rendering; Check for changes; operation-specific
+ * departure; stable card rendering; Refresh units; operation-specific
  * uncertainty and neutral conflict wording; field error associations; and
  * the panel-scoped forced-colors focus style. Every callable is a manually
  * settled deferred, so each interleaving is explicit.
@@ -100,6 +100,14 @@ type H = Awaited<ReturnType<typeof panel>>;
 
 const last = (h: H, k: Kind) => h.calls[k][h.calls[k].length - 1];
 const btn = (h: H, id: string) => q(h.host, id) as HTMLButtonElement;
+// Milestone 2B: one keyboard move through the drag handle (pick up, arrow, drop).
+const moveStep = (h: H, unitId: string, id: string, dir: "up" | "down") => {
+  const handle = btn(h, `units-resource-handle-${unitId}-${id}`);
+  handle.focus();
+  for (const k of [" ", dir === "up" ? "ArrowUp" : "ArrowDown", " "]) {
+    handle.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+  }
+};
 const status = (h: H) => q(h.host, "units-status")?.textContent ?? "";
 const LOST = () => Object.assign(new Error("lost"), { code: "unavailable" });
 const CONFLICT = () => ({ details: { code: "teacherUnits.writeConflict" } });
@@ -131,7 +139,7 @@ describe("card departure", () => {
     expect(q(h.host, `units-card-${b.unitId}`)).toBeNull();
     expect(document.activeElement).toBe(btn(h, `units-resources-add-${c.unitId}`));
     expect((document.activeElement as HTMLElement).isConnected).toBe(true);
-    // Check for changes itself keeps its own focus while a card leaves.
+    // Refresh units itself keeps its own focus while a card leaves.
     await checkChanges(h, [c]);
     expect(document.activeElement).toBe(btn(h, "units-check-changes"));
   });
@@ -319,7 +327,7 @@ describe("no focus theft", () => {
     last(h, "setResources").d.resolve({ unit: next(a, { resourceIds: [R2.id, R3.id] }), noop: false });
     await tick();
     expect(document.activeElement).toBe(elsewhere);
-    press(btn(h, `units-resource-move-down-${a.unitId}-${R2.id}`));
+    moveStep(h, a.unitId, R2.id, "down");
     elsewhere.focus();
     last(h, "setResources").d.resolve({ unit: next(next(a, {}), { resourceIds: [R3.id, R2.id] }), noop: false });
     await tick();
@@ -363,7 +371,7 @@ describe("stable rendering", () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const h = await panel([a]);
     const edit = btn(h, `units-edit-${a.unitId}`);
-    press(btn(h, `units-resource-move-down-${a.unitId}-${R1.id}`));
+    moveStep(h, a.unitId, R1.id, "down");
     expect(btn(h, `units-edit-${a.unitId}`)).toBe(edit);
     expect(edit.getAttribute("aria-disabled")).toBe("true");
     expect(q(h.host, `units-card-${a.unitId}`)?.getAttribute("aria-busy")).toBe("true");
@@ -387,11 +395,11 @@ describe("resource and editor focus", () => {
   test("remove focuses the row that took its place; move keeps the moved resource; add returns to Add resources", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const h = await panel([a]);
-    press(btn(h, `units-resource-move-down-${a.unitId}-${R1.id}`));
+    moveStep(h, a.unitId, R1.id, "down");
     const moved = next(a, { resourceIds: [R2.id, R1.id] });
     last(h, "setResources").d.resolve({ unit: moved, noop: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-resource-move-up-${a.unitId}-${R1.id}`));
+    expect(document.activeElement).toBe(btn(h, `units-resource-handle-${a.unitId}-${R1.id}`));
     press(btn(h, `units-resource-remove-${a.unitId}-${R2.id}`));
     const removed = next(moved, { resourceIds: [R1.id] });
     last(h, "setResources").d.resolve({ unit: removed, noop: false });
@@ -419,7 +427,7 @@ describe("resource and editor focus", () => {
   });
 });
 
-describe("Check for changes", () => {
+describe("Refresh units", () => {
   test("uses one list read, keeps unsaved create and edit input, and announces the result", async () => {
     const a = unit();
     const h = await panel([a]);
@@ -429,14 +437,14 @@ describe("Check for changes", () => {
     title.value = "My draft";
     const check = btn(h, "units-check-changes");
     press(check);
-    expect(status(h)).toBe("Checking for changes...");
+    expect(status(h)).toBe("Refreshing your units...");
     expect(check.getAttribute("aria-disabled")).toBe("true");
     check.click();
     expect(h.c.list).toHaveBeenCalledTimes(2);
     expect(last(h, "list").req).toEqual({ grade: "7", includeArchived: false });
     last(h, "list").d.resolve({ units: [next(a, { title: "Theirs" })] });
     await tick();
-    expect(status(h)).toBe("Your units were checked for changes.");
+    expect(status(h)).toBe("Your units were refreshed.");
     expect(check.getAttribute("aria-disabled")).toBeNull();
     expect(document.activeElement).toBe(check);
     expect((q(h.host, "units-create-title") as HTMLInputElement).value).toBe("Draft unit");
@@ -466,7 +474,7 @@ describe("Check for changes", () => {
     expect(q(h.host, `units-resource-remove-${a.unitId}-${R2.id}`)).not.toBeNull();
   });
 
-  test("after an unconfirmed remove: points to Check for changes, then reports from the newer record, never resending", async () => {
+  test("after an unconfirmed remove: points to Refresh units, then reports from the newer record, never resending", async () => {
     const a = unit();
     const h = await panel([a]);
     press(btn(h, `units-resource-remove-${a.unitId}-${R1.id}`));
@@ -475,11 +483,12 @@ describe("Check for changes", () => {
     last(h, "get").d.reject(LOST());
     await tick();
     const notice = noticeOf(h, a) as HTMLElement;
-    expect(notice.textContent).toContain("Choose Check for changes before trying again.");
-    expect(notice.textContent).not.toMatch(/\bRefresh\b/);
+    expect(notice.textContent).toContain("Choose Refresh units before trying again.");
+    // No unsupported "Refresh" instruction: only the Refresh units control is named.
+    expect(notice.textContent).not.toMatch(/\bRefresh\b(?! units\b)/);
     await checkChanges(h, [next(a, { resourceIds: [R2.id] })]);
     expect(notice.textContent).toContain("couldn't confirm whether your change was saved");
-    expect(notice.textContent).not.toContain("Choose Check for changes before trying again.");
+    expect(notice.textContent).not.toContain("Choose Refresh units before trying again.");
     expect(h.c.setResources).toHaveBeenCalledTimes(1);
   });
 
@@ -495,7 +504,7 @@ describe("Check for changes", () => {
     last(h, "get").d.reject(LOST());
     await tick();
     const notice = noticeOf(h, a) as HTMLElement;
-    expect(notice.textContent).toContain("Choose Check for changes before trying again.");
+    expect(notice.textContent).toContain("Choose Refresh units before trying again.");
     expect(h.c.setResources).toHaveBeenCalledTimes(1);
   });
 
@@ -533,7 +542,7 @@ describe("Check for changes", () => {
     last(h, "list").d.resolve({ units: [next(a, { title: "Other account" })] });
     await tick();
     expect(h.host.textContent).not.toContain("Other account");
-    expect(status(h)).not.toBe("Your units were checked for changes.");
+    expect(status(h)).not.toBe("Your units were refreshed.");
   });
 });
 
@@ -552,7 +561,7 @@ describe("messages", () => {
     let text = noticeOf(h, a)?.textContent ?? "";
     expect(text).toContain("LyfeLabz couldn't confirm whether your changes were saved.");
     expect(text).toContain("Your edits are still here.");
-    expect(text).toContain("Choose Check for changes");
+    expect(text).toContain("Choose Refresh units");
     expect(text).not.toMatch(/resource/i);
     btn(h, `units-edit-cancel-${a.unitId}`).click();
     // A3-4 S2 (D3): after the unconfirmed edit and its failed read, a new
@@ -663,9 +672,9 @@ describe("panel styles", () => {
 
 // ---------- U2.5 certification remediation (F1-F3) ----------
 
-const CHECKED = "Your units were checked for changes.";
+const CHECKED = "Your units were refreshed.";
 
-describe("F1: Check for changes announces only its own accepted read", () => {
+describe("F1: Refresh units announces only its own accepted read", () => {
   test("superseded by another list read that settles first: no success announcement", async () => {
     const a = unit();
     const h = await panel([a]);
@@ -844,7 +853,7 @@ describe("F3: confirmed and uncertain membership outcomes stay distinct", () => 
     expect(status(h)).not.toMatch(/couldn't confirm|can't tell|whether this request took effect/);
   });
 
-  test("a confirmed write followed by a failed Check for changes stays confirmed", async () => {
+  test("a confirmed write followed by a failed Refresh units stays confirmed", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const h = await panel([a]);
     btn(h, `units-resource-remove-${a.unitId}-${R1.id}`).click();

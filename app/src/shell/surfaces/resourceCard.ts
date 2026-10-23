@@ -39,9 +39,11 @@ export type ResourceCardInput = {
     readonly type?: string;
     readonly title?: string;
   };
-  // Milestone 2A: an optional selection checkbox at the start of the title
-  // row, so it precedes the card's actions in keyboard order. The caller
-  // owns its state and wiring (Curriculum's resource selection).
+  // Milestone 2A: an optional selection checkbox. Since Milestone 2B it sits
+  // in its own leading column of the card, vertically centred on the
+  // resource information, so the metadata pills and the title share one
+  // left edge; it still precedes the card's actions in keyboard order. The
+  // caller owns its state and wiring (Curriculum's resource selection).
   readonly select?: {
     readonly resourceId: string;
     // Accessible name, for example "Select Earth's Layers (Lesson)".
@@ -63,6 +65,20 @@ export type ResourceCard = {
 export function buildResourceCard(doc: Document, input: ResourceCardInput): ResourceCard {
   const card = doc.createElement(input.tag ?? "article");
   card.className = `${input.className} shell-resource-row`;
+
+  let checkbox: HTMLInputElement | null = null;
+  if (input.select != null) {
+    card.classList.add("shell-resource-row-selectable");
+    const wrap = doc.createElement("label");
+    wrap.className = "shell-resource-select";
+    checkbox = doc.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.setAttribute("data-resource-id", input.select.resourceId);
+    checkbox.setAttribute("data-testid", input.select.testid);
+    checkbox.setAttribute("aria-label", input.select.label);
+    wrap.appendChild(checkbox);
+    card.appendChild(wrap);
+  }
 
   const main = doc.createElement("div");
   main.className = "shell-resource-row-main";
@@ -96,18 +112,6 @@ export function buildResourceCard(doc: Document, input: ResourceCardInput): Reso
 
   const titleRow = doc.createElement("div");
   titleRow.className = "shell-lesson-title-row";
-  let checkbox: HTMLInputElement | null = null;
-  if (input.select != null) {
-    const wrap = doc.createElement("label");
-    wrap.className = "shell-resource-select";
-    checkbox = doc.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.setAttribute("data-resource-id", input.select.resourceId);
-    checkbox.setAttribute("data-testid", input.select.testid);
-    checkbox.setAttribute("aria-label", input.select.label);
-    wrap.appendChild(checkbox);
-    titleRow.appendChild(wrap);
-  }
   const title = doc.createElement(input.titleTag);
   title.className = "shell-lesson-title";
   if (input.testIds?.title) title.setAttribute("data-testid", input.testIds.title);
