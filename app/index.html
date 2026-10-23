@@ -603,12 +603,14 @@
     gap: 0.35rem 0.6rem;
     min-width: 0;
   }
-  /* Teacher Units UX Milestone 1: the disclosure sits at the left, directly
-     beneath the title, sharing one quiet line with View Summary:
-     "View Summary · 1 Resource >". The separator is presentational only
-     (empty alternative text), shown only when View Summary is visible. */
-  .shell-lesson-view-summary:not([hidden]) + .shell-lesson-resources-toggle::before {
+  /* Teacher Units UX Milestone 1: View Summary follows the resource type in
+     the title row ("Title LESSON · View Summary"); the Resources disclosure
+     sits at the left beneath. The separator is presentational only (empty
+     alternative text), shown only when View Summary is visible. */
+  .shell-lesson-title-row > .shell-lesson-resource-type + .shell-lesson-view-summary:not([hidden])::before {
     content: "\00B7" / "";
+    /* inline-block keeps the hover underline off the dot */
+    display: inline-block;
     margin-right: 0.35rem;
     color: var(--tw-ink-muted, #566472);
     font-weight: 400;
@@ -5659,9 +5661,9 @@
   /* Milestone 1 polish, Curriculum only (both the lesson list and the
      resource tabs render inside .shell-curriculum-grid; My Units does not):
      the title is primary and everything else supports it. Smaller pills with
-     a quieter border, the resource type directly after the title (baseline
-     aligned, wrapping beneath a long title rather than overlapping), a small
-     muted status line, and tighter vertical rhythm. */
+     a quieter border, then one title row: title, resource type and View
+     Summary (baseline aligned, wrapping beneath a long title rather than
+     overlapping), and tighter vertical rhythm. */
   .shell-curriculum-grid .shell-resource-row { row-gap: 0.1rem; }
   .shell-curriculum-grid .shell-resource-row-main { gap: 0.1rem; }
   .shell-curriculum-grid .shell-lesson-badge {
@@ -5673,10 +5675,13 @@
   .shell-curriculum-grid .shell-lesson-header { gap: 0.3rem; }
   .shell-curriculum-grid .shell-lesson-title-row { column-gap: 0.5rem; }
   .shell-curriculum-grid .shell-lesson-title-row .shell-lesson-title { flex: 0 1 auto; }
-  .shell-curriculum-grid .shell-lesson-title-row > .shell-lesson-resource-type { flex: 0 0 auto; }
-  .shell-curriculum-grid .shell-resource-row-status {
-    font-size: 0.78rem;
-    line-height: 1.3;
+  .shell-curriculum-grid .shell-lesson-title-row > .shell-lesson-resource-type,
+  .shell-curriculum-grid .shell-lesson-title-row > .shell-lesson-view-summary { flex: 0 0 auto; }
+  /* At phone width View Summary may wrap onto its own line; drop the dot there
+     so a wrapped line never starts with a stray separator (the row gap still
+     separates it when it stays inline). */
+  @media (max-width: 480px) {
+    .shell-curriculum-grid .shell-lesson-title-row > .shell-lesson-resource-type + .shell-lesson-view-summary::before { display: none; }
   }
   .shell-resource-row-footer { grid-area: footer; min-width: 0; }
   @media (max-width: 720px) {

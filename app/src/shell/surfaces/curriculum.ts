@@ -42,7 +42,7 @@ import type {
 } from "../navigationHistory";
 import { renderLessonSummarySurface } from "./lessonSummary";
 import { createCurriculumTabs, type CurriculumTabs } from "./curriculumResourceTabs";
-import { buildResourceCard, buildLessonPreviewLink, setResourceCardStatus } from "./resourceCard";
+import { buildResourceCard, buildLessonPreviewLink } from "./resourceCard";
 import { mintAssignmentId } from "./shared/assignmentId";
 import { formatLocalDate, formatLocalTime } from "./shared/activeAssignments";
 import {
@@ -1356,16 +1356,13 @@ function refreshAssignControl(
   );
   if (!btn) return;
   const assigned = isAssigned(lesson.slug);
-  // Teacher Units UX Milestone 1: the quiet status line beneath the title,
-  // only for an assigned card with an exact class count.
-  const main = card.querySelector<HTMLElement>(":scope > .shell-resource-row-main");
-  if (main !== null) {
-    setResourceCardStatus(
-      { main },
-      assigned && assignedClasses !== null && assignedClasses > 0
-        ? `Assigned to ${assignedClasses === 1 ? "1 class" : `${assignedClasses} classes`}`
-        : null,
-    );
+  // Teacher Units UX Milestone 1: the exact assigned-class count stays on the
+  // card as data (no visible status line; the card is two rows). Present only
+  // for an assigned card with an exact count.
+  if (assigned && assignedClasses !== null && assignedClasses > 0) {
+    card.setAttribute("data-assigned-class-count", String(assignedClasses));
+  } else {
+    card.removeAttribute("data-assigned-class-count");
   }
   // Sprint 28.6H.7 (Part B): a previously assigned lesson reads "Assign Again"
   // in muted green; an unused lesson keeps full-strength green "Assign". Assign
@@ -1562,7 +1559,7 @@ function renderLessonCard(
   const footerRow = doc.createElement("div");
   footerRow.className = "shell-lesson-footer-row";
 
-  // View Summary (left). An analytical secondary action (gold-accented,
+  // View Summary. An analytical secondary action (a quiet ink link,
   // quieter than Assign). Rendered only when the lesson-summary callable is
   // wired; visible only for a lesson with owned published/closed assignment
   // history (the same authoritative signal that lights the assigned badge),
@@ -1570,7 +1567,6 @@ function renderLessonCard(
   // `refreshAssignControl` so a first in-session assignment reveals it without
   // a reload. Opens the lesson-level aggregate summary; it never lists a
   // specific assignment (that is Classes).
-  let hasViewSummary = false;
   if (viewSummary?.showViewSummary === true) {
     const summaryBtn = doc.createElement("button");
     summaryBtn.type = "button";
@@ -1588,17 +1584,18 @@ function renderLessonCard(
     summaryBtn.addEventListener("click", () => {
       viewSummary.onViewSummary(lesson);
     });
-    footerRow.appendChild(summaryBtn);
-    hasViewSummary = true;
+    // Milestone 1: View Summary follows the resource type in the title row
+    // ("Title LESSON · View Summary"), so the card stays two rows.
+    row.titleRow.appendChild(summaryBtn);
   }
 
-  // Resources (right). Formal Resources disclosure from the canonical manifest
+  // Resources. Formal Resources disclosure from the canonical manifest
   // (simulations, investigations, extensions, challenges; legacy games
   // excluded). A lesson with no formal resources shows no Resources control.
   const resources = renderLessonResources(doc, lesson);
   if (resources !== null) footerRow.appendChild(resources.toggle);
 
-  if (hasViewSummary || resources !== null) {
+  if (resources !== null) {
     const footer = doc.createElement("div");
     footer.className = "shell-lesson-footer shell-resource-row-footer";
     footer.setAttribute("data-testid", `lesson-footer-${lesson.slug}`);

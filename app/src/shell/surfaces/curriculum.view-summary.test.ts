@@ -204,7 +204,7 @@ describe("Curriculum View Summary control", () => {
     ).toBeNull();
   });
 
-  test("View Summary lives in the shared quiet footer, outside the Assign/Preview pair (Sprint 28.6H.3)", () => {
+  test("View Summary lives in the title row after the resource type, outside the Assign/Preview pair (Teacher Units UX Milestone 1)", () => {
     const mount = mkMount();
     const { callable } = makeLessonSummary();
     renderCurriculumSurface(mount, teacher, {
@@ -219,8 +219,8 @@ describe("Curriculum View Summary control", () => {
     const pair = actions.querySelector<HTMLElement>(
       ".shell-lesson-action-pair",
     )!;
-    const footerRow = card.querySelector<HTMLElement>(
-      ".shell-lesson-footer-row",
+    const titleRow = card.querySelector<HTMLElement>(
+      ".shell-lesson-title-row",
     )!;
     const assign = card.querySelector(
       `[data-testid=lesson-assign-${LESSON.slug}]`,
@@ -231,18 +231,19 @@ describe("Curriculum View Summary control", () => {
     // Assign lives inside the dedicated pair; View Summary never does.
     expect(pair.contains(assign)).toBe(true);
     expect(pair.contains(summaryBtn)).toBe(false);
-    // Sprint 28.6H.3 (Task D3/D4): View Summary is a quiet secondary action in
-    // the shared card footer row, not in the primary actions stack, and the
-    // footer sits after the actions (primary actions, then the quiet footer).
+    // Milestone 1: View Summary is a quiet secondary action in the title row,
+    // directly after the resource type ("Title LESSON · View Summary"), never
+    // in the primary actions stack.
     expect(actions.contains(summaryBtn)).toBe(false);
-    expect(Array.from(footerRow.children).includes(summaryBtn as Element)).toBe(
+    expect(Array.from(titleRow.children).includes(summaryBtn as Element)).toBe(
       true,
     );
     expect(
-      actions.compareDocumentPosition(footerRow) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    // The View Summary control carries the restrained gold-accent class.
+      (summaryBtn as Element).previousElementSibling?.classList.contains(
+        "shell-lesson-resource-type",
+      ),
+    ).toBe(true);
+    // The View Summary control carries the quiet link class.
     expect(
       (summaryBtn as HTMLElement).classList.contains(
         "shell-lesson-view-summary",

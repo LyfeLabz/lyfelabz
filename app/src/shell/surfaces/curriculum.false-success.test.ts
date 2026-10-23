@@ -147,10 +147,12 @@ const makeDetailSeam = (
   };
 };
 
-const statusText = (mount: HTMLElement, slug: string): string | null =>
+// Teacher Units UX Milestone 1: the exact assigned-class count is kept on the
+// card as data (no visible status line).
+const classCount = (mount: HTMLElement, slug: string): string | null =>
   mount
-    .querySelector(`[data-testid=lesson-card-${slug}] .shell-resource-row-status`)
-    ?.textContent ?? null;
+    .querySelector(`[data-testid=lesson-card-${slug}]`)
+    ?.getAttribute("data-assigned-class-count") ?? null;
 
 const clickAssign = (mount: HTMLElement, slug: string): void => {
   mount
@@ -506,7 +508,7 @@ describe("Assign false-success guard", () => {
     expect(publishes.length).toBe(1);
     // Teacher Units UX Milestone 1: only the class that actually published
     // is counted, never the class whose publish failed.
-    expect(statusText(mount, "earths-layers")).toBe("Assigned to 1 class");
+    expect(classCount(mount, "earths-layers")).toBe("1");
   });
 
   test("hydration only lights up cards whose lessonSlug exactly matches", () => {
@@ -850,7 +852,7 @@ describe("Assigned badge - status-aware hydration (Defect 2.B)", () => {
 
 // Teacher Units UX Milestone 1: "Assigned to N classes" beneath the title,
 // derived only from real class assignment records in the registry.
-describe("Assigned class-count status line", () => {
+describe("Assigned class count (kept as card data)", () => {
   beforeEach(() => {
     _resetCurriculumSessionStateForTest();
   });
@@ -887,15 +889,15 @@ describe("Assigned class-count status line", () => {
       record("a5", "c4", "draft"), // a draft never counts
       record("a6", "c5", "published", "what-is-life"), // another lesson
     ]);
-    expect(statusText(mount, "earths-layers")).toBe("Assigned to 3 classes");
-    expect(statusText(mount, "what-is-life")).toBe("Assigned to 1 class");
+    expect(classCount(mount, "earths-layers")).toBe("3");
+    expect(classCount(mount, "what-is-life")).toBe("1");
     expect(assignBtn(mount, "earths-layers")?.textContent).toBe("Manage");
   });
 
   test("an unassigned or draft-only lesson shows no status line", () => {
     const mount = mountWith([record("a1", "c1", "draft")]);
-    expect(statusText(mount, "earths-layers")).toBeNull();
-    expect(statusText(mount, "what-is-life")).toBeNull();
+    expect(classCount(mount, "earths-layers")).toBeNull();
+    expect(classCount(mount, "what-is-life")).toBeNull();
     expect(assignBtn(mount, "earths-layers")?.textContent).toBe("Assign");
   });
 
@@ -904,18 +906,16 @@ describe("Assigned class-count status line", () => {
       record("a1", "c1", "published"),
       record("a2", undefined, "published"),
     ]);
-    expect(statusText(mount, "earths-layers")).toBeNull();
+    expect(classCount(mount, "earths-layers")).toBeNull();
     // The assigned state itself is unchanged.
     expect(assignBtn(mount, "earths-layers")?.textContent).toBe("Manage");
   });
 
-  test("the status sits in the card's identity column, beneath the title", () => {
-    const mount = mountWith([record("a1", "c1", "published")]);
+  test("Curriculum cards show no visible assignment status line", () => {
+    const mount = mountWith([record("a1", "c1", "published"), record("a2", "c2", "published")]);
     const card = mount.querySelector<HTMLElement>("[data-testid=lesson-card-earths-layers]")!;
-    const main = card.querySelector<HTMLElement>(":scope > .shell-resource-row-main")!;
-    const kids = Array.from(main.children).map((el) => el.className);
-    expect(kids.indexOf("shell-resource-row-status")).toBeGreaterThan(
-      kids.indexOf("shell-lesson-title-row"),
-    );
+    expect(card.querySelector(".shell-resource-row-status")).toBeNull();
+    expect(card.textContent).not.toMatch(/Assigned to/);
+    expect(classCount(mount, "earths-layers")).toBe("2");
   });
 });

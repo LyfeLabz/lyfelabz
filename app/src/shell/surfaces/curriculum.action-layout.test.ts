@@ -176,19 +176,18 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
     const card = cardFor(mount);
     const actions = card.querySelector<HTMLElement>(".shell-lesson-actions")!;
     const pair = pairFor(mount);
-    const footerRow = card.querySelector<HTMLElement>(
-      ".shell-lesson-footer-row",
+    const titleRow = card.querySelector<HTMLElement>(
+      ".shell-lesson-title-row",
     )!;
     const summaryBtn = card.querySelector(
       `[data-testid=lesson-view-summary-${LESSON.slug}]`,
     )!;
-    // Sprint 28.6H.3 (Task D3): View Summary never sits inside the primary
-    // Assign/Preview pair (so it can never shrink them), and it no longer lives
-    // in the actions stack either - it is a member of the shared quiet footer
-    // row alongside the Resources disclosure.
+    // View Summary never sits inside the primary Assign/Preview pair (so it
+    // can never shrink them) nor the actions stack; Milestone 1 places it in
+    // the title row after the resource type.
     expect(pair.contains(summaryBtn)).toBe(false);
     expect(actions.contains(summaryBtn)).toBe(false);
-    expect(Array.from(footerRow.children).includes(summaryBtn)).toBe(true);
+    expect(Array.from(titleRow.children).includes(summaryBtn)).toBe(true);
   });
 
   test("the conditional View Summary does not alter the pair's membership", () => {

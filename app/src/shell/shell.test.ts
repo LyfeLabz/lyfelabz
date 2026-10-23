@@ -2692,7 +2692,7 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(stripped).toMatch(/\n\s*\.shell-lesson-badge\s*\{[^}]*font-size:\s*0\.75rem/);
   });
 
-  test("Sprint 28.6H.4 (Task D1/D2): the Assign/Preview pair shrink-wraps to the left and never stretches; View Summary lives in the shared footer", () => {
+  test("Sprint 28.6H.4 (Task D1/D2): the Assign/Preview pair shrink-wraps to the left and never stretches; View Summary lives in the title row", () => {
     // The pair is a plain flex row (NOT an intrinsic grid, whose 1fr columns
     // did not equalize under shrink-to-fit and produced the mismatched live
     // widths). It shrink-wraps to its content and sits at the left of the card
@@ -2713,9 +2713,9 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     );
     expect(actionsMatch).not.toBeNull();
     expect(actionsMatch![1]).toMatch(/flex-direction:\s*column/);
-    // The shared footer row holds View Summary and the Resources disclosure,
-    // both at the left beneath the title (Teacher Units UX Milestone 1),
-    // separated by a presentational dot only when View Summary is visible.
+    // Teacher Units UX Milestone 1: the footer row holds the Resources
+    // disclosure at the left; View Summary follows the resource type in the
+    // title row, after a presentational dot shown only when it is visible.
     const footerRowMatch = shellHtml.match(
       /\n\s*\.shell-lesson-footer-row\s*\{([^}]+)\}/,
     );
@@ -2724,7 +2724,7 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     const strippedCss = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
     expect(strippedCss).not.toMatch(/\.shell-lesson-resources-toggle\s*\{[^}]*margin-left:\s*auto/);
     expect(strippedCss).toMatch(
-      /\.shell-lesson-view-summary:not\(\[hidden\]\)\s*\+\s*\.shell-lesson-resources-toggle::before\s*\{[^}]*content:\s*"\\00B7"\s*\/\s*"";/,
+      /\.shell-lesson-title-row\s*>\s*\.shell-lesson-resource-type\s*\+\s*\.shell-lesson-view-summary:not\(\[hidden\]\)::before\s*\{[^}]*content:\s*"\\00B7"\s*\/\s*"";/,
     );
     // View Summary is no longer a direct child of the actions stack (that CSS
     // rule is gone); it must not carry any greedy flex basis.
