@@ -89,6 +89,11 @@ export type TeacherUnitsPanelOptions = {
   // card first appears, and takes focus if focus is still on the page's
   // entry point (the heading) or lost.
   readonly focusUnitId?: string | null;
+  // Units the teacher had open when they last left My Units this page
+  // session; they open again when their cards appear. `onExpandedChange`
+  // reports each open or close so the host can keep that set.
+  readonly expandedUnitIds?: ReadonlySet<string> | null;
+  readonly onExpandedChange?: (unitId: string, expanded: boolean) => void;
 };
 
 function gradeLabel(g: TeacherUnitGrade): string {
@@ -118,6 +123,9 @@ type CardView = {
   // unit is when the notice moves to the panel's outcome region.
   noticeText: NoticeText | null;
   readonly notice: HTMLParagraphElement;
+  // The notice's Load current units action, shown only while its wording
+  // names that step (see `readActionFor`).
+  readonly noticeRead: HTMLButtonElement;
   readonly body: HTMLDivElement;
   // U2.5: what the body was last built from (see `renderCardBody`), and the
   // picker options' inputs (see `renderPickerOptions`).
@@ -257,7 +265,7 @@ export function renderTeacherUnitsPanel(
   heading.tabIndex = -1;
   root.appendChild(heading);
 
-  // Grade selector, Create Unit, and Refresh units. Show archived units
+  // Grade selector and Create Unit. Show archived units
   // moved to Settings > Units (Milestone 1); the archived view is entered
   // from there and left with the banner below.
   const toolbar = el("div", "shell-units-toolbar");
@@ -287,16 +295,13 @@ export function renderTeacherUnitsPanel(
   createOpen.appendChild(doc.createTextNode(" Create Unit"));
   createOpen.setAttribute("aria-expanded", "false");
   toolbar.appendChild(createOpen);
-  // U2.5 Refresh units: the controller's own list read (`refresh`),
-  // which accepts only evidence newer than what is held. Never a page
-  // reload, never a replay of an unconfirmed change. Milestone 1 keeps it
-  // (recovery and conflict notices direct the teacher to it) as a quiet
-  // secondary control; ordinary freshness is automatic (every My Units
-  // visit reads the list, and so does returning to this browser tab).
-  const checkChanges = button("Refresh units");
-  checkChanges.classList.add("shell-units-check-changes");
-  checkChanges.setAttribute("data-testid", "units-check-changes");
-  toolbar.appendChild(checkChanges);
+  // Ordinary freshness is automatic: every My Units visit creates a
+  // controller whose first act is one authoritative list read, and
+  // returning to this browser tab reads again (see `onVisibility`). The
+  // toolbar has no manual read. A notice whose next step needs a list read
+  // carries its own Load current units action (`readActionFor`), the same
+  // controller `refresh`: it accepts only evidence newer than what is held,
+  // never reloads the page, and never replays an unconfirmed change.
 
   // The archived view (entered from Settings > Units) lists archived units
   // with the active ones, each archived unit with its Restore control.
@@ -317,7 +322,10 @@ export function renderTeacherUnitsPanel(
   archivedView.appendChild(archivedExit);
   root.appendChild(archivedView);
   let checking = false;
-  // The list read this Refresh units started, and whether any other
+  // List reads that completed (loading, then ready) during this panel.
+  let listReadsDone = 0;
+  let lastListKind: string | null = null;
+  // The list read a Load current units action started, and whether any other
   // list read began after it. Success is announced only when that read
   // itself produced the list now shown.
   let checkRead: { readonly started: unknown; superseded: boolean } | null = null;
@@ -348,6 +356,33 @@ export function renderTeacherUnitsPanel(
   status.setAttribute("aria-live", "polite");
   status.setAttribute("data-testid", "units-status");
   root.appendChild(status);
+  // Contextual recovery: a notice whose current wording directs the teacher
+  // to load the current units carries this action, and only that notice.
+  // It is one list read (`refresh`, the same ordering, revision and account
+  // guards as the automatic reads). It never confirms or undoes an earlier
+  // change and never resends one; uncertain notices keep saying so.
+  const READ_ACTION = "Load current units";
+  const readActions = new Set<HTMLButtonElement>();
+  const readActionFor = (testid: string): HTMLButtonElement => {
+    const b = button(READ_ACTION);
+    b.classList.add("shell-units-read-action");
+    b.setAttribute("data-testid", testid);
+    b.hidden = true;
+    b.addEventListener("click", () => startRead(b));
+    readActions.add(b);
+    return b;
+  };
+  // Shows the action only while `text` names it. A focused action that
+  // hides hands focus to `fallback` (else the render's focus rescue).
+  const showReadAction = (b: HTMLButtonElement, text: string, fallback: HTMLElement | null): void => {
+    const hide = !text.includes(READ_ACTION);
+    if (b.hidden === hide) return;
+    const had = doc.activeElement === b;
+    b.hidden = hide;
+    if (hide && had) focus(fallback);
+  };
+  const statusRead = readActionFor("units-status-load");
+  root.appendChild(statusRead);
   // Outcome region: outcomes for units whose card is not shown (archived
   // and hidden, refreshed away, or no longer found), which would otherwise
   // be lost with the card or overwritten in the shared status region.
@@ -396,6 +431,7 @@ export function renderTeacherUnitsPanel(
     readonly text: NoticeText;
     readonly box: HTMLElement;
     readonly message: HTMLParagraphElement;
+    readonly read: HTMLButtonElement;
     readonly dismiss: HTMLButtonElement;
   };
   const entries = new Map<HTMLElement, OutcomeEntry>();
@@ -410,6 +446,8 @@ export function renderTeacherUnitsPanel(
     const next = sibling !== null ? entries.get(sibling)?.dismiss ?? null : null;
     const hadFocus = moveFocus || box.contains(doc.activeElement);
     box.remove();
+    const gone = entries.get(box);
+    if (gone !== undefined) readActions.delete(gone.read);
     entries.delete(box);
     if (hadFocus) focus(next ?? heading);
   };
@@ -434,9 +472,13 @@ export function renderTeacherUnitsPanel(
     dismiss.setAttribute("data-testid", `units-outcome-dismiss-${id}`);
     dismiss.addEventListener("click", () => removeEntry(box, true));
     box.appendChild(dismiss);
-    const entry: OutcomeEntry = { unitId, fallbackTitle, text, box, message, dismiss };
+    // Dismiss stays the entry's first control; the read follows it.
+    const read = readActionFor(`units-outcome-load-${id}`);
+    box.appendChild(read);
+    const entry: OutcomeEntry = { unitId, fallbackTitle, text, box, message, read, dismiss };
     entries.set(box, entry);
     message.textContent = entryText(entry);
+    showReadAction(read, message.textContent, dismiss);
     dismiss.setAttribute("aria-label", `Dismiss notice about ${controller.getKnownUnit(unitId)?.title ?? fallbackTitle}`);
     outcomes.appendChild(box);
     const confirmations = Array.from(outcomes.querySelectorAll<HTMLElement>('[data-outcome-kind="confirmed"]'));
@@ -452,6 +494,7 @@ export function renderTeacherUnitsPanel(
     statusOwner = 0;
     statusNotice = null;
     if (status.textContent !== msg) status.textContent = msg;
+    showReadAction(statusRead, msg, heading);
   };
 
   // ---------- Create ----------
@@ -1020,6 +1063,7 @@ export function renderTeacherUnitsPanel(
     card.notice.hidden = !attached;
     card.notice.textContent = attached ? wordNotice(text as NoticeText, unitId) : "";
     card.notice.className = `shell-units-notice shell-units-notice--${kind}`;
+    showReadAction(card.noticeRead, card.notice.textContent, null);
     if (text !== null && !attached) {
       recordOutcome(unitId, card.unit.title, text, kind);
     }
@@ -1031,6 +1075,7 @@ export function renderTeacherUnitsPanel(
     const kind = card.notice.className.includes("--conflict") ? "conflict" : "error";
     recordOutcome(card.unit.unitId, card.unit.title, card.noticeText, kind);
     card.noticeText = null;
+    showReadAction(card.noticeRead, "", null);
   };
 
   // `base` is the revision the request was based on (the held record when it
@@ -1177,6 +1222,7 @@ export function renderTeacherUnitsPanel(
       if (statusOwner === token) {
         statusOwner = 0;
         status.textContent = "";
+        showReadAction(statusRead, "", heading);
       }
     };
   };
@@ -1207,7 +1253,7 @@ export function renderTeacherUnitsPanel(
     const view = controller.getState();
     if (st.kind === "absent") return "This unit is no longer in your units.";
     if (st.kind !== "active" && st.kind !== "archived") {
-      return "This unit's current state hasn't been confirmed. Choose Refresh units to see it.";
+      return "This unit's current state hasn't been confirmed. Choose Load current units to see it.";
     }
     const card = cards.get(unitId);
     const editorOpen = card?.editor != null;
@@ -1220,7 +1266,7 @@ export function renderTeacherUnitsPanel(
     if (card?.li.isConnected && !card.gone && card.unit === st.unit) return null;
     if (view.list.kind === "loading") return "The unit list is loading. These details are from the latest version LyfeLabz has loaded.";
     if (view.list.kind === "error") return "The unit list couldn't be refreshed. These details are from the latest version LyfeLabz has loaded.";
-    return isListed(unitId) ? null : "This unit isn't in your current list. Choose Refresh units to see its resources.";
+    return isListed(unitId) ? null : "This unit isn't in your current list. Choose Load current units to see its resources.";
   };
   const contextOf = (unitId: string): NoticeContext => {
     const st = controller.getUnitState(unitId);
@@ -1255,11 +1301,17 @@ export function renderTeacherUnitsPanel(
       ctx.active ? "Check them before trying again." : ctx.archived ? "Restore it before making further changes." : null,
     ]);
   const UNCERTAIN: NoticeText = contextualNotice(UNCERTAIN_HISTORY, uncertainNext);
-  const uncertainUnread = (base: number): NoticeText => contextualNotice(UNCERTAIN_HISTORY, (ctx) =>
-    (ctx.unit !== null && ctx.unit.revision > base) || ctx.absent
+  // "Couldn't be loaded" holds only until a list read completes after the
+  // notice: a read at the same revision is still current state (never proof
+  // either way), so the notice then stops offering Load current units again.
+  const uncertainUnread = (base: number): NoticeText => {
+    const since = listReadsDone;
+    return contextualNotice(UNCERTAIN_HISTORY, (ctx) =>
+    (ctx.unit !== null && ctx.unit.revision > base) || ctx.absent || (ctx.active && listReadsDone > since)
       ? uncertainNext(ctx)
-      : sentences(["The unit couldn't be loaded after that request.", ctx.where, ctx.archived ? "Restore it before making further changes." : ctx.active ? "Choose Refresh units before trying again." : null]),
-  );
+      : sentences(["The unit couldn't be loaded after that request.", ctx.where, ctx.archived ? "Restore it before making further changes." : ctx.active ? "Choose Load current units before trying again." : null]),
+    );
+  };
   type Saved = Extract<UnitMutationResult, { kind: "saved" }>;
   const baseRevision = (result: Saved): number => result.committed?.revision ?? result.unit.revision;
 
@@ -1309,8 +1361,8 @@ export function renderTeacherUnitsPanel(
           : `"${cur.title}" has no unavailable resources now.`
         : !newer
           ? write
-            ? "Your change was saved, but the latest loaded resources don't show it yet. Choose Refresh units to see them."
-            : "The latest loaded resources don't show this request's result yet. Choose Refresh units to see them."
+            ? "Your change was saved, but the latest loaded resources don't show it yet. Choose Load current units to see them."
+            : "The latest loaded resources don't show this request's result yet. Choose Load current units to see them."
           : action === "move" ? (cur.resourceIds.includes(targets[0]) ? `${positionNow(cur)}, after this unit changed.` : positionNow(cur))
           : action === "add" ? `"${cur.title}" changed since that request, so not every resource you ${write ? "added" : "chose"} is in it now.`
           : action === "remove" ? `"${name}" is in "${cur.title}"${write ? " again" : ""} after this unit changed.`
@@ -1404,7 +1456,7 @@ export function renderTeacherUnitsPanel(
               : "Restore it to change its resources.",
         ];
       } else if (ctx.active && loaded === null) {
-        next = [ctx.where ?? "Choose Refresh units, then try again."];
+        next = [ctx.where ?? "Choose Load current units, then try again."];
       } else if (ctx.active) {
         next = editing
           ? [ctx.where, "Your edits are still here. Review them, then save again."]
@@ -1456,8 +1508,8 @@ export function renderTeacherUnitsPanel(
           editing,
           ctx.where,
           op === "edit"
-            ? "Choose Refresh units to see its current state before trying again."
-            : "Choose Refresh units to see its current state.",
+            ? "Choose Load current units to see its current state before trying again."
+            : "Choose Load current units to see its current state.",
         ]);
       }
       const now = op === "edit"
@@ -1472,7 +1524,7 @@ export function renderTeacherUnitsPanel(
     contextualNotice("An earlier change to this unit wasn't confirmed, so LyfeLabz didn't send this one.", () =>
       sentences([
         card.editor !== null ? "Your edits are still here." : null,
-        "Choose Check current state under Unconfirmed changes, or Refresh units, to load the unit's current state. Then review it and try again.",
+        "Choose Check current state under Unconfirmed changes, or Load current units, to load the unit's current state. Then review it and try again.",
       ]),
     );
   // Bounded tracking (pendingMutations.ts): this request was not sent.
@@ -1490,13 +1542,13 @@ export function renderTeacherUnitsPanel(
         if (reason === "retained") {
           return sentences([
             editing,
-            "Refreshing your units or dismissing notices won't make room. Reloading the page starts a new visit and clears what LyfeLabz is keeping track of here, but it doesn't confirm or undo any earlier change, and it doesn't cancel changes already sent, which may still finish. Anything you haven't saved on this page will be lost, so copy it first.",
+            "Loading your current units or dismissing notices won't make room. Reloading the page starts a new visit and clears what LyfeLabz is keeping track of here, but it doesn't confirm or undo any earlier change, and it doesn't cancel changes already sent, which may still finish. Anything you haven't saved on this page will be lost, so copy it first.",
           ]);
         }
         if (reason === "blocking") {
           return sentences([
             editing,
-            "Too many units have unconfirmed changes whose current state hasn't been loaded. Choose Refresh units for the grades they're in (choose View archived units in Settings > Units to include archived units), then try again.",
+            "Too many units have unconfirmed changes whose current state hasn't been loaded. Choose Load current units in each grade they're in (choose View archived units in Settings > Units to include archived units), then try again.",
           ]);
         }
         const dismissible = controller.getState().pending.some((e) => e.status === "uncertain");
@@ -2408,6 +2460,7 @@ export function renderTeacherUnitsPanel(
             details.hidden = !card.expanded;
             toggle.setAttribute("aria-expanded", card.expanded ? "true" : "false");
             chevron.textContent = card.expanded ? "\u25B4" : "\u25BE";
+            options.onExpandedChange?.(u.unitId, card.expanded);
           });
           if (u.description.length > 0) {
             details.appendChild(el("p", "shell-units-card-description", u.description));
@@ -2494,9 +2547,14 @@ export function renderTeacherUnitsPanel(
     notice.setAttribute("role", "alert");
     notice.hidden = true;
     li.appendChild(notice);
-    const expanded = options.unitsInitiallyExpanded === true || expandOnArrival.delete(unit.unitId);
+    const noticeRead = readActionFor(`units-notice-load-${unit.unitId}`);
+    li.appendChild(noticeRead);
+    const expanded =
+      options.unitsInitiallyExpanded === true ||
+      expandOnArrival.delete(unit.unitId) ||
+      options.expandedUnitIds?.has(unit.unitId) === true;
     return {
-      li, unit, expanded, gone: false, editor: null, picker: null, confirmRetired: null, noticeText: null, notice, body,
+      li, unit, expanded, gone: false, editor: null, picker: null, confirmRetired: null, noticeText: null, notice, noticeRead, body,
       rendered: null, pickerKey: null,
     };
   };
@@ -2896,6 +2954,8 @@ export function renderTeacherUnitsPanel(
     const active = doc.activeElement;
     const before = active instanceof HTMLElement && active !== heading && root.contains(active) ? active : null;
     const s = controller.getState();
+    if (lastListKind === "loading" && s.list.kind === "ready") listReadsDone += 1;
+    lastListKind = s.list.kind;
     if (checkRead !== null && s.list.kind === "loading" && s.list !== checkRead.started) checkRead.superseded = true;
     for (const [g, b] of gradeButtons) {
       const active = g === s.grade;
@@ -2905,7 +2965,7 @@ export function renderTeacherUnitsPanel(
     archivedView.hidden = !s.showArchived;
     const archivedText = `Archived ${gradeLabel(s.grade)} units are shown with your active units. Restore a unit to use it again.`;
     if (archivedViewText.textContent !== archivedText) archivedViewText.textContent = archivedText;
-    setAriaDisabled(checkChanges, checking || s.list.kind === "loading");
+    for (const b of readActions) setAriaDisabled(b, checking || s.list.kind === "loading");
     renderCreate(s);
     renderList(s);
     renderPending(s);
@@ -2913,10 +2973,10 @@ export function renderTeacherUnitsPanel(
     rescueFocus(before);
   };
 
-  checkChanges.addEventListener("click", () => {
-    if (isInert(checkChanges)) return;
+  function startRead(trigger: HTMLButtonElement): void {
+    if (disposed || isInert(trigger)) return;
     checking = true;
-    const clearPending = announcePending("Refreshing your units...");
+    const clearPending = announcePending("Loading your current units...");
     render();
     const done = controller.refresh();
     // `refresh` sets a new loading list synchronously when it dispatches; a
@@ -2939,7 +2999,7 @@ export function renderTeacherUnitsPanel(
       }
       render();
     });
-  });
+  }
 
   // Re-derives the current-state wording of every retained notice (card
   // notices and outcome entries) after each state or view change. Only the
@@ -2952,6 +3012,7 @@ export function renderTeacherUnitsPanel(
       if (card.noticeText === null || card.notice.hidden) continue;
       const next = wordNotice(card.noticeText, card.unit.unitId);
       if (card.notice.textContent !== next) card.notice.textContent = next;
+      showReadAction(card.noticeRead, next, null);
     }
     if (statusNotice !== null) {
       if (status.textContent !== statusNotice.shown) statusNotice = null;
@@ -2963,16 +3024,18 @@ export function renderTeacherUnitsPanel(
         }
       }
     }
+    showReadAction(statusRead, status.textContent ?? "", heading);
     for (const e of entries.values()) {
       const next = entryText(e);
       if (e.message.textContent !== next) e.message.textContent = next;
+      showReadAction(e.read, next, e.dismiss);
       const label = `Dismiss notice about ${controller.getKnownUnit(e.unitId)?.title ?? e.fallbackTitle}`;
       if (e.dismiss.getAttribute("aria-label") !== label) e.dismiss.setAttribute("aria-label", label);
     }
   };
 
   // Milestone 1 automatic freshness: returning to this browser tab reads
-  // the list again through the same `refresh` as Refresh units (same
+  // the list again through the same `refresh` as Load current units (same
   // ordering, revision, and account guards; nothing is resent). Silent, at
   // most once per AUTO_REFRESH_MIN_MS, and only while a loaded list is shown
   // and no other read is running. No polling.
@@ -3423,7 +3486,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
       case "needsCheck":
       case "capacity":
         showProblem(
-          lead("an earlier change to this unit hasn't been confirmed yet. Open My Units and choose Refresh units, then try again."),
+          lead("an earlier change to this unit hasn't been confirmed yet. Open My Units to load its current state, then try again."),
           { myUnits: true, target: { unitId, grade } },
         );
         return false;

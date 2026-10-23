@@ -19,6 +19,15 @@ import { renderTeacherUnitsPanel, teacherUnitsSurfaceEnabled } from "./teacherUn
 // Lifetime: a controller is created on every mount and disposed by the panel
 // once the outlet is torn down, as before. Durable create attempts and the
 // seam-owned unconfirmed-change registry survive leaving and returning.
+//
+// Automatic synchronization: entering My Units (from the nav, browser
+// history, or a Curriculum unit-name pill) mounts this surface, and the new
+// controller's first act is one authoritative list read through the
+// existing `teacherUnitsList` contract. Reselecting My Units while it is
+// showing does not remount (shell.ts `navigateTo`), and panel rerenders
+// never read, so there is no redundant read and no polling. That read is
+// evidence like any other: it never cancels, resends, or overwrites an
+// in-flight or unconfirmed change (unitsController.ts evidence ordering).
 
 type ActiveTeacher = Extract<Session, { kind: "activeTeacher" }>;
 
@@ -47,9 +56,13 @@ export function initialTeacherUnitsGrade(filter: string): TeacherUnitGrade {
 // The grade last chosen in My Units this page session, per teacher, so
 // leaving and returning keeps it. In memory only.
 let lastGrade: { readonly uid: string; readonly grade: TeacherUnitGrade } | null = null;
+// The units left open in My Units this page session, per teacher, so
+// returning reopens them. In memory only; display state, never evidence.
+let lastExpanded: { readonly uid: string; readonly ids: Set<string> } | null = null;
 
 export function _resetMyUnitsSurfaceStateForTest(): void {
   lastGrade = null;
+  lastExpanded = null;
 }
 
 export function renderMyUnitsSurface(
@@ -80,12 +93,20 @@ export function renderMyUnitsSurface(
     }
   });
 
+  if (lastExpanded?.uid !== session.uid) lastExpanded = { uid: session.uid, ids: new Set() };
+  const expanded = lastExpanded.ids;
+
   const history = deps.unitsHistory ?? null;
   // The panel's own heading is this surface's headline.
   mount.setAttribute("aria-labelledby", "units-heading");
   renderTeacherUnitsPanel(mount, controller, {
     onArchivedViewExit: () => history?.push({ kind: "shell-surface", surface: "units" }),
     focusUnitId: openUnit?.unitId ?? null,
+    expandedUnitIds: new Set(expanded),
+    onExpandedChange: (unitId, open) => {
+      if (open) expanded.add(unitId);
+      else expanded.delete(unitId);
+    },
   });
   history?.registerController({
     restoreArchived: (show) => {

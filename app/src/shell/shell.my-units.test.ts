@@ -24,6 +24,7 @@ import { mountTeacherShell, type ShellDeps } from "./shell";
 import { parseShellHash } from "./navigationHistory";
 import { _resetCurriculumSessionStateForTest } from "./surfaces/curriculum";
 import { _resetMyUnitsSurfaceStateForTest } from "./surfaces/myUnits";
+import { getPlaceableResources } from "../teacherUnits/placeableResources";
 
 const emptyListClasses: ListClasses = () => Promise.resolve(Object.freeze<ClassSummary[]>([]));
 const flush = (): Promise<void> => new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -65,7 +66,9 @@ function memoryStorage(): Storage {
   } as unknown as Storage;
 }
 
-function seamWith(units: TeacherUnit[]) {
+// `shared`: one seam for every mount, as the shell holds in production, so
+// the seam-owned unconfirmed-change registry survives a remount.
+function seamWith(units: TeacherUnit[], shared = false) {
   const list = jest.fn(async (req: { grade?: string; includeArchived?: boolean }) => ({
     units: units.filter(
       (u) => (req.grade === undefined || u.grade === req.grade) && (req.includeArchived === true || u.status === "active"),
@@ -83,18 +86,21 @@ function seamWith(units: TeacherUnit[]) {
   };
   const storage = memoryStorage();
   const created: Array<{ initialGrade: string }> = [];
+  const make = () =>
+    createTeacherUnitsSurfaceSeam({
+      callables: callables as unknown as TeacherUnitsCallables,
+      readFirebaseUid: () => "teacherA",
+      readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),
+      createStore: (scope) => createTeacherUnitCreateAttemptStore(scope, () => storage),
+    });
+  const one = shared ? make() : null;
   const seam: TeacherUnitsSurfaceSeam = {
     createController: (input) => {
       created.push(input);
-      return createTeacherUnitsSurfaceSeam({
-        callables: callables as unknown as TeacherUnitsCallables,
-        readFirebaseUid: () => "teacherA",
-        readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),
-        createStore: (scope) => createTeacherUnitCreateAttemptStore(scope, () => storage),
-      }).createController(input);
+      return (one ?? make()).createController(input);
     },
   };
-  return { seam, list, created };
+  return { seam, list, created, callables };
 }
 
 const mount = (overrides: Partial<ShellDeps> = {}): HTMLElement => {
@@ -414,5 +420,109 @@ describe("fresh-load deep links (Milestone 1A)", () => {
     for (const bad of ["", "#", "#units/x", "#curriculum/bogus", "#curriculum/summary/", "#curriculum/summary/%E0%A4%A", "#admin"]) {
       expect(parseShellHash(bad)).toBeNull();
     }
+  });
+});
+
+describe("automatic synchronization (no Refresh units control)", () => {
+  // Reads My Units makes: the grade-scoped list reads started since `from`.
+  const gradeReadsSince = (list: jest.Mock, from: number) =>
+    list.mock.calls.slice(from).filter((c) => c[0]?.grade !== undefined).length;
+  const R = getPlaceableResources().filter((r) => r.grade === "6")[0]!;
+
+  test("entering reads once; rerenders and reselecting never read; returning from Curriculum reads again", async () => {
+    const units = [unit({ title: "Weather" })];
+    const { seam, list } = seamWith(units);
+    const root = mount({ teacherUnits: seam });
+    let from = list.mock.calls.length;
+    click(root, "nav-units");
+    await flush();
+    expect(gradeReadsSince(list, from)).toBe(1);
+    expect(list.mock.calls[from]![0]).toEqual({ grade: "6", includeArchived: false });
+
+    // Same mounted view: the current grade, My Units again, expand and collapse.
+    from = list.mock.calls.length;
+    click(root, "units-grade-6");
+    click(root, "nav-units");
+    click(root, `units-toggle-${units[0]!.unitId}`);
+    click(root, `units-toggle-${units[0]!.unitId}`);
+    await flush();
+    expect(list.mock.calls.length).toBe(from);
+
+    // Changed elsewhere while the teacher is in Curriculum.
+    units[0] = { ...units[0]!, title: "Weather (renamed)", revision: 2 };
+    click(root, "nav-curriculum");
+    await flush();
+    from = list.mock.calls.length;
+    click(root, "nav-units");
+    await flush();
+    expect(gradeReadsSince(list, from)).toBe(1);
+    expect(root.textContent).toContain("Weather (renamed)");
+  });
+
+  test("the toolbar keeps the grade filters and Create Unit, with no Refresh units pill", async () => {
+    const { seam } = seamWith([unit()]);
+    const root = mount({ teacherUnits: seam });
+    click(root, "nav-units");
+    await flush();
+    expect(q(root, "units-check-changes")).toBeNull();
+    const toolbar = root.querySelector(".shell-units-toolbar") as HTMLElement;
+    expect(toolbar.textContent).not.toMatch(/Refresh/);
+    for (const g of ["6", "7", "8"]) expect(q(toolbar, `units-grade-${g}`)).not.toBeNull();
+    expect(q(toolbar, "units-create-open")).not.toBeNull();
+  });
+
+  test("an expanded unit stays expanded after leaving and returning; entry focus is the heading", async () => {
+    const a = unit({ title: "Weather" });
+    const b = unit({ title: "Plants" });
+    const { seam } = seamWith([a, b]);
+    const root = mount({ teacherUnits: seam });
+    click(root, "nav-units");
+    await flush();
+    click(root, `units-toggle-${a.unitId}`);
+    expect(q(root, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
+    click(root, "nav-classes");
+    click(root, "nav-units");
+    await flush();
+    expect(q(root, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
+    expect(q(root, `units-details-${a.unitId}`)?.hidden).toBe(false);
+    expect(q(root, `units-toggle-${b.unitId}`)?.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement?.id).toBe("units-heading");
+    // Collapsing is remembered too.
+    click(root, `units-toggle-${a.unitId}`);
+    click(root, "nav-classes");
+    click(root, "nav-units");
+    await flush();
+    expect(q(root, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  test("a change still being saved when the teacher leaves is never resent or overwritten by the return read", async () => {
+    const units = [unit({ title: "Weather", resourceIds: [R.id] })];
+    const { seam, list, callables } = seamWith(units, true);
+    let settle!: (v: unknown) => void;
+    callables.setResources.mockImplementation(() => new Promise((res) => (settle = res)));
+    const root = mount({ teacherUnits: seam });
+    click(root, "nav-units");
+    await flush();
+    click(root, `units-resource-remove-${units[0]!.unitId}-${R.id}`);
+    expect(callables.setResources).toHaveBeenCalledTimes(1);
+
+    // Leave while the write is in flight, and come back before it settles.
+    click(root, "nav-classes");
+    const from = list.mock.calls.length;
+    click(root, "nav-units");
+    await flush();
+    // The return read runs; it holds the older record and sends nothing.
+    expect(gradeReadsSince(list, from)).toBe(1);
+    expect(callables.setResources).toHaveBeenCalledTimes(1);
+
+    // The write commits; the older read never replaces the newer record.
+    const saved = { ...units[0]!, resourceIds: [], revision: 2 };
+    units[0] = saved;
+    settle({ unit: saved, noop: false });
+    await flush();
+    await flush();
+    expect(q(root, `units-resource-remove-${saved.unitId}-${R.id}`)).toBeNull();
+    expect(callables.setResources).toHaveBeenCalledTimes(1);
+    expect(callables.update).not.toHaveBeenCalled();
   });
 });

@@ -279,7 +279,22 @@ describe("C: a moved notice is reworded for where the unit is now", () => {
     const moved = notices(h, "couldn't confirm whether it was removed");
     expect(moved).toHaveLength(1);
     expect(moved[0].textContent).not.toContain("Its current resources are shown");
-    expect(moved[0].textContent).toContain("This unit's current state hasn't been confirmed. Choose Refresh units to see it.");
+    expect(moved[0].textContent).toContain("This unit's current state hasn't been confirmed. Choose Load current units to see it.");
+    // Contextual recovery: only this notice carries the read, after Dismiss.
+    const load = moved[0].querySelector<HTMLButtonElement>(".shell-units-read-action")!;
+    expect(load.hidden).toBe(false);
+    expect(load.textContent).toBe("Load current units");
+    expect(moved[0].querySelector("button")?.textContent).toBe("Dismiss");
+    expect(q(h.host, "units-check-changes")).toBeNull();
+    const reads = h.calls.list.length;
+    const writes = h.calls.setResources.length;
+    load.click();
+    expect(h.calls.list.length).toBe(reads + 1);
+    lastList(h).d.resolve({ units: [b] });
+    await tick();
+    // One read, nothing resent; the historical outcome stays unconfirmed.
+    expect(h.calls.setResources.length).toBe(writes);
+    expect(moved[0].textContent).toContain("couldn't confirm whether it was removed");
   });
 
   test("conflict moved while another unit's operation is pending; that operation's outcome is separate", async () => {

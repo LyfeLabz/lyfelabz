@@ -4,7 +4,7 @@
  * Teacher Units UX Milestone 1: the compact My Units panel. Create Unit opens
  * and closes the create form; units are compact expandable containers whose
  * resources use the shared full-width resource card; the archived view
- * replaces the Show archived units checkbox; Refresh units is quiet and
+ * replaces the Show archived units checkbox; the toolbar has no manual read and
  * returning to the tab refreshes automatically.
  */
 import * as fs from "fs";
@@ -112,12 +112,16 @@ describe("page copy", () => {
     expect(open.textContent).not.toMatch(/\d/);
   });
 
-  test("Refresh units stays available as a quiet secondary control", async () => {
+  test("the toolbar has no manual list read: grade filters and Create Unit only", async () => {
     const { host } = await panel([]);
-    const check = q(host, "units-check-changes") as HTMLButtonElement;
-    expect(check.textContent).toBe("Refresh units");
-    expect(check.classList.contains("shell-units-check-changes")).toBe(true);
-    expect(check.classList.contains("shell-btn-primary")).toBe(false);
+    expect(q(host, "units-check-changes")).toBeNull();
+    expect(host.querySelector(".shell-units-check-changes")).toBeNull();
+    const toolbar = host.querySelector(".shell-units-toolbar") as HTMLElement;
+    expect(toolbar.textContent).not.toMatch(/Refresh/);
+    expect(q(host, "units-grade-6")).not.toBeNull();
+    expect(q(host, "units-create-open")).not.toBeNull();
+    // No notice is showing, so no contextual load action is either.
+    for (const b of Array.from(host.querySelectorAll<HTMLElement>(".shell-units-read-action"))) expect(b.hidden).toBe(true);
   });
 });
 

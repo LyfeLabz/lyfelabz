@@ -217,7 +217,7 @@ export type UnitMutationResult =
   // and no authoritative state has been accepted since, so nothing was sent.
   // This is also returned instead of any answer computed from held state
   // (a local no-op, an archived or unavailable-resource refusal).
-  // A read (Check current state, Refresh units) restores eligibility;
+  // A read (Check current state, a My Units list read) restores eligibility;
   // the teacher then decides again. Unsaved input is the caller's to keep.
   | { readonly kind: "needsCheck" }
   // The controller was disposed or the account changed; ignore.

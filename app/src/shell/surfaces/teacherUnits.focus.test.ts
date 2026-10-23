@@ -4,7 +4,7 @@
  * U2.5 accessibility and UX remediation (TEACHER_UNITS.md "U2.5").
  *
  * Focus ownership before, during and after asynchronous operations; card
- * departure; stable card rendering; Refresh units; operation-specific
+ * departure; stable card rendering; Load current units; operation-specific
  * uncertainty and neutral conflict wording; field error associations; and
  * the panel-scoped forced-colors focus style. Every callable is a manually
  * settled deferred, so each interleaving is explicit.
@@ -115,10 +115,24 @@ const press = (b: HTMLElement) => {
   b.focus();
   b.click();
 };
+// An authoritative list read, as the automatic My Units reads make it.
 const checkChanges = async (h: H, units: TeacherUnit[]) => {
-  press(btn(h, "units-check-changes"));
+  void h.ctl.refresh();
   last(h, "list").d.resolve({ units });
   await tick();
+};
+// The toolbar has no manual read: a notice that needs one carries its own
+// Load current units action. An unconfirmed remove whose follow-up read
+// failed is one such notice.
+const loadAction = async (h: H, u: TeacherUnit) => {
+  press(btn(h, `units-resource-remove-${u.unitId}-${u.resourceIds[0]}`));
+  last(h, "setResources").d.reject(LOST());
+  await tick();
+  last(h, "get").d.reject(LOST());
+  await tick();
+  const b = btn(h, `units-notice-load-${u.unitId}`);
+  expect(b.hidden).toBe(false);
+  return b;
 };
 const noticeOf = (h: H, u: TeacherUnit) => h.host.querySelector<HTMLElement>(`[data-testid="units-card-${u.unitId}"] > .shell-units-notice`);
 
@@ -139,9 +153,6 @@ describe("card departure", () => {
     expect(q(h.host, `units-card-${b.unitId}`)).toBeNull();
     expect(document.activeElement).toBe(btn(h, `units-resources-add-${c.unitId}`));
     expect((document.activeElement as HTMLElement).isConnected).toBe(true);
-    // Refresh units itself keeps its own focus while a card leaves.
-    await checkChanges(h, [c]);
-    expect(document.activeElement).toBe(btn(h, "units-check-changes"));
   });
 
   test("the last card leaving focuses the card before it", async () => {
@@ -427,17 +438,17 @@ describe("resource and editor focus", () => {
   });
 });
 
-describe("Refresh units", () => {
+describe("Load current units", () => {
   test("uses one list read, keeps unsaved create and edit input, and announces the result", async () => {
     const a = unit();
     const h = await panel([a]);
+    const check = await loadAction(h, a);
     (q(h.host, "units-create-title") as HTMLInputElement).value = "Draft unit";
     btn(h, `units-edit-${a.unitId}`).click();
     const title = q(h.host, `units-edit-title-${a.unitId}`) as HTMLInputElement;
     title.value = "My draft";
-    const check = btn(h, "units-check-changes");
     press(check);
-    expect(status(h)).toBe("Refreshing your units...");
+    expect(status(h)).toBe("Loading your current units...");
     expect(check.getAttribute("aria-disabled")).toBe("true");
     check.click();
     expect(h.c.list).toHaveBeenCalledTimes(2);
@@ -446,7 +457,10 @@ describe("Refresh units", () => {
     await tick();
     expect(status(h)).toBe("Your units were refreshed.");
     expect(check.getAttribute("aria-disabled")).toBeNull();
-    expect(document.activeElement).toBe(check);
+    // The newer record answers the notice, so its action leaves and focus
+    // stays in that unit's card.
+    expect(check.hidden).toBe(true);
+    expect(q(h.host, `units-card-${a.unitId}`)?.contains(document.activeElement)).toBe(true);
     expect((q(h.host, "units-create-title") as HTMLInputElement).value).toBe("Draft unit");
     expect(q(h.host, `units-edit-title-${a.unitId}`)).toBe(title);
     expect(title.value).toBe("My draft");
@@ -463,7 +477,7 @@ describe("Refresh units", () => {
   test("an older read never replaces a newer accepted record", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const h = await panel([a]);
-    press(btn(h, "units-check-changes"));
+    void h.ctl.refresh();
     const read = last(h, "list");
     btn(h, `units-resource-remove-${a.unitId}-${R1.id}`).click();
     last(h, "setResources").d.resolve({ unit: next(a, { resourceIds: [R2.id] }), noop: false });
@@ -474,7 +488,7 @@ describe("Refresh units", () => {
     expect(q(h.host, `units-resource-remove-${a.unitId}-${R2.id}`)).not.toBeNull();
   });
 
-  test("after an unconfirmed remove: points to Refresh units, then reports from the newer record, never resending", async () => {
+  test("after an unconfirmed remove: offers Load current units in the notice, then reports from the newer record, never resending", async () => {
     const a = unit();
     const h = await panel([a]);
     press(btn(h, `units-resource-remove-${a.unitId}-${R1.id}`));
@@ -483,13 +497,47 @@ describe("Refresh units", () => {
     last(h, "get").d.reject(LOST());
     await tick();
     const notice = noticeOf(h, a) as HTMLElement;
-    expect(notice.textContent).toContain("Choose Refresh units before trying again.");
-    // No unsupported "Refresh" instruction: only the Refresh units control is named.
-    expect(notice.textContent).not.toMatch(/\bRefresh\b(?! units\b)/);
-    await checkChanges(h, [next(a, { resourceIds: [R2.id] })]);
+    expect(notice.textContent).toContain("Choose Load current units before trying again.");
+    expect(notice.textContent).not.toMatch(/Refresh/);
+    const action = btn(h, `units-notice-load-${a.unitId}`);
+    expect(action.hidden).toBe(false);
+    expect(action.textContent).toBe("Load current units");
+    press(action);
+    last(h, "list").d.resolve({ units: [next(a, { resourceIds: [R2.id] })] });
+    await tick();
+    // Loading never claims the earlier change was or wasn't saved.
     expect(notice.textContent).toContain("couldn't confirm whether your change was saved");
-    expect(notice.textContent).not.toContain("Choose Refresh units before trying again.");
+    expect(notice.textContent).not.toContain("Choose Load current units before trying again.");
+    expect(action.hidden).toBe(true);
     expect(h.c.setResources).toHaveBeenCalledTimes(1);
+  });
+
+  test("a completed read at the same revision ends the load prompt without claiming either outcome", async () => {
+    const a = unit();
+    const h = await panel([a]);
+    const load = await loadAction(h, a);
+    const notice = noticeOf(h, a) as HTMLElement;
+    press(load);
+    last(h, "list").d.resolve({ units: [a] });
+    await tick();
+    expect(notice.textContent).toContain("LyfeLabz couldn't confirm whether your change was saved.");
+    expect(notice.textContent).not.toContain("couldn't be loaded after that request");
+    expect(notice.textContent).not.toContain("Load current units");
+    expect(notice.textContent).toContain("Check them before trying again.");
+    expect(load.hidden).toBe(true);
+    expect(q(h.host, `units-card-${a.unitId}`)?.contains(document.activeElement)).toBe(true);
+    expect(h.c.setResources).toHaveBeenCalledTimes(1);
+  });
+
+  test("a failed read keeps the load prompt", async () => {
+    const a = unit();
+    const h = await panel([a]);
+    const load = await loadAction(h, a);
+    press(load);
+    last(h, "list").d.reject(LOST());
+    await tick();
+    expect(noticeOf(h, a)?.textContent).toContain("Choose Load current units before trying again.");
+    expect(load.hidden).toBe(false);
   });
 
   test("A3-3: responseUnavailable after a remove reads as unconfirmed, never resent", async () => {
@@ -504,14 +552,14 @@ describe("Refresh units", () => {
     last(h, "get").d.reject(LOST());
     await tick();
     const notice = noticeOf(h, a) as HTMLElement;
-    expect(notice.textContent).toContain("Choose Refresh units before trying again.");
+    expect(notice.textContent).toContain("Choose Load current units before trying again.");
     expect(h.c.setResources).toHaveBeenCalledTimes(1);
   });
 
   test("A3-3: an availability refusal on a check names availability, not the connection", async () => {
     const a = unit();
     const h = await panel([a]);
-    press(btn(h, "units-check-changes"));
+    press(await loadAction(h, a));
     last(h, "list").d.reject(Object.assign(new Error("x"), {
       code: "failed-precondition",
       details: { code: "teacherUnits.availabilityClosed" },
@@ -525,19 +573,19 @@ describe("Refresh units", () => {
   test("a failed check shows the list alert, clears its pending message, and announces no success", async () => {
     const a = unit();
     const h = await panel([a]);
-    press(btn(h, "units-check-changes"));
+    press(await loadAction(h, a));
     last(h, "list").d.reject(LOST());
     await tick();
     expect(q(h.host, "units-list-state")?.querySelector("[role=alert]")?.textContent).toContain("Your units couldn't be loaded");
     expect(status(h)).toBe("");
-    expect(btn(h, "units-check-changes").getAttribute("aria-disabled")).toBeNull();
+    expect(btn(h, `units-notice-load-${a.unitId}`).getAttribute("aria-disabled")).toBeNull();
     expect(q(h.host, `units-card-${a.unitId}`)).not.toBeNull();
   });
 
   test("an account change during the check accepts nothing and announces nothing", async () => {
     const a = unit();
     const h = await panel([a]);
-    press(btn(h, "units-check-changes"));
+    press(await loadAction(h, a));
     h.switchAccount();
     last(h, "list").d.resolve({ units: [next(a, { title: "Other account" })] });
     await tick();
@@ -561,7 +609,7 @@ describe("messages", () => {
     let text = noticeOf(h, a)?.textContent ?? "";
     expect(text).toContain("LyfeLabz couldn't confirm whether your changes were saved.");
     expect(text).toContain("Your edits are still here.");
-    expect(text).toContain("Choose Refresh units");
+    expect(text).toContain("Choose Load current units");
     expect(text).not.toMatch(/resource/i);
     btn(h, `units-edit-cancel-${a.unitId}`).click();
     // A3-4 S2 (D3): after the unconfirmed edit and its failed read, a new
@@ -674,11 +722,11 @@ describe("panel styles", () => {
 
 const CHECKED = "Your units were refreshed.";
 
-describe("F1: Refresh units announces only its own accepted read", () => {
+describe("F1: Load current units announces only its own accepted read", () => {
   test("superseded by another list read that settles first: no success announcement", async () => {
     const a = unit();
     const h = await panel([a]);
-    press(btn(h, "units-check-changes"));
+    press(await loadAction(h, a));
     const mine = last(h, "list");
     void h.ctl.refresh();
     const newer = last(h, "list");
@@ -695,7 +743,7 @@ describe("F1: Refresh units announces only its own accepted read", () => {
       document.body.textContent = "";
       const a = unit();
       const h = await panel([a]);
-      press(btn(h, "units-check-changes"));
+      press(await loadAction(h, a));
       const mine = last(h, "list");
       h.ctl.setGrade("8");
       const newer = last(h, "list");
@@ -716,7 +764,7 @@ describe("F1: Refresh units announces only its own accepted read", () => {
   test("superseded by the archived view toggle: no success announcement", async () => {
     const a = unit();
     const h = await panel([a]);
-    press(btn(h, "units-check-changes"));
+    press(await loadAction(h, a));
     const mine = last(h, "list");
     h.ctl.setShowArchived(true);
     last(h, "list").d.resolve({ units: [a] });
@@ -729,8 +777,9 @@ describe("F1: Refresh units announces only its own accepted read", () => {
   test("an account change before dispatch sends nothing and announces nothing", async () => {
     const a = unit();
     const h = await panel([a]);
+    const load = await loadAction(h, a);
     h.switchAccount();
-    press(btn(h, "units-check-changes"));
+    press(load);
     await tick();
     expect(h.c.list).toHaveBeenCalledTimes(1);
     expect(status(h)).not.toBe(CHECKED);
@@ -739,7 +788,7 @@ describe("F1: Refresh units announces only its own accepted read", () => {
   test("an account change during the read, settled after a newer list: no announcement", async () => {
     const a = unit();
     const h = await panel([a]);
-    press(btn(h, "units-check-changes"));
+    press(await loadAction(h, a));
     const mine = last(h, "list");
     h.switchAccount();
     mine.d.resolve({ units: [next(a, { title: "Other" })] });
@@ -751,7 +800,7 @@ describe("F1: Refresh units announces only its own accepted read", () => {
   test("a completion after the panel is torn down announces nothing", async () => {
     const a = unit();
     const h = await panel([a]);
-    press(btn(h, "units-check-changes"));
+    press(await loadAction(h, a));
     const statusEl = q(h.host, "units-status") as HTMLElement;
     h.host.remove();
     // The controller is released on the next render of a detached panel.
@@ -764,9 +813,12 @@ describe("F1: Refresh units announces only its own accepted read", () => {
   test("the unsuperseded read still announces, and a failure never does", async () => {
     const a = unit();
     const h = await panel([a]);
-    await checkChanges(h, [a]);
+    const load = await loadAction(h, a);
+    press(load);
+    last(h, "list").d.resolve({ units: [a] });
+    await tick();
     expect(status(h)).toBe(CHECKED);
-    press(btn(h, "units-check-changes"));
+    press(load);
     last(h, "list").d.reject(LOST());
     await tick();
     expect(status(h)).toBe("");
@@ -853,7 +905,7 @@ describe("F3: confirmed and uncertain membership outcomes stay distinct", () => 
     expect(status(h)).not.toMatch(/couldn't confirm|can't tell|whether this request took effect/);
   });
 
-  test("a confirmed write followed by a failed Refresh units stays confirmed", async () => {
+  test("a confirmed write followed by a failed list read stays confirmed", async () => {
     const a = unit({ resourceIds: [R1.id, R2.id] });
     const h = await panel([a]);
     btn(h, `units-resource-remove-${a.unitId}-${R1.id}`).click();
@@ -861,7 +913,7 @@ describe("F3: confirmed and uncertain membership outcomes stay distinct", () => 
     await tick();
     const text = status(h);
     expect(text).toBe(`Removed "${R1.title}" from "${a.title}".`);
-    press(btn(h, "units-check-changes"));
+    void h.ctl.refresh();
     last(h, "list").d.reject(LOST());
     await tick();
     expect(h.host.textContent).not.toMatch(/couldn't confirm whether your change/);

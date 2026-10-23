@@ -1034,14 +1034,13 @@
     gap: 0.75rem 1.25rem;
     margin-bottom: 1rem;
   }
-  /* Milestone 1: Create Unit sits after the grade pills; the manual list
-     read sits at the end of the row. Milestone 2B: it is "Refresh units", a
-     small outlined secondary pill rather than an underlined link (recovery
-     and conflict notices still name it). */
+  /* Milestone 1: Create Unit sits after the grade pills. The list reads
+     automatically on every My Units visit; a notice that needs a fresh read
+     carries its own small outlined "Load current units" pill. */
   .shell-units-toolbar .shell-units-create-open { margin: 0; }
   .shell-units-create-plus { font-weight: 700; }
-  .shell-units-toolbar .shell-units-check-changes {
-    margin: 0 0 0 auto;
+  .shell-units-read-action {
+    margin: 0.4rem 0.5rem 0 0;
     padding: 0.2rem 0.8rem;
     font-size: 0.85rem;
     background: transparent;
@@ -1276,7 +1275,6 @@
   @media (max-width: 480px) {
     .shell-units-form { padding: 0.75rem; }
     .shell-units-actions .shell-btn { flex: 1 1 auto; }
-    .shell-units-toolbar .shell-units-check-changes { margin-left: 0; }
   }
   @media (pointer: coarse) {
     .shell-units-input,

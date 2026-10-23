@@ -605,6 +605,21 @@ describe("unit-name membership pills", () => {
     expect(document.activeElement).toBe(toggleBtn);
   });
 
+  test("a pill opens My Units with one fresh grade read that shows changes made since Curriculum loaded", async () => {
+    const target = unit({ grade: "7", title: "Earth Systems", resourceIds: [LESSON_7.slug] });
+    const { root, store, callables } = await curriculumWith([target]);
+    // Renamed elsewhere after Curriculum read its pills.
+    store.set(target.unitId, { ...target, title: "Earth Systems (renamed)", revision: target.revision + 1 });
+    const gradeReads = () => callables.list.mock.calls.filter((c) => c[0]?.grade === "7").length;
+    const before = gradeReads();
+    (pillsOf(root, LESSON_7.slug)[0] as HTMLButtonElement).click();
+    await flush();
+    expect(gradeReads()).toBe(before + 1);
+    expect(q(root, `units-card-${target.unitId}`)?.textContent).toContain("Earth Systems (renamed)");
+    expect(q(root, "units-check-changes")).toBeNull();
+    expect(document.activeElement).toBe(q(root, `units-toggle-${target.unitId}`));
+  });
+
   test("updates after a confirmed addition, and after a removal or archive once Curriculum is shown again", async () => {
     const existing = unit({ title: "Weather" });
     const { root, store } = await curriculumWith([existing]);
