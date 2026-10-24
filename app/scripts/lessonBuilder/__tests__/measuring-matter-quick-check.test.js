@@ -158,14 +158,14 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
         "Predict", "Quick Check · Not graded", "Quick Check · Not graded",
         "Step 1 · Predict", "Step 3 · Check Your Understanding · Not graded", "Step 4 · Explain With Evidence",
         "Predict",
-        "Step 1 · Predict", "Step 3 · Explain · Not graded", "Step 4 · Check: Buoyancy Is a Force",
+        "Step 1 · Predict", "Step 3 · Explain · Not graded",
       ]);
       expect(doc.querySelectorAll("#quiz .check-card, #quiz .check-opt")).toHaveLength(0);
     });
 
     test("labels every option group by its question and styles every option", () => {
       const groups = [...doc.querySelectorAll('.check-card [role="group"], .worked-example [role="group"]')];
-      expect(groups).toHaveLength(12);
+      expect(groups).toHaveLength(11);
       for (const g of groups) {
         const label = doc.getElementById(g.getAttribute("aria-labelledby"));
         expect(label).not.toBeNull();

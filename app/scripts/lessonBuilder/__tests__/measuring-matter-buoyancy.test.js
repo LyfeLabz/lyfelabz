@@ -9,7 +9,8 @@
  *
  * Guards the buoyancy enhancement: the "Why Does Water Push Up?" section
  * between the Density Challenge and the quiz, the Same Mass. Different
- * Shape. boat investigation (predict, investigate, explain), the Lab 4
+ * Shape. boat investigation (predict, investigate, explain, opened one
+ * step at a time), the Lab 4
  * Step 4 evidence check, and the Floatia bridge. The investigation's real
  * script runs in jsdom against the source and both generated outputs, and
  * every number it shows is checked against one physical model: fresh water
@@ -71,7 +72,6 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
   const readouts = () => ({
     mass: num("by-mass"),
     overall: num("by-vol"),
-    avg: num("by-avg"),
     displaced: num("by-disp"),
     weight: num("by-weight-val"),
     buoyant: num("by-up-val"),
@@ -106,29 +106,26 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
       expect($("buoyancy").contains($("by-lab"))).toBe(true);
     });
 
-    test("teaches buoyancy, displacement and the floating rule in the approved words", () => {
+    test("teaches buoyancy, displacement and the floating rule in one short key idea", () => {
       const sec = $("buoyancy");
       expect(text(sec.querySelector(".section-title"))).toBe("Why Does Water Push Up?");
       expect(text(sec.querySelector(".section-label"))).toBe("Explain · Meet Buoyancy");
-      expect(text(sec.querySelector(".by-desc"))).toBe(
-        "When you push a ball underwater, you can feel the water pushing back. That upward force is called buoyancy, or the buoyant force."
-      );
       const key = sec.querySelector(".name-it");
       expect(text(key.querySelector(".name-it-label"))).toBe("Key idea: Buoyancy");
       expect(text(key)).toContain(
-        "When an object enters water, it pushes water out of the way. This is called water displacement. The water pushes upward on the object. The more water an object displaces, the greater the upward buoyant force."
+        "When an object goes into water, it pushes water aside. This is called water displacement. The water pushes back up. That upward push is the buoyant force."
       );
       expect(text(sec.querySelector(".by-rule"))).toBe("An object floats when the upward buoyant force balances its weight.");
+      // One explanation block before the lab: no extra paragraphs or side cards.
+      expect(sec.querySelectorAll(".section-desc, .observe-card, .by-link")).toHaveLength(0);
     });
 
-    test("says displacing water does not guarantee floating, and names both factors", () => {
-      const all = text("buoyancy");
-      expect(all).toContain("Displacing water is not enough by itself.");
-      expect(all).toContain("The buoyant force depends on how much water is displaced and on the density of the fluid.");
-      expect(all).toContain("In fresh water (1 g/mL), each 1 mL pushed aside gives enough upward force to hold up 1 g.");
-      expect(all).toContain("This is why the density rule from the Density Challenge works.");
+    test("says sinking objects are pushed up too, and gives the 1 mL to 1 g link", () => {
+      expect(text($("buoyancy").querySelector(".by-note"))).toBe(
+        "Every 1 mL of water pushed aside can hold up 1 g. Sinking objects get this push too, just not enough of it."
+      );
       // Grade 6 scope: no formal Archimedes equation and no required force math.
-      expect(all).not.toMatch(/Archimedes|newton|F\s*=|ρ/i);
+      expect(text("buoyancy")).not.toMatch(/Archimedes|newton|F\s*=|ρ/i);
     });
 
     test("does not reveal the Floating Giant model answer before the quiz", () => {
@@ -143,16 +140,28 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
   });
 
   describe("Same Mass. Different Shape.", () => {
-    test("asks the driving question and starts on the compact solid", () => {
+    test("asks a short prediction and starts on the compact solid", () => {
       expect(text($("by-lab").querySelector(".mlab-title"))).toBe("Same Mass. Different Shape.");
-      expect(text($("by-lab").querySelector(".by-intro"))).toContain(
-        "Can changing an object's shape help it float even when its mass stays the same?"
-      );
-      expect(text("by-predict-q")).toBe(
-        "Two objects have the same mass and are made from the same material. One is compact and the other is shaped like a wide, hollow boat. Which is more likely to float?"
-      );
+      expect(text("by-predict-q")).toBe("Same 40 g. Same material. Which shape floats?");
+      expect([...doc.querySelectorAll(".by-pred")].map(text)).toEqual(["The compact solid", "Both act the same", "The hollow boat"]);
+      expect([...doc.querySelectorAll(".by-shape")].map(text)).toEqual(["Solid", "Boat"]);
       expect(shapeBtn("compact").getAttribute("aria-pressed")).toBe("true");
       expect(shapeBtn("hull").getAttribute("aria-pressed")).toBe("false");
+    });
+
+    test("opens one step at a time: tank after a prediction, check after the boat", () => {
+      expect($("by-work").hidden).toBe(true);
+      expect($("by-check").hidden).toBe(true);
+      expect($("by-reveal").hidden).toBe(true);
+      click(pred("compact"));
+      expect($("by-work").hidden).toBe(false);
+      expect($("by-check").hidden).toBe(true);
+      click(shapeBtn("hull"));
+      expect($("by-check").hidden).toBe(false);
+      expect($("by-reveal").hidden).toBe(false);
+      click(shapeBtn("compact"));
+      expect($("by-check").hidden).toBe(false); // stays open once the comparison is made
+      expect(html).toContain(".by-lab [hidden] { display: none; }");
     });
 
     test("both shapes have the same mass, and the material's density never changes", () => {
@@ -163,21 +172,23 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
       expect(b.mass).toBe(40);
       expect(a.weight).toBe(40);
       expect(b.weight).toBe(40);
-      expect(text("by-avg")).toContain("the material is still 2 g/cm³");
-      click(shapeBtn("compact"));
-      expect(text("by-avg")).toContain("same as the material");
-      expect(text("by-lab")).not.toMatch(/material (becomes|became|gets|got) less dense/i);
+      expect(text("by-reveal")).toBe(
+        "The material is still 2 g/cm³. The boat's average density is lower because its volume includes air."
+      );
+      // Explanations never claim it; only the wrong check choice names the misconception.
+      const lab = $("by-lab").cloneNode(true);
+      lab.querySelectorAll(".by-opt").forEach((b) => b.remove());
+      expect(text(lab)).not.toMatch(/material (becomes|became|gets|got) less dense/i);
     });
 
     test("the compact solid cannot displace enough water, even fully underwater", () => {
       const r = readouts();
       expect(r.overall).toBe(20); // 40 g ÷ 2 g/cm³, all material
-      expect(r.avg).toBe(2);
       expect(r.displaced).toBe(r.overall); // fully underwater: the most it can push aside
       expect(r.buoyant).toBe(r.displaced * 1); // fresh water: 1 mL holds up 1 g
       expect(r.buoyant).toBeLessThan(r.mass);
       expect(r.verdict).toBe("✗ Result: Sinks");
-      expect(text("by-forces-text")).toBe("The buoyant force (20 g) is less than the weight (40 g). The tank floor holds up the other 20 g.");
+      expect(text("by-explain")).toBe("Only 20 mL pushed aside. Water still pushes up, but 20 g of push can't hold up 40 g. It sinks.");
       expect($("by-up-bar").style.width).toBe("50%");
     });
 
@@ -185,16 +196,17 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
       click(shapeBtn("hull"));
       const r = readouts();
       expect(r.overall).toBe(120); // 8 × 5 × 3 cm: 20 cm³ material + 100 cm³ air
-      expect(text("by-vol")).toContain("20 cm³ material + 100 cm³ air");
-      expect(r.avg).toBeCloseTo(40 / 120, 2);
-      expect(text("by-avg")).toMatch(/^≈ 0\.33 g\/cm³/);
       expect(r.displaced).toBe(40); // equilibrium: mass ÷ water density
       expect(r.displaced).toBeLessThan(r.overall); // partly above the surface
       expect(r.buoyant).toBe(r.mass);
       expect(r.verdict).toBe("✓ Result: Floats");
-      expect(text("by-forces-text")).toBe("The buoyant force (40 g) balances the weight (40 g).");
+      expect(text("by-explain")).toBe("40 mL pushed aside. 40 g of push balances 40 g. It floats.");
       expect($("by-up-bar").style.width).toBe("100%");
-      expect(text("by-disp")).toContain("only 1 cm of its 3 cm height is underwater"); // 40 mL ÷ (8 × 5 cm²)
+    });
+
+    test("shows only three plain readouts at once", () => {
+      expect([...doc.querySelectorAll(".by-val dt")].map(text)).toEqual(["Mass", "Volume", "Water pushed aside"]);
+      expect(doc.querySelectorAll(".by-val small")).toHaveLength(0);
     });
 
     test("the drawing is to scale and follows the numbers", () => {
@@ -222,42 +234,26 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
       );
     });
 
-    test("explains each result with mass, overall volume, displacement and buoyant force", () => {
-      const compact = text("by-explain");
-      click(shapeBtn("hull"));
-      const hull = text("by-explain");
-      for (const t of [compact, hull]) expect(t).toMatch(/40 g/);
-      expect(compact).toContain("overall volume is only 20 cm³");
-      expect(compact).toContain("push aside only 20 mL of water");
-      expect(compact).toContain("so it sinks");
-      expect(hull).toContain("overall volume is 120 cm³");
-      expect(hull).toContain("average density is less than water's");
-      expect(hull).toContain("pushed aside 40 mL of water");
-      expect(hull).toContain("the buoyant force balances its weight");
-    });
-
-    test("discloses the model's assumptions, including a flooded hull", () => {
+    test("the model notes hold the assumptions, the average densities, and a flooded hull", () => {
       const about = text($("by-lab").querySelector(".dx-about"));
-      expect(about).toContain("fresh water with a density of 1 g/mL, and gravity is the same everywhere");
-      expect(about).toContain("1 mL and 1 cm³ are the same amount of space.");
-      expect(about).toContain("Reshaping it never changes the material's density.");
-      expect(about).toContain("8 cm long, 5 cm wide, and 3 cm tall");
-      expect(about).toContain("A hull that fills with water no longer keeps that water out, so it acts like its 20 cm³ of material and sinks.");
-      expect(about).toContain("rises 1 cm for every 84 mL pushed aside");
+      expect(about).toContain("Fresh water: each 1 mL pushed aside can hold up 1 g. 1 mL is the same space as 1 cm³.");
+      expect(about).toContain("Reshaping never changes the material's density.");
+      expect(about).toContain("8 cm long, 5 cm wide, and 3 cm tall: 20 cm³ of material around 100 cm³ of air, 120 cm³ in all.");
+      expect(about).toContain("solid 40 g ÷ 20 cm³ = 2 g/cm³; boat 40 g ÷ 120 cm³ ≈ 0.33 g/cm³, less than water's 1 g/mL.");
+      expect(about).toContain("A boat that fills with water acts like its 20 cm³ of material and sinks.");
+      expect($("by-lab").querySelector(".dx-about").hasAttribute("open")).toBe(false);
     });
 
     test("prediction: saved at once, answered by the evidence once both shapes are seen", () => {
-      expect(text("by-predict-note")).toBe("Make a prediction, then switch between the two shapes to test it.");
+      expect(text("by-predict-note")).toBe("Make a prediction to open the investigation.");
       click(pred("compact"));
       expect(pred("compact").getAttribute("aria-pressed")).toBe("true");
-      expect(text("by-predict-note")).toBe("Prediction saved: the compact one would float. Now switch between Shape A and Shape B below.");
+      expect(text("by-predict-note")).toBe("Prediction saved: the compact solid. Now try both shapes below.");
       click(pred("same"));
       expect(pred("compact").getAttribute("aria-pressed")).toBe("false");
-      expect(text("by-predict-note")).toContain("Prediction saved: they would act the same.");
+      expect(text("by-predict-note")).toContain("Prediction saved: both act the same.");
       click(shapeBtn("hull"));
-      expect(text("by-predict-note")).toBe(
-        "You predicted they would act the same. The evidence shows something different. With the same 40 g of mass, the compact solid sank and the wide, hollow hull floated."
-      );
+      expect(text("by-predict-note")).toBe("The evidence shows something different. The solid sank and the boat floated.");
       for (const b of doc.querySelectorAll(".by-pred")) expect(b.getAttribute("aria-disabled")).toBe("true");
       click(pred("hull"));
       expect(pred("same").getAttribute("aria-pressed")).toBe("true");
@@ -266,7 +262,7 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
     test("prediction: a matching prediction says so, and comparisons can be repeated", () => {
       click(pred("hull"));
       click(shapeBtn("hull"));
-      expect(text("by-predict-note")).toMatch(/^Your prediction matches the evidence\./);
+      expect(text("by-predict-note")).toBe("Your prediction matched. The solid sank and the boat floated.");
       for (let i = 0; i < 3; i++) {
         click(shapeBtn("compact"));
         expect(readouts().verdict).toBe("✗ Result: Sinks");
@@ -275,28 +271,36 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
       }
     });
 
-    test("explain check: asks for evidence first, then explains each choice, with retries", () => {
-      expect(text("by-check-q")).toBe("Why can the hollow hull float even though the compact solid sinks?");
-      click(opts()[1]);
-      expect(text("by-fb")).toBe("Investigate first. Switch to Shape B: Wide, Hollow Hull, and compare it with Shape A.");
-      expect(opts()[1].classList.contains("right")).toBe(false);
+    test("explain check: short choices, feedback for each, retries, locks on the right one", () => {
+      expect(text("by-check-q")).toBe("Why does the boat float?");
+      expect(opts().map(text)).toEqual([
+        "Its material became less dense",
+        "It pushes aside enough water to balance its weight",
+        "It lost some mass",
+      ]);
+      click(pred("same"));
       click(shapeBtn("hull"));
       click(opts()[0]);
       expect(opts()[0].classList.contains("wrong")).toBe(true);
-      expect(text("by-fb")).toContain("The material did not change: it is 2 g/cm³ in both shapes.");
+      expect(text("by-fb")).toContain("The material is 2 g/cm³ in both shapes.");
       click(opts()[2]);
       expect(opts()[0].classList.contains("wrong")).toBe(false);
-      expect(text("by-fb")).toContain("Both shapes have the same 40 g of mass.");
+      expect(text("by-fb")).toContain("Both shapes are the same 40 g.");
       click(opts()[1]);
       expect(opts()[1].classList.contains("right")).toBe(true);
       const fb = text("by-fb");
-      for (const idea of ["40 g of mass", "overall volume (120 cm³)", "push aside the 40 mL of water", "buoyant force"]) expect(fb).toContain(idea);
+      for (const idea of ["120 cm³", "push aside 40 mL of water", "40 g weight", "only 20 mL"]) expect(fb).toContain(idea);
       for (const b of opts()) expect(b.getAttribute("aria-disabled")).toBe("true");
       click(opts()[0]);
       expect(text("by-fb")).toBe(fb);
     });
 
-    test("reset returns to the compact solid and clears the prediction and check", () => {
+    test("has one check only: the sinking-object check is folded into the key idea and result", () => {
+      expect(doc.querySelectorAll("#by-lab .check-card")).toHaveLength(2); // predict + explain
+      expect($("by-sink")).toBeNull();
+    });
+
+    test("reset returns to the compact solid, clears the prediction and check, and closes the steps", () => {
       click(pred("hull"));
       click(shapeBtn("hull"));
       click(opts()[1]);
@@ -304,17 +308,18 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
       expect(shapeBtn("compact").getAttribute("aria-pressed")).toBe("true");
       expect(readouts().verdict).toBe("✗ Result: Sinks");
       expect([...doc.querySelectorAll(".by-pred")].some((b) => b.getAttribute("aria-pressed") === "true")).toBe(false);
-      expect(text("by-predict-note")).toBe("Make a prediction, then switch between the two shapes to test it.");
+      expect(text("by-predict-note")).toBe("Make a prediction to open the investigation.");
       expect(opts().some((b) => b.classList.contains("right") || b.hasAttribute("aria-disabled"))).toBe(false);
       expect(text("by-fb")).toBe("");
+      expect($("by-work").hidden).toBe(true);
+      expect($("by-check").hidden).toBe(true);
     });
 
     test("announces each switch politely", async () => {
+      click(pred("hull"));
       click(shapeBtn("hull"));
       await wait(150);
-      expect(text("by-announce")).toBe(
-        "Shape B, wide, hollow hull: floats. It pushes aside 40 mL of water. The buoyant force (40 g) balances the weight (40 g)."
-      );
+      expect(text("by-announce")).toBe("Boat: floats. 40 mL pushed aside. 40 g of push balances 40 g. It floats.");
       expect($("by-announce").getAttribute("aria-live")).toBe("polite");
     });
 
@@ -327,12 +332,12 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
         expect(named.length).toBeGreaterThan(0);
       }
       expect($("by-svg").getAttribute("role")).toBe("img");
-      expect(lab.querySelector(".by-forces").getAttribute("aria-hidden")).toBe("true"); // bars repeat by-forces-text
+      expect(lab.querySelector(".by-forces").getAttribute("aria-hidden")).toBe("true"); // bars repeat by-explain
       expect(lab.querySelectorAll(".by-shape[aria-pressed]")).toHaveLength(2);
       for (const id of ["by-predict-note", "by-fb", "by-announce"]) expect($(id).getAttribute("aria-live")).toBe("polite");
       expect(text("by-verdict")).toMatch(/Result: (Floats|Sinks)/); // never color alone
       // Feedback and notes reserve their largest size, so answering never shifts the lab.
-      expect($("by-fb-zone").querySelectorAll(".tm-fb-sizer")).toHaveLength(4);
+      expect($("by-fb-zone").querySelectorAll(".tm-fb-sizer")).toHaveLength(3);
       expect($("by-note-zone").querySelectorAll(".dx-note-sizer")).toHaveLength(7);
     });
 
@@ -344,9 +349,7 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
     });
 
     test("bridges to Floatia without giving away a design", () => {
-      expect(text($("by-lab").querySelector(".by-bridge"))).toBe(
-        "Engineers use these ideas when designing boats. A boat must displace enough water to support its own weight and anything it carries."
-      );
+      expect(text($("by-lab").querySelector(".by-bridge"))).toBe("Engineers use this idea when they design boats.");
       // Student-facing text only; the Educator Mode note names Floatia for teachers.
       const sec = $("buoyancy").cloneNode(true);
       sec.querySelectorAll(".edu-note").forEach((n) => n.remove());
@@ -357,33 +360,6 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
     test("student-facing buoyancy text has no em dashes", () => {
       expect($("buoyancy").textContent).not.toContain("\u2014");
       expect(scriptAt(html, SCRIPT_HEADERS[1])).not.toContain("\u2014");
-    });
-  });
-
-  describe("Step 4: buoyancy acts on sinking objects too", () => {
-    const sink = () => [...doc.querySelectorAll(".by-sink-opt")];
-    test("asks the approved question after the explain check", () => {
-      expect($("by-check").nextElementSibling).toBe($("by-sink"));
-      expect(text("by-sink-q")).toBe("Does water push upward on an object that sinks?");
-      expect(sink().map(text)).toEqual([
-        "Yes. Water pushes upward on submerged objects, even when they sink.",
-        "No. Water only pushes upward on objects that float.",
-        "No. Sinking objects experience only a downward force.",
-      ]);
-      expect($("by-sink-fb-zone").querySelectorAll(".tm-fb-sizer")).toHaveLength(3);
-    });
-    test("gives feedback, allows retries, locks on the right answer, and resets", () => {
-      click(sink()[1]);
-      expect(sink()[1].classList.contains("wrong")).toBe(true);
-      expect(text("by-sink-fb")).toMatch(/^Water pushes upward on submerged objects whether they float or sink\. Compare the upward force with the object's weight\./);
-      click(sink()[2]);
-      expect(sink()[1].classList.contains("wrong")).toBe(false);
-      click(sink()[0]);
-      expect(text("by-sink-fb")).toBe("Yes. Water pushes upward on objects in the water, even when they sink. An object sinks when its weight is greater than the upward buoyant force.");
-      for (const b of sink()) expect(b.getAttribute("aria-disabled")).toBe("true");
-      click($("by-reset"));
-      expect(sink().some((b) => b.classList.contains("right") || b.hasAttribute("aria-disabled"))).toBe(false);
-      expect(text("by-sink-fb")).toBe("");
     });
   });
 
