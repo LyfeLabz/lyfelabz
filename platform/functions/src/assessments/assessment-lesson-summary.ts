@@ -34,17 +34,40 @@ import {
 // attempts. No new Firestore composite index is introduced, and there is
 // no client-side fan-out across assignments.
 
-// Client-supplied request payload. The lesson slug is the only accepted
-// field; the verified caller context (uid, schoolId, districtId) supplies
-// every ownership decision. Any owner-scoping, routing, or aggregation key
-// is refused so no laundering path can suggest cross-owner access.
-export type AssessmentLessonSummaryRequest = {
-  readonly lessonSlug: string;
+// Client-supplied request payload: exactly one of `lessonSlug` (one
+// lesson's Results) or `lessonSlugs` (Unit Results: a bounded batch of the
+// unit's lessons, answered from ONE owned-assignment query). The verified
+// caller context (uid, schoolId, districtId) supplies every ownership
+// decision. Any owner-scoping, routing, or aggregation key is refused so no
+// laundering path can suggest cross-owner access.
+export type AssessmentLessonSummaryRequest =
+  | { readonly lessonSlug: string }
+  | { readonly lessonSlugs: readonly string[] };
+
+// Batch bound: a Teacher Unit holds at most TEACHER_UNIT_RESOURCES_MAX (100)
+// resources, so one unit's lessons always fit in one request.
+export const LESSON_SUMMARY_BATCH_MAX = 100;
+
+// Class Results: one row per class holding an owned published/closed
+// assignment of the lesson. The SAME unique-student, best-across-occurrences
+// semantics as the lesson totals, restricted to that class's own
+// occurrences, so a reassigned class reads its full lesson history. The
+// only identifier is the caller's OWN classId (needed to label the row and
+// open the class's Assignment Detail); no student, attempt, recipient, or
+// assignment identifier is ever returned.
+export type AssessmentLessonClassSummary = {
+  readonly classId: string;
+  readonly students: number;
+  readonly studentsCompleted: number;
+  readonly completionPercentage: number;
+  readonly averageBestPercentage: number | null;
+  readonly assignmentsConsidered: number;
 };
 
-// Aggregate lesson-level summary. Every field is a bounded numeric
-// aggregate; no student, attempt, session, recipient, class, item-result,
-// response, or answer-key identifier or value ever crosses the boundary.
+// Aggregate lesson-level summary. Every top-level field is a bounded
+// numeric aggregate; `classes` adds the caller's own classIds only. No
+// student, attempt, session, recipient, item-result, response, or
+// answer-key identifier or value ever crosses the boundary.
 // `averageBestPercentage` is `null` when no student has completed the
 // lesson in any matched assignment so the client renders an unambiguous
 // "No completed scores yet" state instead of a misleading 0%.
@@ -56,6 +79,14 @@ export type AssessmentLessonSummaryResponse = {
   readonly completionPercentage: number;
   readonly averageBestPercentage: number | null;
   readonly assignmentsConsidered: number;
+  // Ordered by ascending classId (deterministic); the client orders rows by
+  // the teacher's saved class order. Empty when the lesson is unassigned.
+  readonly classes: readonly AssessmentLessonClassSummary[];
+};
+
+export type AssessmentLessonSummaryBatchResponse = {
+  // One entry per distinct requested slug, in request order.
+  readonly lessons: readonly AssessmentLessonSummaryResponse[];
 };
 
 // Canonical curriculum lesson-slug pattern, identical to the
@@ -123,7 +154,28 @@ function safeLog(fn: () => void): void {
   }
 }
 
-function validateRequest(data: unknown): AssessmentLessonSummaryRequest {
+type ValidatedRequest =
+  | { readonly kind: "single"; readonly lessonSlug: string }
+  | { readonly kind: "batch"; readonly lessonSlugs: readonly string[] };
+
+function readLessonSlug(value: unknown, field: string): string {
+  if (!isNonEmptyString(value)) {
+    throw new PlatformError(
+      "assignments.invalidRequest",
+      `${field} must be a non-empty string.`,
+    );
+  }
+  const lessonSlug = value.trim();
+  if (!LESSON_SLUG_PATTERN.test(lessonSlug)) {
+    throw new PlatformError(
+      "assignments.invalidRequest",
+      `${field} must be a canonical curriculum slug.`,
+    );
+  }
+  return lessonSlug;
+}
+
+function validateRequest(data: unknown): ValidatedRequest {
   if (data === null || typeof data !== "object" || Array.isArray(data)) {
     throw new PlatformError(
       "assignments.invalidRequest",
@@ -139,20 +191,34 @@ function validateRequest(data: unknown): AssessmentLessonSummaryRequest {
       );
     }
   }
-  if (!("lessonSlug" in payload) || !isNonEmptyString(payload.lessonSlug)) {
+  const hasSingle = "lessonSlug" in payload;
+  const hasBatch = "lessonSlugs" in payload;
+  if (hasSingle && hasBatch) {
     throw new PlatformError(
       "assignments.invalidRequest",
-      "lessonSlug must be a non-empty string.",
+      "Provide lessonSlug or lessonSlugs, not both.",
     );
   }
-  const lessonSlug = payload.lessonSlug.trim();
-  if (!LESSON_SLUG_PATTERN.test(lessonSlug)) {
-    throw new PlatformError(
-      "assignments.invalidRequest",
-      "lessonSlug must be a canonical curriculum slug.",
-    );
+  if (hasBatch) {
+    const raw = payload.lessonSlugs;
+    if (
+      !Array.isArray(raw) ||
+      raw.length === 0 ||
+      raw.length > LESSON_SUMMARY_BATCH_MAX
+    ) {
+      throw new PlatformError(
+        "assignments.invalidRequest",
+        `lessonSlugs must list 1 to ${String(LESSON_SUMMARY_BATCH_MAX)} slugs.`,
+      );
+    }
+    const lessonSlugs: string[] = [];
+    for (const value of raw as unknown[]) {
+      const slug = readLessonSlug(value, "lessonSlugs");
+      if (!lessonSlugs.includes(slug)) lessonSlugs.push(slug);
+    }
+    return { kind: "batch", lessonSlugs };
   }
-  return { lessonSlug };
+  return { kind: "single", lessonSlug: readLessonSlug(payload.lessonSlug, "lessonSlug") };
 }
 
 async function assertActiveTeacherInDistrict(
@@ -327,6 +393,35 @@ export function aggregateLessonSummary(
   };
 }
 
+// Class Results: `aggregateLessonSummary` applied to each class's own
+// occurrences, so per-class figures use exactly the lesson's semantics
+// (never a second aggregation rule). Ordered by ascending classId.
+export function aggregateLessonClassSummaries(
+  assignments: readonly LessonSummaryAssignmentInput[],
+): AssessmentLessonClassSummary[] {
+  const byClass = new Map<string, LessonSummaryAssignmentInput[]>();
+  for (const a of assignments) {
+    if (!isNonEmptyString(a.classId)) continue;
+    const bucket = byClass.get(a.classId) ?? [];
+    bucket.push(a);
+    byClass.set(a.classId, bucket);
+  }
+  const rows: AssessmentLessonClassSummary[] = [];
+  for (const [classId, classAssignments] of byClass) {
+    const aggregate = aggregateLessonSummary(classAssignments);
+    rows.push({
+      classId,
+      students: aggregate.students,
+      studentsCompleted: aggregate.studentsCompleted,
+      completionPercentage: aggregate.completionPercentage,
+      averageBestPercentage: aggregate.averageBestPercentage,
+      assignmentsConsidered: aggregate.assignmentsConsidered,
+    });
+  }
+  rows.sort((a, b) => (a.classId < b.classId ? -1 : a.classId > b.classId ? 1 : 0));
+  return rows;
+}
+
 // Builds the ownership-validated frozen recipient population for one
 // matched assignment. Every recipient row is re-checked against the loaded
 // assignment and the verified caller context exactly as
@@ -405,7 +500,8 @@ function buildAdmittedAttempts(
 //   1. `requireDistrictContext(request)` gates authentication, active
 //      status, canonical claims, and district agreement. Non-teacher
 //      callers are refused `role-forbidden`.
-//   2. Request shape: `lessonSlug` must be a canonical curriculum slug;
+//   2. Request shape: `lessonSlug` (or each of 1-100 `lessonSlugs`) must
+//      be a canonical curriculum slug;
 //      any owner-scoping, routing, or aggregation key is refused with
 //      `assignments.invalidRequest`.
 //   3. Ownership source is the verified caller context (uid, schoolId,
@@ -431,13 +527,17 @@ function buildAdmittedAttempts(
 // need an in-progress classification.
 //
 // Projection: only the fields on `AssessmentLessonSummaryResponse` cross
-// the boundary. No student/attempt/recipient/class/session identifier,
-// name, response, item result, or answer-key value is ever returned.
+// the boundary (a batch wraps one per slug in `lessons`). The only
+// identifier is the caller's own classId inside `classes`; no
+// student/attempt/recipient/assignment/session identifier, name, response,
+// item result, or answer-key value is ever returned.
 async function assessmentLessonSummaryHandler(
   request: CallableRequest<unknown>,
-): Promise<AssessmentLessonSummaryResponse> {
+): Promise<AssessmentLessonSummaryResponse | AssessmentLessonSummaryBatchResponse> {
   const actor = await assertActiveTeacherInDistrict(request);
   const input = validateRequest(request.data);
+  const lessonSlugs = input.kind === "single" ? [input.lessonSlug] : input.lessonSlugs;
+  const wanted = new Set(lessonSlugs);
 
   const snapshot = await assignmentsCollectionRef()
     .where("teacherId", "==", actor.uid)
@@ -445,11 +545,11 @@ async function assessmentLessonSummaryHandler(
     .where("status", "in", CONSIDERED_STATUSES as string[])
     .get();
 
-  // Bounded owned-assignment set for this lesson. The status `in` clause
-  // already excludes draft/archived; the lesson filter and the ownership
-  // re-check are applied in memory. classId must be a non-empty string for
-  // an assignment to be countable at all.
-  const matched: Array<{ assignmentId: string; classId: string }> = [];
+  // Bounded owned-assignment set for the requested lesson(s). The status
+  // `in` clause already excludes draft/archived; the lesson filter and the
+  // ownership re-check are applied in memory. classId must be a non-empty
+  // string for an assignment to be countable at all.
+  const matched: Array<{ assignmentId: string; classId: string; lessonSlug: string }> = [];
   for (const doc of snapshot.docs) {
     const data = doc.data();
     if (!data) continue;
@@ -457,17 +557,18 @@ async function assessmentLessonSummaryHandler(
       continue;
     }
     if (data.status !== "published" && data.status !== "closed") continue;
-    if (data.lessonSlug !== input.lessonSlug) continue;
+    if (!isNonEmptyString(data.lessonSlug) || !wanted.has(data.lessonSlug)) continue;
     if (!isNonEmptyString(data.classId)) continue;
-    matched.push({ assignmentId: doc.id, classId: data.classId });
+    matched.push({ assignmentId: doc.id, classId: data.classId, lessonSlug: data.lessonSlug });
   }
 
   // Per matched assignment, read the frozen recipients and attempts in
   // parallel. Reads scale with the number of the teacher's own
-  // published/closed assignments of this one lesson (bounded, small in
-  // v1); there is no fan-out over classes the teacher does not own.
+  // published/closed assignments of the requested lesson(s) (bounded); there
+  // is no fan-out over classes the teacher does not own, and a batch reads
+  // each matched assignment exactly once.
   const perAssignment = await Promise.all(
-    matched.map(async ({ assignmentId, classId }) => {
+    matched.map(async ({ assignmentId, classId, lessonSlug }) => {
       const [recipientsSnapshot, attemptsSnapshot] = await Promise.all([
         assignmentRecipientsCollectionRef(assignmentId).get(),
         attemptsCollectionRef()
@@ -496,32 +597,46 @@ async function assessmentLessonSummaryHandler(
         recipientStudentIds: Array.from(population),
         attempts,
       };
-      return item;
+      return { lessonSlug, item };
     }),
   );
 
-  const aggregate = aggregateLessonSummary(perAssignment);
-
-  safeLog(() =>
-    log.info("assessmentLesson.summarized", {
-      actorUserId: actor.uid,
-      lessonSlug: input.lessonSlug,
+  const summaries = lessonSlugs.map((lessonSlug): AssessmentLessonSummaryResponse => {
+    const items = perAssignment
+      .filter((entry) => entry.lessonSlug === lessonSlug)
+      .map((entry) => entry.item);
+    const aggregate = aggregateLessonSummary(items);
+    safeLog(() =>
+      log.info("assessmentLesson.summarized", {
+        actorUserId: actor.uid,
+        lessonSlug,
+        batch: input.kind === "batch",
+        classesAssigned: aggregate.classesAssigned,
+        students: aggregate.students,
+        studentsCompleted: aggregate.studentsCompleted,
+        assignmentsConsidered: aggregate.assignmentsConsidered,
+      }),
+    );
+    return {
+      lessonSlug,
       classesAssigned: aggregate.classesAssigned,
       students: aggregate.students,
       studentsCompleted: aggregate.studentsCompleted,
+      completionPercentage: aggregate.completionPercentage,
+      averageBestPercentage: aggregate.averageBestPercentage,
       assignmentsConsidered: aggregate.assignmentsConsidered,
-    }),
-  );
+      classes: aggregateLessonClassSummaries(items),
+    };
+  });
 
-  return {
-    lessonSlug: input.lessonSlug,
-    classesAssigned: aggregate.classesAssigned,
-    students: aggregate.students,
-    studentsCompleted: aggregate.studentsCompleted,
-    completionPercentage: aggregate.completionPercentage,
-    averageBestPercentage: aggregate.averageBestPercentage,
-    assignmentsConsidered: aggregate.assignmentsConsidered,
-  };
+  if (input.kind === "single") {
+    const [only] = summaries;
+    if (only === undefined) {
+      throw new PlatformError("assignments.invalidRequest", "lessonSlug is required.");
+    }
+    return only;
+  }
+  return { lessons: summaries };
 }
 
 export const assessmentLessonSummary = platformCallable(

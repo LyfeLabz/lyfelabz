@@ -31,10 +31,9 @@ import type {
   AssignmentDetailStudentSelection,
   AssignmentStatus,
 } from "../../assignments/detail/types";
-import type {
-  AssignmentSummaryCallable,
-  LessonSummaryCallable,
-} from "../../assignments/summary/types";
+import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
+import type { LessonResultsCallable } from "../../assignments/summary/lessonResults";
+import { chooseCurrentTarget } from "../../assignments/detail/class-switcher";
 import { registerOpenModal } from "../openModals";
 import type {
   CurriculumHistoryController,
@@ -42,11 +41,13 @@ import type {
 } from "../navigationHistory";
 import {
   renderLessonSummarySurface,
+  type LessonClassResultsSeam,
   type LessonSummarySurfaceHandle,
 } from "./lessonSummary";
 import { createCurriculumTabs, type CurriculumTabs } from "./curriculumResourceTabs";
 import type { TeacherUnitsController, TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
 import type { TeacherUnit, TeacherUnitGrade } from "../../teacherUnits/types";
+import { unitColorKey } from "../../teacherUnits/unitColor";
 import { getFlatResourceById } from "../../curriculum/resourceProjection";
 import { curriculumSelectionFor, isSelectableResourceId, type CurriculumSelection } from "./curriculumSelection";
 import { openAddToUnitDialog, teacherUnitsSurfaceEnabled, type AddToUnitOutcome } from "./teacherUnitsPanel";
@@ -232,8 +233,9 @@ export type CurriculumSurfaceDeps = {
   // absent-or-null no Results action is rendered (no dead control);
   // the rest of the card is unchanged. The aggregate-only confidentiality
   // boundary is preserved either way - the surface names no student,
-  // attempt, class, or recipient identifier.
-  readonly lessonSummary?: LessonSummaryCallable | null;
+  // attempt, or recipient identifier; Class Results carries only the
+  // teacher's own classIds.
+  readonly lessonSummary?: LessonResultsCallable | null;
   // Browser Back/Forward: shell-owned seam for the nested Lesson Summary page
   // (see navigationHistory.ts). Absent in harnesses without history.
   readonly curriculumHistory?: NestedPageHistorySeam<CurriculumHistoryController> | null;
@@ -243,6 +245,28 @@ export type CurriculumSurfaceDeps = {
   readonly teacherUnits?: TeacherUnitsSurfaceSeam | null;
   // Opens My Units, on a unit when one is named. Null unless My Units is enabled.
   readonly openMyUnits?: ((target: MyUnitsOpenUnitIntent | null) => void) | null;
+  // Shell-owned one-shot: open a lesson's Results on this mount (from My
+  // Units, or returning from a class's Assignment Detail).
+  readonly consumeLessonResultsIntent?: (() => LessonResultsIntent | null) | null;
+  // Re-enters Curriculum on a lesson's Results (Back from a class's
+  // Assignment Detail opened from Class Results).
+  readonly openLessonResults?: ((intent: LessonResultsIntent) => void) | null;
+  // Results opened from My Units returns there (replacing the Results entry).
+  readonly returnToMyUnits?: ((target: MyUnitsOpenUnitIntent) => void) | null;
+};
+
+// Where a lesson's Results returns to: Curriculum (default) or the My Units
+// unit (and view) it was opened from.
+export type LessonResultsReturn =
+  | { readonly kind: "curriculum" }
+  | { readonly kind: "units"; readonly unit: MyUnitsOpenUnitIntent };
+
+export type LessonResultsIntent = {
+  readonly lessonSlug: string;
+  readonly returnTo: LessonResultsReturn;
+  // True when re-entering an existing Results history entry (Back from
+  // Assignment Detail), so no new entry is pushed.
+  readonly restore: boolean;
 };
 
 // Teacher Units UX Milestone 1: My Units is its own workspace surface and
@@ -849,6 +873,43 @@ function isAssigned(slug: string): boolean {
   return bucket.slugs.has(slug);
 }
 
+// Rediscovers the Assigned signal from the certified retrieval-hydrated
+// registry (qualifying `published`/`closed` entries only, see
+// `qualifiesForAssignedBadge`). A registry failure degrades to the
+// session-only signal.
+function hydratePersistedFromRegistry(
+  uid: string,
+  assignmentDetail: CurriculumAssignmentDetailSeam | null,
+): void {
+  if (assignmentDetail === null || typeof assignmentDetail.list !== "function") return;
+  try {
+    for (const entry of assignmentDetail.list()) {
+      if (
+        typeof entry.lessonSlug === "string" &&
+        entry.lessonSlug.length > 0 &&
+        qualifiesForAssignedBadge(entry.status)
+      ) {
+        markPersisted(uid, entry.lessonSlug);
+      }
+    }
+  } catch {
+    // Calm degradation: the session-only signal stands.
+  }
+}
+
+// The ONE assignment-state signal Curriculum cards use, shared with My Units
+// so a unit's lesson row shows Assign vs Results exactly as Curriculum does.
+// Never inferred from scores, completion, or submissions: an assigned lesson
+// with zero submissions is assigned.
+export function isLessonAssigned(
+  uid: string,
+  assignmentDetail: CurriculumAssignmentDetailSeam | null,
+  slug: string,
+): boolean {
+  hydratePersistedFromRegistry(uid, assignmentDetail);
+  return isAssigned(slug);
+}
+
 // Sprint 26 Phase 3 (Defect 2.B). Which persisted assignment statuses
 // qualify a lesson card for the "✓ Assigned" badge. Only a status that
 // represents an assignment that actually reached the successfully-published
@@ -1035,11 +1096,122 @@ export function renderCurriculumSurface(
     summaryHost.textContent = "";
     curriculumView.hidden = false;
   };
+  // Class Results row actions: the class's existing Assignment Detail for
+  // this lesson, chosen exactly as the Assignment Detail class switcher
+  // chooses (never a guess between historical occurrences): the class's one
+  // published occurrence, else its canonical Current among several, else its
+  // one closed occurrence. Back from Detail re-enters this Results page.
+  const openClassResults = async (
+    lesson: SurfaceableLesson,
+    classId: string,
+    className: string,
+    returnTo: LessonResultsReturn,
+    status: HTMLElement,
+  ): Promise<void> => {
+    if (assignmentDetail === null) return;
+    const published: string[] = [];
+    const closed: string[] = [];
+    try {
+      for (const entry of assignmentDetail.list?.() ?? []) {
+        if (entry.classId !== classId || entry.lessonSlug !== lesson.slug) continue;
+        if (entry.status === "published" && !published.includes(entry.assignmentId)) {
+          published.push(entry.assignmentId);
+        } else if (entry.status === "closed" && !closed.includes(entry.assignmentId)) {
+          closed.push(entry.assignmentId);
+        }
+      }
+    } catch {
+      // Falls through to the calm "open under Classes" note.
+    }
+    let target: string | null = null;
+    const [onlyPublished] = published;
+    const [onlyClosed] = closed;
+    if (published.length === 1 && onlyPublished !== undefined) {
+      target = onlyPublished;
+    } else if (published.length > 1 && assignmentDetail.resolveCurrent !== undefined) {
+      try {
+        target = chooseCurrentTarget(
+          published,
+          await assignmentDetail.resolveCurrent({ classId, lessonSlug: lesson.slug }),
+        );
+      } catch {
+        target = null;
+      }
+      // The teacher left this Results page while Current was resolving.
+      if (openResults === null || openResults.slug !== lesson.slug) return;
+    } else if (published.length === 0 && closed.length === 1 && onlyClosed !== undefined) {
+      target = onlyClosed;
+    }
+    if (target === null) {
+      showSuccess(status, `Open ${className} under Classes to choose which assignment to review.`);
+      return;
+    }
+    // Without the shell seam (harness), Detail keeps its certified default
+    // Back (the Curriculum remount). With it, Detail is a real drill-down:
+    // the existing class-scoped Assignment Detail entry is pushed (browser
+    // Back returns to these Results; Forward re-opens the class's
+    // assignment), and the in-app "Back to Results" replaces it.
+    const reopen = deps.openLessonResults ?? null;
+    if (reopen !== null) {
+      curriculumHistory?.push({
+        kind: "shell-assignment-detail",
+        surface: "classes",
+        classId,
+        assignmentId: target,
+      });
+    }
+    assignmentDetail.open(
+      target,
+      reopen === null
+        ? {}
+        : {
+            backLabel: "Back to Results",
+            onBack: () => {
+              reopen({ lessonSlug: lesson.slug, returnTo, restore: true });
+            },
+          },
+    );
+  };
+
+  const classResultsFor = (
+    lesson: SurfaceableLesson,
+    returnTo: LessonResultsReturn,
+    status: () => HTMLElement | null,
+  ): LessonClassResultsSeam => ({
+    ready: ensureClasses(session.uid, deps.listClasses),
+    describe: (classId) => {
+      const rows = cachedClasses?.uid === session.uid ? cachedClasses.rows : [];
+      const index = rows.findIndex((c) => c.id === classId);
+      const row = rows[index];
+      if (row !== undefined) return { name: row.title, order: index };
+      try {
+        const entry = (assignmentDetail?.list?.() ?? []).find(
+          (e) => e.classId === classId && typeof e.className === "string" && e.className.length > 0,
+        );
+        if (entry !== undefined) return { name: entry.className, order: Number.MAX_SAFE_INTEGER };
+      } catch {
+        // ignored
+      }
+      return null;
+    },
+    ...(assignmentDetail === null
+      ? {}
+      : {
+          onView: (classId: string, className: string) => {
+            const el = status();
+            if (el === null) return;
+            void openClassResults(lesson, classId, className, returnTo, el);
+          },
+        }),
+  });
+
   const openLessonSummary = (
     lesson: SurfaceableLesson,
-    opts?: { readonly fromHistory?: boolean },
+    opts?: { readonly fromHistory?: boolean; readonly returnTo?: LessonResultsReturn },
   ): void => {
     if (lessonSummary === null) return;
+    const returnTo: LessonResultsReturn = opts?.returnTo ?? { kind: "curriculum" };
+    const returnToUnits = returnTo.kind === "units" ? deps.returnToMyUnits ?? null : null;
     summaryHost.textContent = "";
     curriculumView.hidden = true;
     if (opts?.fromHistory !== true) {
@@ -1047,6 +1219,7 @@ export function renderCurriculumSurface(
         kind: "shell-lesson-summary",
         surface: "curriculum",
         lessonSlug: lesson.slug,
+        ...(returnTo.kind === "units" ? { from: returnTo.unit } : {}),
       });
     }
     const handle = renderLessonSummarySurface(summaryHost, {
@@ -1054,6 +1227,8 @@ export function renderCurriculumSurface(
       lessonTitle: lesson.title,
       lessonSlug: lesson.slug,
       lessonSummary,
+      ...(returnToUnits !== null ? { backLabel: "Back to My Units" } : {}),
+      classResults: classResultsFor(lesson, returnTo, () => openResults?.handle.status ?? null),
       // Results-first: Manage Assignments reopens the EXISTING assignment
       // dialog for this lesson's card (the same workflow the card used to
       // open from "Manage"). Available whether or not anyone has submitted.
@@ -1064,6 +1239,11 @@ export function renderCurriculumSurface(
         if (card !== null) openAssignDialog(lesson, card);
       },
       onBack: () => {
+        if (returnTo.kind === "units" && returnToUnits !== null) {
+          closeLessonSummary();
+          returnToUnits(returnTo.unit);
+          return;
+        }
         closeLessonSummary();
         curriculumHistory?.replace({ kind: "shell-surface", surface: "curriculum" });
         // Return focus to the card's Results control so the return trip is
@@ -1088,13 +1268,16 @@ export function renderCurriculumSurface(
   let tabs: CurriculumTabs | null = null;
 
   curriculumHistory?.registerController({
-    restoreLessonSummary: (lessonSlug) => {
+    restoreLessonSummary: (lessonSlug, from) => {
       if (lessonSummary === null) return false;
       const lesson = LESSONS.find((l) => l.slug === lessonSlug);
       if (lesson === undefined) return false;
       // Lesson Summary is reached only from the Lessons tab.
       tabs?.select("lessons");
-      openLessonSummary(lesson, { fromHistory: true });
+      openLessonSummary(lesson, {
+        fromHistory: true,
+        ...(from !== undefined ? { returnTo: { kind: "units" as const, unit: from } } : {}),
+      });
       return true;
     },
     restoreTop: () => {
@@ -1125,22 +1308,9 @@ export function renderCurriculumSurface(
   // marking those would let a draft-only lesson falsely read "Assigned"
   // after a reload. A draft still hydrates for the class-centered
   // Assignment Detail surface; it simply does not drive the badge.
-  if (assignmentDetail !== null && typeof assignmentDetail.list === "function") {
-    try {
-      for (const entry of assignmentDetail.list()) {
-        if (
-          typeof entry.lessonSlug === "string" &&
-          entry.lessonSlug.length > 0 &&
-          qualifiesForAssignedBadge(entry.status)
-        ) {
-          markPersisted(session.uid, entry.lessonSlug);
-        }
-      }
-    } catch {
-      // Calm degradation. A registry-list failure never blocks Curriculum
-      // rendering; the surface reverts to the session-only badge behavior.
-    }
-  }
+  // A registry-list failure never blocks Curriculum rendering; the surface
+  // reverts to the session-only badge behavior.
+  hydratePersistedFromRegistry(session.uid, assignmentDetail);
 
   const welcome = doc.createElement("h2");
   welcome.id = "surface-headline";
@@ -1416,6 +1586,21 @@ export function renderCurriculumSurface(
   void ensureClasses(session.uid, deps.listClasses);
   void ensureClassLinks(session.uid, integrations);
 
+  // Shell one-shot: open a lesson's Results on this mount (My Units' Results
+  // action, or Back from a class's Assignment Detail, which re-enters the
+  // existing Results history entry without pushing another).
+  const resultsIntent = deps.consumeLessonResultsIntent?.() ?? null;
+  if (resultsIntent !== null && lessonSummary !== null) {
+    const lesson = LESSONS.find((l) => l.slug === resultsIntent.lessonSlug);
+    if (lesson !== undefined) {
+      tabs?.select("lessons");
+      openLessonSummary(lesson, {
+        fromHistory: resultsIntent.restore,
+        returnTo: resultsIntent.returnTo,
+      });
+    }
+  }
+
   const returnLink = doc.createElement("a");
   returnLink.href = "/";
   returnLink.textContent = "Return to public lessons";
@@ -1455,6 +1640,9 @@ function createUnitMembership(input: UnitMembershipInput): { readonly render: ()
     const p = doc.createElement(open !== null ? "button" : "span");
     p.className = "shell-resource-unit-pill";
     p.setAttribute("data-unit-id", u.unitId);
+    // Each pill keeps its own unit's color (neutral "none" without one); the
+    // unit name is always the visible label, so color is never the only cue.
+    p.setAttribute("data-unit-color", unitColorKey(u.color));
     p.setAttribute("data-testid", `resource-unit-pill-${u.unitId}`);
     p.textContent = u.title;
     p.title = u.title;
@@ -1535,9 +1723,9 @@ function createUnitMembership(input: UnitMembershipInput): { readonly render: ()
     }
     for (const card of Array.from(view.querySelectorAll<HTMLElement>(".shell-resource-row[data-resource-id]"))) {
       const units = byResource.get(card.getAttribute("data-resource-id") ?? "") ?? [];
-      // Rebuilt only when the units or their names change, so focus and an
-      // open "+N more" survive unrelated updates.
-      const key = units.map((u) => `${u.unitId}\u0000${u.title}`).join("\u0001");
+      // Rebuilt only when the units, their names, or their colors change, so
+      // focus and an open "+N more" survive unrelated updates.
+      const key = units.map((u) => `${u.unitId}\u0000${u.title}\u0000${u.color ?? ""}`).join("\u0001");
       if (card.getAttribute("data-units-key") === key) continue;
       card.setAttribute("data-units-key", key);
       renderCard(card, units);
@@ -2235,7 +2423,7 @@ function renderResourceItem(
 // Assignment Dialog
 // -----------------------------------------------------------------------------
 
-type OpenDialogInput = {
+export type OpenDialogInput = {
   readonly doc: Document;
   readonly lesson: SurfaceableLesson;
   readonly session: ActiveTeacher;
@@ -2248,6 +2436,26 @@ type OpenDialogInput = {
     assignmentIds: ReadonlyArray<string>,
   ) => void;
 };
+
+// My Units: the EXISTING Curriculum assignment dialog for one lesson, opened
+// over My Units (no second dialog). Confirmation messages and refreshes stay
+// the caller's; `onLifecycleComplete` reports only confirmed saves.
+export function openLessonAssignDialog(input: OpenDialogInput): void {
+  void openDialog(input);
+}
+
+// My Units: Curriculum's exact Assign / Results / Manage control state for a
+// lesson row (labels, aria-labels, classes, data-action). Assignment state
+// comes from `isLessonAssigned`; Results needs a wired lesson-summary seam.
+export function applyLessonAssignState(
+  btn: HTMLButtonElement,
+  lesson: SurfaceableLesson,
+  assigned: boolean,
+  resultsAvailable: boolean,
+): void {
+  btn.setAttribute("data-results-available", resultsAvailable ? "true" : "false");
+  applyAssignState(btn, lesson, assigned);
+}
 
 async function openDialog(input: OpenDialogInput): Promise<void> {
   const {

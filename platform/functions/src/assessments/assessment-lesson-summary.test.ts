@@ -89,9 +89,23 @@ jest.mock("../shared", () => {
 import { PlatformError } from "../shared/errors/platform-error";
 import {
   __assessmentLessonSummaryHandler,
+  aggregateLessonClassSummaries,
   aggregateLessonSummary,
+  LESSON_SUMMARY_BATCH_MAX,
+  type AssessmentLessonSummaryBatchResponse,
+  type AssessmentLessonSummaryResponse,
   type LessonSummaryAssignmentInput,
 } from "./assessment-lesson-summary";
+
+// Single-lesson requests resolve to the single response shape.
+const summarize = (
+  request: CallableRequest<unknown>,
+): Promise<AssessmentLessonSummaryResponse> =>
+  __assessmentLessonSummaryHandler(request) as Promise<AssessmentLessonSummaryResponse>;
+const summarizeBatch = (
+  request: CallableRequest<unknown>,
+): Promise<AssessmentLessonSummaryBatchResponse> =>
+  __assessmentLessonSummaryHandler(request) as Promise<AssessmentLessonSummaryBatchResponse>;
 
 const TEACHER_UID = "teacher-uid";
 const OTHER_TEACHER_UID = "other-teacher-uid";
@@ -292,7 +306,7 @@ describe("assessmentLessonSummary - request validation", () => {
 
 describe("assessmentLessonSummary - zero data", () => {
   it("returns an all-zero summary for a valid, never-assigned slug", async () => {
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res).toEqual({
@@ -303,6 +317,7 @@ describe("assessmentLessonSummary - zero data", () => {
       completionPercentage: 0,
       averageBestPercentage: null,
       assignmentsConsidered: 0,
+      classes: [],
     });
   });
 
@@ -310,7 +325,7 @@ describe("assessmentLessonSummary - zero data", () => {
     seedAssignment("a1", { classId: CLASS_A });
     seedRecipient("a1", S1);
     seedRecipient("a1", S2);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res).toMatchObject({
@@ -334,7 +349,7 @@ describe("assessmentLessonSummary - core semantics", () => {
     seedRecipient("a1", S1);
     seedRecipient("a1", S2);
     seedAttempt("a1", S1, 80);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res).toMatchObject({
@@ -352,7 +367,7 @@ describe("assessmentLessonSummary - core semantics", () => {
     seedAssignment("a2", { classId: CLASS_A });
     seedRecipient("a1", S1);
     seedRecipient("a2", S1);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.classesAssigned).toBe(1);
@@ -379,7 +394,7 @@ describe("assessmentLessonSummary - core semantics", () => {
     seedRecipient("a3", S3, { classId: CLASS_B });
     seedAttempt("a3", S3, 80, { classId: CLASS_B });
 
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res).toMatchObject({
@@ -400,7 +415,7 @@ describe("assessmentLessonSummary - core semantics", () => {
     seedRecipient("a2", S1);
     seedAttempt("a1", S1, 55);
     seedAttempt("a2", S1, 95);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.studentsCompleted).toBe(1);
@@ -414,7 +429,7 @@ describe("assessmentLessonSummary - core semantics", () => {
     seedRecipient("a1", S2);
     seedRecipient("a1", S3);
     seedAttempt("a1", S1, 66.4);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.completionPercentage).toBe(33);
@@ -431,7 +446,7 @@ describe("assessmentLessonSummary - lifecycle scope", () => {
     seedAssignment("a1", { classId: CLASS_A, status: "closed" });
     seedRecipient("a1", S1);
     seedAttempt("a1", S1, 70);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res).toMatchObject({
@@ -446,7 +461,7 @@ describe("assessmentLessonSummary - lifecycle scope", () => {
   it("excludes a draft assignment", async () => {
     seedAssignment("a1", { classId: CLASS_A, status: "draft" });
     seedRecipient("a1", S1);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.assignmentsConsidered).toBe(0);
@@ -456,7 +471,7 @@ describe("assessmentLessonSummary - lifecycle scope", () => {
   it("excludes an archived assignment", async () => {
     seedAssignment("a1", { classId: CLASS_A, status: "archived" });
     seedRecipient("a1", S1);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.assignmentsConsidered).toBe(0);
@@ -479,7 +494,7 @@ describe("assessmentLessonSummary - isolation", () => {
     });
     seedRecipient("other", S2);
     seedAttempt("other", S2, 10, { activityId: OTHER_LESSON_SLUG });
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res).toMatchObject({
@@ -502,7 +517,7 @@ describe("assessmentLessonSummary - isolation", () => {
     });
     seedRecipient("foreign", S2, { teacherId: OTHER_TEACHER_UID });
     seedAttempt("foreign", S2, 10, { teacherId: OTHER_TEACHER_UID });
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res).toMatchObject({
@@ -523,7 +538,7 @@ describe("assessmentLessonSummary - isolation", () => {
       schoolId: OTHER_SCHOOL_ID,
     });
     seedRecipient("cross-school", S2, { schoolId: OTHER_SCHOOL_ID });
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.assignmentsConsidered).toBe(1);
@@ -537,7 +552,7 @@ describe("assessmentLessonSummary - isolation", () => {
     seedRecipient("a1", S2, { districtId: "other-district" });
     seedRecipient("a1", S3, { status: "revoked" });
     seedRecipient("a1", "mismatch", {}, "different-doc-id");
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.students).toBe(1);
@@ -549,7 +564,7 @@ describe("assessmentLessonSummary - isolation", () => {
     seedAttempt("a1", S1, 80);
     // Attempt by a non-recipient - must not count.
     seedAttempt("a1", S2, 100);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.students).toBe(1);
@@ -569,7 +584,7 @@ describe("assessmentLessonSummary - late recipients", () => {
     // A late recipient added via the certified add flow (source differs).
     seedRecipient("a1", S2, { source: "manualAddition" });
     seedAttempt("a1", S2, 75);
-    const res = await __assessmentLessonSummaryHandler(
+    const res = await summarize(
       makeRequest({ lessonSlug: LESSON_SLUG }),
     );
     expect(res.students).toBe(2);
@@ -583,17 +598,16 @@ describe("assessmentLessonSummary - late recipients", () => {
 // ---------------------------------------------------------------------------
 
 describe("assessmentLessonSummary - projection", () => {
-  it("returns only bounded numeric aggregates (no identifiers/PII)", async () => {
+  it("returns numeric aggregates plus the caller's own classIds only (no student/attempt/teacher identifiers)", async () => {
     seedAssignment("a1", { classId: CLASS_A });
     seedRecipient("a1", S1);
     seedAttempt("a1", S1, 88);
-    const res = await __assessmentLessonSummaryHandler(
-      makeRequest({ lessonSlug: LESSON_SLUG }),
-    );
+    const res = await summarize(makeRequest({ lessonSlug: LESSON_SLUG }));
     expect(Object.keys(res).sort()).toEqual(
       [
         "assignmentsConsidered",
         "averageBestPercentage",
+        "classes",
         "classesAssigned",
         "completionPercentage",
         "lessonSlug",
@@ -601,11 +615,201 @@ describe("assessmentLessonSummary - projection", () => {
         "studentsCompleted",
       ].sort(),
     );
+    expect(res.classes).toHaveLength(1);
+    expect(Object.keys(res.classes[0] ?? {}).sort()).toEqual(
+      [
+        "assignmentsConsidered",
+        "averageBestPercentage",
+        "classId",
+        "completionPercentage",
+        "students",
+        "studentsCompleted",
+      ].sort(),
+    );
     const serialized = JSON.stringify(res);
     expect(serialized).not.toContain(S1);
-    expect(serialized).not.toContain(CLASS_A);
+    expect(serialized).not.toContain('"a1"');
     expect(serialized).not.toContain("attempt-");
     expect(serialized).not.toContain(TEACHER_UID);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Class Results (per-class breakdown)
+// ---------------------------------------------------------------------------
+
+describe("assessmentLessonSummary - class results", () => {
+  it("returns one row for a single assigned class matching the totals", async () => {
+    seedAssignment("a1", { classId: CLASS_A });
+    seedRecipient("a1", S1);
+    seedRecipient("a1", S2);
+    seedAttempt("a1", S1, 80);
+    const res = await summarize(makeRequest({ lessonSlug: LESSON_SLUG }));
+    expect(res.classes).toEqual([
+      {
+        classId: CLASS_A,
+        students: 2,
+        studentsCompleted: 1,
+        completionPercentage: 50,
+        averageBestPercentage: 80,
+        assignmentsConsidered: 1,
+      },
+    ]);
+  });
+
+  it("breaks multiple classes out with each class's own reassignment history and best scores", async () => {
+    // Class A: two occurrences; S1 improves 60 -> 90 on the reassignment
+    // and then retakes lower (70); the best stays 90.
+    seedAssignment("a1", { classId: CLASS_A });
+    seedRecipient("a1", S1, { classId: CLASS_A });
+    seedRecipient("a1", S2, { classId: CLASS_A });
+    seedAttempt("a1", S1, 60, { classId: CLASS_A });
+    seedAssignment("a2", { classId: CLASS_A });
+    seedRecipient("a2", S1, { classId: CLASS_A });
+    seedRecipient("a2", S2, { classId: CLASS_A });
+    seedAttempt("a2", S1, 90, { classId: CLASS_A });
+    seedAttempt("a2", S1, 70, { classId: CLASS_A, attemptNumber: 2 });
+    // Class B: assigned, nobody submitted.
+    seedAssignment("a3", { classId: CLASS_B });
+    seedRecipient("a3", S3, { classId: CLASS_B });
+
+    const res = await summarize(makeRequest({ lessonSlug: LESSON_SLUG }));
+    expect(res.classes).toEqual([
+      {
+        classId: CLASS_A,
+        students: 2,
+        studentsCompleted: 1,
+        completionPercentage: 50,
+        averageBestPercentage: 90,
+        assignmentsConsidered: 2,
+      },
+      {
+        classId: CLASS_B,
+        students: 1,
+        studentsCompleted: 0,
+        completionPercentage: 0,
+        averageBestPercentage: null,
+        assignmentsConsidered: 1,
+      },
+    ]);
+    expect(res.classesAssigned).toBe(2);
+  });
+
+  it("never lists another teacher's or another school's class", async () => {
+    seedAssignment("mine", { classId: CLASS_A });
+    seedRecipient("mine", S1);
+    seedAssignment("theirs", { classId: "class-x", teacherId: OTHER_TEACHER_UID });
+    seedAssignment("elsewhere", { classId: "class-y", schoolId: OTHER_SCHOOL_ID });
+    const res = await summarize(makeRequest({ lessonSlug: LESSON_SLUG }));
+    expect(res.classes.map((c) => c.classId)).toEqual([CLASS_A]);
+  });
+
+  it("orders rows by ascending classId", () => {
+    const rows = aggregateLessonClassSummaries([
+      { assignmentId: "x", classId: "class-z", recipientStudentIds: [], attempts: [] },
+      { assignmentId: "y", classId: "class-a", recipientStudentIds: [], attempts: [] },
+    ]);
+    expect(rows.map((r) => r.classId)).toEqual(["class-a", "class-z"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Batch (Unit Results)
+// ---------------------------------------------------------------------------
+
+describe("assessmentLessonSummary - batch", () => {
+  it("answers every requested lesson from one owned-assignment query, in request order", async () => {
+    seedAssignment("a1", { classId: CLASS_A });
+    seedRecipient("a1", S1);
+    seedAttempt("a1", S1, 75);
+    seedAssignment("p1", { classId: CLASS_B, lessonSlug: OTHER_LESSON_SLUG });
+    seedRecipient("p1", S2, { classId: CLASS_B });
+    mockAssignmentsCollectionRef.mockClear();
+
+    const res = await summarizeBatch(
+      makeRequest({ lessonSlugs: [OTHER_LESSON_SLUG, LESSON_SLUG, "lesson_unassigned"] }),
+    );
+    expect(mockAssignmentsCollectionRef).toHaveBeenCalledTimes(1);
+    expect(res.lessons.map((l) => l.lessonSlug)).toEqual([
+      OTHER_LESSON_SLUG,
+      LESSON_SLUG,
+      "lesson_unassigned",
+    ]);
+    expect(res.lessons[0]?.classes).toEqual([
+      expect.objectContaining({ classId: CLASS_B, students: 1, studentsCompleted: 0 }),
+    ]);
+    expect(res.lessons[1]).toMatchObject({
+      studentsCompleted: 1,
+      averageBestPercentage: 75,
+      classes: [expect.objectContaining({ classId: CLASS_A, averageBestPercentage: 75 })],
+    });
+    expect(res.lessons[2]).toMatchObject({ classesAssigned: 0, classes: [] });
+  });
+
+  it("accepts exactly the cap and returns one entry per slug", async () => {
+    const lessonSlugs = Array.from({ length: LESSON_SUMMARY_BATCH_MAX }, (_, i) => `lesson_${String(i)}`);
+    const res = await summarizeBatch(makeRequest({ lessonSlugs }));
+    expect(res.lessons).toHaveLength(LESSON_SUMMARY_BATCH_MAX);
+  });
+
+  it("counts duplicates against the cap before deduplicating (no oversized payload slips through)", async () => {
+    await expect(
+      __assessmentLessonSummaryHandler(
+        makeRequest({ lessonSlugs: Array.from({ length: LESSON_SUMMARY_BATCH_MAX + 1 }, () => LESSON_SLUG) }),
+      ),
+    ).rejects.toMatchObject({ code: "assignments.invalidRequest" });
+  });
+
+  it("returns, for each lesson, exactly the single-lesson response (calculations unchanged)", async () => {
+    seedAssignment("a1", { classId: CLASS_A });
+    seedRecipient("a1", S1);
+    seedRecipient("a1", S2);
+    seedAttempt("a1", S1, 60);
+    seedAttempt("a1", S1, 90, { attemptNumber: 2 });
+    seedAssignment("a2", { classId: CLASS_B });
+    seedRecipient("a2", S3, { classId: CLASS_B });
+    seedAttempt("a2", S3, 70, { classId: CLASS_B });
+    seedAssignment("p1", { classId: CLASS_A, lessonSlug: OTHER_LESSON_SLUG });
+    seedRecipient("p1", S2);
+    seedAttempt("p1", S2, 40);
+    const single = await summarize(makeRequest({ lessonSlug: LESSON_SLUG }));
+    const other = await summarize(makeRequest({ lessonSlug: OTHER_LESSON_SLUG }));
+    const batch = await summarizeBatch(makeRequest({ lessonSlugs: [LESSON_SLUG, OTHER_LESSON_SLUG] }));
+    expect(batch.lessons).toEqual([single, other]);
+    expect(single).toMatchObject({ students: 3, studentsCompleted: 2, completionPercentage: 67, averageBestPercentage: 80 });
+  });
+
+  it("deduplicates repeated slugs", async () => {
+    const res = await summarizeBatch(makeRequest({ lessonSlugs: [LESSON_SLUG, LESSON_SLUG] }));
+    expect(res.lessons).toHaveLength(1);
+  });
+
+  it.each([
+    ["an empty list", { lessonSlugs: [] }],
+    ["a non-array", { lessonSlugs: LESSON_SLUG }],
+    ["a malformed slug", { lessonSlugs: ["../etc"] }],
+    ["both shapes", { lessonSlug: LESSON_SLUG, lessonSlugs: [LESSON_SLUG] }],
+    [
+      "more than the batch maximum",
+      {
+        lessonSlugs: Array.from(
+          { length: LESSON_SUMMARY_BATCH_MAX + 1 },
+          (_, i) => `lesson_${String(i)}`,
+        ),
+      },
+    ],
+  ])("rejects %s", async (_label, data) => {
+    await expect(__assessmentLessonSummaryHandler(makeRequest(data))).rejects.toMatchObject({
+      code: "assignments.invalidRequest",
+    });
+  });
+
+  it("still refuses forbidden scoping keys on a batch", async () => {
+    await expect(
+      __assessmentLessonSummaryHandler(
+        makeRequest({ lessonSlugs: [LESSON_SLUG], classId: CLASS_A }),
+      ),
+    ).rejects.toMatchObject({ code: "assignments.invalidRequest" });
   });
 });
 

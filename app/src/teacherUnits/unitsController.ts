@@ -1,4 +1,5 @@
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
+import type { TeacherUnitColor } from "./unitColor";
 import { normalizeTeacherUnitError, type TeacherUnitError } from "./errors";
 import type { CreateAttemptStore, FormerSchoolAttempt } from "./createAttemptStore";
 import {
@@ -167,7 +168,12 @@ const NOT_ACTIVE_UNIT: UnitStateView = Object.freeze({ kind: "notActive" });
 
 export type ResourceMoveDirection = "up" | "down";
 
-export type UnitEdit = { readonly title?: string; readonly description?: string };
+export type UnitEdit = {
+  readonly title?: string;
+  readonly description?: string;
+  // A palette token, or null for the neutral default.
+  readonly color?: TeacherUnitColor | null;
+};
 
 // What a confirmed membership write committed, known from the request
 // itself: the server compares `expectedRevision` and writes exactly the sent
@@ -1299,7 +1305,7 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
     },
     updateUnit: async (unitId, edit) => {
       const current = heldUnit(unitId);
-      const request: { title?: string; description?: string } = {};
+      const request: { title?: string; description?: string; color?: TeacherUnitColor | null } = {};
       if (edit.title !== undefined) {
         const msg = validateUnitTitle(edit.title);
         if (msg !== null) return { kind: "invalid", field: "title", message: msg };
@@ -1312,9 +1318,17 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
           request.description = edit.description.trim();
         }
       }
+      if (edit.color !== undefined && (current === undefined || edit.color !== current.color)) {
+        request.color = edit.color;
+      }
       const blocked = heldStateBlock(unitId);
       if (blocked !== null) return blocked;
-      if (current !== undefined && request.title === undefined && request.description === undefined) {
+      if (
+        current !== undefined &&
+        request.title === undefined &&
+        request.description === undefined &&
+        request.color === undefined
+      ) {
         return { kind: "saved", unit: current, noop: true };
       }
       return mutate(unitId, (u) => ({

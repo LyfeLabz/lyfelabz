@@ -280,6 +280,7 @@ const sameContent = (a: TeacherUnit, b: TeacherUnit): boolean =>
   a.grade === b.grade &&
   a.title === b.title &&
   a.description === b.description &&
+  a.color === b.color &&
   a.status === b.status &&
   a.archivedAtMillis === b.archivedAtMillis &&
   a.createdAtMillis === b.createdAtMillis &&

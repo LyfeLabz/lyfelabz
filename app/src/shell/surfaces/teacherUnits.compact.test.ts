@@ -42,6 +42,7 @@ const unit = (over: Partial<TeacherUnit> = {}): TeacherUnit => ({
   grade: "7",
   title: "Earth Systems",
   description: "Rocks and plates",
+  color: null,
   status: "active",
   archivedAtMillis: null,
   createdAtMillis: n,
@@ -172,25 +173,35 @@ describe("Create Unit", () => {
 });
 
 describe("compact unit containers", () => {
-  test("units start collapsed: title and resource count only; expanding shows resources and actions", async () => {
+  test("units start collapsed: one header row with the title, no resource count; expanding shows resources", async () => {
     const u = unit({ title: "Plants", resourceIds: [LESSON.id, OTHER.id] });
     const empty = unit({ title: "Empty" });
     const { host, ctl } = await panel([u, empty]);
     const toggle = q(host, `units-toggle-${u.unitId}`) as HTMLButtonElement;
     const details = q(host, `units-details-${u.unitId}`) as HTMLElement;
-    expect(toggle.closest("h3")).not.toBeNull();
+    const header = toggle.closest(".shell-units-card-title-row") as HTMLElement;
+    expect(header.querySelector("h3")?.textContent).toBe("Plants");
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(toggle.getAttribute("aria-controls")).toBe(details.id);
+    expect(toggle.getAttribute("aria-label")).toBe("Show resources in Plants");
     expect(details.hidden).toBe(true);
-    expect(q(host, `units-count-${u.unitId}`)?.textContent).toBe("2 resources");
-    expect(q(host, `units-count-${empty.unitId}`)?.textContent).toBe("No resources");
-    expect(toggle.querySelector(".shell-units-card-title")?.textContent).toBe("Plants");
+    // No resource counts next to the title, and no "Resources (N)" heading.
+    expect(q(host, `units-count-${u.unitId}`)).toBeNull();
+    expect(header.textContent).not.toMatch(/\d+ resources?|No resources/i);
+    expect(
+      q(host, `units-toggle-${empty.unitId}`)?.closest(".shell-units-card-title-row")?.textContent,
+    ).not.toMatch(/\d+ resources?|No resources/i);
+    // The management menu sits in the header row, separate from the chevron.
+    const menu = q(host, `units-menu-${u.unitId}`) as HTMLButtonElement;
+    expect(header.contains(menu)).toBe(true);
+    expect(menu).not.toBe(toggle);
+    expect(header.contains(q(host, `units-edit-${u.unitId}`))).toBe(true);
+    expect(details.querySelector(".shell-units-actions")).toBeNull();
     press(toggle);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(details.hidden).toBe(false);
     expect(details.textContent).toContain("Rocks and plates");
-    expect(q(host, `units-resources-add-${u.unitId}`)).not.toBeNull();
-    expect(details.contains(q(host, `units-edit-${u.unitId}`))).toBe(true);
+    expect(details.textContent).not.toContain("Resources (");
     press(toggle);
     expect(details.hidden).toBe(true);
     // Expansion is the teacher's: a list refresh keeps it.
@@ -201,7 +212,7 @@ describe("compact unit containers", () => {
     expect(q(host, `units-toggle-${u.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
   });
 
-  test("a card leaving the list hands focus to the next collapsed card's toggle, never into hidden details", async () => {
+  test("a card leaving the list hands focus to the next collapsed card's header menu, never into hidden details", async () => {
     const [a, b] = [unit({ title: "A" }), unit({ title: "B" })];
     const archivedA = { ...a, status: "archived" as const, archivedAtMillis: 9, revision: 2 };
     const { host, c } = await panel([a, b]);
@@ -214,7 +225,7 @@ describe("compact unit containers", () => {
     await flush();
     expect(q(host, `units-card-${a.unitId}`)).toBeNull();
     expect(q(host, `units-details-${b.unitId}`)?.hidden).toBe(true);
-    expect(document.activeElement).toBe(q(host, `units-toggle-${b.unitId}`));
+    expect(document.activeElement).toBe(q(host, `units-menu-${b.unitId}`));
   });
 
   test("resources use the shared full-width card: badges, type, title, Preview or Open, and membership controls", async () => {

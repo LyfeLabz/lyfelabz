@@ -16,6 +16,7 @@
 // unsaved form contents, and disabling controls while a key is busy.
 
 import { generateClassId } from "../classes/classId";
+import type { TeacherUnitColor } from "./unitColor";
 import {
   normalizeTeacherUnitError,
   type TeacherUnitError,
@@ -166,6 +167,9 @@ export type TeacherUnitCreatePayload = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description: string;
+  // Optional: absent (every attempt saved before colors) is a neutral unit,
+  // so a restored pre-color attempt replays the identical request.
+  readonly color?: TeacherUnitColor;
 };
 
 // The canonical session identity a create is dispatched under
@@ -549,6 +553,7 @@ export function createUnitCreateCoordinator(deps: {
         grade: attempt.payload.grade,
         title: attempt.payload.title,
         description: attempt.payload.description,
+        ...(attempt.payload.color !== undefined ? { color: attempt.payload.color } : {}),
         idempotencyKey: attempt.key,
         // The school pinned when this intent began (restored attempts carry
         // it from their durable record). Never re-read from the session.
@@ -622,6 +627,7 @@ export function createUnitCreateCoordinator(deps: {
           grade: payload.grade,
           title: payload.title,
           description: payload.description,
+          ...(payload.color !== undefined ? { color: payload.color } : {}),
         }),
         context,
       });

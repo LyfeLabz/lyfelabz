@@ -41,6 +41,7 @@ const unit = (over: Partial<TeacherUnit> = {}): TeacherUnit => ({
   grade: "7",
   title: "Earth Systems",
   description: "",
+  color: null,
   status: "active",
   archivedAtMillis: null,
   createdAtMillis: seq,
@@ -206,7 +207,6 @@ describe("P2: an open Add picker follows the current unit", () => {
     expect(document.activeElement).toBe(repair);
     const add = q(h.host, `units-resources-add-${a.unitId}`) as HTMLButtonElement;
     expect(add.disabled).toBe(true);
-    expect(add.getAttribute("aria-expanded")).toBe("false");
     // The detached form's stale submit sends nothing.
     h.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     await tick();
@@ -227,7 +227,8 @@ describe("P2: an open Add picker follows the current unit", () => {
     h.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     await tick();
     expect(h.c.setResources).not.toHaveBeenCalled();
-    expect(document.activeElement).toBe(q(h.host, `units-restore-${a.unitId}`));
+    // Restore Unit sits in the archived unit's menu; focus lands on it.
+    expect(document.activeElement).toBe(q(h.host, `units-menu-${a.unitId}`));
   });
 
   test("after a school change the open picker sends nothing and announces nothing", async () => {

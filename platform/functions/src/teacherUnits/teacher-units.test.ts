@@ -15,6 +15,7 @@ let version = 0;
 let autoId = 0;
 const audits: Record<string, any>[] = [];
 const SERVER_TS = { __serverTimestamp: true };
+const DELETE_FIELD = { __deleteField: true };
 
 function materialize(data: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = {};
@@ -113,7 +114,9 @@ async function runTx<T>(fn: (tx: any) => Promise<T>): Promise<T> {
         else if (w.kind === "create") store.set(w.path!, { data: materialize(w.data), version: ++version });
         else {
           const row = store.get(w.path!)!;
-          store.set(w.path!, { data: { ...row.data, ...materialize(w.data) }, version: ++version });
+          const merged: Record<string, any> = { ...row.data, ...materialize(w.data) };
+          for (const [k, v] of Object.entries(w.data)) if (v === DELETE_FIELD) delete merged[k];
+          store.set(w.path!, { data: merged, version: ++version });
         }
       }
     }
@@ -139,7 +142,10 @@ jest.mock("firebase-admin/firestore", () => {
       return this.seconds * 1000 + this.nanoseconds / 1_000_000;
     }
   }
-  return { FieldValue: { serverTimestamp: () => SERVER_TS }, Timestamp: MockTimestamp };
+  return {
+    FieldValue: { serverTimestamp: () => SERVER_TS, delete: () => DELETE_FIELD },
+    Timestamp: MockTimestamp,
+  };
 });
 jest.mock("../shared/firestore/admin", () => ({ getAdminFirestore: () => ({ doc: (path: string) => ref(path) }) }));
 // Hermetic: the cloud identity path never reaches a real metadata server.
@@ -374,6 +380,99 @@ describe("teacherUnitsCreate", () => {
     setUser(TEACHER, { status: "suspended", role: "teacher", schoolId: SCHOOL });
     expect(await codeOf(create(TEACHER, { grade: "7", title: "x" }))).toBe("account-inactive");
     expect(unitRows()).toEqual([]);
+  });
+});
+
+describe("unit color (hermetic)", () => {
+  const update = (data: Record<string, unknown>) => __teacherUnitsUpdateHandler(req(TEACHER, data));
+
+  it("creates a neutral unit by default and a colored unit when a palette token is given", async () => {
+    const neutral = await create(TEACHER, { grade: "7", title: "Earth" });
+    expect(neutral.unit.color).toBeNull();
+    expect(unitRows()[0]).not.toHaveProperty("color");
+    const colored = await create(TEACHER, { grade: "7", title: "Water", color: "coral" });
+    expect(colored.unit.color).toBe("coral");
+    expect(unitRows()[1]).toMatchObject({ color: "coral", resourceIds: [], sortOrder: 0, status: "active" });
+  });
+
+  it.each([["red"], ["#ff0000"], [""], [3]])("refuses color %p with no write", async (color) => {
+    expect(await codeOf(create(TEACHER, { grade: "7", title: "x", color }))).toBe("teacherUnits.invalidRequest");
+    expect(unitRows()).toEqual([]);
+  });
+
+  it("keeps the pre-color create fingerprint for a neutral create", () => {
+    const { createHash } = jest.requireActual("node:crypto");
+    const legacy = createHash("sha256").update(JSON.stringify(["7", "Earth", ""]), "utf8").digest("hex");
+    expect(teacherUnitCreateRequestHash({ grade: "7", title: "Earth", description: "" })).toBe(legacy);
+    expect(teacherUnitCreateRequestHash({ grade: "7", title: "Earth", description: "", color: null })).toBe(legacy);
+    expect(teacherUnitCreateRequestHash({ grade: "7", title: "Earth", description: "", color: "teal" })).not.toBe(legacy);
+  });
+
+  it("a retry with the same key but a different color is a different request", async () => {
+    await create(TEACHER, { grade: "7", title: "Earth", idempotencyKey: "color-key-01" });
+    expect(
+      await codeOf(create(TEACHER, { grade: "7", title: "Earth", color: "teal", idempotencyKey: "color-key-01" })),
+    ).toBe("teacherUnits.idempotencyKeyConflict");
+  });
+
+  it("sets, changes, and clears the color without touching membership, order, status, or ownership", async () => {
+    const { unit } = await create(TEACHER, { grade: "7", title: "Earth" });
+    const before = { ...unitRows()[0] };
+    const set = await update({ unitId: unit.unitId, expectedRevision: 1, color: "teal" });
+    expect(set.unit).toMatchObject({ color: "teal", revision: 2, title: "Earth" });
+    const changed = await update({ unitId: unit.unitId, expectedRevision: 2, color: "gold" });
+    expect(changed.unit).toMatchObject({ color: "gold", revision: 3 });
+    const cleared = await update({ unitId: unit.unitId, expectedRevision: 3, color: null });
+    expect(cleared.unit).toMatchObject({ color: null, revision: 4 });
+    const row = unitRows()[0];
+    expect(row).not.toHaveProperty("color");
+    for (const field of ["teacherId", "schoolId", "grade", "resourceIds", "sortOrder", "status", "description"]) {
+      expect(row[field]).toEqual(before[field]);
+    }
+    expect(audits.filter((a) => a.action === "teacherUnits.updated")).toHaveLength(3);
+  });
+
+  it("is a no-op when the requested color already holds (including neutral)", async () => {
+    const { unit } = await create(TEACHER, { grade: "7", title: "Earth", color: "blue" });
+    expect((await update({ unitId: unit.unitId, expectedRevision: 1, color: "blue" })).noop).toBe(true);
+    const neutral = await create(TEACHER, { grade: "7", title: "Water" });
+    expect((await update({ unitId: neutral.unit.unitId, expectedRevision: 1, color: null })).noop).toBe(true);
+  });
+
+  it("edits title and color together", async () => {
+    const { unit } = await create(TEACHER, { grade: "7", title: "Earth" });
+    const result = await update({ unitId: unit.unitId, expectedRevision: 1, title: "Earth Systems", color: "purple" });
+    expect(result.unit).toMatchObject({ title: "Earth Systems", color: "purple", revision: 2 });
+  });
+
+  it("refuses an invalid color on update and a color edit of an archived unit", async () => {
+    const { unit } = await create(TEACHER, { grade: "7", title: "Earth" });
+    expect(await codeOf(update({ unitId: unit.unitId, expectedRevision: 1, color: "magenta" }))).toBe(
+      "teacherUnits.invalidRequest",
+    );
+    await __teacherUnitsArchiveHandler(req(TEACHER, { unitId: unit.unitId, expectedRevision: 1 }));
+    expect(await codeOf(update({ unitId: unit.unitId, expectedRevision: 2, color: "teal" }))).toBe(
+      "teacherUnits.invalidStatus",
+    );
+    expect(unitRows()[0]).toMatchObject({ status: "archived", revision: 2 });
+    expect(unitRows()[0]).not.toHaveProperty("color");
+  });
+
+  it("color writes keep ownership and the revision compare-and-set", async () => {
+    const { unit } = await create(TEACHER, { grade: "7", title: "Earth" });
+    expect(await codeOf(update({ unitId: unit.unitId, expectedRevision: 1, color: "teal" }))).toBe("resolved");
+    expect(await codeOf(update({ unitId: unit.unitId, expectedRevision: 1, color: "gold" }))).toBe("teacherUnits.writeConflict");
+    expect(
+      await codeOf(__teacherUnitsUpdateHandler(req(OTHER, { unitId: unit.unitId, expectedRevision: 2, color: "gold" }))),
+    ).toBe("teacherUnits.notFound");
+    expect(unitRows()[0]).toMatchObject({ color: "teal", revision: 2, teacherId: TEACHER });
+  });
+
+  it("projects an out-of-palette stored value as neutral", async () => {
+    const { unit } = await create(TEACHER, { grade: "7", title: "Earth" });
+    const path = `teacherUnits/${unit.unitId}`;
+    store.set(path, { data: { ...store.get(path)!.data, color: "chartreuse" }, version: ++version });
+    expect((await __teacherUnitsGetHandler(req(TEACHER, { unitId: unit.unitId }))).unit.color).toBeNull();
   });
 });
 

@@ -17,6 +17,7 @@
 // atomic ordering. Nothing here replaces server validation.
 
 import type { TeacherDefaultGrade } from "../teacherPreferences/types";
+import type { TeacherUnitColor } from "./unitColor";
 
 // Same closed "6" | "7" | "8" set the server reuses from the teacher
 // default-grade preference. A Grade 8 unit is valid even though the
@@ -45,6 +46,9 @@ export type TeacherUnit = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description: string;
+  // Teacher-selected color, or null for the neutral default (every unit
+  // created before colors, and any value outside the palette).
+  readonly color: TeacherUnitColor | null;
   readonly status: TeacherUnitStatus;
   readonly archivedAtMillis: number | null;
   readonly createdAtMillis: number | null;
@@ -61,6 +65,8 @@ export type TeacherUnitsCreateRequest = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description?: string;
+  // Omitted or null: a neutral unit.
+  readonly color?: TeacherUnitColor | null;
   readonly idempotencyKey: string;
   // U2.2; required since A3-3 (TEACHER_UNITS.md §5.4): the school the
   // create intent was made in, sent on the first attempt and every replay.
@@ -76,12 +82,14 @@ export type TeacherUnitsListRequest = {
 
 export type TeacherUnitsGetRequest = { readonly unitId: string };
 
-// At least one of title / description (server-enforced).
+// At least one of title / description / color (server-enforced). A null
+// color returns the unit to the neutral default.
 export type TeacherUnitsUpdateRequest = {
   readonly unitId: string;
   readonly expectedRevision: number;
   readonly title?: string;
   readonly description?: string;
+  readonly color?: TeacherUnitColor | null;
 };
 
 export type TeacherUnitsLifecycleRequest = {

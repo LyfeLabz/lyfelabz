@@ -44,6 +44,7 @@ const unit = (over: Partial<TeacherUnit> = {}): TeacherUnit => {
     grade: "7",
     title: `Unit ${n}`,
     description: "",
+    color: null,
     status: "active",
     archivedAtMillis: null,
     createdAtMillis: n,
@@ -145,24 +146,24 @@ describe("card departure", () => {
   test("a unit archived elsewhere leaves the list: focus moves to the card now in its place", async () => {
     const [a, b, c] = [unit(), unit(), unit()];
     const h = await panel([a, b, c]);
-    btn(h, `units-edit-${b.unitId}`).focus();
+    btn(h, `units-menu-${b.unitId}`).focus();
     // A read started elsewhere (here directly) finds the unit gone.
     void h.ctl.refresh();
     last(h, "list").d.resolve({ units: [a, c] });
     await tick();
     expect(q(h.host, `units-card-${b.unitId}`)).toBeNull();
-    expect(document.activeElement).toBe(btn(h, `units-resources-add-${c.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${c.unitId}`));
     expect((document.activeElement as HTMLElement).isConnected).toBe(true);
   });
 
   test("the last card leaving focuses the card before it", async () => {
     const [a, b] = [unit(), unit()];
     const h = await panel([a, b]);
-    btn(h, `units-edit-${b.unitId}`).focus();
+    btn(h, `units-menu-${b.unitId}`).focus();
     void h.ctl.refresh();
     last(h, "list").d.resolve({ units: [a] });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-resources-add-${a.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${a.unitId}`));
   });
 
   test("the only card leaving with a retained notice focuses that notice's Dismiss", async () => {
@@ -174,7 +175,7 @@ describe("card departure", () => {
     last(h, "get").d.resolve({ unit: next(a, { title: "Theirs" }) });
     await tick();
     expect(noticeOf(h, a)?.hidden).toBe(false);
-    btn(h, `units-edit-${a.unitId}`).focus();
+    btn(h, `units-menu-${a.unitId}`).focus();
     void h.ctl.refresh();
     last(h, "list").d.resolve({ units: [] });
     await tick();
@@ -189,11 +190,11 @@ describe("card departure", () => {
     h.ctl.setShowArchived(true);
     last(h, "list").d.resolve({ units: [a, b] });
     await tick();
-    btn(h, `units-edit-${a.unitId}`).focus();
+    btn(h, `units-menu-${a.unitId}`).focus();
     void h.ctl.refresh();
     last(h, "list").d.resolve({ units: [b] });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-resources-add-${b.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${b.unitId}`));
     h.ctl.setGrade("8");
     last(h, "list").d.resolve({ units: [] });
     await tick();
@@ -209,7 +210,7 @@ describe("card departure", () => {
     last(h, "get").d.resolve({ unit: archivedOf(a) });
     await tick();
     expect(q(h.host, `units-card-${a.unitId}`)).toBeNull();
-    expect(document.activeElement).toBe(btn(h, `units-resources-add-${b.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${b.unitId}`));
   });
 });
 
@@ -220,7 +221,7 @@ describe("own archive and restore", () => {
     press(btn(h, `units-archive-${a.unitId}`));
     last(h, "archive").d.resolve({ unit: archivedOf(a), noop: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-resources-add-${b.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${b.unitId}`));
     expect(status(h)).toBe(`Archived: "${a.title}".`);
   });
 
@@ -233,11 +234,11 @@ describe("own archive and restore", () => {
     press(btn(h, `units-archive-${a.unitId}`));
     last(h, "archive").d.resolve({ unit: archivedOf(a), noop: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-restore-${a.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${a.unitId}`));
     press(btn(h, `units-restore-${a.unitId}`));
     last(h, "restore").d.resolve({ unit: next(archivedOf(a), { status: "active", archivedAtMillis: null }), noop: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-archive-${a.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${a.unitId}`));
   });
 });
 
@@ -246,9 +247,12 @@ describe("focus while busy", () => {
     const a = unit();
     const h = await panel([a]);
     const archive = btn(h, `units-archive-${a.unitId}`);
+    const menu = btn(h, `units-menu-${a.unitId}`);
     press(archive);
     await tick();
-    expect(document.activeElement).toBe(archive);
+    // Choosing a menu item returns focus to the menu's trigger; the item
+    // itself stays connected and gated.
+    expect(document.activeElement).toBe(menu);
     expect(archive.isConnected).toBe(true);
     expect(archive.disabled).toBe(false);
     expect(archive.getAttribute("aria-disabled")).toBe("true");
@@ -259,16 +263,17 @@ describe("focus while busy", () => {
     last(h, "archive").d.reject(LOST());
     await tick();
     expect(archive.getAttribute("aria-disabled")).toBeNull();
-    expect(document.activeElement).toBe(archive);
+    expect(document.activeElement).toBe(menu);
   });
 
-  test("a pending remove keeps focus on the pressed Remove (single resource)", async () => {
+  test("a pending remove keeps focus on the pressed row menu (single resource)", async () => {
     const a = unit({ resourceIds: [R1.id] });
     const h = await panel([a]);
     const remove = btn(h, `units-resource-remove-${a.unitId}-${R1.id}`);
     press(remove);
     await tick();
-    expect(document.activeElement).toBe(remove);
+    expect(document.activeElement).toBe(btn(h, `units-resource-menu-${a.unitId}-${R1.id}`));
+    expect(remove.getAttribute("aria-disabled")).toBe("true");
     remove.click();
     expect(h.c.setResources).toHaveBeenCalledTimes(1);
   });
@@ -288,7 +293,7 @@ describe("focus while busy", () => {
     expect(h.c.update).toHaveBeenCalledTimes(1);
     last(h, "update").d.resolve({ unit: next(a, { title: "Renamed" }), noop: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-edit-${a.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${a.unitId}`));
   });
 
   test("a pending create keeps focus in the form and refuses a second submit", async () => {
@@ -321,7 +326,7 @@ describe("no focus theft", () => {
     const [a, b] = [unit(), unit()];
     const h = await panel([a, b]);
     press(btn(h, `units-archive-${a.unitId}`));
-    const edit = btn(h, `units-edit-${b.unitId}`);
+    const edit = btn(h, `units-menu-${b.unitId}`);
     edit.focus();
     last(h, "archive").d.resolve({ unit: archivedOf(a), noop: false });
     await tick();
@@ -332,7 +337,7 @@ describe("no focus theft", () => {
   test("remove, move and add settling while the teacher is elsewhere do not move focus", async () => {
     const [a, b] = [unit({ resourceIds: [R1.id, R2.id, R3.id] }), unit()];
     const h = await panel([a, b]);
-    const elsewhere = btn(h, `units-edit-${b.unitId}`);
+    const elsewhere = btn(h, `units-menu-${b.unitId}`);
     press(btn(h, `units-resource-remove-${a.unitId}-${R1.id}`));
     elsewhere.focus();
     last(h, "setResources").d.resolve({ unit: next(a, { resourceIds: [R2.id, R3.id] }), noop: false });
@@ -354,7 +359,7 @@ describe("no focus theft", () => {
     last(h, "list").d.resolve({ units: [b] });
     await tick();
     const parked = document.activeElement;
-    expect(parked).toBe(btn(h, `units-resources-add-${b.unitId}`));
+    expect(parked).toBe(btn(h, `units-menu-${b.unitId}`));
     last(h, "archive").d.resolve({ unit: archivedOf(a), noop: false });
     await tick();
     expect(document.activeElement).toBe(parked);
@@ -366,14 +371,17 @@ describe("stable rendering", () => {
     const [a, b] = [unit(), unit()];
     const h = await panel([a, b]);
     const editA = btn(h, `units-edit-${a.unitId}`);
+    const menuA = btn(h, `units-menu-${a.unitId}`);
     const bodyA = editA.closest(".shell-units-card-body");
-    editA.focus();
     btn(h, `units-resource-remove-${b.unitId}-${R1.id}`).click();
+    // The teacher returns to card A while B's change is pending.
+    menuA.focus();
     last(h, "setResources").d.resolve({ unit: next(b, { resourceIds: [R2.id] }), noop: false });
     await tick();
     expect(btn(h, `units-edit-${a.unitId}`)).toBe(editA);
     expect(editA.closest(".shell-units-card-body")).toBe(bodyA);
-    expect(document.activeElement).toBe(editA);
+    expect(btn(h, `units-menu-${a.unitId}`)).toBe(menuA);
+    expect(document.activeElement).toBe(menuA);
     // The changed card did update.
     expect(q(h.host, `units-resource-remove-${b.unitId}-${R1.id}`)).toBeNull();
   });
@@ -393,7 +401,7 @@ describe("stable rendering", () => {
     expect(rows.map((r) => r.getAttribute("data-resource-id"))).toEqual([R2.id, R1.id]);
     expect(btn(h, `units-edit-${a.unitId}`).getAttribute("aria-disabled")).toBeNull();
     await checkChanges(h, [next(moved, { title: "Renamed elsewhere" })]);
-    expect(btn(h, `units-edit-${a.unitId}`).getAttribute("aria-label")).toBe("Edit Renamed elsewhere");
+    expect(btn(h, `units-menu-${a.unitId}`).getAttribute("aria-label")).toBe("Manage Renamed elsewhere");
     h.ctl.setShowArchived(true);
     last(h, "list").d.resolve({ units: [archivedOf(next(moved, { title: "Renamed elsewhere" }))] });
     await tick();
@@ -415,14 +423,14 @@ describe("resource and editor focus", () => {
     const removed = next(moved, { resourceIds: [R1.id] });
     last(h, "setResources").d.resolve({ unit: removed, noop: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-resource-remove-${a.unitId}-${R1.id}`));
+    expect(document.activeElement).toBe(btn(h, `units-resource-menu-${a.unitId}-${R1.id}`));
     btn(h, `units-resources-add-${a.unitId}`).click();
     const box = q(h.host, `units-picker-option-${a.unitId}-${R3.id}`) as HTMLInputElement;
     box.click();
     press(btn(h, `units-picker-submit-${a.unitId}`));
     last(h, "setResources").d.resolve({ unit: next(removed, { resourceIds: [R1.id, R3.id] }), noop: false });
     await tick();
-    expect(document.activeElement).toBe(btn(h, `units-resources-add-${a.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${a.unitId}`));
   });
 
   test("Escape and Cancel still return focus to the opening control", async () => {
@@ -431,10 +439,10 @@ describe("resource and editor focus", () => {
     btn(h, `units-edit-${a.unitId}`).click();
     const title = q(h.host, `units-edit-title-${a.unitId}`) as HTMLInputElement;
     title.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-    expect(document.activeElement).toBe(btn(h, `units-edit-${a.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${a.unitId}`));
     btn(h, `units-resources-add-${a.unitId}`).click();
     btn(h, `units-picker-cancel-${a.unitId}`).click();
-    expect(document.activeElement).toBe(btn(h, `units-resources-add-${a.unitId}`));
+    expect(document.activeElement).toBe(btn(h, `units-menu-${a.unitId}`));
   });
 });
 
@@ -839,7 +847,7 @@ describe("F2: create completion respects focus ownership", () => {
     const a = unit();
     const h = await panel([a]);
     await startCreate(h, "Weather");
-    const edit = btn(h, `units-edit-${a.unitId}`);
+    const edit = btn(h, `units-menu-${a.unitId}`);
     edit.focus();
     last(h, "create").d.resolve({ unit: unit({ title: "Weather", resourceIds: [] }), replayed: false });
     await tick();
@@ -861,7 +869,7 @@ describe("F2: create completion respects focus ownership", () => {
     const a = unit();
     const h = await panel([a]);
     await startCreate(h, "Rocks");
-    const edit = btn(h, `units-edit-${a.unitId}`);
+    const edit = btn(h, `units-menu-${a.unitId}`);
     edit.focus();
     last(h, "create").d.reject(LOST());
     await tick();
@@ -883,7 +891,7 @@ describe("F2: create completion respects focus ownership", () => {
     const a = unit();
     const h = await panel([a]);
     await startCreate(h, "Weather");
-    const edit = btn(h, `units-edit-${a.unitId}`);
+    const edit = btn(h, `units-menu-${a.unitId}`);
     edit.focus();
     h.switchAccount();
     last(h, "create").d.resolve({ unit: unit({ title: "Weather", resourceIds: [] }), replayed: false });

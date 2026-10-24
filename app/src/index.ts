@@ -62,14 +62,10 @@ import type {
   AssignmentsCallables,
   IntegrationsDeps,
 } from "./settings/integrations/types";
-import {
-  createAssignmentSummaryCallable,
-  createLessonSummaryCallable,
-} from "./assignments/summary/wire";
-import type {
-  AssignmentSummaryCallable,
-  LessonSummaryCallable,
-} from "./assignments/summary/types";
+import { createAssignmentSummaryCallable } from "./assignments/summary/wire";
+import type { AssignmentSummaryCallable } from "./assignments/summary/types";
+import { createLessonResultsCallable } from "./assignments/summary/lessonResultsWire";
+import type { LessonResultsCallable } from "./assignments/summary/lessonResults";
 import { subscribeAuthRerun } from "./session/authRerunSubscription";
 import { createFirebaseTeacherUnitsCallables } from "./teacherUnits/wire";
 import { createTeacherUnitCreateAttemptStore } from "./teacherUnits/createAttemptStore";
@@ -213,7 +209,8 @@ async function run(): Promise<void> {
   let assignmentSummary: AssignmentSummaryCallable | null = null;
   // Sprint 28.6E: lesson-level (cross-assignment) View Summary callable.
   // Wired only for an active-teacher session; null for student/other.
-  let lessonSummary: LessonSummaryCallable | null = null;
+  // Carries the per-class breakdown and the Unit Results batch form.
+  let lessonSummary: LessonResultsCallable | null = null;
   // U2.2 Teacher Unit Builder (docs/platform/TEACHER_UNITS.md "U2.2").
   // Dark until separately authorized. While false: no Browse | My Units
   // switch renders, no teacherUnits* callable is invoked, and the
@@ -756,7 +753,7 @@ async function run(): Promise<void> {
       updateClassMetadata = createFirebaseUpdateClassMetadata(functions);
       updateClassColor = createFirebaseUpdateClassColor(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
-      lessonSummary = createLessonSummaryCallable(functions);
+      lessonSummary = createLessonResultsCallable(functions);
       teacherUnits = teacherUnitsReleaseBoundary(() =>
         createTeacherUnitsSurfaceSeam({
           callables: createFirebaseTeacherUnitsCallables(functions, createTeacherUnitsMutationVerifier(functions, auth, () =>

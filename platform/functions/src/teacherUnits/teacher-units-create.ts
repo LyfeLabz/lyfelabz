@@ -18,6 +18,7 @@ import {
   teacherUnitDocRef,
   teacherUnitsCollectionRef,
   writeAuditEventInTransaction,
+  type TeacherUnitColor,
   type TeacherUnitGrade,
 } from "../shared";
 import {
@@ -34,6 +35,7 @@ import {
   assertOnlyAllowedKeys,
   assertOwnedUnit,
   authorizeTeacherUnitsTransaction,
+  readColor,
   readDescription,
   readExpectedSchoolId,
   readGrade,
@@ -102,6 +104,8 @@ export type TeacherUnitsCreateRequest = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description?: string;
+  // Optional unit color token; absent or null creates a neutral unit.
+  readonly color?: TeacherUnitColor | null;
   readonly idempotencyKey: string;
   // Required: the school the create intent was made in. Compared with the
   // verified school; never used as the write's school.
@@ -119,6 +123,7 @@ const ALLOWED_KEYS: readonly string[] = [
   "grade",
   "title",
   "description",
+  "color",
   "idempotencyKey",
   "expectedSchoolId",
   "compatibility",
@@ -128,6 +133,8 @@ type ValidatedCreate = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description: string;
+  // Absent or null: a neutral unit.
+  readonly color?: TeacherUnitColor | null;
   readonly idempotencyKey: string;
   readonly expectedSchoolId: string;
   readonly compatibility: MutationCompatibilityV1;
@@ -141,9 +148,10 @@ function validateRequest(data: unknown): ValidatedCreate {
   const title = readTitle(payload.title);
   const description =
     payload.description === undefined ? "" : readDescription(payload.description);
+  const color = payload.color === undefined ? null : readColor(payload.color);
   const idempotencyKey = readIdempotencyKey(payload);
   const expectedSchoolId = readExpectedSchoolId(payload);
-  return { grade, title, description, idempotencyKey, expectedSchoolId, compatibility };
+  return { grade, title, description, color, idempotencyKey, expectedSchoolId, compatibility };
 }
 
 function sha256Hex(value: string): string {
@@ -163,10 +171,21 @@ export function teacherUnitCreateReceiptId(
 // Hash of the NORMALIZED request (after trimming and defaulting), so
 // `" Energy "` and `"Energy"` are the same request. Only the create intent
 // participates: never `expectedSchoolId` or the compatibility envelope.
+// A neutral (colorless) create hashes exactly as before colors existed, so a
+// retry of a pre-color receipt still matches; a color joins only when set.
 export function teacherUnitCreateRequestHash(
-  input: Pick<ValidatedCreate, "grade" | "title" | "description">,
+  input: Pick<ValidatedCreate, "grade" | "title" | "description"> & {
+    readonly color?: TeacherUnitColor | null;
+  },
 ): string {
-  return sha256Hex(JSON.stringify([input.grade, input.title, input.description]));
+  const color = input.color ?? null;
+  return sha256Hex(
+    JSON.stringify(
+      color === null
+        ? [input.grade, input.title, input.description]
+        : [input.grade, input.title, input.description, color],
+    ),
+  );
 }
 
 // gRPC ALREADY_EXISTS: a `create()` lost to a concurrent commit of the same
@@ -244,6 +263,7 @@ export async function createTeacherUnit(
           grade: input.grade,
           title: input.title,
           description: input.description,
+          ...(input.color !== undefined && input.color !== null ? { color: input.color } : {}),
           status: "active",
           archivedAt: null,
           createdAt: now,

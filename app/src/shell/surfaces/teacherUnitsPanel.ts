@@ -34,6 +34,9 @@ import type {
 import type { PendingUnitMutationRecord } from "../../teacherUnits/mutationReconciliation";
 import { moveIndex } from "../../teacherUnits/unitOrderMath";
 import { registerOpenModal } from "../openModals";
+import { TEACHER_UNIT_COLORS, TEACHER_UNIT_COLOR_LABELS, unitColorKey } from "../../teacherUnits/unitColor";
+import { buildUnitColorPicker } from "./unitColorPicker";
+import { buildUnitsMenu } from "./unitsMenu";
 import {
   buildLessonPreviewLink,
   buildResourceCard,
@@ -94,6 +97,35 @@ export type TeacherUnitsPanelOptions = {
   // reports each open or close so the host can keep that set.
   readonly expandedUnitIds?: ReadonlySet<string> | null;
   readonly onExpandedChange?: (unitId: string, expanded: boolean) => void;
+  // Lesson rows mirror Curriculum's Assign / Results control, driven by the
+  // shared Curriculum assignment state. Absent: lesson rows show Preview only.
+  readonly lessonActions?: UnitLessonActions | null;
+  // The Unit Results pill in each unit's header. Absent: no pill. The
+  // panel resolves the unit's CURRENT resources (unit order) for the host.
+  readonly onUnitResults?:
+    | ((unit: TeacherUnit, resources: ReadonlyArray<UnitResultsResource>, trigger: HTMLElement) => void)
+    | null;
+};
+
+// One of a unit's resources as Unit Results needs it: an available
+// resource's id, type and title, or a resource that is no longer available.
+export type UnitResultsResource =
+  | { readonly status: "available"; readonly id: string; readonly type: string; readonly title: string }
+  | { readonly status: "unavailable" };
+
+const UNIT_COLOR_PALETTE = Object.freeze({ colors: TEACHER_UNIT_COLORS, labels: TEACHER_UNIT_COLOR_LABELS });
+
+// The host's Curriculum lesson actions for a unit's lesson rows. The panel
+// only places the control; its label, state, and workflow (the existing
+// assignment dialog, or the lesson's existing Results page) are the host's.
+export type UnitLessonActions = {
+  // Whether this lesson takes the Assign / Results control at all.
+  readonly supports: (slug: string) => boolean;
+  // Applies the shared Curriculum Assign / Results state to the control.
+  readonly apply: (control: HTMLButtonElement, slug: string) => void;
+  readonly activate: (control: HTMLButtonElement, slug: string, unit: TeacherUnit) => void;
+  // Called after a confirmed assignment change; controls are re-applied.
+  readonly subscribe: (listener: () => void) => () => void;
 };
 
 function gradeLabel(g: TeacherUnitGrade): string {
@@ -563,6 +595,8 @@ export function renderTeacherUnitsPanel(
   createDescription.rows = 3;
   createDescription.maxLength = TEACHER_UNIT_DESCRIPTION_MAX_LENGTH;
   createForm.appendChild(field("Description (optional)", createDescription, "units-create-description"));
+  const createColor = buildUnitColorPicker(doc, "units-create-color", null, UNIT_COLOR_PALETTE);
+  createForm.appendChild(createColor.fieldset);
   const createError = el("p", "shell-units-error");
   createError.id = uid("create-error");
   createError.setAttribute("role", "alert");
@@ -582,6 +616,7 @@ export function renderTeacherUnitsPanel(
   const resetCreateForm = (): void => {
     createTitle.value = "";
     createDescription.value = "";
+    createColor.set(null);
     showCreateError(null);
   };
   // Whether the teacher asked for the create form. It closes after a
@@ -644,10 +679,12 @@ export function renderTeacherUnitsPanel(
       return;
     }
     showCreateError(null);
+    const color = createColor.value();
     void controller.submitCreate({
       grade: s.grade,
       title: createTitle.value.trim(),
       description: createDescription.value.trim(),
+      ...(color !== null ? { color } : {}),
     });
   });
 
@@ -998,12 +1035,13 @@ export function renderTeacherUnitsPanel(
     for (const e of entries.values()) if (e.unitId === unitId) found = e.dismiss;
     return found;
   };
-  // A card's main action: its first available unit-level button (Add
-  // resources, Edit, Archive, or Restore), else its first available button.
+  // A card's main action: its unit management menu (Edit Unit, Add
+  // Resources, Archive Unit, or Restore Unit live there), else its first
+  // available button.
   const cardAction = (card: CardView): HTMLElement | null => {
     if (!card.li.isConnected) return null;
-    const actions = card.body.querySelectorAll<HTMLElement>(":scope > .shell-units-card-details > .shell-units-actions button");
-    for (const b of Array.from(actions)) if (canFocus(b)) return b;
+    const menu = card.body.querySelector<HTMLElement>("[data-action=unit-menu]");
+    if (canFocus(menu)) return menu;
     for (const b of Array.from(card.li.querySelectorAll<HTMLElement>("button"))) if (canFocus(b)) return b;
     return null;
   };
@@ -1044,7 +1082,7 @@ export function renderTeacherUnitsPanel(
       return;
     }
     renderCardBody(card);
-    if (focusEdit) focusFirst(card.li.querySelector<HTMLButtonElement>("[data-action=edit]"));
+    if (focusEdit) focusFirst(card.li.querySelector<HTMLButtonElement>("[data-action=edit]"), cardAction(card));
   };
 
   const isListed = (unitId: string): boolean => {
@@ -1156,6 +1194,13 @@ export function renderTeacherUnitsPanel(
     description.maxLength = TEACHER_UNIT_DESCRIPTION_MAX_LENGTH;
     description.value = card.unit.description;
     form.appendChild(field("Description", description, `units-edit-description-${card.unit.unitId}`));
+    const color = buildUnitColorPicker(
+      doc,
+      `units-edit-color-${card.unit.unitId}`,
+      card.unit.color,
+      UNIT_COLOR_PALETTE,
+    );
+    form.appendChild(color.fieldset);
     const error = el("p", "shell-units-error");
     error.id = uid("edit-error");
     error.setAttribute("role", "alert");
@@ -1192,7 +1237,11 @@ export function renderTeacherUnitsPanel(
       markInvalid(description, null);
       const base = baseOf(card);
       void controller
-        .updateUnit(card.unit.unitId, { title: title.value, description: description.value })
+        .updateUnit(card.unit.unitId, {
+          title: title.value,
+          description: description.value,
+          color: color.value(),
+        })
         .then((result) => {
           handleResult(card, result, "edit", base);
           if (result.kind === "saved" && card.editor === editor) closeEditor(card, owns(card));
@@ -1874,12 +1923,17 @@ export function renderTeacherUnitsPanel(
         showOutcome(card, removeOutcome(result, resourceId, name));
         // Focus the resource's row if it is still shown, else the row that
         // took its place, else Add resources.
-        const removes = card.li.querySelectorAll<HTMLElement>("[data-action=remove-resource]");
-        settleFocus(card, removeOf(), removes[Math.min(index, removes.length - 1)] ?? null, addButtonOf(card));
+        // Remove from Unit sits in each row's menu, so focus lands on the
+        // menu of the row now at that position.
+        const menus = card.li.querySelectorAll<HTMLElement>("[data-action=resource-menu]");
+        settleFocus(card, menus[Math.min(index, menus.length - 1)] ?? null, addButtonOf(card));
         return;
       }
       membershipNotice(card, result, "remove", base);
-      settleFocus(card, removeOf(), addButtonOf(card));
+      const rowMenu = card.li.querySelector<HTMLElement>(
+        `[data-testid="units-resource-menu-${card.unit.unitId}-${resourceId}"]`,
+      );
+      settleFocus(card, removeOf(), rowMenu, addButtonOf(card));
     });
   };
 
@@ -2217,18 +2271,12 @@ export function renderTeacherUnitsPanel(
     const u = card.unit;
     const section = el("div", "shell-units-resources");
     section.setAttribute("data-testid", `units-resources-${u.unitId}`);
-    const headingId = uid("resources-heading");
+    // The list begins directly beneath the unit header: no visible
+    // "Resources (N)" heading; the group is named for assistive technology.
     section.setAttribute("role", "group");
-    section.setAttribute("aria-labelledby", headingId);
+    section.setAttribute("aria-label", `Resources in ${u.title}`);
     const resolved = resolveUnitResources(u.resourceIds);
     const retired = retiredCount(u);
-    const h = el(
-      "h4",
-      "shell-units-resources-heading",
-      resolved.length === 0 ? "Resources" : `Resources (${resolved.length})`,
-    );
-    h.id = headingId;
-    section.appendChild(h);
     if (resolved.length === 0) {
       section.appendChild(el("p", "shell-units-empty", "No resources in this unit yet."));
     } else {
@@ -2266,9 +2314,28 @@ export function renderTeacherUnitsPanel(
         const cardActions = row.actions;
         if (entry.status === "available") {
           if (resourceEligibility(entry.resource) === "organizeOnly") setResourceCardStatus(row, "Not assignable");
+          // Lessons mirror Curriculum: Assign (unassigned) or Results
+          // (assigned, even with zero submissions) from the shared Curriculum
+          // assignment state, then Preview. Other resources keep Open; no
+          // unsupported Assign or Results control is created for them.
+          const r = entry.resource;
+          const lessonActions = options.lessonActions ?? null;
+          if (
+            lessonActions !== null &&
+            r.type === "lesson" &&
+            resourceEligibility(r) !== "organizeOnly" &&
+            lessonActions.supports(r.id)
+          ) {
+            const primary = el("button", "shell-lesson-assign");
+            primary.type = "button";
+            primary.setAttribute("data-testid", `units-resource-assign-${u.unitId}-${r.id}`);
+            primary.setAttribute("data-lesson-slug", r.id);
+            lessonActions.apply(primary, r.id);
+            primary.addEventListener("click", () => lessonActions.activate(primary, r.id, card.unit));
+            cardActions.appendChild(primary);
+          }
           // Preview for a lesson, Open for every other resource: the same
           // teacher-safe links Curriculum uses. Neither assigns anything.
-          const r = entry.resource;
           const view = r.type === "lesson"
             ? buildLessonPreviewLink(doc, { slug: r.id, title: name }, `units-resource-preview-${u.unitId}-${r.id}`)
             : buildResourceOpenLink(doc, r.openHref, `Open ${name} (opens in a new tab)`, `units-resource-open-${u.unitId}-${r.id}`);
@@ -2301,15 +2368,27 @@ export function renderTeacherUnitsPanel(
         }
         // Retired rows are removed together (below); one at a time would be
         // refused while another retired id remains.
+        // Remove from Unit: a quiet row-level menu, never a prominent pill.
+        // It only ends this unit's membership; the resource itself and any
+        // Classroom assignment of it are untouched.
         if (u.status === "active" && entry.status === "available") {
-          const remove = button("Remove");
-          remove.setAttribute("data-action", "remove-resource");
-          remove.setAttribute("data-testid", `units-resource-remove-${u.unitId}-${entry.id}`);
-          remove.setAttribute("aria-label", `Remove ${name} from ${u.title}`);
-          remove.disabled = retired > 0;
-          remove.setAttribute("data-busy-gate", "");
-          remove.addEventListener("click", () => removeResource(card, entry.id, name, i));
-          cardActions.appendChild(remove);
+          const rowMenu = buildUnitsMenu(doc, {
+            triggerLabel: `More actions for ${name}`,
+            triggerTestId: `units-resource-menu-${u.unitId}-${entry.id}`,
+            triggerAction: "resource-menu",
+            variant: "row",
+            items: [
+              {
+                label: "Remove from Unit",
+                testid: `units-resource-remove-${u.unitId}-${entry.id}`,
+                action: "remove-resource",
+                busyGate: true,
+                disabled: retired > 0,
+                onSelect: () => removeResource(card, entry.id, name, i),
+              },
+            ],
+          });
+          cardActions.appendChild(rowMenu.root);
         }
         ol.appendChild(li);
       });
@@ -2366,6 +2445,9 @@ export function renderTeacherUnitsPanel(
       }
     }
     card.li.classList.toggle("shell-units-card--archived", u.status === "archived");
+    // The teacher's unit color (neutral "none" for a unit without one).
+    const colorKey = unitColorKey(u.color);
+    if (card.li.getAttribute("data-unit-color") !== colorKey) card.li.setAttribute("data-unit-color", colorKey);
     const where = card.gone ? whereNow(u.unitId) : null;
     const prev = card.rendered;
     const unchanged =
@@ -2424,32 +2506,112 @@ export function renderTeacherUnitsPanel(
             }
             return;
           }
-          // Milestone 1: a compact disclosure. The toggle names the unit and
-          // its resource count; the details hold everything else.
+          // One compact header row. Left: the unit's color and title (the
+          // title is always text, so color is never the only identity cue).
+          // Right: Unit Results, the expand/collapse chevron, and the unit
+          // management menu, as three separate controls. No resource count.
           const titleRow = el("div", "shell-units-card-title-row");
           const titleHeading = el("h3", "shell-units-card-heading");
           const detailsId = uid("unit-details");
+          const swatch = el("span", "shell-units-card-swatch");
+          swatch.setAttribute("aria-hidden", "true");
+          const titleText = el("span", "shell-units-card-title", u.title);
+          titleText.setAttribute("data-testid", `units-title-${u.unitId}`);
+          titleHeading.append(swatch, titleText);
+          titleRow.appendChild(titleHeading);
+          if (u.status === "archived") titleRow.appendChild(el("span", "shell-units-badge", "Archived"));
+
+          const controls = el("div", "shell-units-card-controls");
+          const onUnitResults = options.onUnitResults ?? null;
+          if (onUnitResults !== null) {
+            const results = el("button", "shell-units-results-pill", "Unit Results");
+            results.type = "button";
+            results.setAttribute("data-testid", `units-results-${u.unitId}`);
+            results.setAttribute("aria-label", `Unit Results for ${u.title}`);
+            results.addEventListener("click", () => {
+              const resources: UnitResultsResource[] = resolveUnitResources(card.unit.resourceIds).map((entry) =>
+                entry.status === "available"
+                  ? { status: "available", id: entry.resource.id, type: entry.resource.type, title: entry.resource.title }
+                  : { status: "unavailable" },
+              );
+              onUnitResults(card.unit, resources, results);
+            });
+            controls.appendChild(results);
+          }
           const toggle = el("button", "shell-units-card-toggle");
           toggle.type = "button";
           toggle.setAttribute("data-testid", `units-toggle-${u.unitId}`);
           toggle.setAttribute("aria-controls", detailsId);
           toggle.setAttribute("aria-expanded", card.expanded ? "true" : "false");
+          toggle.setAttribute("aria-label", `Show resources in ${u.title}`);
           const chevron = el("span", "shell-units-card-chevron", card.expanded ? "\u25B4" : "\u25BE");
           chevron.setAttribute("aria-hidden", "true");
-          toggle.appendChild(el("span", "shell-units-card-title", u.title));
-          const count = u.resourceIds.length;
-          const countLabel = el(
-            "span",
-            "shell-units-card-count",
-            count === 0 ? "No resources" : count === 1 ? "1 resource" : `${count} resources`,
-          );
-          countLabel.setAttribute("data-testid", `units-count-${u.unitId}`);
-          toggle.appendChild(countLabel);
           toggle.appendChild(chevron);
-          titleHeading.appendChild(toggle);
-          titleRow.appendChild(titleHeading);
-          if (u.status === "archived") titleRow.appendChild(el("span", "shell-units-badge", "Archived"));
+          controls.appendChild(toggle);
+
+          const unitItems =
+            u.status === "active"
+              ? [
+                  {
+                    label: "Edit Unit",
+                    testid: `units-edit-${u.unitId}`,
+                    action: "edit",
+                    busyGate: true,
+                    onSelect: () => openEditor(card),
+                  },
+                  {
+                    label: "Add Resources",
+                    testid: `units-resources-add-${u.unitId}`,
+                    action: "add-resources",
+                    busyGate: true,
+                    disabled: retiredCount(u) > 0,
+                    onSelect: () => {
+                      if (!card.expanded) toggle.click();
+                      openPicker(card);
+                    },
+                  },
+                  {
+                    // Archive keeps its existing semantics: reversible from
+                    // Restore Unit, never a deletion; no confirmation step,
+                    // exactly as before.
+                    label: "Archive Unit",
+                    testid: `units-archive-${u.unitId}`,
+                    danger: true,
+                    busyGate: true,
+                    onSelect: () => {
+                      const base = baseOf(card);
+                      void controller.archiveUnit(u.unitId).then((r) => {
+                        handleResult(card, r, "archive", base);
+                        if (r.kind === "saved") settleFocus(card, q(card, `units-restore-${u.unitId}`));
+                      });
+                    },
+                  },
+                ]
+              : [
+                  {
+                    label: "Restore Unit",
+                    testid: `units-restore-${u.unitId}`,
+                    busyGate: true,
+                    onSelect: () => {
+                      const base = baseOf(card);
+                      void controller.restoreUnit(u.unitId).then((r) => {
+                        handleResult(card, r, "restore", base);
+                        if (r.kind === "saved") settleFocus(card, q(card, `units-archive-${u.unitId}`));
+                      });
+                    },
+                  },
+                ];
+          const unitMenu = buildUnitsMenu(doc, {
+            triggerLabel: `Manage ${u.title}`,
+            triggerTestId: `units-menu-${u.unitId}`,
+            triggerAction: "unit-menu",
+            variant: "unit",
+            items: unitItems,
+          });
+          controls.appendChild(unitMenu.root);
+          titleRow.appendChild(controls);
           card.body.appendChild(titleRow);
+
           const details = el("div", "shell-units-card-details");
           details.id = detailsId;
           details.setAttribute("data-testid", `units-details-${u.unitId}`);
@@ -2462,55 +2624,13 @@ export function renderTeacherUnitsPanel(
             chevron.textContent = card.expanded ? "\u25B4" : "\u25BE";
             options.onExpandedChange?.(u.unitId, card.expanded);
           });
+          // Mouse/touch convenience: the title also opens and closes the
+          // unit. The chevron stays the single keyboard control for it.
+          titleText.addEventListener("click", () => toggle.click());
           if (u.description.length > 0) {
             details.appendChild(el("p", "shell-units-card-description", u.description));
           }
           details.appendChild(renderResources(card));
-          const actions = el("div", "shell-units-actions");
-          if (u.status === "active") {
-            const add = button("Add resources");
-            add.setAttribute("data-action", "add-resources");
-            add.setAttribute("data-testid", `units-resources-add-${u.unitId}`);
-            add.setAttribute("aria-label", `Add resources to ${u.title}`);
-            add.setAttribute("aria-expanded", card.picker !== null ? "true" : "false");
-            add.disabled = retiredCount(u) > 0;
-            add.setAttribute("data-busy-gate", "");
-            add.addEventListener("click", () => openPicker(card));
-            actions.appendChild(add);
-            const edit = button("Edit");
-            edit.setAttribute("data-action", "edit");
-            edit.setAttribute("data-testid", `units-edit-${u.unitId}`);
-            edit.setAttribute("aria-label", `Edit ${u.title}`);
-            edit.setAttribute("data-busy-gate", "");
-            edit.addEventListener("click", () => openEditor(card));
-            actions.appendChild(edit);
-            const archive = button("Archive", "danger");
-            archive.setAttribute("data-testid", `units-archive-${u.unitId}`);
-            archive.setAttribute("aria-label", `Archive ${u.title}`);
-            archive.setAttribute("data-busy-gate", "");
-            archive.addEventListener("click", () => {
-              const base = baseOf(card);
-              void controller.archiveUnit(u.unitId).then((r) => {
-                handleResult(card, r, "archive", base);
-                if (r.kind === "saved") settleFocus(card, q(card, `units-restore-${u.unitId}`));
-              });
-            });
-            actions.appendChild(archive);
-          } else {
-            const restore = button("Restore");
-            restore.setAttribute("data-testid", `units-restore-${u.unitId}`);
-            restore.setAttribute("aria-label", `Restore ${u.title}`);
-            restore.setAttribute("data-busy-gate", "");
-            restore.addEventListener("click", () => {
-              const base = baseOf(card);
-              void controller.restoreUnit(u.unitId).then((r) => {
-                handleResult(card, r, "restore", base);
-                if (r.kind === "saved") settleFocus(card, q(card, `units-archive-${u.unitId}`));
-              });
-            });
-            actions.appendChild(restore);
-          }
-          details.appendChild(actions);
         },
         (tid) => {
           const swap = counterpartOf(tid);
@@ -3056,11 +3176,24 @@ export function renderTeacherUnitsPanel(
   doc.addEventListener("visibilitychange", onVisibility);
 
   const unsubscribe = controller.subscribe(render);
+  // A confirmed assignment change re-applies every lesson row's Assign /
+  // Results control in place (focus and card state are kept).
+  const lessonActions = options.lessonActions ?? null;
+  const unsubscribeLessons =
+    lessonActions === null
+      ? () => undefined
+      : lessonActions.subscribe(() => {
+          for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>("button[data-lesson-slug]"))) {
+            const slug = b.getAttribute("data-lesson-slug");
+            if (slug !== null) lessonActions.apply(b, slug);
+          }
+        });
   const dispose = (): void => {
     if (disposed) return;
     disposed = true;
     doc.removeEventListener("visibilitychange", onVisibility);
     unsubscribe();
+    unsubscribeLessons();
     controller.dispose();
   };
   render();

@@ -44,6 +44,7 @@ const unit = (over: Partial<TeacherUnit> = {}): TeacherUnit => ({
   grade: "7",
   title: "Earth Systems",
   description: "",
+  color: null,
   status: "active",
   archivedAtMillis: null,
   createdAtMillis: n,
@@ -125,10 +126,14 @@ describe("unit contents", () => {
     expect(rows.map((r) => r.getAttribute("data-resource-id"))).toEqual([R3.id, R1.id]);
     expect(rows[0].textContent).toContain(R3.title);
     expect(rows[0].textContent).toContain("Lesson");
-    expect(rows[0].querySelector("[data-action=remove-resource]")?.getAttribute("aria-label")).toBe(
-      `Remove ${R3.title} from ${a.title}`,
+    // Remove from Unit lives in a quiet row menu named for the resource.
+    expect(rows[0].querySelector("[data-action=remove-resource]")?.textContent).toBe("Remove from Unit");
+    expect(rows[0].querySelector("[data-action=resource-menu]")?.getAttribute("aria-label")).toBe(
+      `More actions for ${R3.title}`,
     );
-    expect(q(host, `units-resources-${a.unitId}`)?.textContent).toContain("Resources (2)");
+    // No "Resources (N)" heading: the list starts beneath the unit header.
+    expect(q(host, `units-resources-${a.unitId}`)?.textContent).not.toContain("Resources (");
+    expect(q(host, `units-resources-${a.unitId}`)?.getAttribute("aria-label")).toBe(`Resources in ${a.title}`);
     expect(q(host, `units-resources-${b.unitId}`)?.textContent).toContain("No resources in this unit yet.");
   });
 
@@ -160,11 +165,11 @@ describe("Add resources picker", () => {
     const a = unit({ resourceIds: [R1.id] });
     const { host } = await panel([a]);
     const add = q(host, `units-resources-add-${a.unitId}`) as HTMLButtonElement;
-    expect(add.getAttribute("aria-expanded")).toBe("false");
+    expect(q(host, `units-picker-${a.unitId}`)).toBeNull();
     add.click();
     const search = q(host, `units-picker-search-${a.unitId}`);
     expect(document.activeElement).toBe(search);
-    expect(q(host, `units-resources-add-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
+    expect(q(host, `units-picker-${a.unitId}`)).not.toBeNull();
     const boxes = optionsOf(host, a.unitId);
     expect(boxes.map((b) => b.value)).toEqual(g7.map((r) => r.id));
     const placeableIds = new Set(placeable.map((r) => r.id));
@@ -234,7 +239,7 @@ describe("Add resources picker", () => {
     });
     expect(status(host)).toBe(`Added 2 resources to "${a.title}".`);
     expect(q(host, `units-picker-${a.unitId}`)).toBeNull();
-    expect(document.activeElement).toBe(q(host, `units-resources-add-${a.unitId}`));
+    expect(document.activeElement).toBe(q(host, `units-menu-${a.unitId}`));
     expect(rowsOf(host, a.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R3.id, R1.id, R2.id]);
   });
 
@@ -259,11 +264,11 @@ describe("Add resources picker", () => {
       new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
     );
     expect(q(host, `units-picker-${a.unitId}`)).toBeNull();
-    expect(document.activeElement).toBe(q(host, `units-resources-add-${a.unitId}`));
+    expect(document.activeElement).toBe(q(host, `units-menu-${a.unitId}`));
     (q(host, `units-resources-add-${a.unitId}`) as HTMLButtonElement).click();
     (q(host, `units-picker-cancel-${a.unitId}`) as HTMLButtonElement).click();
     expect(q(host, `units-picker-${a.unitId}`)).toBeNull();
-    expect(document.activeElement).toBe(q(host, `units-resources-add-${a.unitId}`));
+    expect(document.activeElement).toBe(q(host, `units-menu-${a.unitId}`));
   });
 
   test("conflict: picker and selection stay, current resources shown, no pending message left", async () => {
@@ -332,7 +337,7 @@ describe("Remove", () => {
     expect(status(host)).toBe(`Removed "${R2.title}" from "${a.title}".`);
     expect(rowsOf(host, a.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R1.id, R3.id]);
     expect(rowsOf(host, b.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R2.id]);
-    expect(document.activeElement).toBe(q(host, `units-resource-remove-${a.unitId}-${R3.id}`));
+    expect(document.activeElement).toBe(q(host, `units-resource-menu-${a.unitId}-${R3.id}`));
   });
 
   test("removing the last resource moves focus to Add resources and shows the empty state", async () => {
@@ -340,7 +345,7 @@ describe("Remove", () => {
     const { host } = await panel([a]);
     (q(host, `units-resource-remove-${a.unitId}-${R1.id}`) as HTMLButtonElement).click();
     await flush();
-    expect(document.activeElement).toBe(q(host, `units-resources-add-${a.unitId}`));
+    expect(document.activeElement).toBe(q(host, `units-menu-${a.unitId}`));
     expect(q(host, `units-resources-${a.unitId}`)?.textContent).toContain("No resources in this unit yet.");
   });
 
@@ -427,7 +432,7 @@ describe("retired-resource repair UI (P1)", () => {
     expect(status(host)).toBe(`Removed 2 unavailable resources from "${a.title}".`);
     expect(q(host, `units-retired-${a.unitId}`)).toBeNull();
     expect(rowsOf(host, a.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R2.id, R1.id]);
-    expect(document.activeElement).toBe(q(host, `units-resources-add-${a.unitId}`));
+    expect(document.activeElement).toBe(q(host, `units-menu-${a.unitId}`));
     expect((q(host, `units-resources-add-${a.unitId}`) as HTMLButtonElement).disabled).toBe(false);
   });
 
@@ -558,6 +563,6 @@ describe("status messages (P2)", () => {
     expect(status(host)).toBe("");
     expect(noticeOf(host, a.unitId).textContent).toContain("couldn't confirm whether it was removed");
     expect(rowsOf(host, a.unitId).map((r) => r.getAttribute("data-resource-id"))).toEqual([R1.id, R2.id, R3.id]);
-    expect(document.activeElement).toBe(q(host, `units-resource-remove-${a.unitId}-${R1.id}`));
+    expect(document.activeElement).toBe(q(host, `units-resource-menu-${a.unitId}-${R1.id}`));
   });
 });

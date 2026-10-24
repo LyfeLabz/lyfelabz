@@ -7,12 +7,14 @@ import {
   TEACHER_UNIT_GRADES,
   TEACHER_UNIT_TITLE_MAX_LENGTH,
   isCanonicalSchoolId,
+  isTeacherUnitColor,
   isTeacherUnitGrade,
   requireDistrictContext,
   runFirestoreTransaction,
   schoolDocRef,
   teacherUnitDocRef,
   userRecordDocRef,
+  type TeacherUnitColor,
   type TeacherUnitGrade,
   type TeacherUnitRecord,
   type TeacherUnitStatus,
@@ -290,6 +292,19 @@ export function readTitle(value: unknown): string {
   return title;
 }
 
+// Unit color: one of the closed TEACHER_UNIT_COLORS tokens, or `null` to
+// return to the neutral default. Anything else is refused.
+export function readColor(value: unknown): TeacherUnitColor | null {
+  if (value === null) return null;
+  if (!isTeacherUnitColor(value)) {
+    throw new PlatformError(
+      "teacherUnits.invalidRequest",
+      "color must be one of the unit color tokens, or null.",
+    );
+  }
+  return value;
+}
+
 // An empty description is valid (the field is optional on create and can
 // be cleared).
 export function readDescription(value: unknown): string {
@@ -321,6 +336,9 @@ export type TeacherUnitView = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description: string;
+  // Null when the unit has no color (neutral default) or holds a value
+  // outside the palette.
+  readonly color: TeacherUnitColor | null;
   readonly status: TeacherUnitStatus;
   readonly archivedAtMillis: number | null;
   readonly createdAtMillis: number | null;
@@ -344,6 +362,7 @@ export function toTeacherUnitView(unitId: string, record: TeacherUnitRecord): Te
     grade: record.grade,
     title: record.title,
     description: record.description,
+    color: isTeacherUnitColor(record.color) ? record.color : null,
     status: record.status,
     archivedAtMillis: timestampMillis(record.archivedAt),
     createdAtMillis: timestampMillis(record.createdAt),

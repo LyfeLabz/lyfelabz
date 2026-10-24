@@ -1,6 +1,12 @@
+import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
-import { PlatformError, platformCallable } from "../shared";
+import {
+  PlatformError,
+  isTeacherUnitColor,
+  platformCallable,
+  type TeacherUnitColor,
+} from "../shared";
 import {
   PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
   type TeacherUnitsEnforcement,
@@ -11,6 +17,7 @@ import type { MutationCompatibilityV1 } from "./a3-protocol";
 import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
+  readColor,
   readDescription,
   readExpectedRevision,
   readTitle,
@@ -22,10 +29,11 @@ import {
   type TeacherUnitMutationResponse,
 } from "./teacher-unit-mutation";
 
-// teacherUnitsUpdate - U1A rename and description edit.
+// teacherUnitsUpdate - U1A rename and description edit, plus the unit color.
 //
-// Accepts `title`, `description`, or both, plus the `expectedRevision` the
-// caller last observed. Only these two fields are editable; grade, owner,
+// Accepts any of `title`, `description`, and `color` (a palette token, or
+// null for the neutral default), plus the `expectedRevision` the caller last
+// observed. Only these fields are editable; grade, owner,
 // school, status, resource membership, and ordering are not. An archived
 // unit is read-only (`teacherUnits.invalidStatus`): restore it first. A
 // request whose values already match is a no-op. See
@@ -36,6 +44,7 @@ export type TeacherUnitsUpdateRequest = {
   readonly expectedRevision: number;
   readonly title?: string;
   readonly description?: string;
+  readonly color?: TeacherUnitColor | null;
   readonly compatibility: MutationCompatibilityV1;
 };
 
@@ -46,6 +55,7 @@ const ALLOWED_KEYS: readonly string[] = [
   "expectedRevision",
   "title",
   "description",
+  "color",
   "compatibility",
 ];
 
@@ -58,10 +68,11 @@ function validateRequest(data: unknown): TeacherUnitsUpdateRequest {
   const title = payload.title === undefined ? undefined : readTitle(payload.title);
   const description =
     payload.description === undefined ? undefined : readDescription(payload.description);
-  if (title === undefined && description === undefined) {
+  const color = payload.color === undefined ? undefined : readColor(payload.color);
+  if (title === undefined && description === undefined && color === undefined) {
     throw new PlatformError(
       "teacherUnits.invalidRequest",
-      "At least one of title or description must be supplied.",
+      "At least one of title, description, or color must be supplied.",
     );
   }
   return {
@@ -70,6 +81,7 @@ function validateRequest(data: unknown): TeacherUnitsUpdateRequest {
     compatibility,
     ...(title !== undefined ? { title } : {}),
     ...(description !== undefined ? { description } : {}),
+    ...(color !== undefined ? { color } : {}),
   };
 }
 
@@ -97,7 +109,11 @@ export function createTeacherUnitsUpdateHandler(enforcement: TeacherUnitsEnforce
           "An archived unit cannot be edited. Restore it first.",
         );
       }
-      const fields: { title?: string; description?: string } = {};
+      const fields: {
+        title?: string;
+        description?: string;
+        color?: TeacherUnitColor | FieldValue;
+      } = {};
       const changedFields: string[] = [];
       if (input.title !== undefined && input.title !== current.title) {
         fields.title = input.title;
@@ -106,6 +122,13 @@ export function createTeacherUnitsUpdateHandler(enforcement: TeacherUnitsEnforce
       if (input.description !== undefined && input.description !== current.description) {
         fields.description = input.description;
         changedFields.push("description");
+      }
+      if (input.color !== undefined) {
+        const held = isTeacherUnitColor(current.color) ? current.color : null;
+        if (input.color !== held) {
+          fields.color = input.color ?? FieldValue.delete();
+          changedFields.push("color");
+        }
       }
       if (changedFields.length === 0) return null;
       return {

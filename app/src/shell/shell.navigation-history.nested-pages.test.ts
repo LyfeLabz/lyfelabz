@@ -633,3 +633,84 @@ describe("modal dialogs are never left open over the page Back restores", () => 
     expect(document.querySelector("[data-testid=assign-overlay]")).toBeNull();
   });
 });
+
+describe("Lesson Results -> Class Results -> Assignment Summary", () => {
+  const withClasses: LessonSummaryCallable = async (input) =>
+    Object.assign(await lessonSummaryCallable(input), {
+      classes: [
+        {
+          classId: CLASS_ID,
+          students: 2,
+          studentsCompleted: 1,
+          completionPercentage: 50,
+          averageBestPercentage: 80,
+          assignmentsConsidered: 1,
+        },
+      ],
+    });
+
+  test("View Results pushes the class's assignment entry; in-app Back replaces it with the same Results", async () => {
+    const { mount, opened } = await mountShell({ lessonSummary: withClasses });
+    mount.querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")!.click();
+    await settle();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${LESSON.slug}]`)!.click();
+    await settle();
+    mount
+      .querySelector<HTMLButtonElement>(`[data-testid=lesson-class-result-view-${CLASS_ID}]`)!
+      .click();
+    await settle();
+    expect(opened).toEqual(["a-ed"]);
+    expect(onSummary(mount)).toBe(true);
+    expect(window.history.state).toEqual({
+      kind: "shell-assignment-detail",
+      surface: "classes",
+      classId: CLASS_ID,
+      assignmentId: "a-ed",
+    });
+    const back = mount.querySelector<HTMLButtonElement>("[data-testid=assignment-summary-back]")!;
+    expect(back.textContent).toBe("Back to Results");
+
+    const pushSpy = jest.spyOn(window.history, "pushState");
+    try {
+      back.click();
+      await settle();
+      expect(pushSpy).not.toHaveBeenCalled();
+    } finally {
+      pushSpy.mockRestore();
+    }
+    expect(activeSurface(mount)).toBe("curriculum");
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).not.toBeNull();
+    expect(mount.querySelector(`[data-testid=lesson-class-result-${CLASS_ID}]`)).not.toBeNull();
+    expect(window.history.state).toEqual({
+      kind: "shell-lesson-summary",
+      surface: "curriculum",
+      lessonSlug: LESSON.slug,
+    });
+
+    // The certified replace-never-back() pattern (as "Back to class" in
+    // Classes): the Detail entry became this Results entry, so browser Back
+    // first lands on the Results entry beneath it, then on the lesson grid.
+    await realBack();
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).not.toBeNull();
+    await realBack();
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).toBeNull();
+  });
+
+  test("browser Back from the class's assignment returns to Results; Forward re-opens the assignment", async () => {
+    const { mount } = await mountShell({ lessonSummary: withClasses });
+    mount.querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")!.click();
+    await settle();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${LESSON.slug}]`)!.click();
+    await settle();
+    mount
+      .querySelector<HTMLButtonElement>(`[data-testid=lesson-class-result-view-${CLASS_ID}]`)!
+      .click();
+    await settle();
+    expect(onSummary(mount)).toBe(true);
+    await realBack();
+    expect(activeSurface(mount)).toBe("curriculum");
+    expect(mount.querySelector(`[data-testid=lesson-class-result-${CLASS_ID}]`)).not.toBeNull();
+    await realForward();
+    expect(onSummary(mount)).toBe(true);
+  });
+});

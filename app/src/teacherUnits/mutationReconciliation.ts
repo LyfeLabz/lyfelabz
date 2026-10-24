@@ -22,6 +22,7 @@
 // Nothing here dispatches, schedules, or resends a mutation.
 
 import type { TeacherUnitError, TeacherUnitErrorCategory } from "./errors";
+import type { TeacherUnitColor } from "./unitColor";
 import { compareTeacherUnits, type TeacherUnit, type TeacherUnitGrade } from "./types";
 
 // ---------- Outcome certainty ----------
@@ -73,7 +74,12 @@ export type PendingMutationScope = {
 // complete resource list). `purpose` names the teacher action behind a
 // membership write; it never changes evaluation.
 export type PendingUnitMutationIntent =
-  | { readonly op: "update"; readonly title?: string; readonly description?: string }
+  | {
+      readonly op: "update";
+      readonly title?: string;
+      readonly description?: string;
+      readonly color?: TeacherUnitColor | null;
+    }
   | { readonly op: "archive" }
   | { readonly op: "restore" }
   | {
@@ -99,9 +105,15 @@ export type PendingUnitMutationRecord = {
 function freezeIntent(intent: PendingUnitMutationIntent): PendingUnitMutationIntent {
   switch (intent.op) {
     case "update": {
-      const out: { op: "update"; title?: string; description?: string } = { op: "update" };
+      const out: {
+        op: "update";
+        title?: string;
+        description?: string;
+        color?: TeacherUnitColor | null;
+      } = { op: "update" };
       if (intent.title !== undefined) out.title = intent.title;
       if (intent.description !== undefined) out.description = intent.description;
+      if (intent.color !== undefined) out.color = intent.color;
       return Object.freeze(out);
     }
     case "setResources":
@@ -182,7 +194,8 @@ export function requestedStateHolds(unit: TeacherUnit, intent: PendingUnitMutati
     case "update":
       return (
         (intent.title === undefined || unit.title === intent.title) &&
-        (intent.description === undefined || unit.description === intent.description)
+        (intent.description === undefined || unit.description === intent.description) &&
+        (intent.color === undefined || unit.color === intent.color)
       );
     case "archive":
       return unit.status === "archived";

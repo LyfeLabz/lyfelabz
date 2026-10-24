@@ -74,6 +74,38 @@ export const TEACHER_UNIT_RESOURCES_MAX = 100;
 // plus one audit event, inside Firestore's per-transaction write limit).
 export const TEACHER_UNITS_REORDER_MAX = 200;
 
+// Teacher-selected unit color: a closed, curated palette (never a free-form
+// CSS value). Optional on the record: a unit without one (every unit created
+// before colors existed) shows the neutral default, so no migration is
+// needed. Presentation only; it never affects membership, ordering,
+// ownership, status, or assignments. Mirrored on the client at
+// app/src/teacherUnits/unitColor.ts.
+export type TeacherUnitColor =
+  | "teal"
+  | "blue"
+  | "purple"
+  | "green"
+  | "gold"
+  | "coral"
+  | "slate";
+
+export const TEACHER_UNIT_COLORS: readonly TeacherUnitColor[] = Object.freeze([
+  "teal",
+  "blue",
+  "purple",
+  "green",
+  "gold",
+  "coral",
+  "slate",
+]);
+
+export function isTeacherUnitColor(value: unknown): value is TeacherUnitColor {
+  return (
+    typeof value === "string" &&
+    (TEACHER_UNIT_COLORS as readonly string[]).includes(value)
+  );
+}
+
 export type TeacherUnitRecord = {
   // Ownership and identity. Stamped at creation from the caller's verified
   // canonical identity and never written again.
@@ -82,6 +114,8 @@ export type TeacherUnitRecord = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description: string;
+  // Absent until the teacher picks one (see TEACHER_UNIT_COLORS).
+  readonly color?: TeacherUnitColor;
   readonly status: TeacherUnitStatus;
   // Null while active; the archive transition's server time while archived.
   readonly archivedAt: Timestamp | null;
@@ -102,6 +136,7 @@ export type TeacherUnitCreationWrite = {
   readonly grade: TeacherUnitGrade;
   readonly title: string;
   readonly description: string;
+  readonly color?: TeacherUnitColor;
   readonly status: "active";
   readonly archivedAt: null;
   readonly createdAt: FieldValue;
@@ -118,6 +153,8 @@ export type TeacherUnitCreationWrite = {
 export type TeacherUnitUpdateWrite = {
   readonly title?: string;
   readonly description?: string;
+  // A token sets the color; `FieldValue.delete()` returns it to neutral.
+  readonly color?: TeacherUnitColor | FieldValue;
   readonly status?: TeacherUnitStatus;
   readonly archivedAt?: FieldValue | null;
   readonly resourceIds?: readonly string[];

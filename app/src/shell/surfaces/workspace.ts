@@ -39,6 +39,7 @@ import {
   renderCurriculumSurface,
   type CurriculumAssignmentDetailSeam,
   type AssignmentDetailStudentSelection,
+  type LessonResultsIntent,
 } from "./curriculum";
 import {
   renderClassesSurface,
@@ -49,10 +50,8 @@ import {
 import { renderSettingsSurface } from "./settings";
 import { renderMyUnitsSurface } from "./myUnits";
 import type { SnapshotPreview } from "./snapshot";
-import type {
-  AssignmentSummaryCallable,
-  LessonSummaryCallable,
-} from "../../assignments/summary/types";
+import type { AssignmentSummaryCallable } from "../../assignments/summary/types";
+import type { LessonResultsCallable } from "../../assignments/summary/lessonResults";
 
 // Typed contract for a Teacher Workspace surface.
 //
@@ -122,7 +121,7 @@ export type WorkspaceDeps = {
   // Sprint 28.6E: certified lesson-level summary callable consumed by the
   // Curriculum lesson-card View Summary surface (cross-assignment
   // aggregate analytics). Null in harnesses that do not exercise it.
-  readonly lessonSummary?: LessonSummaryCallable | null;
+  readonly lessonSummary?: LessonResultsCallable | null;
   // U2.2 My Units seam; null unless the entry-point gate is open.
   readonly teacherUnits?: TeacherUnitsSurfaceSeam | null;
   // Sprint 20 internal beta: injected create-class callable seam.
@@ -202,6 +201,12 @@ export type WorkspaceDeps = {
   // when no unit is named) and the one-shot My Units consumes.
   readonly openMyUnits?: ((target: MyUnitsOpenUnitIntent | null) => void) | null;
   readonly consumeOpenUnitIntent?: (() => MyUnitsOpenUnitIntent | null) | null;
+  // Lesson Results across surfaces: the one-shot Curriculum consumes, the
+  // opener that sets it (My Units' Results, Back from a class's Assignment
+  // Detail), and Results' return to the My Units unit it came from.
+  readonly consumeLessonResultsIntent?: (() => LessonResultsIntent | null) | null;
+  readonly openLessonResults?: ((intent: LessonResultsIntent) => void) | null;
+  readonly returnToMyUnits?: ((target: MyUnitsOpenUnitIntent) => void) | null;
   // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned
   // student-selection intent seam (see shell.ts `classesStudentIntent`).
   // The Classes surface reads it once on mount to open Student Detail
@@ -266,6 +271,9 @@ export const WORKSPACE_SURFACES: Readonly<
         curriculumHistory: deps.curriculumHistory ?? null,
         teacherUnits: deps.teacherUnits ?? null,
         openMyUnits: deps.openMyUnits ?? null,
+        consumeLessonResultsIntent: deps.consumeLessonResultsIntent ?? null,
+        openLessonResults: deps.openLessonResults ?? null,
+        returnToMyUnits: deps.returnToMyUnits ?? null,
       }),
   }),
   units: Object.freeze({
@@ -280,6 +288,13 @@ export const WORKSPACE_SURFACES: Readonly<
         unitsHistory: deps.unitsHistory ?? null,
         consumeArchivedIntent: deps.consumeArchivedUnitsIntent ?? null,
         consumeOpenUnitIntent: deps.consumeOpenUnitIntent ?? null,
+        // Lesson rows reuse Curriculum's assignment state, dialog, and Results.
+        listClasses: deps.listClasses,
+        assignments: deps.assignments ?? null,
+        integrations: deps.integrations ?? null,
+        assignmentDetail: deps.assignmentDetail ?? null,
+        lessonSummary: deps.lessonSummary ?? null,
+        openLessonResults: deps.openLessonResults ?? null,
       }),
   }),
   classes: Object.freeze({

@@ -1134,28 +1134,180 @@
   }
   .shell-units-card--archived { background: var(--tw-surface-alt); }
   .shell-units-card[aria-busy="true"] { opacity: 0.75; }
-  .shell-units-card-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
-  /* Milestone 1: the compact unit container's disclosure. */
-  .shell-units-card-heading { margin: 0; flex: 1 1 auto; min-width: 0; font-size: 1.05rem; }
-  .shell-units-card-toggle {
+  /* Unit header: one compact row. Left: color swatch and title; right: Unit
+     Results, the expand/collapse chevron, and the management menu. */
+  .shell-units-card-title-row { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
+  .shell-units-card-heading {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    min-height: 44px;
+    gap: 0.55rem;
     margin: 0;
-    padding: 0.25rem 0;
-    background: none;
-    border: none;
-    font: inherit;
-    text-align: left;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 1.05rem;
+  }
+  .shell-units-card-title {
+    margin: 0;
+    font-weight: 600;
     color: var(--tw-ink);
+    overflow-wrap: anywhere;
+    min-width: 0;
     cursor: pointer;
   }
-  .shell-units-card-toggle:focus-visible { outline: var(--tw-focus-outline); outline-offset: 2px; border-radius: 2px; }
-  .shell-units-card-title { margin: 0; font-weight: 600; color: var(--tw-ink); overflow-wrap: anywhere; min-width: 0; }
-  .shell-units-card-count { font-size: 0.85rem; font-weight: 400; color: var(--tw-ink-muted); white-space: nowrap; }
-  .shell-units-card-chevron { margin-left: auto; color: var(--tw-ink-muted); }
+  .shell-units-card-controls { display: flex; align-items: center; gap: 0.35rem; flex: 0 0 auto; margin-left: auto; }
+  .shell-units-card-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: var(--tw-radius-control, 6px);
+    font: inherit;
+    color: var(--tw-ink-muted);
+    cursor: pointer;
+  }
+  .shell-units-card-toggle:hover { border-color: var(--tw-hairline); background: rgba(28, 39, 51, 0.04); }
+  .shell-units-card-toggle:focus-visible { outline: var(--tw-focus-outline); outline-offset: 2px; }
+  .shell-units-card-chevron { color: var(--tw-ink-muted); font-size: 1.25rem; line-height: 1; }
+  /* Unit Results: the Results pill treatment (#E0F1F3 / #B5DADD / #205B68). */
+  .shell-units-results-pill {
+    box-sizing: border-box;
+    height: 2rem;
+    margin: 0;
+    padding: 0 0.75rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e0f1f3;
+    color: #205b68;
+    border: 1px solid #b5dadd;
+    border-radius: var(--tw-radius-pill, 999px);
+    cursor: pointer;
+  }
+  .shell-units-results-pill:hover,
+  .shell-units-results-pill:focus-visible { background: #d0e9ec; border-color: #8fc6cb; color: #1a4c57; }
+  .shell-units-results-pill:focus-visible { outline: none; box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22)); }
+  /* Teacher-selected unit color: a curated palette as tokens. Text on each
+     tint is 6.9:1 or better; each accent is 3.2:1 or better on white. A
+     unit without a color ("none") stays neutral. */
+  [data-unit-color="teal"] { --unit-bg: #e0f1f3; --unit-border: #8fc6cb; --unit-fg: #1a4c57; --unit-accent: #2a7f8a; }
+  [data-unit-color="blue"] { --unit-bg: #e4ecfa; --unit-border: #a9c1ea; --unit-fg: #1f3f7a; --unit-accent: #3b6bc4; }
+  [data-unit-color="purple"] { --unit-bg: #eee7f7; --unit-border: #c7b3e3; --unit-fg: #4b2b7f; --unit-accent: #7a52b3; }
+  [data-unit-color="green"] { --unit-bg: #e4f2e8; --unit-border: #a7d0b3; --unit-fg: #23573a; --unit-accent: #3e8a5c; }
+  [data-unit-color="gold"] { --unit-bg: #fbf1d9; --unit-border: #e2c26e; --unit-fg: #6b4e0a; --unit-accent: #b8860b; }
+  [data-unit-color="coral"] { --unit-bg: #fce8e3; --unit-border: #efb3a4; --unit-fg: #8a3221; --unit-accent: #d2644c; }
+  [data-unit-color="slate"] { --unit-bg: #e8ecf0; --unit-border: #b7c2cd; --unit-fg: #2f3d4a; --unit-accent: #5b6b7b; }
+  /* Neutral, so a "None" choice never inherits an enclosing unit's color. */
+  [data-unit-color="none"] { --unit-bg: #f3f6f8; --unit-border: #9aa7b3; --unit-fg: var(--tw-ink, #1c2733); --unit-accent: transparent; }
+  .shell-units-card:not([data-unit-color="none"]) { border-left: 4px solid var(--unit-accent, var(--tw-hairline)); }
+  .shell-units-card-swatch {
+    flex: 0 0 auto;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--unit-accent, transparent);
+  }
+  [data-unit-color="none"] .shell-units-card-swatch { display: none; }
+  /* Three-dot menus: the unit management menu and the quiet row menu. */
+  .shell-units-menu { position: relative; display: inline-flex; }
+  .shell-units-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 1.1rem;
+    line-height: 1;
+    background: transparent;
+    color: var(--tw-ink-soft, #3a4653);
+    border: 1px solid transparent;
+    border-radius: var(--tw-radius-control, 6px);
+    cursor: pointer;
+  }
+  .shell-units-menu--row .shell-units-menu-trigger { color: var(--tw-ink-muted, #566472); }
+  .shell-units-menu-trigger:hover,
+  .shell-units-menu-trigger[aria-expanded="true"] { border-color: var(--tw-hairline); background: rgba(28, 39, 51, 0.05); }
+  .shell-units-menu-trigger:focus-visible { outline: var(--tw-focus-outline, 2px solid #1a5f6f); outline-offset: 2px; }
+  .shell-units-menu-list {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    z-index: 30;
+    min-width: 11rem;
+    padding: 0.25rem;
+    background: var(--tw-surface, #fff);
+    border: 1px solid var(--tw-hairline, rgba(28, 39, 51, 0.09));
+    border-radius: var(--tw-radius-control, 6px);
+    box-shadow: 0 6px 18px rgba(28, 39, 51, 0.14);
+  }
+  .shell-units-menu-list[hidden] { display: none; }
+  .shell-units-menu-item {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    font-size: 0.9rem;
+    text-align: left;
+    white-space: nowrap;
+    background: transparent;
+    color: var(--tw-ink, #1c2733);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .shell-units-menu-item--danger { color: #8a3221; }
+  .shell-units-menu-item:hover,
+  .shell-units-menu-item:focus-visible { background: rgba(28, 39, 51, 0.06); outline: none; }
+  .shell-units-menu-item:focus-visible { box-shadow: inset 0 0 0 2px #1a5f6f; }
+  .shell-units-menu-item:disabled,
+  .shell-units-menu-item[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+  /* Unit color choice in Create Unit and Edit Unit (native radio group). */
+  .shell-units-color-fieldset { margin: 0; padding: 0; border: none; min-width: 0; }
+  .shell-units-color-fieldset legend { margin-bottom: 0.4rem; padding: 0; }
+  .shell-units-color-options { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .shell-units-color-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2rem;
+    padding: 0.15rem 0.6rem 0.15rem 0.4rem;
+    font-size: 0.85rem;
+    color: var(--tw-ink, #1c2733);
+    background: var(--tw-surface, #fff);
+    border: 1px solid var(--tw-hairline, rgba(28, 39, 51, 0.09));
+    border-radius: var(--tw-radius-pill, 999px);
+    cursor: pointer;
+  }
+  .shell-units-color-option:has(input:checked) { border-color: var(--tw-ink-soft, #3a4653); background: var(--unit-bg, #f3f6f8); }
+  .shell-units-color-radio { margin: 0; }
+  .shell-units-color-radio:focus-visible { outline: var(--tw-focus-outline, 2px solid #1a5f6f); outline-offset: 2px; }
+  .shell-units-color-swatch {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: var(--unit-accent, transparent);
+    border: 1px solid var(--unit-border, #9aa7b3);
+  }
+  @media (max-width: 480px) {
+    .shell-units-card-title-row { flex-wrap: wrap; }
+    .shell-units-card-heading { flex-basis: 100%; }
+  }
+  @media (pointer: coarse) {
+    .shell-units-card-toggle,
+    .shell-units-menu-trigger { width: 44px; height: 44px; }
+    .shell-units-results-pill,
+    .shell-units-menu-item,
+    .shell-units-color-option { min-height: 44px; }
+  }
   .shell-units-card-details { padding-bottom: 0.4rem; }
   .shell-units-card-description {
     margin: 0.35rem 0 0 0;
@@ -1179,8 +1331,7 @@
   }
   .shell-units-empty { margin: 0 0 0.75rem 0; color: var(--tw-ink-muted); }
   /* U2.3 unit resources and the Add resources picker. */
-  .shell-units-resources { margin-top: 0.75rem; }
-  .shell-units-resources-heading { margin: 0 0 0.4rem 0; font-size: 0.95rem; color: var(--tw-ink-soft); }
+  .shell-units-resources { margin-top: 0.5rem; }
   .shell-units-resources .shell-units-empty { margin: 0; }
   .shell-units-resource-list,
   .shell-units-picker-options { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
@@ -1914,6 +2065,114 @@
     margin: 0.9rem 0 0;
     font-size: 0.85rem;
     color: var(--tw-ink-muted, #566472);
+  }
+  /* Class Results: one compact row per assigned class beneath the four
+     lesson metrics. Same card surface and tokens as the metric cards; the
+     participation state is visible text, never color alone. View Results
+     reuses the Results pill colors (#E0F1F3 / #B5DADD / #205B68, 7.0:1). */
+  .shell-lesson-class-results { margin: 1.25rem 0 0; }
+  /* Unit Results reuses the Results header and the Class Results rows. */
+  .shell-unit-results { display: flex; flex-direction: column; gap: 0.5rem; }
+  .shell-unit-results-host:empty { display: none; }
+  .shell-unit-results-title { display: flex; align-items: center; gap: 0.55rem; }
+  .shell-unit-results-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.25rem 0 0.5rem; }
+  .shell-unit-results-filter[hidden] { display: none; }
+  .shell-unit-results-select { width: auto; min-width: 12rem; max-width: 100%; }
+  .shell-lesson-class-results-heading {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-lesson-class-results-note {
+    margin: 0;
+    color: var(--tw-ink-muted, #566472);
+    font-size: 0.92rem;
+  }
+  .shell-lesson-class-results-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .shell-lesson-class-result {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr) auto;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    background: var(--tw-surface, #fff);
+    border: 1px solid var(--tw-hairline, rgba(28, 39, 51, 0.09));
+    border-radius: var(--tw-radius-card, 10px);
+    padding: 0.7rem 0.95rem;
+  }
+  .shell-lesson-class-result-main { min-width: 0; }
+  .shell-lesson-class-result-name {
+    margin: 0;
+    font-size: 0.98rem;
+    color: var(--tw-ink, #1c2733);
+    overflow-wrap: anywhere;
+  }
+  .shell-lesson-class-result-status {
+    margin: 0.15rem 0 0;
+    font-size: 0.82rem;
+    color: var(--tw-ink-muted, #566472);
+  }
+  .shell-lesson-class-result-stats {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0.25rem 1rem;
+    margin: 0;
+  }
+  .shell-lesson-class-result-stat { min-width: 0; }
+  .shell-lesson-class-result-stat dt {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tw-ink-muted, #566472);
+  }
+  .shell-lesson-class-result-stat dd {
+    margin: 0.1rem 0 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--tw-ink, #1c2733);
+  }
+  .shell-lesson-class-result-view {
+    box-sizing: border-box;
+    height: 2rem;
+    margin: 0;
+    padding: 0 0.75rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background: #e0f1f3;
+    color: #205b68;
+    border: 1px solid #b5dadd;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .shell-lesson-class-result-view:hover,
+  .shell-lesson-class-result-view:focus-visible {
+    background: #d0e9ec;
+    border-color: #8fc6cb;
+    color: #1a4c57;
+  }
+  .shell-lesson-class-result-view:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  @media (max-width: 720px) {
+    .shell-lesson-class-result { grid-template-columns: minmax(0, 1fr) auto; }
+    .shell-lesson-class-result-stats { grid-column: 1 / -1; grid-row: 2; }
+  }
+  @media (max-width: 480px) {
+    .shell-lesson-class-result-stats { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (pointer: coarse) {
+    .shell-lesson-class-result-view { min-height: 44px; }
   }
   @media (max-width: 960px) {
     .shell-lesson-summary-metrics { grid-template-columns: repeat(2, 1fr); }
@@ -5806,6 +6065,13 @@
   .shell-resource-units-more { background: transparent; color: var(--tw-ink-soft, #3a4653); }
   .shell-resource-unit-pill:hover,
   .shell-resource-units-more:hover { border-color: #7f95a8; }
+  /* Each unit pill carries its own unit's color; the name stays the label. */
+  .shell-resource-unit-pill:not([data-unit-color="none"]) {
+    color: var(--unit-fg, #3d5468);
+    background: var(--unit-bg, #f3f6f9);
+    border-color: var(--unit-border, #c9d4de);
+  }
+  .shell-resource-unit-pill:not([data-unit-color="none"]):hover { border-color: var(--unit-accent, #7f95a8); }
   .shell-resource-unit-pill:focus-visible,
   .shell-resource-units-more:focus-visible { outline: var(--tw-focus-outline, 2px solid #1a5f6f); outline-offset: 2px; }
   .shell-curriculum-selection-dock {
@@ -5987,6 +6253,7 @@
   .shell-units-resource-card .shell-lesson-title-row > .shell-lesson-resource-type { flex: 0 0 auto; }
   .shell-units-resource-card .shell-lesson-title { font-weight: 600; }
   .shell-units-resource-card .shell-lesson-title-row .shell-lesson-title { flex: 0 1 auto; }
+  .shell-units-resource-card .shell-resource-row-actions .shell-lesson-assign,
   .shell-units-resource-card .shell-resource-row-actions .shell-lesson-preview,
   .shell-units-resource-card .shell-resource-row-actions .shell-lesson-resource-open,
   .shell-units-resource-card .shell-resource-row-actions .shell-btn { border-radius: var(--tw-radius-pill, 999px); }

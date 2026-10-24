@@ -1,4 +1,5 @@
 import { TeacherUnitsCompatibilityError } from "./compatibilityError";
+import { isTeacherUnitColor } from "./unitColor";
 import type { TeacherUnitsMutationVerifier } from "./backendCompatibility";
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
 import { validateMutationCompatibility, type MutationCompatibilityV1 } from "./a3Protocol";
@@ -134,6 +135,9 @@ export function parseTeacherUnit(raw: unknown, callable: string): TeacherUnit {
     grade: r.grade,
     title: r.title,
     description: r.description,
+    // Tolerant: a backend without colors (absent) or a palette value this
+    // client does not know reads as the neutral default, never a failure.
+    color: isTeacherUnitColor(r.color) ? r.color : null,
     status: r.status as TeacherUnit["status"],
     archivedAtMillis: r.archivedAtMillis as number | null,
     createdAtMillis: r.createdAtMillis,
@@ -260,6 +264,7 @@ export function createFirebaseTeacherUnitsCallables(
         grade: req.grade,
         title: req.title,
         ...(req.description !== undefined ? { description: req.description } : {}),
+        ...(req.color !== undefined && req.color !== null ? { color: req.color } : {}),
         idempotencyKey: req.idempotencyKey,
         // Required since A3-3 on first attempts and replays (TEACHER_UNITS.md §5.4).
         expectedSchoolId: req.expectedSchoolId,
@@ -311,6 +316,7 @@ export function createFirebaseTeacherUnitsCallables(
         expectedRevision: req.expectedRevision,
         ...(req.title !== undefined ? { title: req.title } : {}),
         ...(req.description !== undefined ? { description: req.description } : {}),
+        ...(req.color !== undefined ? { color: req.color } : {}),
       });
       return parseMutation(data, n.update, unitId);
     },

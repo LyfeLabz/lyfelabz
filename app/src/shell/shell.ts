@@ -50,11 +50,10 @@ type ClassesHistoryNotify = Parameters<StudentDetailHistorySeam["notify"]>[0];
 import type {
   CurriculumAssignmentDetailSeam,
   AssignmentDetailStudentSelection,
+  LessonResultsIntent,
 } from "./surfaces/curriculum";
-import type {
-  AssignmentSummaryCallable,
-  LessonSummaryCallable,
-} from "../assignments/summary/types";
+import type { AssignmentSummaryCallable } from "../assignments/summary/types";
+import type { LessonResultsCallable } from "../assignments/summary/lessonResults";
 import type {
   AccommodationsListStudentsCallable,
   AccommodationsGetCallable,
@@ -116,7 +115,7 @@ export type ShellDeps = {
   readonly assignmentSummary?: AssignmentSummaryCallable | null;
   // Sprint 28.6E: certified lesson-level summary callable consumed by the
   // Curriculum lesson-card View Summary surface.
-  readonly lessonSummary?: LessonSummaryCallable | null;
+  readonly lessonSummary?: LessonResultsCallable | null;
   // U2.2 My Units seam; null unless the entry-point gate is open.
   readonly teacherUnits?: TeacherUnitsSurfaceSeam | null;
   // Teacher Units UX Milestone 1A: the destination a fresh page load asked
@@ -290,6 +289,8 @@ export function mountTeacherShell(
   // Milestone 2A one-shot: the next My Units mount opens on this unit
   // (Curriculum's "View unit" after Add to Unit).
   let openUnitIntent: MyUnitsOpenUnitIntent | null = null;
+  // One-shot: the next Curriculum mount opens this lesson's Results.
+  let lessonResultsIntent: LessonResultsIntent | null = null;
 
   // Browser Back/Forward: the single push/replace path for every history
   // state, so each entry's URL is derived by the one mapping in
@@ -462,6 +463,44 @@ export function mountTeacherShell(
           openUnitIntent = null;
         }
       : null,
+    consumeLessonResultsIntent: (): LessonResultsIntent | null => {
+      const intent = lessonResultsIntent;
+      lessonResultsIntent = null;
+      return intent;
+    },
+    // A lesson's Results from outside the Curriculum grid: My Units' Results
+    // action (Results pushes its own history entry) or Back from a class's
+    // Assignment Detail (`restore`: the Results entry is still current).
+    // Curriculum is mounted without a Curriculum entry of its own, so the
+    // browser history gains exactly the Results entry, or (restore) the
+    // Assignment Detail entry is REPLACED by the Results entry it came from.
+    openLessonResults: (intent: LessonResultsIntent): void => {
+      lessonResultsIntent = intent;
+      navigateTo("curriculum", { fromPopstate: true });
+      lessonResultsIntent = null;
+      if (intent.restore) {
+        replaceShellState({
+          kind: "shell-lesson-summary",
+          surface: "curriculum",
+          lessonSlug: intent.lessonSlug,
+          ...(intent.returnTo.kind === "units" ? { from: intent.returnTo.unit } : {}),
+        });
+      }
+    },
+    // Results opened from My Units: Back returns to that unit and REPLACES
+    // the Results entry (the certified replace-never-back() pattern).
+    returnToMyUnits: unitsEnabled
+      ? (target: MyUnitsOpenUnitIntent): void => {
+          openUnitIntent = target;
+          navigateTo("units", { fromPopstate: true });
+          openUnitIntent = null;
+          replaceShellState(
+            target.view === "results"
+              ? { kind: "shell-unit-results", surface: "units", unitId: target.unitId, grade: target.grade }
+              : { kind: "shell-surface", surface: "units" },
+          );
+        }
+      : null,
     // Settings > Units: open My Units on its archived view. One history
     // entry (the archived view), like any other real navigation.
     openArchivedUnits: unitsEnabled
@@ -620,6 +659,14 @@ export function mountTeacherShell(
           archivedUnitsIntent = true;
         }
         break;
+      case "shell-unit-results":
+        // Fresh load of a Unit Results link: My Units opens on that unit's
+        // grade and shows its Unit Results once the unit list confirms it.
+        if (unitsEnabled) {
+          initialState = requested;
+          openUnitIntent = { unitId: requested.unitId, grade: requested.grade, view: "results" };
+        }
+        break;
       case "shell-curriculum-units":
         initialState = { kind: "shell-surface", surface: unitsEnabled ? "units" : "curriculum" };
         break;
@@ -764,7 +811,7 @@ export function mountTeacherShell(
           } else if (parsed.surface === "curriculum") {
             curriculumController?.restoreTop();
           } else if (parsed.surface === "units") {
-            unitsController?.restoreArchived(false);
+            unitsController?.restoreTop();
           } else {
             settingsController?.restoreRoot();
           }
@@ -798,7 +845,7 @@ export function mountTeacherShell(
           return;
         case "shell-lesson-summary":
           navigateTo("curriculum", { fromPopstate: true });
-          curriculumController?.restoreLessonSummary(parsed.lessonSlug);
+          curriculumController?.restoreLessonSummary(parsed.lessonSlug, parsed.from);
           return;
         case "shell-curriculum-tab":
           navigateTo("curriculum", { fromPopstate: true });
@@ -821,6 +868,16 @@ export function mountTeacherShell(
           } else {
             archivedUnitsIntent = true;
             navigateTo("units", { fromPopstate: true });
+          }
+          return;
+        case "shell-unit-results":
+          if (!unitsEnabled) return;
+          if (activeKey === "units" && !showingDetail && unitsController !== null) {
+            unitsController.restoreUnitResults(parsed.unitId, parsed.grade);
+          } else {
+            openUnitIntent = { unitId: parsed.unitId, grade: parsed.grade, view: "results" };
+            navigateTo("units", { fromPopstate: true });
+            openUnitIntent = null;
           }
           return;
         case "shell-settings-integrations":

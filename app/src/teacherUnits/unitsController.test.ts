@@ -52,6 +52,7 @@ const unit = (over: Partial<TeacherUnit> = {}): TeacherUnit => ({
   grade: "7",
   title: "Earth Systems",
   description: "",
+  color: null,
   status: "active",
   archivedAtMillis: null,
   createdAtMillis: seq,
@@ -213,6 +214,22 @@ describe("mutations use authoritative responses and revisions", () => {
     expect(await ctl.updateUnit(u.unitId, { title: "  " })).toMatchObject({ kind: "invalid", field: "title" });
     expect(await ctl.updateUnit(u.unitId, { description: "x".repeat(1001) })).toMatchObject({ kind: "invalid", field: "description" });
     expect(c.update).not.toHaveBeenCalled();
+  });
+
+  test("a color-only edit sends just the color; choosing the held color sends nothing", async () => {
+    const u = unit({ revision: 4, color: "teal" });
+    const saved = { ...u, color: "gold" as const, revision: 5 };
+    const { ctl, c } = await ready(u, {
+      update: jest.fn(async (): Promise<TeacherUnitMutationResponse> => ({ unit: saved, noop: false })),
+    });
+    expect(await ctl.updateUnit(u.unitId, { title: u.title, description: u.description, color: "teal" })).toMatchObject({
+      kind: "saved",
+      noop: true,
+    });
+    expect(c.update).not.toHaveBeenCalled();
+    const r = await ctl.updateUnit(u.unitId, { title: u.title, description: u.description, color: "gold" });
+    expect(c.update).toHaveBeenCalledWith({ unitId: u.unitId, expectedRevision: 4, color: "gold" });
+    expect(r).toEqual({ kind: "saved", unit: saved, noop: false });
   });
 
   test("writeConflict fetches the current unit, never replays, and the next save uses the new revision", async () => {

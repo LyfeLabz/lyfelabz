@@ -23,6 +23,7 @@ import type { WorkspaceSurfaceKey } from "./navigation";
 //   Curriculum resource-type tab      shell-curriculum-tab(tab)
 //   My Units (gated)                  shell-surface(units)
 //   My Units archived view (gated)    shell-units-archived
+//   Unit Results (gated)              shell-unit-results(unitId, grade)
 //   Settings                          shell-surface(settings)
 //   Settings > Manage connection      shell-settings-integrations
 export type ClassWorkspaceSection = "assignments" | "roster" | "setup";
@@ -76,6 +77,9 @@ export type ShellHistoryState =
       readonly kind: "shell-lesson-summary";
       readonly surface: "curriculum";
       readonly lessonSlug: string;
+      // Results opened from My Units (a unit row, or Unit Results): where its
+      // in-app Back returns, kept across Back/Forward. Absent: Curriculum.
+      readonly from?: UnitsReturnState;
     }
   | {
       readonly kind: "shell-curriculum-tab";
@@ -87,7 +91,38 @@ export type ShellHistoryState =
   // them as My Units (or leaves Curriculum showing when it is not enabled).
   | { readonly kind: "shell-curriculum-units"; readonly surface: "curriculum" }
   | { readonly kind: "shell-units-archived"; readonly surface: "units" }
+  | {
+      readonly kind: "shell-unit-results";
+      readonly surface: "units";
+      readonly unitId: string;
+      readonly grade: UnitsHistoryGrade;
+    }
   | { readonly kind: "shell-settings-integrations"; readonly surface: "settings" };
+
+// Teacher unit grades, as history may name them (validated on parse).
+export type UnitsHistoryGrade = "6" | "7" | "8";
+const UNIT_GRADES: ReadonlySet<string> = new Set(["6", "7", "8"]);
+// Opaque server unit ids (20 characters, [A-Za-z0-9]); anything else fails closed.
+const UNIT_ID_PATTERN = /^[A-Za-z0-9]{1,64}$/;
+
+export type UnitsReturnState = {
+  readonly unitId: string;
+  readonly grade: UnitsHistoryGrade;
+  readonly view?: "results";
+};
+
+function parseUnitsReturn(value: unknown): UnitsReturnState | null {
+  if (value === null || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.unitId !== "string" || !UNIT_ID_PATTERN.test(v.unitId)) return null;
+  if (typeof v.grade !== "string" || !UNIT_GRADES.has(v.grade)) return null;
+  if (v.view !== undefined && v.view !== "results") return null;
+  return {
+    unitId: v.unitId,
+    grade: v.grade as UnitsHistoryGrade,
+    ...(v.view === "results" ? { view: "results" as const } : {}),
+  };
+}
 
 const CLASS_WORKSPACE_SECTIONS: ReadonlySet<string> = new Set([
   "assignments",
@@ -155,7 +190,15 @@ export function parseShellHistoryState(
     v.surface === "curriculum" &&
     isNonEmptyString(v.lessonSlug)
   ) {
-    return { kind: "shell-lesson-summary", surface: "curriculum", lessonSlug: v.lessonSlug };
+    // A malformed origin is dropped (Results then returns to Curriculum),
+    // never guessed at.
+    const from = v.from === undefined ? null : parseUnitsReturn(v.from);
+    return {
+      kind: "shell-lesson-summary",
+      surface: "curriculum",
+      lessonSlug: v.lessonSlug,
+      ...(from !== null ? { from } : {}),
+    };
   }
   if (
     v.kind === "shell-curriculum-tab" &&
@@ -169,6 +212,12 @@ export function parseShellHistoryState(
   }
   if (v.kind === "shell-units-archived" && v.surface === "units") {
     return { kind: "shell-units-archived", surface: "units" };
+  }
+  if (v.kind === "shell-unit-results" && v.surface === "units") {
+    const target = parseUnitsReturn({ unitId: v.unitId, grade: v.grade });
+    return target === null
+      ? null
+      : { kind: "shell-unit-results", surface: "units", unitId: target.unitId, grade: target.grade };
   }
   if (v.kind === "shell-settings-integrations" && v.surface === "settings") {
     return { kind: "shell-settings-integrations", surface: "settings" };
@@ -235,6 +284,8 @@ export function hashForState(state: ShellHistoryState): string {
       return "#curriculum/units";
     case "shell-units-archived":
       return "#units/archived";
+    case "shell-unit-results":
+      return `#units/results/${state.grade}/${encodeURIComponent(state.unitId)}`;
     case "shell-settings-integrations":
       return "#settings/integrations";
   }
@@ -250,6 +301,13 @@ export function parseShellHash(hash: string): ShellHistoryState | null {
   const clean = hash.startsWith("#") ? hash.slice(1) : hash;
   if (isWorkspaceSurfaceKey(clean)) return { kind: "shell-surface", surface: clean };
   if (clean === "units/archived") return { kind: "shell-units-archived", surface: "units" };
+  if (clean.startsWith("units/results/")) {
+    const [grade, unitId] = clean.slice("units/results/".length).split("/");
+    const target = parseUnitsReturn({ unitId, grade });
+    return target === null
+      ? null
+      : { kind: "shell-unit-results", surface: "units", unitId: target.unitId, grade: target.grade };
+  }
   if (clean === "curriculum/units") return { kind: "shell-curriculum-units", surface: "curriculum" };
   if (clean === "settings/integrations") return { kind: "shell-settings-integrations", surface: "settings" };
   if (clean.startsWith("classes/")) return { kind: "shell-surface", surface: "classes" };
@@ -294,8 +352,9 @@ export type NestedPageHistorySeam<Controller> = {
 
 export type CurriculumHistoryController = {
   // Re-open Lesson Summary for a surfaced lesson; false (no change) for an
-  // unknown slug or when summaries are not wired.
-  readonly restoreLessonSummary: (lessonSlug: string) => boolean;
+  // unknown slug or when summaries are not wired. `from` restores a My Units
+  // origin (its "Back to My Units").
+  readonly restoreLessonSummary: (lessonSlug: string, from?: UnitsReturnState) => boolean;
   // Return to the Curriculum landing: close any open Lesson Summary and
   // select the Lessons tab. True when anything changed.
   readonly restoreTop: () => boolean;
@@ -308,6 +367,12 @@ export type UnitsHistoryController = {
   // Show the archived units view (true) or the active units (false). True
   // when anything changed.
   readonly restoreArchived: (show: boolean) => boolean;
+  // Close Unit Results and the archived view: the plain active units. True
+  // when anything changed.
+  readonly restoreTop: () => boolean;
+  // Show this unit's Unit Results (without a new history entry). False when
+  // the unit is not in the current list (the units stay showing).
+  readonly restoreUnitResults: (unitId: string, grade: UnitsHistoryGrade) => boolean;
 };
 
 export type SettingsHistoryController = {

@@ -48,6 +48,7 @@ const unit = (over: Partial<TeacherUnit> = {}): TeacherUnit => ({
   grade: "7",
   title: "Earth Systems",
   description: "Rocks",
+  color: null,
   status: "active",
   archivedAtMillis: null,
   createdAtMillis: 1,

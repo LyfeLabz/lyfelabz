@@ -1,4 +1,5 @@
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
+import { isTeacherUnitColor } from "./unitColor";
 import { validateUnitDescription, validateUnitTitle } from "./fieldRules";
 import {
   type CreateAttemptPersistence,
@@ -181,9 +182,16 @@ export function parseCreateAttemptRecord(
   if (!isTeacherUnitGrade(p.grade)) return null;
   if (typeof p.title !== "string" || validateUnitTitle(p.title) !== null) return null;
   if (typeof p.description !== "string" || validateUnitDescription(p.description) !== null) return null;
+  // Absent on every record saved before unit colors; otherwise a palette token.
+  if (p.color !== undefined && !isTeacherUnitColor(p.color)) return null;
   return Object.freeze({
     key: r.key,
-    payload: Object.freeze({ grade: p.grade, title: p.title, description: p.description }),
+    payload: Object.freeze({
+      grade: p.grade,
+      title: p.title,
+      description: p.description,
+      ...(p.color !== undefined ? { color: p.color } : {}),
+    }),
     context: Object.freeze({ teacherId: scope.teacherId, schoolId: scope.schoolId }),
     status: r.status as PersistedCreateAttemptStatus,
     reason: r.reason as UnresolvedCreateReason | null,
@@ -199,6 +207,7 @@ function serialize(record: PersistedCreateAttempt): string {
       grade: record.payload.grade,
       title: record.payload.title,
       description: record.payload.description,
+      ...(record.payload.color !== undefined ? { color: record.payload.color } : {}),
     },
     context: { teacherId: record.context.teacherId, schoolId: record.context.schoolId },
     status: record.status,
@@ -213,6 +222,7 @@ function samePinned(a: PersistedCreateAttempt, b: PersistedCreateAttempt): boole
     a.payload.grade === b.payload.grade &&
     a.payload.title === b.payload.title &&
     a.payload.description === b.payload.description &&
+    a.payload.color === b.payload.color &&
     a.context.teacherId === b.context.teacherId &&
     a.context.schoolId === b.context.schoolId
   );
