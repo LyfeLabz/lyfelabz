@@ -269,8 +269,23 @@ export type LessonResultsIntent = {
 
 // Teacher Units UX Milestone 1: My Units is its own workspace surface and
 // opens on the teacher's Curriculum grade filter ("all" when none is set).
+// The value is the shared selection as stored, so a grade only My Units
+// offers (Grade 8) round-trips; My Units validates it against its own grades.
 export function readCurriculumGradeFilter(uid: string): string {
-  return readSessionFilters(uid).grade;
+  if (sessionFilters !== null && sessionFilters.uid === uid) {
+    return sessionFilters.grade;
+  }
+  return readStoredCurriculumFilters(uid)?.grade ?? "all";
+}
+
+// My Units shares the Curriculum grade selection rather than keeping its own
+// preference: choosing a grade there updates this same per-uid filter (topic
+// kept). A grade Curriculum cannot show is kept as stored; Curriculum's
+// existing validation still shows All Grades for it.
+export function writeCurriculumGradeFilter(uid: string, grade: string): void {
+  const topic = readSessionFilters(uid).topic;
+  sessionFilters = { uid, grade, topic };
+  writeStoredCurriculumFilters(uid, grade, topic);
 }
 
 const DEFAULT_LIST_CLASSES: ListClasses = () =>
@@ -757,9 +772,11 @@ let sessionPersistedSlugs: {
 // defaults; matches the existing pattern used by
 // `sessionAssignmentsByLesson` and `sessionPersistedSlugs`. No Firestore
 // persistence, no cross-device sync, no per-user database field.
+// `grade` may hold a My Units-only grade (see `writeCurriculumGradeFilter`);
+// every Curriculum read validates it.
 let sessionFilters: {
   readonly uid: string;
-  grade: GradeFilter;
+  grade: string;
   topic: TopicFilter;
 } | null = null;
 

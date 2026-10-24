@@ -755,3 +755,123 @@ describe("unit expansion and chevron", () => {
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
   });
 });
+
+describe("shared grade selection with Curriculum", () => {
+  const FILTER_KEY = "lyfelabz.curriculum.filters.teacherA";
+  const pressed = (root: ParentNode, id: string) => q(root, id)?.getAttribute("aria-pressed");
+  // A browser reload: module memory dropped, localStorage (filters and unit
+  // expansion) kept.
+  const reloadShell = async (units: TeacherUnit[]) => {
+    const saved = Object.entries(localStorage);
+    document.body.textContent = "";
+    _resetUnitExpansionSessionForTest();
+    _resetCurriculumSessionStateForTest();
+    for (const [k, v] of saved) localStorage.setItem(k, v);
+    const h = setup(units);
+    await settle();
+    return h;
+  };
+
+  test("a grade chosen in Curriculum is the grade My Units opens on", async () => {
+    const h = setup([unit()]);
+    await settle();
+    click(h.mount, "nav-curriculum");
+    await settle();
+    click(h.mount, "filter-grade-7");
+    click(h.mount, "nav-units");
+    await settle();
+    expect(pressed(h.mount, "units-grade-7")).toBe("true");
+    click(h.mount, "nav-curriculum");
+    await settle();
+    click(h.mount, "filter-grade-6");
+    click(h.mount, "nav-units");
+    await settle();
+    expect(pressed(h.mount, "units-grade-6")).toBe("true");
+  });
+
+  test("a grade chosen in My Units is the grade Curriculum opens on, topic kept", async () => {
+    const h = setup([unit()]);
+    await settle();
+    click(h.mount, "nav-curriculum");
+    await settle();
+    click(h.mount, "filter-topic-earth-space");
+    click(h.mount, "nav-units");
+    await settle();
+    click(h.mount, "units-grade-7");
+    await settle();
+    expect(JSON.parse(localStorage.getItem(FILTER_KEY)!)).toEqual({ grade: "7", topic: "earth-space" });
+    click(h.mount, "nav-curriculum");
+    await settle();
+    expect(pressed(h.mount, "filter-grade-7")).toBe("true");
+    expect(pressed(h.mount, "filter-topic-earth-space")).toBe("true");
+  });
+
+  test("the My Units grade survives a reload, in both surfaces", async () => {
+    const units = [unit()];
+    await openMyUnits(units);
+    const after = await reloadShell(units);
+    click(after.mount, "nav-units");
+    await settle();
+    expect(pressed(after.mount, "units-grade-7")).toBe("true");
+    const again = await reloadShell(units);
+    click(again.mount, "nav-curriculum");
+    await settle();
+    expect(pressed(again.mount, "filter-grade-7")).toBe("true");
+  });
+
+  test("opening My Units on All Grades shows Grade 6 without overwriting All Grades", async () => {
+    const h = setup([unit()]);
+    await settle();
+    click(h.mount, "nav-units");
+    await settle();
+    expect(pressed(h.mount, "units-grade-6")).toBe("true");
+    expect(localStorage.getItem(FILTER_KEY) ?? "").not.toContain('"grade":"6"');
+    click(h.mount, "nav-curriculum");
+    await settle();
+    expect(pressed(h.mount, "filter-grade-all")).toBe("true");
+  });
+
+  test("Grade 8 round-trips through the shared selection; Curriculum falls back to All Grades", async () => {
+    const units = [unit()];
+    const h = await openMyUnits(units);
+    click(h.mount, "units-grade-8");
+    await settle();
+    expect(JSON.parse(localStorage.getItem(FILTER_KEY)!).grade).toBe("8");
+    const after = await reloadShell(units);
+    click(after.mount, "nav-units");
+    await settle();
+    expect(pressed(after.mount, "units-grade-8")).toBe("true");
+    click(after.mount, "nav-curriculum");
+    await settle();
+    expect(pressed(after.mount, "filter-grade-all")).toBe("true");
+  });
+
+  test("a stored grade neither surface offers falls back as before", async () => {
+    localStorage.setItem(FILTER_KEY, JSON.stringify({ grade: "99", topic: "all" }));
+    const h = setup([unit()]);
+    await settle();
+    click(h.mount, "nav-curriculum");
+    await settle();
+    expect(pressed(h.mount, "filter-grade-all")).toBe("true");
+    click(h.mount, "nav-units");
+    await settle();
+    expect(pressed(h.mount, "units-grade-6")).toBe("true");
+  });
+
+  test("grade changes keep each unit's own expansion preference", async () => {
+    const a = unit({ resourceIds: [L1.id] });
+    const b = unit({ title: "Weather" });
+    const { mount } = await openMyUnits([a, b]);
+    click(mount, `units-toggle-${b.unitId}`);
+    click(mount, "units-grade-6");
+    await settle();
+    click(mount, "units-grade-7");
+    await settle();
+    const after = await reloadShell([a, b]);
+    click(after.mount, "nav-units");
+    await settle();
+    expect(pressed(after.mount, "units-grade-7")).toBe("true");
+    expect(q(after.mount, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
+    expect(q(after.mount, `units-toggle-${b.unitId}`)?.getAttribute("aria-expanded")).toBe("false");
+  });
+});

@@ -12,6 +12,7 @@ import {
   isLessonAssigned,
   openLessonAssignDialog,
   readCurriculumGradeFilter,
+  writeCurriculumGradeFilter,
   type CurriculumAssignmentDetailSeam,
   type LessonResultsIntent,
 } from "./curriculum";
@@ -89,16 +90,12 @@ export function initialTeacherUnitsGrade(filter: string): TeacherUnitGrade {
   return filter === "6" || filter === "7" || filter === "8" ? filter : "6";
 }
 
-// The grade last chosen in My Units this page session, per teacher, so
-// leaving and returning keeps it. In memory only.
-let lastGrade: { readonly uid: string; readonly grade: TeacherUnitGrade } | null = null;
 // The Unit Results class filter last chosen per unit this page session, per
 // teacher, so Back/Forward and returning from a lesson's Results keep it.
 let lastClassFilter: { readonly uid: string; readonly byUnit: Map<string, string> } | null = null;
 
 export function _resetMyUnitsSurfaceStateForTest(): void {
   clearAllStoredUnitExpansion();
-  lastGrade = null;
   lastClassFilter = null;
 }
 
@@ -114,20 +111,22 @@ export function renderMyUnitsSurface(
   const initialGrade =
     openUnit !== null
       ? openUnit.grade
-      : lastGrade !== null && lastGrade.uid === session.uid
-        ? lastGrade.grade
-        : initialTeacherUnitsGrade(readCurriculumGradeFilter(session.uid));
+      : initialTeacherUnitsGrade(readCurriculumGradeFilter(session.uid));
   const controller = seam.createController({
     uid: session.uid,
     schoolId: session.schoolId,
     initialGrade,
   });
   if (deps.consumeArchivedIntent?.() === true) controller.setShowArchived(true);
+  // A grade chosen here becomes the shared Curriculum grade selection, so it
+  // survives navigation and reloads. Only real grade changes are written: the
+  // "All Grades" -> first-grade display fallback never overwrites "all".
+  let shownGrade = initialGrade;
   controller.subscribe(() => {
     const grade = controller.getState().grade;
-    if (lastGrade?.uid !== session.uid || lastGrade.grade !== grade) {
-      lastGrade = Object.freeze({ uid: session.uid, grade });
-    }
+    if (grade === shownGrade) return;
+    shownGrade = grade;
+    writeCurriculumGradeFilter(session.uid, grade);
   });
 
   const history = deps.unitsHistory ?? null;
