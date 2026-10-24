@@ -1,6 +1,6 @@
 # Release Record: October 24, 2026 Measuring Matter Buoyancy Hosting Releases
 
-**Status:** Complete and certified. Release record (evidence) for two consecutive general paired Hosting releases.
+**Status:** Complete and certified. Release record (evidence) for two consecutive general paired Hosting releases, followed by the production publication of Measuring Matter assessment r2 (section 7).
 **Current-state routing:** `DOMAIN_AND_HOSTING_CONTRACT.md` defines the release procedure; this record carries the release facts.
 
 ---
@@ -53,7 +53,9 @@ Each release changed exactly four app-site files; the marketing site had 0 chang
 - `79a1cd1`: streamlined the ungraded Boat Shape Investigation (buoyancy section markup, styles, and lab script).
 - `138c3f3`: replaced the buoyancy prediction question with "Two objects are made from the same material and each has a mass of 40 g. One is a compact solid. The other is shaped like a hollow boat. Which will float?" and removed the start note "Make a prediction to open the investigation." Diffed against the live pages, these were the only differences.
 
-## 5. Assessment state
+## 5. Assessment state at the Hosting releases
+
+Superseded by section 7: r2 was published to production after these Hosting releases. The facts below describe the state during the two Hosting releases.
 
 - Measuring Matter production assessment remains **r1**. The existing r1 assessment is preserved; no assessment publication or Firestore write occurred.
 - Measuring Matter **r2 remains unpublished and ON HOLD.** Its rendition is hosted at `app/lessons/assessment-revisions/lesson_measuring-matter__r2.html` but is not the current revision.
@@ -69,3 +71,32 @@ firebase hosting:clone lyfelabz-marketing@ce5d23cd07fdc69c lyfelabz-marketing:li
 ```
 
 To return to the pre-buoyancy-refinement baseline (`997ff52`), clone app `d0100629cc88af19` and marketing `06038668db780537` the same way.
+
+## 7. Measuring Matter assessment r2 publication (production)
+
+Production Measuring Matter is `assessment_measuring-matter__r2`. Publication completed **2026-10-24T13:15:36Z** in `lyfelabz-prod`, after the final Hosting release (`138c3f3abb33e8bfadd54acc826853b009eeca04`; app `1883bfd69064b991`, marketing `f8fec7599ca3a322`). Hosting preceded the r2 data, matching the Water Cycle r2 precedent (`RELEASE_2026-10-01_PRODUCTION_APP_CATCHUP.md` section 2).
+
+| Fact | Value |
+| --- | --- |
+| Payload | `platform/functions/src/scripts/assessments/measuring-matter.r2.json` (committed in `116fc09`) |
+| Tool | `deploy-assessment` (`platform/functions/src/scripts/deploy-assessment.ts`), certified `deployAssessmentRevision` transaction |
+| Dry run | `dry-run ok ... ordinal=2 items=10 answerKeyItems=10 writes=0 target=production project=lyfelabz-prod` |
+| Apply | `deployed assessment=assessment_measuring-matter revision=assessment_measuring-matter__r2 ordinal=2 assessmentCreated=false target=production` |
+| Parent `currentRevisionId` | `assessment_measuring-matter__r2` (ordinal 2) |
+| Hosting, Functions, Rules, indexes, Storage, feature flags | Not deployed or changed by this publication |
+
+Pre-publication state (read-only): parent current revision r1; r2 revision and answer key absent; 0 Measuring Matter assignments, attempts, and sessions.
+
+Post-publication verification (read-only):
+
+- The r2 revision has 10 items; every stem and option matches the committed payload.
+- The r2 answer key has 10 entries; every correct option matches the committed payload. No correct option appears in the revision record.
+- r1 is preserved and unchanged: revision (ordinal 1, 10 items) and answer key (10 entries) match the committed r1 payload, with create and update times both 2026-09-02T15:45:53Z.
+- Measuring Matter assignments and attempts remain 0. No existing assignment or student record was affected.
+- The production bundle's revision path table maps both r1 and r2, and the r2 rendition is served (HTTP 200).
+
+Behavior: new Measuring Matter assignments freeze r2 at first publication (`assignmentsPublish`, `resolveCurrentAssessmentRevisionId`). No Measuring Matter assignment is frozen to r1; r1 stays deployed so any historical reference remains interpretable.
+
+Rollback: there is no revision rollback tool; revisions are forward-only. A correction to r2 is published as a new r3 with a paired answer key. A failed publication writes nothing (single transaction).
+
+Outstanding (human acceptance): the first real Measuring Matter assignment must be observed to freeze r2 and score correctly, including Classroom grade passback if published to Classroom.
