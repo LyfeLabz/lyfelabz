@@ -22,6 +22,11 @@ import {
   type UnitResultsResource,
 } from "./teacherUnitsPanel";
 import { renderUnitResultsSurface } from "./unitResults";
+import {
+  clearAllStoredUnitExpansion,
+  isUnitExpanded,
+  writeUnitExpanded,
+} from "../../teacherPreferences/unitExpansionStorage";
 
 // Teacher Units UX Milestone 1: My Units as a top-level Teacher Workspace
 // surface (docs/platform/TEACHER_UNITS.md "Teacher Units UX Milestone 1").
@@ -87,16 +92,13 @@ export function initialTeacherUnitsGrade(filter: string): TeacherUnitGrade {
 // The grade last chosen in My Units this page session, per teacher, so
 // leaving and returning keeps it. In memory only.
 let lastGrade: { readonly uid: string; readonly grade: TeacherUnitGrade } | null = null;
-// The units left open in My Units this page session, per teacher, so
-// returning reopens them. In memory only; display state, never evidence.
-let lastExpanded: { readonly uid: string; readonly ids: Set<string> } | null = null;
 // The Unit Results class filter last chosen per unit this page session, per
 // teacher, so Back/Forward and returning from a lesson's Results keep it.
 let lastClassFilter: { readonly uid: string; readonly byUnit: Map<string, string> } | null = null;
 
 export function _resetMyUnitsSurfaceStateForTest(): void {
+  clearAllStoredUnitExpansion();
   lastGrade = null;
-  lastExpanded = null;
   lastClassFilter = null;
 }
 
@@ -127,9 +129,6 @@ export function renderMyUnitsSurface(
       lastGrade = Object.freeze({ uid: session.uid, grade });
     }
   });
-
-  if (lastExpanded?.uid !== session.uid) lastExpanded = { uid: session.uid, ids: new Set() };
-  const expanded = lastExpanded.ids;
 
   const history = deps.unitsHistory ?? null;
   const doc = mount.ownerDocument;
@@ -312,11 +311,11 @@ export function renderMyUnitsSurface(
     onUnitResults: openUnitResults,
     onArchivedViewExit: () => history?.push({ kind: "shell-surface", surface: "units" }),
     focusUnitId: openUnit?.unitId ?? null,
-    expandedUnitIds: new Set(expanded),
-    onExpandedChange: (unitId, open) => {
-      if (open) expanded.add(unitId);
-      else expanded.delete(unitId);
-    },
+    // Each unit's open/closed state is the teacher's own, remembered per
+    // browser across navigation and reload; a unit with no saved choice
+    // (including a new one) starts open.
+    isUnitInitiallyExpanded: (unitId) => isUnitExpanded(session.uid, unitId),
+    onExpandedChange: (unitId, open) => writeUnitExpanded(session.uid, unitId, open),
   });
   mount.appendChild(resultsHost);
   mount.querySelector("#units-heading")?.insertAdjacentElement("afterend", outcome);

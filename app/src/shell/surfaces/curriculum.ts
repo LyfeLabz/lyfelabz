@@ -18,9 +18,7 @@ import type {
 } from "../../settings/integrations/types";
 import {
   getSurfaceableLessons,
-  getFormalResourcesForLesson,
   FORMAL_RESOURCE_LABEL,
-  type CurriculumResource,
   type FormalResourceType,
   type LessonGrade,
   type LessonTopic,
@@ -2254,169 +2252,12 @@ function renderLessonCard(
 
   row.actions.appendChild(actions);
 
-  // Sprint 28.6H.3 (Task D3/D4/D5): View Summary and Resources are both quiet
-  // secondary lesson-inspection actions, so they share ONE quiet footer instead
-  // of stacking as competing controls. The footer row places View Summary on
-  // the left and the `N Resource ›` disclosure on the right; the expanded
-  // Resources panel renders full-width beneath the row. The footer is omitted
-  // entirely when there is nothing to show, and its hairline boundary is
-  // suppressed by CSS (`:has`) when the only member is a hidden (never-assigned)
-  // View Summary, so a card never carries an empty footer.
-  const footerRow = doc.createElement("div");
-  footerRow.className = "shell-lesson-footer-row";
-
-  // Resources. Formal Resources disclosure from the canonical manifest
-  // (simulations, investigations, extensions, challenges; legacy games
-  // excluded). A lesson with no formal resources shows no Resources control.
-  const resources = renderLessonResources(doc, lesson);
-  if (resources !== null) footerRow.appendChild(resources.toggle);
-
-  if (resources !== null) {
-    const footer = doc.createElement("div");
-    footer.className = "shell-lesson-footer shell-resource-row-footer";
-    footer.setAttribute("data-testid", `lesson-footer-${lesson.slug}`);
-    footer.appendChild(footerRow);
-    if (resources !== null) footer.appendChild(resources.panel);
-    card.appendChild(footer);
-  }
+  // A lesson card carries no Resources disclosure: each formal resource
+  // (investigation, simulation, extension, challenge) is reached through its
+  // own Curriculum resource tab, which `getResourcesByType` populates from the
+  // same canonical manifest.
 
   return card;
-}
-
-// Sprint 28.6D (Task 8). Formal Resources disclosure for one lesson
-// card. Returns null when the lesson has no formal resources (the card
-// then omits the control rather than showing an empty disclosure). The
-// control is a native `<button>` with `aria-expanded`/`aria-controls`
-// toggling an inline panel, so it is keyboard operable and its
-// expanded/collapsed state is exposed to assistive tech. Each resource
-// renders its human-readable type, its title, and an Open link to the
-// canonical public instructional page in a new tab. Resources are
-// Open/Preview only in v1 - never independently assignable (Blueprint
-// §9).
-// Sprint 28.6D.1 (Task 2). Collapsed Resources disclosure label with
-// correct singular/plural grammar. Exported as a pure helper so the
-// plural path stays directly testable: the surfaced manifest currently
-// carries at most one formal resource per lesson, so the "N Resources"
-// branch cannot be reached through the real surface, yet the grammar
-// must remain correct if a lesson later gains multiple resources.
-export function formatResourceCountLabel(count: number): string {
-  return count === 1 ? "1 Resource" : `${count} Resources`;
-}
-
-// Sprint 28.6H.3 (Task D3): returns the disclosure TOGGLE and its PANEL as
-// separate nodes so the caller can place the quiet `N Resource ›` toggle into
-// the shared card footer (alongside View Summary) while the expanded panel
-// renders full-width beneath that footer row. Returns null when the lesson has
-// no formal resources (no disclosure at all). The disclosure behavior, count
-// grammar, caret, `aria-expanded`/`aria-controls`, and Open-in-new-tab
-// semantics are unchanged from 28.6D.1.
-function renderLessonResources(
-  doc: Document,
-  lesson: SurfaceableLesson,
-): { readonly toggle: HTMLElement; readonly panel: HTMLElement } | null {
-  const resources = getFormalResourcesForLesson(lesson.slug);
-  if (resources.length === 0) return null;
-
-  const panelId = `lesson-resources-panel-${lesson.slug}`;
-
-  const toggle = doc.createElement("button");
-  toggle.type = "button";
-  toggle.className = "shell-lesson-resources-toggle";
-  toggle.setAttribute("data-testid", `lesson-resources-toggle-${lesson.slug}`);
-  toggle.setAttribute("aria-expanded", "false");
-  toggle.setAttribute("aria-controls", panelId);
-  toggle.setAttribute(
-    "aria-label",
-    `Resources for ${lesson.title}, ${resources.length} available`,
-  );
-  const count = resources.length;
-  const countLabel = doc.createElement("span");
-  countLabel.className = "shell-lesson-resources-count";
-  countLabel.textContent = formatResourceCountLabel(count);
-  toggle.appendChild(countLabel);
-
-  const panel = doc.createElement("div");
-  panel.className = "shell-lesson-resources-panel";
-  panel.id = panelId;
-  panel.setAttribute("data-testid", `lesson-resources-${lesson.slug}`);
-  panel.hidden = true;
-  const list = doc.createElement("ul");
-  list.className = "shell-lesson-resources-list";
-  list.setAttribute("role", "list");
-  panel.appendChild(list);
-
-  resources.forEach((resource, index) => {
-    list.appendChild(renderResourceItem(doc, lesson, resource, index));
-  });
-
-  toggle.addEventListener("click", () => {
-    const open = toggle.getAttribute("aria-expanded") === "true";
-    toggle.setAttribute("aria-expanded", open ? "false" : "true");
-    panel.hidden = open;
-  });
-
-  return { toggle, panel };
-}
-
-function renderResourceItem(
-  doc: Document,
-  lesson: SurfaceableLesson,
-  resource: CurriculumResource,
-  index: number,
-): HTMLElement {
-  const item = doc.createElement("li");
-  item.className = "shell-lesson-resource";
-  item.setAttribute("role", "listitem");
-
-  const typeLabel =
-    FORMAL_RESOURCE_LABEL[resource.type as FormalResourceType] ?? "Resource";
-
-  // Sprint 28.6D.1 (Task 4): supporting-material row, not a nested lesson
-  // card. The type is a small muted eyebrow above the resource title; the
-  // title is the primary content of the row; a single quiet "Open" link
-  // remains the secondary action. The Open link keeps its discernible
-  // accessible name (type + title + new-tab), so the resource identity is
-  // fully represented in text even though the visible link word is "Open".
-  const main = doc.createElement("div");
-  main.className = "shell-lesson-resource-main";
-
-  const type = doc.createElement("span");
-  type.className = "shell-lesson-resource-type";
-  type.setAttribute(
-    "data-testid",
-    `lesson-resource-type-${lesson.slug}-${index}`,
-  );
-  type.textContent = typeLabel;
-  main.appendChild(type);
-
-  const title = doc.createElement("span");
-  title.className = "shell-lesson-resource-title";
-  title.setAttribute(
-    "data-testid",
-    `lesson-resource-title-${lesson.slug}-${index}`,
-  );
-  title.textContent = resource.label;
-  main.appendChild(title);
-
-  item.appendChild(main);
-
-  const open = doc.createElement("a");
-  open.className = "shell-lesson-resource-open";
-  open.setAttribute(
-    "data-testid",
-    `lesson-resource-open-${lesson.slug}-${index}`,
-  );
-  open.href = resource.href;
-  open.target = "_blank";
-  open.rel = "noopener";
-  open.textContent = "Open";
-  open.setAttribute(
-    "aria-label",
-    `Open ${typeLabel.toLowerCase()}: ${resource.label} (opens in a new tab)`,
-  );
-  item.appendChild(open);
-
-  return item;
 }
 
 // -----------------------------------------------------------------------------
@@ -3842,8 +3683,7 @@ function historyStatusLabel(status: AssignmentCandidate["status"]): string {
 
 // Historical Assignment Resolution, Implementation Slice 12. Read-only
 // "Assignment history" disclosure for one row. Mirrors the established
-// accessible disclosure pattern already used for the lesson-card Resources
-// control (`renderLessonResources`): a native `<button>` with
+// accessible disclosure pattern: a native `<button>` with
 // `aria-expanded`/`aria-controls` toggling a `hidden` panel containing a
 // `<ul role="list">`. Deliberately does NOT reuse the Set/Change Current
 // panel markup or class names - History is presentation-only and must

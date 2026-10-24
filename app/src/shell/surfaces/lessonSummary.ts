@@ -14,7 +14,7 @@ import type {
 // Best Score - plus the supporting completed/total fraction that makes the
 // unique-student Completion denominator explicit. Beneath them, Class
 // Results breaks the same aggregates out per assigned class (the server's
-// per-class `classes` rows, same semantics) with a View Results action into
+// per-class `classes` rows, same semantics) with a Results action into
 // that class's EXISTING Assignment Detail. It never lists individual
 // students, late recipients, student names, or attempt tables; those
 // operational views live in Assignment Detail and under Classes.
@@ -35,7 +35,7 @@ export type LessonSummarySurfaceInput = {
   // Results from elsewhere (My Units).
   readonly backLabel?: string;
   // Class Results row labels and actions. Absent: rows still render with a
-  // generic label and no View Results action (no dead control).
+  // generic label and no Results action (no dead control).
   readonly classResults?: LessonClassResultsSeam;
   // Results-first: opens the EXISTING Curriculum assignment dialog for this
   // lesson (assign to more classes, settings, history, Classroom status).
@@ -369,14 +369,25 @@ export function renderLessonSummarySurface(
 
       const stats = doc.createElement("dl");
       stats.className = "shell-lesson-class-result-stats";
-      const addStat = (key: string, label: string, value: string): void => {
+      // A metric with no value (null) shows the "--" placeholder, named "Not
+      // available" for assistive tech, so it never reads as a zero score.
+      const addStat = (key: string, label: string, value: string | null): void => {
         const group = doc.createElement("div");
         group.className = "shell-lesson-class-result-stat";
         const dt = doc.createElement("dt");
         dt.textContent = label;
         const dd = doc.createElement("dd");
         dd.setAttribute("data-testid", `lesson-class-result-${key}-${row.classId}`);
-        dd.textContent = value;
+        if (value === null) {
+          dd.setAttribute("data-unavailable", "true");
+          const dash = doc.createElement("span");
+          dash.setAttribute("role", "img");
+          dash.setAttribute("aria-label", "Not available");
+          dash.textContent = "--";
+          dd.appendChild(dash);
+        } else {
+          dd.textContent = value;
+        }
         group.append(dt, dd);
         stats.appendChild(group);
       };
@@ -385,13 +396,13 @@ export function renderLessonSummarySurface(
         "completion",
         "Completed",
         row.students === 0
-          ? "None"
+          ? null
           : `${row.studentsCompleted} / ${row.students} (${row.completionPercentage}%)`,
       );
       addStat(
         "average",
         "Average Best Score",
-        row.averageBestPercentage === null ? "No completed scores yet" : `${row.averageBestPercentage}%`,
+        row.averageBestPercentage === null ? null : `${row.averageBestPercentage}%`,
       );
       li.appendChild(stats);
 
@@ -401,8 +412,8 @@ export function renderLessonSummarySurface(
         view.type = "button";
         view.className = "shell-lesson-class-result-view";
         view.setAttribute("data-testid", `lesson-class-result-view-${row.classId}`);
-        view.textContent = "View Results";
-        view.setAttribute("aria-label", `View ${name} results for ${lessonTitle}`);
+        view.textContent = "Results";
+        view.setAttribute("aria-label", `${name} results for ${lessonTitle}`);
         view.addEventListener("click", () => {
           onView(row.classId, name);
         });

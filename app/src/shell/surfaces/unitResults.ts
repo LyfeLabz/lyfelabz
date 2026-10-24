@@ -52,11 +52,12 @@ export type UnitResultsHandle = {
 
 const ALL = "all";
 
+// The status line under a lesson. Once students have submitted, the
+// Completed stat already says how many, so no subtitle repeats it.
 function participation(students: number, completed: number): string {
   if (students === 0) return "No students assigned";
   if (completed === 0) return "No submissions yet";
-  if (completed < students) return "Partially complete";
-  return "All students completed";
+  return "";
 }
 
 export function renderUnitResultsSurface(
@@ -102,12 +103,6 @@ export function renderUnitResultsSurface(
   titleGroup.appendChild(heading);
   header.appendChild(titleGroup);
   section.appendChild(header);
-
-  const note = doc.createElement("p");
-  note.className = "shell-lesson-summary-subhead";
-  note.setAttribute("data-testid", "unit-results-note");
-  note.textContent = "Each lesson's results are shown separately. They are not combined into a unit score.";
-  section.appendChild(note);
 
   // Class filter: only the classes that actually hold assignments of this
   // unit's lessons, in the teacher's saved order.
@@ -302,6 +297,7 @@ export function renderUnitResultsSurface(
             );
           }
         }
+        status.hidden = status.textContent === "";
         li.setAttribute("data-state", state);
         li.appendChild(stats);
         if (r !== undefined && r.classesAssigned > 0) {

@@ -76,6 +76,8 @@ const BLOCKED_MESSAGES: Partial<Record<CreateBlockedReason, string>> = Object.fr
   newUnitIntentRequired: "Choose Create Unit first.",
 });
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
 // The My Units surface is shown only when the shell holds a Teacher Units
 // seam AND this release's availability boundary is open. A closed release
 // (production today) has neither, so no My Units navigation item renders.
@@ -92,10 +94,10 @@ export type TeacherUnitsPanelOptions = {
   // card first appears, and takes focus if focus is still on the page's
   // entry point (the heading) or lost.
   readonly focusUnitId?: string | null;
-  // Units the teacher had open when they last left My Units this page
-  // session; they open again when their cards appear. `onExpandedChange`
-  // reports each open or close so the host can keep that set.
-  readonly expandedUnitIds?: ReadonlySet<string> | null;
+  // Whether a unit's card starts open (the host's saved per-teacher
+  // preference). `onExpandedChange` reports each open or close so the host
+  // can save it.
+  readonly isUnitInitiallyExpanded?: (unitId: string) => boolean;
   readonly onExpandedChange?: (unitId: string, expanded: boolean) => void;
   // Lesson rows mirror Curriculum's Assign / Results control, driven by the
   // shared Curriculum assignment state. Absent: lesson rows show Preview only.
@@ -2544,8 +2546,16 @@ export function renderTeacherUnitsPanel(
           toggle.setAttribute("aria-controls", detailsId);
           toggle.setAttribute("aria-expanded", card.expanded ? "true" : "false");
           toggle.setAttribute("aria-label", `Show resources in ${u.title}`);
-          const chevron = el("span", "shell-units-card-chevron", card.expanded ? "\u25B4" : "\u25BE");
+          // A stroked chevron that points up when open and down when closed
+          // (CSS turns it from `aria-expanded`).
+          const chevron = doc.createElementNS(SVG_NS, "svg");
+          chevron.setAttribute("class", "shell-units-card-chevron");
+          chevron.setAttribute("viewBox", "0 0 24 24");
           chevron.setAttribute("aria-hidden", "true");
+          chevron.setAttribute("focusable", "false");
+          const chevronPath = doc.createElementNS(SVG_NS, "path");
+          chevronPath.setAttribute("d", "M6 9l6 6 6-6");
+          chevron.appendChild(chevronPath);
           toggle.appendChild(chevron);
           controls.appendChild(toggle);
 
@@ -2621,7 +2631,6 @@ export function renderTeacherUnitsPanel(
             card.expanded = !card.expanded;
             details.hidden = !card.expanded;
             toggle.setAttribute("aria-expanded", card.expanded ? "true" : "false");
-            chevron.textContent = card.expanded ? "\u25B4" : "\u25BE";
             options.onExpandedChange?.(u.unitId, card.expanded);
           });
           // Mouse/touch convenience: the title also opens and closes the
@@ -2669,10 +2678,11 @@ export function renderTeacherUnitsPanel(
     li.appendChild(notice);
     const noticeRead = readActionFor(`units-notice-load-${unit.unitId}`);
     li.appendChild(noticeRead);
-    const expanded =
-      options.unitsInitiallyExpanded === true ||
-      expandOnArrival.delete(unit.unitId) ||
-      options.expandedUnitIds?.has(unit.unitId) === true;
+    const saved = options.isUnitInitiallyExpanded?.(unit.unitId) === true;
+    const arriving = expandOnArrival.delete(unit.unitId);
+    // A unit opened on arrival ("View unit") stays open next time too.
+    if (arriving && !saved) options.onExpandedChange?.(unit.unitId, true);
+    const expanded = options.unitsInitiallyExpanded === true || arriving || saved;
     return {
       li, unit, expanded, gone: false, editor: null, picker: null, confirmRetired: null, noticeText: null, notice, noticeRead, body,
       rendered: null, pickerKey: null,
@@ -3251,8 +3261,6 @@ const ADD_CREATE_BLOCKED: Partial<Record<CreateBlockedReason, string>> = Object.
   noSession: "Your sign-in changed. Reload the page and sign in to continue.",
 });
 
-const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
-
 export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput): { readonly close: () => void } {
   requireTeacherUnitsAvailable();
   const ids = input.resourceIds;
@@ -3291,15 +3299,13 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   tid(dialog, "units-add-dialog");
   overlay.appendChild(dialog);
 
-  // Milestone 2B: the selection count sits beside the heading.
+  // The heading stands alone: the selection itself is the Curriculum's
+  // selection bar, so the dialog repeats no resource count.
   const head = el("div", "shell-units-add-head");
   const title = el("h3", "shell-assign-title", "Add to a unit");
   title.id = "units-add-title";
   title.tabIndex = -1;
   head.appendChild(title);
-  const summary = el("p", "shell-units-add-summary", `${plural(ids.length, "resource", "resources")} selected.`);
-  tid(summary, "units-add-summary");
-  head.appendChild(summary);
   dialog.appendChild(head);
 
   const body = el("div", "shell-assign-body");
@@ -3330,7 +3336,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   body.appendChild(gradeNote);
 
   const fieldset = el("fieldset", "shell-units-add-choices");
-  const legend = el("legend", undefined, "Choose a unit");
+  const legend = el("legend", undefined, "Select a unit");
   fieldset.appendChild(legend);
   const listState = el("p", "shell-units-add-list-state");
   tid(listState, "units-add-list-state");
@@ -3432,12 +3438,12 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     for (const b of gradeButtons.values()) b.setAttribute("aria-disabled", pending ? "true" : "false");
   };
 
+  // Only the duplicate note is shown beside a unit name; its size is not.
   const unitMeta = (u: TeacherUnit): string => {
     const present = ids.filter((id) => u.resourceIds.includes(id)).length;
-    const count = plural(u.resourceIds.length, "resource", "resources");
-    if (present === 0) return count;
-    if (present === ids.length) return `${count} · already has ${ids.length === 1 ? "this resource" : "all of these"}`;
-    return `${count} · already has ${present} of these`;
+    if (present === 0) return "";
+    if (present === ids.length) return `Already has ${ids.length === 1 ? "this resource" : "all of these"}`;
+    return `Already has ${present} of these`;
   };
 
   const renderChoices = (s: TeacherUnitsViewState): void => {
@@ -3481,9 +3487,12 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
       radio.setAttribute("aria-disabled", pending ? "true" : "false");
       row.appendChild(radio);
       row.appendChild(el("span", "shell-units-add-option-title", u.title));
-      const meta = el("span", "shell-units-add-option-meta", unitMeta(u));
-      tid(meta, `units-add-choice-meta-${u.unitId}`);
-      row.appendChild(meta);
+      const metaText = unitMeta(u);
+      if (metaText !== "") {
+        const meta = el("span", "shell-units-add-option-meta", metaText);
+        tid(meta, `units-add-choice-meta-${u.unitId}`);
+        row.appendChild(meta);
+      }
       choices.appendChild(row);
     }
     if (hadFocus) {
@@ -3515,7 +3524,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     newField.hidden = chosen !== "new";
     const emptyGrade = s.list.kind === "ready" && !hasUnits;
     newRow.hidden = emptyGrade;
-    const legendText = emptyGrade ? `New ${gradeLabel(s.grade)} unit` : "Choose a unit";
+    const legendText = emptyGrade ? `New ${gradeLabel(s.grade)} unit` : "Select a unit";
     if (legend.textContent !== legendText) legend.textContent = legendText;
     const confirmText = chosen === "new" ? "Create Unit & Add" : "Add to Unit";
     if (confirm.textContent !== confirmText) confirm.textContent = confirmText;
@@ -3639,7 +3648,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     if (pending || closed) return;
     clearProblem();
     if (chosen === null) {
-      showProblem("Choose a unit, or create a new one.");
+      showProblem("Select a unit, or create a new one.");
       (choices.querySelector<HTMLInputElement>("input") ?? newRadio).focus();
       return;
     }
