@@ -268,10 +268,14 @@ describe("Add to Unit", () => {
     const dialog = await openDialog(root);
     expect(dialog.getAttribute("role")).toBe("dialog");
     expect(dialog.getAttribute("aria-modal")).toBe("true");
-    expect(q(dialog, "units-add-summary")?.textContent).toBe("2 resources selected.");
+    // No resource count beside the heading or beside unit names.
+    expect(q(dialog, "units-add-summary")).toBeNull();
+    expect(dialog.querySelector("#units-add-title")?.textContent).toBe("Add to a unit");
+    expect(dialog.querySelector("legend")?.textContent).toBe("Select a unit");
     // Defaults to the selection's grade.
     expect(q(dialog, "units-add-grade-6")?.getAttribute("aria-pressed")).toBe("true");
-    expect(q(dialog, `units-add-choice-meta-${existing.unitId}`)?.textContent).toBe("1 resource");
+    expect(q(dialog, `units-add-choice-meta-${existing.unitId}`)).toBeNull();
+    expect(dialog.textContent).not.toMatch(/\d+ resources?\b/);
 
     choose(`units-add-choice-${existing.unitId}`);
     click(dialog, "units-add-confirm");
@@ -300,7 +304,7 @@ describe("Add to Unit", () => {
     toggle(root, `lesson-select-${LESSON_B.slug}`);
     const dialog = await openDialog(root);
     expect(q(dialog, `units-add-choice-meta-${existing.unitId}`)?.textContent).toBe(
-      "1 resource · already has 1 of these",
+      "Already has 1 of these",
     );
     choose(`units-add-choice-${existing.unitId}`);
     click(dialog, "units-add-confirm");
@@ -437,7 +441,7 @@ describe("Add to Unit", () => {
     toggle(root, `lesson-select-${LESSON_A.slug}`);
     const dialog = await openDialog(root);
     click(dialog, "units-add-confirm");
-    expect(q(dialog, "units-add-problem")?.textContent).toBe("Choose a unit, or create a new one.");
+    expect(q(dialog, "units-add-problem")?.textContent).toBe("Select a unit, or create a new one.");
     expect(callables.setResources).not.toHaveBeenCalled();
   });
 });
@@ -465,7 +469,8 @@ describe("View unit", () => {
     const toggleBtn = q(root, `units-toggle-${target.unitId}`)!;
     expect(toggleBtn.getAttribute("aria-expanded")).toBe("true");
     expect(document.activeElement).toBe(toggleBtn);
-    expect(q(root, `units-toggle-${weather.unitId}`)?.getAttribute("aria-expanded")).toBe("false");
+    // Units with no saved preference start expanded.
+    expect(q(root, `units-toggle-${weather.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
   });
 });
 
@@ -544,7 +549,7 @@ describe("Milestone 2B card refinements", () => {
     expect(q(dialog, "units-add-confirm")?.textContent).toBe("Add to Unit");
     choose("units-add-choice-new");
     expect(q(dialog, "units-add-confirm")?.textContent).toBe("Create Unit & Add");
-    expect(dialog.querySelector(".shell-units-add-head")?.contains(q(dialog, "units-add-summary"))).toBe(true);
+    expect(dialog.querySelector(".shell-units-add-head")?.contains(dialog.querySelector("#units-add-title"))).toBe(true);
   });
 });
 

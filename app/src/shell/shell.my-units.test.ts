@@ -472,28 +472,30 @@ describe("automatic synchronization (no Refresh units control)", () => {
     expect(q(toolbar, "units-create-open")).not.toBeNull();
   });
 
-  test("an expanded unit stays expanded after leaving and returning; entry focus is the heading", async () => {
+  test("units start expanded; each unit's own collapse/expand survives leaving and returning; entry focus is the heading", async () => {
     const a = unit({ title: "Weather" });
     const b = unit({ title: "Plants" });
     const { seam } = seamWith([a, b]);
     const root = mount({ teacherUnits: seam });
     click(root, "nav-units");
     await flush();
-    click(root, `units-toggle-${a.unitId}`);
     expect(q(root, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
-    click(root, "nav-classes");
-    click(root, "nav-units");
-    await flush();
-    expect(q(root, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
-    expect(q(root, `units-details-${a.unitId}`)?.hidden).toBe(false);
-    expect(q(root, `units-toggle-${b.unitId}`)?.getAttribute("aria-expanded")).toBe("false");
-    expect(document.activeElement?.id).toBe("units-heading");
-    // Collapsing is remembered too.
+    expect(q(root, `units-toggle-${b.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
     click(root, `units-toggle-${a.unitId}`);
+    expect(q(root, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("false");
     click(root, "nav-classes");
     click(root, "nav-units");
     await flush();
     expect(q(root, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("false");
+    expect(q(root, `units-details-${a.unitId}`)?.hidden).toBe(true);
+    expect(q(root, `units-toggle-${b.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement?.id).toBe("units-heading");
+    // Expanding again is remembered too.
+    click(root, `units-toggle-${a.unitId}`);
+    click(root, "nav-classes");
+    click(root, "nav-units");
+    await flush();
+    expect(q(root, `units-toggle-${a.unitId}`)?.getAttribute("aria-expanded")).toBe("true");
   });
 
   test("a change still being saved when the teacher leaves is never resent or overwritten by the return read", async () => {

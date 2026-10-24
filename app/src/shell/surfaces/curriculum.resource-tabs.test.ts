@@ -277,7 +277,7 @@ describe("filtering", () => {
 });
 
 describe("Lessons regression", () => {
-  test("Lessons keeps Assign/Results, Preview, Resources, and Lesson Summary after a tab round trip", () => {
+  test("Lessons keeps Assign/Results, Preview, and Lesson Summary after a tab round trip", () => {
     const root = mount(["what-is-life"]);
     q<HTMLButtonElement>(root, "curriculum-tab-extensions")!.click();
     q<HTMLButtonElement>(root, "curriculum-tab-lessons")!.click();
@@ -293,10 +293,7 @@ describe("Lessons regression", () => {
     expect(q<HTMLButtonElement>(lessonsPanel, `lesson-assign-${slug}`)!.textContent).toBe("Results");
     expect(q<HTMLAnchorElement>(lessonsPanel, `lesson-preview-${slug}`)!.target).toBe("_blank");
 
-    const toggle = q<HTMLButtonElement>(lessonsPanel, `lesson-resources-toggle-${slug}`)!;
-    toggle.click();
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(q(lessonsPanel, `lesson-resources-${slug}`)!.hidden).toBe(false);
+    expect(q(lessonsPanel, `lesson-resources-toggle-${slug}`)).toBeNull();
 
     const results = q<HTMLButtonElement>(lessonsPanel, `lesson-assign-${slug}`)!;
     expect(results.textContent).toBe("Results");

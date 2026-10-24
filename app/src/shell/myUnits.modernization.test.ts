@@ -24,6 +24,7 @@ import { getSurfaceableLessons } from "../curriculum/curriculumManifest";
 import { mountTeacherShell, type ShellDeps } from "./shell";
 import { _resetCurriculumSessionStateForTest } from "./surfaces/curriculum";
 import { _resetMyUnitsSurfaceStateForTest } from "./surfaces/myUnits";
+import { _resetUnitExpansionSessionForTest } from "../teacherPreferences/unitExpansionStorage";
 
 const flush = (): Promise<void> => new Promise<void>((r) => setTimeout(r, 0));
 const settle = async (): Promise<void> => {
@@ -267,6 +268,8 @@ describe("unit header row", () => {
     click(mount, `units-edit-${u.unitId}`);
     expect(q(mount, `units-edit-title-${u.unitId}`)).not.toBeNull();
     click(mount, `units-edit-cancel-${u.unitId}`);
+    expect(q(mount, `units-details-${u.unitId}`)?.hidden).toBe(false);
+    click(mount, `units-toggle-${u.unitId}`);
     expect(q(mount, `units-details-${u.unitId}`)?.hidden).toBe(true);
     click(mount, `units-menu-${u.unitId}`);
     click(mount, `units-resources-add-${u.unitId}`);
@@ -290,7 +293,6 @@ describe("lesson rows mirror Curriculum", () => {
   test("assigned (even with zero submissions) shows Results; unassigned shows Assign; both then Preview; other resources keep Open", async () => {
     const u = unit({ resourceIds: [L1.id, L2.id, OTHER.id] });
     const { mount } = await openMyUnits([u]);
-    click(mount, `units-toggle-${u.unitId}`);
     const results = q(mount, `units-resource-assign-${u.unitId}-${L1.id}`) as HTMLButtonElement;
     expect(results.textContent).toBe("Results");
     expect(results.classList.contains("shell-lesson-results-action")).toBe(true);
@@ -315,7 +317,6 @@ describe("lesson rows mirror Curriculum", () => {
   test("Results opens the lesson's existing Results page (with Class Results); Back returns to the same unit", async () => {
     const u = unit({ resourceIds: [L1.id] });
     const { mount } = await openMyUnits([u]);
-    click(mount, `units-toggle-${u.unitId}`);
     click(mount, `units-resource-assign-${u.unitId}-${L1.id}`);
     await settle();
     expect(q(mount, "workspace-outlet")?.getAttribute("data-active-surface")).toBe("curriculum");
@@ -339,7 +340,6 @@ describe("lesson rows mirror Curriculum", () => {
   test("Assign opens the existing Curriculum assignment dialog over My Units", async () => {
     const u = unit({ resourceIds: [L2.id] });
     const { mount } = await openMyUnits([u]);
-    click(mount, `units-toggle-${u.unitId}`);
     click(mount, `units-resource-assign-${u.unitId}-${L2.id}`);
     await settle();
     expect(document.querySelector("[data-testid=assign-dialog]")).not.toBeNull();
@@ -350,7 +350,6 @@ describe("lesson rows mirror Curriculum", () => {
   test("Remove from Unit sits in a row menu and removes only this unit's membership", async () => {
     const u = unit({ resourceIds: [L1.id, L2.id] });
     const { mount, callables } = await openMyUnits([u]);
-    click(mount, `units-toggle-${u.unitId}`);
     const trigger = q(mount, `units-resource-menu-${u.unitId}-${L1.id}`) as HTMLButtonElement;
     expect(trigger.getAttribute("aria-label")).toBe(`More actions for ${L1.title}`);
     trigger.click();
@@ -369,7 +368,6 @@ describe("lesson rows mirror Curriculum", () => {
   test("keyboard reorder still works with the new row controls", async () => {
     const u = unit({ resourceIds: [L1.id, L2.id] });
     const { mount, callables } = await openMyUnits([u]);
-    click(mount, `units-toggle-${u.unitId}`);
     const handle = q(mount, `units-resource-handle-${u.unitId}-${L1.id}`) as HTMLButtonElement;
     handle.focus();
     for (const k of [" ", "ArrowDown", " "]) key(handle, k);
@@ -396,7 +394,9 @@ describe("Unit Results", () => {
     expect(q(mount, "unit-results-title")?.textContent).toBe("Earth Systems");
     const order = Array.from(q(mount, "unit-results-list")!.children).map((li) => li.getAttribute("data-testid"));
     expect(order).toEqual([`unit-results-lesson-${L3.id}`, `unit-results-lesson-${L1.id}`, `unit-results-lesson-${L2.id}`]);
-    expect(q(mount, `unit-results-status-${L3.id}`)?.textContent).toBe("Partially complete");
+    // The Completed stat carries the progress, so no subtitle repeats it.
+    expect(q(mount, `unit-results-status-${L3.id}`)?.textContent).toBe("");
+    expect(q(mount, `unit-results-status-${L3.id}`)?.hidden).toBe(true);
     expect(q(mount, `unit-results-completion-${L3.id}`)?.textContent).toBe("25 / 40 (63%)");
     expect(q(mount, `unit-results-average-${L3.id}`)?.textContent).toBe("84%");
     expect(q(mount, `unit-results-status-${L1.id}`)?.textContent).toBe("No submissions yet");
@@ -404,7 +404,8 @@ describe("Unit Results", () => {
     expect(q(mount, `unit-results-status-${L2.id}`)?.textContent).toBe("Not assigned");
     expect(q(mount, `unit-results-open-${L2.id}`)).toBeNull();
     expect(q(mount, "unit-results-other")?.textContent).toBe("1 other resource in this unit has no lesson results.");
-    expect(q(mount, "unit-results-note")?.textContent).toContain("not combined into a unit score");
+    expect(q(mount, "unit-results-note")).toBeNull();
+    expect(mount.textContent).not.toContain("not combined into a unit score");
   });
 
   test("the class filter lists only the classes holding assignments and shows each lesson's row for that class", async () => {
@@ -414,13 +415,14 @@ describe("Unit Results", () => {
     expect(Array.from(select.options).map((o) => o.textContent)).toEqual(["All classes", "7A Science", "7B Science"]);
     select.value = "c2";
     select.dispatchEvent(new Event("change"));
-    expect(q(mount, `unit-results-status-${L3.id}`)?.textContent).toBe("Partially complete");
+    expect(q(mount, `unit-results-status-${L3.id}`)?.textContent).toBe("");
     expect(q(mount, `unit-results-completion-${L3.id}`)?.textContent).toBe("5 / 20 (25%)");
     expect(q(mount, `unit-results-average-${L3.id}`)?.textContent).toBe("68%");
     expect(q(mount, `unit-results-status-${L1.id}`)?.textContent).toBe("Not assigned to 7B Science");
     select.value = "c1";
     select.dispatchEvent(new Event("change"));
-    expect(q(mount, `unit-results-status-${L3.id}`)?.textContent).toBe("All students completed");
+    expect(q(mount, `unit-results-status-${L3.id}`)?.textContent).toBe("");
+    expect(mount.textContent).not.toContain("All students completed");
     expect(q(mount, `unit-results-status-${L1.id}`)?.textContent).toBe("No submissions yet");
   });
 
@@ -617,7 +619,8 @@ describe("Unit Results browser history", () => {
       pushSpy.mockRestore();
     }
     expect(window.history.state).toEqual({ kind: "shell-surface", surface: "units" });
-    expect(q(mount, `units-details-${u.unitId}`)?.hidden).toBe(false);
+    // The teacher collapsed it before opening Unit Results; it stays collapsed.
+    expect(q(mount, `units-details-${u.unitId}`)?.hidden).toBe(true);
   });
 
   test("a Unit Results entry for a unit no longer listed fails closed onto the units", async () => {
@@ -649,5 +652,106 @@ describe("Unit Results browser history", () => {
     allClass.click();
     await settle();
     expect(q(mount, "lesson-summary-title")?.textContent).toBe(L1.title);
+  });
+});
+
+describe("unit expansion and chevron", () => {
+  const expanded = (root: ParentNode, u: TeacherUnit) => q(root, `units-toggle-${u.unitId}`)?.getAttribute("aria-expanded");
+  // A browser reload: a fresh shell, the in-memory copy dropped, storage kept.
+  const reload = async (units: TeacherUnit[]) => {
+    document.body.textContent = "";
+    _resetUnitExpansionSessionForTest();
+    _resetCurriculumSessionStateForTest();
+    return openMyUnits(units);
+  };
+
+  test("units with no saved preference start expanded", async () => {
+    const a = unit({ resourceIds: [L1.id] });
+    const b = unit({ title: "Weather", resourceIds: [L2.id] });
+    const { mount } = await openMyUnits([a, b]);
+    expect(expanded(mount, a)).toBe("true");
+    expect(expanded(mount, b)).toBe("true");
+    expect(q(mount, `units-details-${a.unitId}`)?.hidden).toBe(false);
+  });
+
+  test("each unit's state is remembered independently and restored after a reload", async () => {
+    const a = unit({ resourceIds: [L1.id] });
+    const b = unit({ title: "Weather" });
+    const c = unit({ title: "Plants" });
+    const { mount } = await openMyUnits([a, b, c]);
+    click(mount, `units-toggle-${b.unitId}`);
+    expect(expanded(mount, b)).toBe("false");
+    const after = await reload([a, b, c]);
+    expect(expanded(after.mount, a)).toBe("true");
+    expect(expanded(after.mount, b)).toBe("false");
+    expect(q(after.mount, `units-details-${b.unitId}`)?.hidden).toBe(true);
+    expect(expanded(after.mount, c)).toBe("true");
+    click(after.mount, `units-toggle-${b.unitId}`);
+    const again = await reload([a, b, c]);
+    expect(expanded(again.mount, b)).toBe("true");
+  });
+
+  test("the preference is the teacher's own and never writes unit records", async () => {
+    const a = unit();
+    const { mount, callables } = await openMyUnits([a]);
+    click(mount, `units-toggle-${a.unitId}`);
+    expect(JSON.parse(localStorage.getItem("lyfelabz.units.collapsed.teacherA")!)).toEqual([a.unitId]);
+    expect(localStorage.getItem("lyfelabz.units.collapsed.teacherB")).toBeNull();
+    for (const fn of [callables.update, callables.setResources, callables.reorder, callables.archive]) {
+      expect(fn).not.toHaveBeenCalled();
+    }
+  });
+
+  test("a new unit starts expanded", async () => {
+    const a = unit();
+    const { mount } = await openMyUnits([a]);
+    click(mount, "units-create-open");
+    const title = mount.querySelector<HTMLInputElement>("[data-testid=units-create-title]")!;
+    title.value = "Volcanoes";
+    title.dispatchEvent(new Event("input", { bubbles: true }));
+    click(mount, "units-create-submit");
+    await settle();
+    const created = Array.from(mount.querySelectorAll<HTMLElement>("[data-testid^=units-title-]")).find(
+      (t) => t.textContent === "Volcanoes",
+    );
+    expect(created).toBeDefined();
+    const id = created!.getAttribute("data-testid")!.slice("units-title-".length);
+    expect(q(mount, `units-toggle-${id}`)?.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  test("archiving one unit leaves the other units' saved states unchanged", async () => {
+    const a = unit();
+    const b = unit({ title: "Weather" });
+    const { mount } = await openMyUnits([a, b]);
+    click(mount, `units-toggle-${a.unitId}`);
+    click(mount, `units-menu-${b.unitId}`);
+    click(mount, `units-archive-${b.unitId}`);
+    await settle();
+    expect(q(mount, `units-card-${b.unitId}`)).toBeNull();
+    expect(expanded(mount, a)).toBe("false");
+    const after = await reload([a]);
+    expect(expanded(after.mount, a)).toBe("false");
+  });
+
+  test("the chevron is an SVG in a labelled button that turns with aria-expanded; the title toggles too", async () => {
+    const a = unit();
+    const { mount } = await openMyUnits([a]);
+    const toggle = q(mount, `units-toggle-${a.unitId}`) as HTMLButtonElement;
+    expect(toggle.tagName).toBe("BUTTON");
+    expect(toggle.type).toBe("button");
+    expect(toggle.getAttribute("aria-label")).toBe("Show resources in Earth Systems");
+    expect(toggle.getAttribute("aria-controls")).toBe(q(mount, `units-details-${a.unitId}`)!.id);
+    const svg = toggle.querySelector("svg.shell-units-card-chevron");
+    expect(svg?.getAttribute("aria-hidden")).toBe("true");
+    expect(toggle.textContent).not.toMatch(/[\u25B4\u25BE]/);
+    toggle.focus();
+    toggle.click();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(toggle);
+    click(mount, `units-title-${a.unitId}`);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    // Unit Results and the menu stay separate controls that do not toggle.
+    click(mount, `units-menu-${a.unitId}`);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
   });
 });

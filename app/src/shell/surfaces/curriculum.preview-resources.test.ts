@@ -7,20 +7,17 @@
  *   - Preview (Task 7): opens the current v2 lesson artifact via
  *     `buildLessonBasePath(slug)` with NO `?assignment` query, in a new
  *     tab, and creates no assignment/session/attempt state.
- *   - Resources (Task 8): a formal-resource disclosure sourced from the
- *     canonical curriculum manifest; games are excluded; a lesson with no
- *     formal resources shows no Resources control.
+ *   - Resources: lesson cards carry no resource disclosure; every formal
+ *     resource stays reachable through its Curriculum resource tab.
  *   - Compact grade tag (Task 5): "G6"/"G7" rather than "Grade 6".
  */
 import type { Session } from "../../session/types";
 import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
-import {
-  renderCurriculumSurface,
-  formatResourceCountLabel,
-} from "./curriculum";
+import { renderCurriculumSurface } from "./curriculum";
 import {
   getFormalResourcesForLesson,
+  getResourcesByType,
   getSurfaceableLessons,
 } from "../../curriculum/curriculumManifest";
 import { buildLessonBasePath } from "../../assignments/studentList/launch";
@@ -164,135 +161,51 @@ describe("Curriculum Preview control (Sprint 28.6D Task 7)", () => {
   });
 });
 
-describe("Curriculum Resources disclosure (Sprint 28.6D Task 8)", () => {
-  test("a single-resource lesson renders the singular collapsed label", () => {
-    // Sprint 28.6D.1 (Task 2): the collapsed disclosure is a quiet count
-    // row with correct grammar, not the old large "Resources · N" pill.
+describe("Curriculum lesson resources live in the resource tabs, not on lesson cards", () => {
+  test("no lesson card renders a resource-count disclosure", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, { listClasses: emptyListClasses });
-    const expected = getFormalResourcesForLesson(LESSON_WITH_RESOURCE);
-    expect(expected.length).toBe(1);
-    const toggle = mount.querySelector<HTMLButtonElement>(
-      `[data-testid=lesson-resources-toggle-${LESSON_WITH_RESOURCE}]`,
-    );
-    expect(toggle).not.toBeNull();
-    expect(toggle!.textContent).toBe("1 Resource");
-    // The old bullet-separated pill label is gone.
-    expect(toggle!.textContent).not.toContain("·");
-    expect(toggle!.textContent).not.toContain("Resources ·");
+    expect(getFormalResourcesForLesson(LESSON_WITH_RESOURCE).length).toBe(1);
+    expect(mount.querySelector("[data-testid^=lesson-resources-toggle-]")).toBeNull();
+    expect(mount.querySelector("[data-testid^=lesson-resources-]")).toBeNull();
+    expect(mount.querySelector(".shell-lesson-resources-toggle")).toBeNull();
+    for (const card of Array.from(mount.querySelectorAll(".shell-lesson-card"))) {
+      expect(card.textContent).not.toMatch(/\d+ Resources?/);
+    }
   });
 
-  test("the collapsed label uses correct singular/plural grammar (Task 2)", () => {
-    // The surfaced manifest carries at most one formal resource per lesson,
-    // so the plural branch is not reachable through the real surface; the
-    // pure label helper is asserted directly so the grammar stays correct
-    // if a lesson later gains multiple resources.
-    expect(formatResourceCountLabel(1)).toBe("1 Resource");
-    expect(formatResourceCountLabel(3)).toBe("3 Resources");
-    expect(formatResourceCountLabel(2)).toBe("2 Resources");
-  });
-
-  test("a lesson with no formal resources shows no Resources control", () => {
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, { listClasses: emptyListClasses });
-    expect(getFormalResourcesForLesson(LESSON_WITHOUT_RESOURCE).length).toBe(0);
-    expect(
-      mount.querySelector(
-        `[data-testid=lesson-resources-${LESSON_WITHOUT_RESOURCE}]`,
-      ),
-    ).toBeNull();
-    expect(
-      mount.querySelector(
-        `[data-testid=lesson-resources-toggle-${LESSON_WITHOUT_RESOURCE}]`,
-      ),
-    ).toBeNull();
-  });
-
-  test("the disclosure toggle exposes and updates its expanded state", () => {
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, { listClasses: emptyListClasses });
-    const toggle = mount.querySelector<HTMLButtonElement>(
-      `[data-testid=lesson-resources-toggle-${LESSON_WITH_RESOURCE}]`,
-    )!;
-    const panel = mount.querySelector<HTMLElement>(
-      `#lesson-resources-panel-${LESSON_WITH_RESOURCE}`,
-    )!;
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(toggle.getAttribute("aria-controls")).toBe(
-      `lesson-resources-panel-${LESSON_WITH_RESOURCE}`,
-    );
-    expect(panel.hidden).toBe(true);
-    toggle.click();
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(panel.hidden).toBe(false);
-    toggle.click();
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(panel.hidden).toBe(true);
-  });
-
-  test("each resource renders a type eyebrow, a title, and a secondary Open link (Task 4)", () => {
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, { listClasses: emptyListClasses });
-    const resources = getFormalResourcesForLesson(LESSON_WITH_RESOURCE);
-    resources.forEach((resource, index) => {
-      const type = mount.querySelector<HTMLElement>(
-        `[data-testid=lesson-resource-type-${LESSON_WITH_RESOURCE}-${index}]`,
-      );
-      const title = mount.querySelector<HTMLElement>(
-        `[data-testid=lesson-resource-title-${LESSON_WITH_RESOURCE}-${index}]`,
-      );
-      const open = mount.querySelector<HTMLAnchorElement>(
-        `[data-testid=lesson-resource-open-${LESSON_WITH_RESOURCE}-${index}]`,
-      );
-      // Type: small metadata eyebrow. Human-readable, never a raw
-      // manifest key/filename. Casing is presentational (CSS uppercases).
-      expect(type).not.toBeNull();
-      expect(type!.textContent).toBe("Investigation");
-      // Title: the primary content of the resource row.
-      expect(title).not.toBeNull();
-      expect(title!.textContent).toBe(resource.label);
-      // Open: a distinct, quiet secondary action (not the title itself).
-      expect(open).not.toBeNull();
-      expect(open!.textContent).toBe("Open");
-      // Opens the canonical manifest URL in a new tab, Open/Preview only.
-      expect(open!.getAttribute("href")).toBe(resource.href);
-      expect(open!.getAttribute("target")).toBe("_blank");
-      expect(open!.getAttribute("rel")).toBe("noopener");
-      // Discernible accessible name still carries the resource identity
-      // and the resource type in text, even though the visible link word
-      // is "Open".
-      expect(open!.getAttribute("aria-label")).toContain(resource.label);
-      expect(open!.getAttribute("aria-label")).toContain("investigation");
-      expect(open!.getAttribute("aria-label")).toContain("opens in a new tab");
-      // No filename or internal path leaks into visible text.
-      expect(type!.textContent).not.toContain(".html");
-      expect(title!.textContent).not.toContain(".html");
-    });
-  });
-
-  test("legacy games never appear under Resources (manifest carries game: 0)", () => {
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, { listClasses: emptyListClasses });
-    // No lesson exposes a game-typed resource: the formal filter drops them.
+  test("every formal lesson resource stays reachable through its resource tab", () => {
+    // Access must not be lost: each resource the old card disclosure listed
+    // is surfaced by `getResourcesByType` (the resource tabs' source).
     for (const lesson of getSurfaceableLessons()) {
       for (const resource of getFormalResourcesForLesson(lesson.slug)) {
         expect(resource.type).not.toBe("game");
+        const surfaced = getResourcesByType(resource.type).some(
+          (e) => e.unit.slug === lesson.slug && e.resource.href === resource.href,
+        );
+        expect({ lesson: lesson.slug, href: resource.href, surfaced }).toEqual({
+          lesson: lesson.slug,
+          href: resource.href,
+          surfaced: true,
+        });
       }
     }
-    // And nothing on the surface is labelled as a game resource.
-    const html = mount.innerHTML.toLowerCase();
-    expect(html).not.toContain("lesson-resource-type-game");
   });
 
-  test("no resource is presented as independently assignable (Open/Preview only)", () => {
+  test("the owning lesson's resource renders with an Open link in its tab", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, { listClasses: emptyListClasses });
-    const panel = mount.querySelector<HTMLElement>(
-      `#lesson-resources-panel-${LESSON_WITH_RESOURCE}`,
-    )!;
-    // The disclosure contains only Open links, never an assign control.
-    expect(panel.querySelector("[data-testid^=lesson-assign-]")).toBeNull();
-    expect(panel.querySelectorAll("a").length).toBeGreaterThan(0);
+    const [resource] = getFormalResourcesForLesson(LESSON_WITH_RESOURCE);
+    const tab = mount.querySelector<HTMLButtonElement>(
+      `[data-testid=curriculum-tab-${resource.type}s]`,
+    );
+    expect(tab).not.toBeNull();
+    tab!.click();
+    const link = mount.querySelector<HTMLAnchorElement>(
+      `.shell-curriculum-resource-panel a[href="${resource.href}"]`,
+    );
+    expect(link).not.toBeNull();
+    expect(link!.target).toBe("_blank");
   });
 });
 

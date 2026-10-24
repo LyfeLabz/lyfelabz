@@ -3,7 +3,7 @@
  *
  * Class Results: the lesson Results page lists each assigned class beneath
  * the four lesson metrics, using the server's per-class `classes` rows of the
- * certified `assessmentLessonSummary` callable. View Results opens the class's
+ * certified `assessmentLessonSummary` callable. Results opens the class's
  * EXISTING Assignment Detail (chosen like the class switcher, never a guess),
  * and Back from Detail re-enters the same Results page. Results opened from
  * My Units returns there.
@@ -182,7 +182,13 @@ describe("Class Results surface", () => {
       { describe: describeFromList },
     );
     expect(text(host, "lesson-class-result-status-c1")).toBe("No submissions yet");
-    expect(text(host, "lesson-class-result-average-c1")).toBe("No completed scores yet");
+    // The unavailable average is a named dash, never "0%"; the real 0-of-25
+    // completion count is kept.
+    const avg = q(host, "lesson-class-result-average-c1")!;
+    expect(avg.textContent).toBe("--");
+    expect(avg.getAttribute("data-unavailable")).toBe("true");
+    expect(avg.querySelector("[role=img]")?.getAttribute("aria-label")).toBe("Not available");
+    expect(avg.textContent).not.toMatch(/0%/);
     expect(text(host, "lesson-class-result-completion-c1")).toBe("0 / 25 (0%)");
   });
 
@@ -198,7 +204,14 @@ describe("Class Results surface", () => {
     );
     expect(text(host, "lesson-class-result-status-c1")).toBe("All students completed");
     expect(text(host, "lesson-class-result-status-c2")).toBe("No students assigned");
-    expect(text(host, "lesson-class-result-completion-c2")).toBe("None");
+    // An empty roster keeps its status and its real "0" student count; the
+    // completion and average metrics are unavailable dashes, not zeros.
+    expect(text(host, "lesson-class-result-students-c2")).toBe("0");
+    for (const key of ["completion", "average"]) {
+      const dd = q(host, `lesson-class-result-${key}-c2`)!;
+      expect(dd.textContent).toBe("--");
+      expect(dd.querySelector("[role=img]")?.getAttribute("aria-label")).toBe("Not available");
+    }
   });
 
   test("renders the server's best score (multiple attempts are resolved server-side, never recomputed)", async () => {
@@ -248,7 +261,8 @@ describe("Class Results surface", () => {
     expect(q(host, "lesson-class-result-c-unknown")?.querySelector("h4")?.textContent).toBe("Class");
     expect(q(host, "lesson-class-result-view-c-unknown")).toBeNull();
     const view = q(host, "lesson-class-result-view-c1") as HTMLButtonElement;
-    expect(view.getAttribute("aria-label")).toBe("View 6A results for Earth's Layers");
+    expect(view.textContent).toBe("Results");
+    expect(view.getAttribute("aria-label")).toBe("6A results for Earth's Layers");
     view.click();
     expect(onView).toHaveBeenCalledWith("c1", "6A");
   });
@@ -354,7 +368,7 @@ const mountCurriculum = async (opts: {
 };
 
 describe("Class Results navigation", () => {
-  test("View Results opens the class's one published occurrence; Back re-enters Results without a new history entry", async () => {
+  test("Results opens the class's one published occurrence; Back re-enters Results without a new history entry", async () => {
     const h = await mountCurriculum({
       registry: [meta("a-c1", "c1"), meta("a-c2", "c2")],
       classRows: [row({ classId: "c1", students: 3 }), row({ classId: "c2", students: 2 })],

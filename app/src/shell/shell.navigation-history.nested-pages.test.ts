@@ -649,7 +649,7 @@ describe("Lesson Results -> Class Results -> Assignment Summary", () => {
       ],
     });
 
-  test("View Results pushes the class's assignment entry; in-app Back replaces it with the same Results", async () => {
+  test("class Results pushes the class's assignment entry; in-app Back replaces it with the same Results", async () => {
     const { mount, opened } = await mountShell({ lessonSummary: withClasses });
     mount.querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")!.click();
     await settle();
