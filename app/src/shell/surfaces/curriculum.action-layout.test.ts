@@ -18,11 +18,9 @@
  *     `.shell-lesson-action-pair` container.
  *   - The pair contains EXACTLY those two controls - never View Summary,
  *     never the toggle - regardless of assignment history.
- *   - View Summary is a sibling of the pair (a direct child of
- *     `.shell-lesson-actions`), so it is outside the pair's width
- *     calculation.
- *   - View Summary is conditional on assignment history and never replaces
- *     Assign.
+ *   - Results-first: an assigned lesson relabels Assign as Results in
+ *     place, so the pair still holds exactly two controls and the separate
+ *     View Summary control no longer exists.
  */
 import type { Session } from "../../session/types";
 import type { ClassSummary } from "../../classes/types";
@@ -125,7 +123,7 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
     expect(preview).not.toBeNull();
   });
 
-  test("an assigned-history card renders 'Reassign' (the action is never replaced/disabled)", () => {
+  test("an assigned-history card renders Results in place of Assign (same button, never disabled)", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacher, {
       listClasses: listOne,
@@ -136,16 +134,10 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
     const assign = card.querySelector<HTMLButtonElement>(
       `[data-testid=lesson-assign-${LESSON.slug}]`,
     );
-    const summaryBtn = card.querySelector(
-      `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-    );
-    // Sprint 28.6H.7 (Part B): a previously assigned lesson reads "Assign
-    // Again" (still fully active, same action); View Summary appears in
-    // addition to it.
     expect(assign).not.toBeNull();
-    expect(assign!.textContent).toBe("Manage");
+    expect(assign!.textContent).toBe("Results");
     expect(assign!.disabled).toBe(false);
-    expect(summaryBtn).not.toBeNull();
+    expect(card.querySelector("[data-testid^=lesson-view-summary-]")).toBeNull();
   });
 
   test("Assign and Preview share the dedicated pair container", () => {
@@ -166,32 +158,8 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
     expect(kids).toEqual([assign, preview]);
   });
 
-  test("View Summary is OUTSIDE the Assign/Preview pair (a sibling of it)", () => {
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
-      lessonSummary: lessonSummaryCallable,
-    });
-    const card = cardFor(mount);
-    const actions = card.querySelector<HTMLElement>(".shell-lesson-actions")!;
-    const pair = pairFor(mount);
-    const titleRow = card.querySelector<HTMLElement>(
-      ".shell-lesson-title-row",
-    )!;
-    const summaryBtn = card.querySelector(
-      `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-    )!;
-    // View Summary never sits inside the primary Assign/Preview pair (so it
-    // can never shrink them) nor the actions stack; Milestone 1 places it in
-    // the title row after the resource type.
-    expect(pair.contains(summaryBtn)).toBe(false);
-    expect(actions.contains(summaryBtn)).toBe(false);
-    expect(Array.from(titleRow.children).includes(summaryBtn)).toBe(true);
-  });
-
-  test("the conditional View Summary does not alter the pair's membership", () => {
-    // With View Summary (history + callable wired).
+  test("the Results state does not alter the pair's membership", () => {
+    // With Results (history + callable wired).
     const withSummary = mkMount();
     renderCurriculumSurface(withSummary, teacher, {
       listClasses: listOne,
@@ -202,7 +170,7 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
       (el) => el.getAttribute("data-testid"),
     );
 
-    // Without View Summary (no callable wired at all).
+    // Without Results (no callable wired at all).
     _resetCurriculumSessionStateForTest();
     const withoutSummary = mkMount();
     renderCurriculumSurface(withoutSummary, teacher, {
@@ -212,8 +180,7 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
       (el) => el.getAttribute("data-testid"),
     );
 
-    // The pair holds exactly Assign + Preview in both cases; the presence of
-    // View Summary changes nothing about the paired sizing row.
+    // The pair holds exactly the primary action + Preview in both cases.
     expect(withKids).toEqual([
       `lesson-assign-${LESSON.slug}`,
       `lesson-preview-${LESSON.slug}`,
@@ -221,22 +188,17 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
     expect(withoutKids).toEqual(withKids);
   });
 
-  test("View Summary remains conditional on assignment history", () => {
-    // Never-assigned: the control is rendered but hidden (no dead control),
-    // and it is still outside the pair.
+  test("Assign becomes Results only with assignment history; the pair keeps two controls", () => {
     const neverAssigned = mkMount();
     renderCurriculumSurface(neverAssigned, teacher, {
       listClasses: listOne,
       assignmentDetail: makeDetailSeam([]),
       lessonSummary: lessonSummaryCallable,
     });
-    const hiddenBtn = cardFor(neverAssigned).querySelector<HTMLButtonElement>(
-      `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-    )!;
-    expect(hiddenBtn.hidden).toBe(true);
-    expect(pairFor(neverAssigned).contains(hiddenBtn)).toBe(false);
+    expect(
+      Array.from(pairFor(neverAssigned).children).map((el) => el.textContent),
+    ).toEqual(["Assign", "Preview"]);
 
-    // With published history: the same control is visible.
     _resetCurriculumSessionStateForTest();
     const assigned = mkMount();
     renderCurriculumSurface(assigned, teacher, {
@@ -244,9 +206,8 @@ describe("Curriculum action layout (Sprint 28.6H.2, Finding 2)", () => {
       assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
       lessonSummary: lessonSummaryCallable,
     });
-    const shownBtn = cardFor(assigned).querySelector<HTMLButtonElement>(
-      `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-    )!;
-    expect(shownBtn.hidden).toBe(false);
+    expect(
+      Array.from(pairFor(assigned).children).map((el) => el.textContent),
+    ).toEqual(["Results", "Preview"]);
   });
 });

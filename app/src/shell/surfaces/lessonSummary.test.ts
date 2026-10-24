@@ -228,8 +228,9 @@ describe("renderLessonSummarySurface", () => {
     const section = host.querySelector(
       "[data-testid=lesson-summary-surface]",
     )!;
+    // Results-first: the accessible name is "Results <lesson title>".
     expect(section.getAttribute("aria-labelledby")).toBe(
-      "lesson-summary-heading",
+      "lesson-summary-eyebrow lesson-summary-heading",
     );
     // No student rows, roster tables, or per-attempt lists.
     expect(host.querySelector("table")).toBeNull();
@@ -239,5 +240,95 @@ describe("renderLessonSummarySurface", () => {
     expect(
       host.querySelector("dl[data-testid=lesson-summary-metrics]"),
     ).not.toBeNull();
+  });
+});
+
+describe("Results presentation and Manage Assignments (results-first)", () => {
+  test("presents the surface as Results with Results loading/error copy", async () => {
+    const host = render(rejecting());
+    expect(
+      host.querySelector("[data-testid=lesson-summary-eyebrow]")!.textContent,
+    ).toBe("Results");
+    expect(host.textContent).not.toMatch(/Summary|summary/);
+    await flush();
+    expect(
+      host.querySelector("[data-testid=lesson-summary-error]")!.textContent,
+    ).toMatch(/We could not load these results/);
+  });
+
+  test("Manage Assignments is a header button that calls onManageAssignments, available before data loads", () => {
+    const host = mkHost();
+    let calls = 0;
+    renderLessonSummarySurface(host, {
+      doc: document,
+      lessonTitle: "Earth's Layers",
+      lessonSlug: "earths-layers",
+      lessonSummary: () => new Promise(() => undefined),
+      onBack: () => undefined,
+      onManageAssignments: () => {
+        calls += 1;
+      },
+    });
+    const manage = host.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-summary-manage]",
+    )!;
+    expect(manage.tagName).toBe("BUTTON");
+    expect(manage.type).toBe("button");
+    expect(manage.textContent).toBe("Manage Assignments");
+    expect(manage.getAttribute("aria-label")).toBe(
+      "Manage assignments for Earth's Layers",
+    );
+    expect(
+      host.querySelector("[data-testid=lesson-summary-header]")!.contains(manage),
+    ).toBe(true);
+    manage.click();
+    expect(calls).toBe(1);
+  });
+
+  test("no Manage Assignments control when no workflow is wired", () => {
+    const host = render(resolving(summary()));
+    expect(host.querySelector("[data-testid=lesson-summary-manage]")).toBeNull();
+  });
+});
+
+describe("Results load failure keeps assignment management reachable", () => {
+  test("a failed read shows the retry state and Manage Assignments still works", async () => {
+    const host = mkHost();
+    let calls = 0;
+    renderLessonSummarySurface(host, {
+      doc: document,
+      lessonTitle: "Earth's Layers",
+      lessonSlug: "earths-layers",
+      lessonSummary: rejecting(),
+      onBack: () => undefined,
+      onManageAssignments: () => {
+        calls += 1;
+      },
+    });
+    await flush();
+    expect(host.querySelector("[data-testid=lesson-summary-retry]")).not.toBeNull();
+    host.querySelector<HTMLButtonElement>("[data-testid=lesson-summary-manage]")!.click();
+    expect(calls).toBe(1);
+  });
+
+  test("refresh() re-reads the callable and only the newest response renders", async () => {
+    const host = mkHost();
+    const resolvers: Array<(v: LessonSummary) => void> = [];
+    const handle = renderLessonSummarySurface(host, {
+      doc: document,
+      lessonTitle: "Earth's Layers",
+      lessonSlug: "earths-layers",
+      lessonSummary: () => new Promise<LessonSummary>((r) => resolvers.push(r)),
+      onBack: () => undefined,
+    });
+    handle.refresh();
+    expect(resolvers).toHaveLength(2);
+    resolvers[1]!(summary({ classesAssigned: 5 }));
+    await flush();
+    resolvers[0]!(summary({ classesAssigned: 1 }));
+    await flush();
+    expect(
+      host.querySelector("[data-testid=lesson-summary-value-classes]")!.textContent,
+    ).toBe("5");
   });
 });

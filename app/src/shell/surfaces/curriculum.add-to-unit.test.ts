@@ -644,7 +644,6 @@ describe("unit-name membership pills", () => {
     const html = fs.readFileSync(path.join(__dirname, "../../../index.html"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
     expect(html).toMatch(/\.shell-resource-unit-pill\s*\{[^}]*max-width:\s*14rem;[^}]*text-overflow:\s*ellipsis;/);
     expect(html).toMatch(/\.shell-resource-unit-pill:focus-visible,\s*\.shell-resource-units-more:focus-visible\s*\{\s*outline:/);
-    expect(html).toMatch(/\.shell-curriculum-grid \.shell-lesson-view-summary\s*\{[^}]*border-radius:\s*var\(--tw-radius-pill/);
     expect(html).toMatch(/\.shell-curriculum-selection-actions button,\s*\.shell-curriculum-unit-notice-actions button,\s*\.shell-units-add-dialog \.shell-assign-footer button,[^{]*\{[^}]*border-radius:\s*var\(--tw-radius-pill/);
     expect(html).toMatch(/\.shell-card\.shell-resource-row\.shell-resource-row-selectable\s*\{[^}]*"select main actions"/);
   });

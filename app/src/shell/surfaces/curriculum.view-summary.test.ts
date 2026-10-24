@@ -1,8 +1,10 @@
 /**
  * @jest-environment jsdom
  *
- * Sprint 28.6E regression tests for the Curriculum lesson-card View
- * Summary action and its lesson-level summary surface entry/return.
+ * Regression tests for the Curriculum lesson-card Results action (formerly
+ * the Sprint 28.6E View Summary action) and its lesson-level summary
+ * surface entry/return. Results-first: an assigned card shows Results +
+ * Preview; Manage Assignments lives inside Results.
  *
  *   - View Summary appears only for a lesson with owned published/closed
  *     assignment history; absent (no dead control) for a never-assigned
@@ -99,112 +101,13 @@ beforeEach(() => {
     .forEach((el) => el.remove());
 });
 
-describe("Curriculum View Summary control", () => {
-  test("is visible for a lesson with owned published assignment history", () => {
-    const mount = mkMount();
-    const { callable } = makeLessonSummary();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
-      lessonSummary: callable,
-    });
-    const btn = mount.querySelector<HTMLButtonElement>(
-      `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-    );
-    expect(btn).not.toBeNull();
-    expect(btn!.hidden).toBe(false);
-    expect(btn!.tagName).toBe("BUTTON");
-  });
+const cardAction = (mount: HTMLElement): HTMLButtonElement =>
+  mount.querySelector<HTMLButtonElement>(
+    `[data-testid=lesson-assign-${LESSON.slug}]`,
+  )!;
 
-  test("is hidden (no dead control) for a never-assigned lesson", () => {
-    const mount = mkMount();
-    const { callable } = makeLessonSummary();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignmentDetail: makeDetailSeam([]),
-      lessonSummary: callable,
-    });
-    const btn = mount.querySelector<HTMLButtonElement>(
-      `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-    );
-    // Rendered but hidden, so it never occupies the action row for a
-    // lesson the teacher has not assigned.
-    expect(btn).not.toBeNull();
-    expect(btn!.hidden).toBe(true);
-  });
-
-  test("is not rendered at all when no lesson-summary callable is wired", () => {
-    const mount = mkMount();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
-      // lessonSummary omitted
-    });
-    expect(
-      mount.querySelector(`[data-testid=lesson-view-summary-${LESSON.slug}]`),
-    ).toBeNull();
-  });
-
-  test("clicking View Summary opens the lesson summary surface and hides the grid", async () => {
-    const mount = mkMount();
-    const { callable, calls } = makeLessonSummary();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
-      lessonSummary: callable,
-    });
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-      )!
-      .click();
-    // The Curriculum grid is hidden (not destroyed) and the summary surface
-    // is mounted into the same outlet, so the shell stays mounted and
-    // Curriculum remains the active surface.
-    const view = mount.querySelector<HTMLElement>(
-      "[data-testid=curriculum-view]",
-    )!;
-    expect(view.hidden).toBe(true);
-    const surface = mount.querySelector(
-      "[data-testid=lesson-summary-surface]",
-    );
-    expect(surface).not.toBeNull();
-    expect(calls).toEqual([LESSON.slug]);
-    await flush();
-    expect(
-      mount.querySelector("[data-testid=lesson-summary-value-classes]")!
-        .textContent,
-    ).toBe("3");
-  });
-
-  test("Back to Curriculum restores the lesson grid", async () => {
-    const mount = mkMount();
-    const { callable } = makeLessonSummary();
-    renderCurriculumSurface(mount, teacher, {
-      listClasses: listOne,
-      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
-      lessonSummary: callable,
-    });
-    mount
-      .querySelector<HTMLButtonElement>(
-        `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-      )!
-      .click();
-    await flush();
-    mount
-      .querySelector<HTMLButtonElement>("[data-testid=lesson-summary-back]")!
-      .click();
-    // Grid restored; summary surface torn down.
-    const view = mount.querySelector<HTMLElement>(
-      "[data-testid=curriculum-view]",
-    )!;
-    expect(view.hidden).toBe(false);
-    expect(
-      mount.querySelector("[data-testid=lesson-summary-surface]"),
-    ).toBeNull();
-  });
-
-  test("View Summary lives in the title row after the resource type, outside the Assign/Preview pair (Teacher Units UX Milestone 1)", () => {
+describe("Curriculum Results action (results-first card actions)", () => {
+  test("an assigned lesson shows exactly Results + Preview; no separate View Summary control", () => {
     const mount = mkMount();
     const { callable } = makeLessonSummary();
     renderCurriculumSurface(mount, teacher, {
@@ -215,40 +118,138 @@ describe("Curriculum View Summary control", () => {
     const card = mount.querySelector<HTMLElement>(
       `[data-testid=lesson-card-${LESSON.slug}]`,
     )!;
-    const actions = card.querySelector<HTMLElement>(".shell-lesson-actions")!;
-    const pair = actions.querySelector<HTMLElement>(
-      ".shell-lesson-action-pair",
+    const pair = card.querySelector<HTMLElement>(".shell-lesson-action-pair")!;
+    expect(Array.from(pair.children).map((c) => c.textContent)).toEqual([
+      "Results",
+      "Preview",
+    ]);
+    const btn = cardAction(mount);
+    expect(btn.tagName).toBe("BUTTON");
+    expect(btn.getAttribute("data-action")).toBe("results");
+    expect(btn.getAttribute("aria-label")).toBe(`Results for ${LESSON.title}`);
+    expect(btn.classList.contains("shell-lesson-results-action")).toBe(true);
+    expect(btn.classList.contains("shell-lesson-assigned-action")).toBe(false);
+    // The redundant card-level Summary control is gone.
+    expect(card.querySelector("[data-testid^=lesson-view-summary-]")).toBeNull();
+    expect(card.querySelector(".shell-lesson-view-summary")).toBeNull();
+    expect(card.textContent).not.toMatch(/Summary/);
+  });
+
+  test("an unassigned lesson shows exactly Assign + Preview", () => {
+    const mount = mkMount();
+    const { callable } = makeLessonSummary();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignmentDetail: makeDetailSeam([]),
+      lessonSummary: callable,
+    });
+    const pair = mount.querySelector<HTMLElement>(
+      `[data-testid=lesson-action-pair-${LESSON.slug}]`,
     )!;
-    const titleRow = card.querySelector<HTMLElement>(
-      ".shell-lesson-title-row",
+    expect(Array.from(pair.children).map((c) => c.textContent)).toEqual([
+      "Assign",
+      "Preview",
+    ]);
+    const btn = cardAction(mount);
+    expect(btn.getAttribute("data-action")).toBe("assign");
+    expect(btn.classList.contains("shell-lesson-results-action")).toBe(false);
+    btn.click();
+    // Assign keeps the existing assignment workflow.
+    expect(document.querySelector("[data-testid=assign-overlay]")).not.toBeNull();
+  });
+
+  test("without a lesson-summary callable an assigned card keeps Manage (no dead Results control)", () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
+      // lessonSummary omitted
+    });
+    expect(cardAction(mount).textContent).toBe("Manage");
+    expect(cardAction(mount).getAttribute("data-action")).toBe("manage");
+  });
+
+  test("clicking Results opens the existing summary surface, presented as Results, and hides the grid", async () => {
+    const mount = mkMount();
+    const { callable, calls } = makeLessonSummary();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
+      lessonSummary: callable,
+    });
+    cardAction(mount).click();
+    const view = mount.querySelector<HTMLElement>(
+      "[data-testid=curriculum-view]",
     )!;
-    const assign = card.querySelector(
-      `[data-testid=lesson-assign-${LESSON.slug}]`,
-    )!;
-    const summaryBtn = card.querySelector(
-      `[data-testid=lesson-view-summary-${LESSON.slug}]`,
-    )!;
-    // Assign lives inside the dedicated pair; View Summary never does.
-    expect(pair.contains(assign)).toBe(true);
-    expect(pair.contains(summaryBtn)).toBe(false);
-    // Milestone 1: View Summary is a quiet secondary action in the title row,
-    // directly after the resource type ("Title LESSON · View Summary"), never
-    // in the primary actions stack.
-    expect(actions.contains(summaryBtn)).toBe(false);
-    expect(Array.from(titleRow.children).includes(summaryBtn as Element)).toBe(
-      true,
-    );
+    expect(view.hidden).toBe(true);
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).not.toBeNull();
     expect(
-      (summaryBtn as Element).previousElementSibling?.classList.contains(
-        "shell-lesson-resource-type",
-      ),
-    ).toBe(true);
-    // The View Summary control carries the quiet link class.
+      mount.querySelector("[data-testid=lesson-summary-eyebrow]")!.textContent,
+    ).toBe("Results");
+    // Results never opens the assign dialog.
+    expect(document.querySelector("[data-testid=assign-overlay]")).toBeNull();
+    expect(calls).toEqual([LESSON.slug]);
+    await flush();
     expect(
-      (summaryBtn as HTMLElement).classList.contains(
-        "shell-lesson-view-summary",
-      ),
-    ).toBe(true);
+      mount.querySelector("[data-testid=lesson-summary-value-classes]")!
+        .textContent,
+    ).toBe("3");
+  });
+
+  test("Manage Assignments in Results opens the existing assignment dialog, even with zero submissions", async () => {
+    const mount = mkMount();
+    const empty: LessonSummaryCallable = () =>
+      Promise.resolve(
+        freeze({
+          lessonSlug: LESSON.slug,
+          classesAssigned: 1,
+          students: 0,
+          studentsCompleted: 0,
+          completionPercentage: 0,
+          averageBestPercentage: null,
+          assignmentsConsidered: 1,
+        }),
+      );
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
+      lessonSummary: empty,
+    });
+    cardAction(mount).click();
+    await flush();
+    // Still Results: zero submissions never marks a lesson unassigned.
+    expect(cardAction(mount).textContent).toBe("Results");
+    expect(
+      mount.querySelector("[data-testid=lesson-summary-value-average]")!
+        .textContent,
+    ).toBe("No completed scores yet");
+    const manage = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-summary-manage]",
+    )!;
+    expect(manage.textContent).toBe("Manage Assignments");
+    manage.click();
+    expect(document.querySelector("[data-testid=assign-overlay]")).not.toBeNull();
+  });
+
+  test("Back to Curriculum restores the grid and returns focus to the Results action", async () => {
+    const mount = mkMount();
+    const { callable } = makeLessonSummary();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listOne,
+      assignmentDetail: makeDetailSeam(historyFor(LESSON.slug)),
+      lessonSummary: callable,
+    });
+    cardAction(mount).click();
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=lesson-summary-back]")!
+      .click();
+    const view = mount.querySelector<HTMLElement>(
+      "[data-testid=curriculum-view]",
+    )!;
+    expect(view.hidden).toBe(false);
+    expect(mount.querySelector("[data-testid=lesson-summary-surface]")).toBeNull();
+    expect(document.activeElement).toBe(cardAction(mount));
   });
 });
 

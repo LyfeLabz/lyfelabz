@@ -386,11 +386,11 @@ describe("Curriculum -> Lesson Summary", () => {
   async function openLessonSummary(mount: HTMLElement): Promise<void> {
     mount.querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")!.click();
     await settle();
-    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-view-summary-${LESSON.slug}]`)!.click();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${LESSON.slug}]`)!.click();
     await settle();
   }
 
-  test("View summary pushes an entry; Back returns to the lesson grid; Forward re-opens the summary", async () => {
+  test("Results pushes an entry; Back returns to the lesson grid; Forward re-opens the summary", async () => {
     const { mount } = await mountShell();
     await openLessonSummary(mount);
     expect(mount.querySelector("[data-testid=lesson-summary-surface]")).not.toBeNull();
@@ -543,7 +543,7 @@ describe("Curriculum resource-type tabs", () => {
   test("primary Curriculum nav closes Lesson Summary to Lessons; Back re-opens the summary", async () => {
     const { mount } = await mountShell();
     await navCurriculum(mount);
-    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-view-summary-${LESSON.slug}]`)!.click();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${LESSON.slug}]`)!.click();
     await settle();
     expect(mount.querySelector("[data-testid=lesson-summary-surface]")).not.toBeNull();
 
@@ -568,7 +568,7 @@ describe("Curriculum resource-type tabs", () => {
     tab(mount, "lessons").click();
     await settle();
     expect(window.history.state).toEqual({ kind: "shell-surface", surface: "curriculum" });
-    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-view-summary-${LESSON.slug}]`)!.click();
+    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${LESSON.slug}]`)!.click();
     await settle();
     await realBack();
     expect(mount.querySelector("[data-testid=lesson-summary-surface]")).toBeNull();
@@ -617,7 +617,14 @@ describe("modal dialogs are never left open over the page Back restores", () => 
     const { mount } = await mountShell();
     mount.querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")!.click();
     await settle();
-    mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${LESSON.slug}]`)!.click();
+    // Results-first: an assigned lesson's card action is Results, so open
+    // the Assign dialog from a never-assigned lesson.
+    const unassigned = getSurfaceableLessons().find(
+      (l) => !registry.some((r) => r.lessonSlug === l.slug),
+    )!;
+    const assign = mount.querySelector<HTMLButtonElement>(`[data-testid=lesson-assign-${unassigned.slug}]`)!;
+    expect(assign.textContent).toBe("Assign");
+    assign.click();
     await settle();
     expect(document.querySelector("[data-testid=assign-overlay]")).not.toBeNull();
 

@@ -127,8 +127,8 @@ describe("Curriculum uses the shared row", () => {
       // Milestone 1 polish: the type follows the title, not the pills.
       const title = q(card, `lesson-title-${slug}`) as HTMLElement;
       expect(title.nextElementSibling?.classList.contains("shell-lesson-resource-type")).toBe(true);
-      // View Summary keeps its control (hidden until assignment history).
-      expect(q(card, `lesson-view-summary-${slug}`)).not.toBeNull();
+      // Results-first: no separate card-level View Summary control.
+      expect(q(card, `lesson-view-summary-${slug}`)).toBeNull();
       const footer = q(card, `lesson-footer-${slug}`);
       if (footer) expect(footer.classList.contains("shell-resource-row-footer")).toBe(true);
     }

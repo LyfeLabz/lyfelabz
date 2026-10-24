@@ -40,7 +40,10 @@ import type {
   CurriculumHistoryController,
   NestedPageHistorySeam,
 } from "../navigationHistory";
-import { renderLessonSummarySurface } from "./lessonSummary";
+import {
+  renderLessonSummarySurface,
+  type LessonSummarySurfaceHandle,
+} from "./lessonSummary";
 import { createCurriculumTabs, type CurriculumTabs } from "./curriculumResourceTabs";
 import type { TeacherUnitsController, TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
 import type { TeacherUnit, TeacherUnitGrade } from "../../teacherUnits/types";
@@ -224,9 +227,9 @@ export type CurriculumSurfaceDeps = {
   readonly assignmentSummary?: AssignmentSummaryCallable | null;
   // Sprint 28.6E: certified `assessmentLessonSummary` callable seam. When
   // present, each lesson card with owned published/closed assignment
-  // history renders a "View Summary" secondary action that opens the
+  // history renders a "Results" primary card action that opens the
   // lesson-level (cross-assignment) aggregate summary surface. When
-  // absent-or-null no View Summary control is rendered (no dead control);
+  // absent-or-null no Results action is rendered (no dead control);
   // the rest of the card is unchanged. The aggregate-only confidentiality
   // boundary is preserved either way - the surface names no student,
   // attempt, class, or recipient identifier.
@@ -1016,7 +1019,19 @@ export function renderCurriculumSurface(
   // `history.back()`), and Back/Forward re-open or close it through the
   // controller registered below.
   const curriculumHistory = deps.curriculumHistory ?? null;
+  // The open Results surface (one at a time) and its lesson, so a confirmed
+  // assignment change for that lesson re-reads its data in place.
+  let openResults: {
+    readonly slug: string;
+    readonly handle: LessonSummarySurfaceHandle;
+  } | null = null;
+  const refreshOpenResults = (lessonSlug: string): void => {
+    if (openResults !== null && openResults.slug === lessonSlug) {
+      openResults.handle.refresh();
+    }
+  };
   const closeLessonSummary = (): void => {
+    openResults = null;
     summaryHost.textContent = "";
     curriculumView.hidden = false;
   };
@@ -1034,18 +1049,27 @@ export function renderCurriculumSurface(
         lessonSlug: lesson.slug,
       });
     }
-    renderLessonSummarySurface(summaryHost, {
+    const handle = renderLessonSummarySurface(summaryHost, {
       doc,
       lessonTitle: lesson.title,
       lessonSlug: lesson.slug,
       lessonSummary,
+      // Results-first: Manage Assignments reopens the EXISTING assignment
+      // dialog for this lesson's card (the same workflow the card used to
+      // open from "Manage"). Available whether or not anyone has submitted.
+      onManageAssignments: () => {
+        const card = curriculumView.querySelector<HTMLElement>(
+          `[data-testid=lesson-card-${lesson.slug}]`,
+        );
+        if (card !== null) openAssignDialog(lesson, card);
+      },
       onBack: () => {
         closeLessonSummary();
         curriculumHistory?.replace({ kind: "shell-surface", surface: "curriculum" });
-        // Return focus to the card's View Summary control so the return
-        // trip is keyboard-coherent.
+        // Return focus to the card's Results control so the return trip is
+        // keyboard-coherent.
         const trigger = curriculumView.querySelector<HTMLButtonElement>(
-          `[data-testid=lesson-view-summary-${lesson.slug}]`,
+          `[data-testid=lesson-assign-${lesson.slug}]`,
         );
         if (trigger) {
           try {
@@ -1056,6 +1080,7 @@ export function renderCurriculumSurface(
         }
       },
     });
+    openResults = { slug: lesson.slug, handle };
   };
 
   // Assigned below, once the lesson grid exists; every controller method
@@ -1351,8 +1376,14 @@ export function renderCurriculumSurface(
       onConfirm: (summary) => {
         refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
         showSuccess(successBanner, summary);
+        // While this lesson's Results is open the grid's banner is hidden, so
+        // the same outcome message (success, partial, or failure) is shown in
+        // Results as well.
+        if (openResults !== null && openResults.slug === lesson.slug) {
+          showSuccess(openResults.handle.status, summary);
+        }
       },
-      onLifecycleComplete: () => {
+      onLifecycleComplete: (assignmentIds) => {
         // Re-derive the quiet assignment-history badge from the
         // persisted-assignment registry so the card only shows
         // "✓ Assigned" after at least one class successfully published,
@@ -1361,14 +1392,19 @@ export function renderCurriculumSurface(
         // available). Curriculum no longer renders assignment rows, so
         // no dashboard refresh is needed here (Blueprint §6).
         refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
+        // Results-first: when this change was made from Results, re-read its
+        // data once. Only confirmed saves count: the lifecycle reports the
+        // assignment ids that actually published or saved, so a failed,
+        // pending, or uncertain save (empty list) never refreshes.
+        if (assignmentIds.length > 0) refreshOpenResults(lesson.slug);
       },
     });
   };
 
   for (const lesson of LESSONS) {
     const card = renderLessonCard(doc, lesson, state.activation, openAssignDialog, {
-      showViewSummary: lessonSummary !== null,
-      onViewSummary: openLessonSummary,
+      showResults: lessonSummary !== null,
+      onResults: openLessonSummary,
     }, selection);
     refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
     grid.appendChild(card);
@@ -1781,19 +1817,35 @@ function renderSelectionBar(input: SelectionBarInput): {
   return { dock, update };
 }
 
+// Results-first card actions. An unassigned lesson's primary action is
+// "Assign"; an assigned lesson's is "Results", which opens the existing
+// lesson-level summary surface (where Manage Assignments reopens the
+// assignment dialog). The same button is relabeled in place so the pair never
+// shifts. "Manage" appears only when no lesson-summary callable is wired at
+// render time: a static wiring condition, never a data-loading result. In the
+// teacher app (index.ts) the callable is created with the other teacher
+// callables before the shell mounts, so an active teacher always gets Results;
+// a failed or slow Results read shows Results' own error/retry state, where
+// Manage Assignments stays available.
 function applyAssignState(
   btn: HTMLButtonElement,
   lesson: SurfaceableLesson,
   assigned: boolean,
 ): void {
-  btn.textContent = assigned ? "Manage" : "Assign";
+  const results = assigned && btn.getAttribute("data-results-available") === "true";
+  const label = results ? "Results" : assigned ? "Manage" : "Assign";
+  btn.textContent = label;
+  btn.setAttribute("data-action", results ? "results" : assigned ? "manage" : "assign");
   btn.setAttribute(
     "aria-label",
-    assigned
-      ? `Manage assignment for ${lesson.title}`
-      : `Assign ${lesson.title}`,
+    results
+      ? `Results for ${lesson.title}`
+      : assigned
+        ? `Manage assignment for ${lesson.title}`
+        : `Assign ${lesson.title}`,
   );
-  btn.classList.toggle("shell-lesson-assigned-action", assigned);
+  btn.classList.toggle("shell-lesson-results-action", results);
+  btn.classList.toggle("shell-lesson-assigned-action", assigned && !results);
 }
 
 function refreshAssignControl(
@@ -1824,16 +1876,6 @@ function refreshAssignControl(
   // Sprint 28.6H.6 (Part C): keep the supplemental cool-slate assigned tint in
   // step with the assignment-history signal after a first in-session assignment.
   card.classList.toggle("shell-lesson-card-assigned", assigned);
-
-  // Sprint 28.6E/H: reveal (or hide) the View Summary control in step with the
-  // assignment-history signal. A first successful in-session assignment makes
-  // lesson-level analytics meaningful; deselecting every class returns the card
-  // to a never-assigned state and hides it again. View Summary remains
-  // conditional on assignment history even though Assign no longer shows it.
-  const summaryBtn = card.querySelector<HTMLButtonElement>(
-    `[data-testid=lesson-view-summary-${lesson.slug}]`,
-  );
-  if (summaryBtn) summaryBtn.hidden = !assigned;
 }
 
 // Tracks the pending self-dismiss timer per banner so a newer
@@ -1865,12 +1907,12 @@ function showSuccess(banner: HTMLElement, summary: string): void {
   successDismissTimers.set(banner, handle);
 }
 
-// Sprint 28.6E: per-card View Summary options. `showViewSummary` reflects
-// whether the certified lesson-summary callable is wired (no dead control
-// when it is not); `onViewSummary` opens the lesson-level summary surface.
-type ViewSummaryOptions = {
-  readonly showViewSummary: boolean;
-  readonly onViewSummary: (lesson: SurfaceableLesson) => void;
+// Per-card Results options. `showResults` reflects whether the certified
+// lesson-summary callable is wired (no dead control when it is not);
+// `onResults` opens the lesson-level summary surface, presented as Results.
+type ResultsOptions = {
+  readonly showResults: boolean;
+  readonly onResults: (lesson: SurfaceableLesson) => void;
 };
 
 function renderLessonCard(
@@ -1878,7 +1920,7 @@ function renderLessonCard(
   lesson: SurfaceableLesson,
   activation: Map<string, boolean>,
   onAssign: (lesson: SurfaceableLesson, card: HTMLElement) => void,
-  viewSummary?: ViewSummaryOptions,
+  results?: ResultsOptions,
   selection: CurriculumSelection | null = null,
 ): HTMLElement {
   // Milestone 2A: a lesson's canonical resource id is its slug.
@@ -1989,10 +2031,19 @@ function renderLessonCard(
   // action is unchanged in behavior (same assignment workflow, always enabled,
   // always re-assignable); "Assign Again" reads as an action, never a disabled
   // status.
+  if (results?.showResults === true) {
+    assign.setAttribute("data-results-available", "true");
+  }
   applyAssignState(assign, lesson, assigned);
   card.setAttribute("data-lesson-assigned", assigned ? "true" : "false");
   card.classList.toggle("shell-lesson-card-assigned", assigned);
   assign.addEventListener("click", () => {
+    // Read the live state so an in-session first assignment switches the
+    // control to Results without a reload.
+    if (assign.getAttribute("data-action") === "results" && results !== undefined) {
+      results.onResults(lesson);
+      return;
+    }
     onAssign(lesson, card);
   });
   actionPair.appendChild(assign);
@@ -2009,8 +2060,8 @@ function renderLessonCard(
   if (preview !== null) actionPair.appendChild(preview);
 
   // The paired row is appended as a single unit. Assign and Preview are its
-  // only members; View Summary (below) is a sibling of this pair, never a
-  // child, so it is outside the pair's width calculation.
+  // only members. Results-first: an assigned lesson relabels Assign as
+  // Results in place, so the pair keeps exactly two controls.
   actions.appendChild(actionPair);
 
   row.actions.appendChild(actions);
@@ -2025,36 +2076,6 @@ function renderLessonCard(
   // View Summary, so a card never carries an empty footer.
   const footerRow = doc.createElement("div");
   footerRow.className = "shell-lesson-footer-row";
-
-  // View Summary. An analytical secondary action (a quiet ink link,
-  // quieter than Assign). Rendered only when the lesson-summary callable is
-  // wired; visible only for a lesson with owned published/closed assignment
-  // history (the same authoritative signal that lights the assigned badge),
-  // hidden otherwise so there is no dead control. Visibility is refreshed by
-  // `refreshAssignControl` so a first in-session assignment reveals it without
-  // a reload. Opens the lesson-level aggregate summary; it never lists a
-  // specific assignment (that is Classes).
-  if (viewSummary?.showViewSummary === true) {
-    const summaryBtn = doc.createElement("button");
-    summaryBtn.type = "button";
-    summaryBtn.className = "shell-lesson-view-summary";
-    summaryBtn.setAttribute(
-      "data-testid",
-      `lesson-view-summary-${lesson.slug}`,
-    );
-    summaryBtn.textContent = "View Summary";
-    summaryBtn.setAttribute(
-      "aria-label",
-      `View lesson summary for ${lesson.title}`,
-    );
-    summaryBtn.hidden = !isAssigned(lesson.slug);
-    summaryBtn.addEventListener("click", () => {
-      viewSummary.onViewSummary(lesson);
-    });
-    // Milestone 1: View Summary follows the resource type in the title row
-    // ("Title LESSON · View Summary"), so the card stays two rows.
-    row.titleRow.appendChild(summaryBtn);
-  }
 
   // Resources. Formal Resources disclosure from the canonical manifest
   // (simulations, investigations, extensions, challenges; legacy games
@@ -3082,6 +3103,18 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
 
     invalidateLifecycleCache(lesson.slug);
 
+    // A mixed operation runs both halves; completion is reported once, after
+    // both settle, with the union of their confirmed ids. Reporting from one
+    // half alone would miss a refresh when only existing assignments saved,
+    // or refresh before the other half's changes landed.
+    const confirmedIds: string[] = [];
+    let pendingHalves = (creationRows.length > 0 ? 1 : 0) + (updateRows.length > 0 ? 1 : 0);
+    const halfComplete = (ids: ReadonlyArray<string>): void => {
+      confirmedIds.push(...ids);
+      pendingHalves -= 1;
+      if (pendingHalves === 0) onLifecycleComplete?.(confirmedIds);
+    };
+
     if (creationRows.length > 0) {
       const classroomGrading: ClassroomGradingInput = shared.graded
         ? { mode: "graded", maxPoints: shared.points }
@@ -3096,7 +3129,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         integrations,
         assignmentDetail,
         onConfirm,
-        onLifecycleComplete,
+        onLifecycleComplete: halfComplete,
         delivery,
       });
     }
@@ -3108,11 +3141,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         updateRows,
         assignments,
         onConfirm,
-        onLifecycleComplete: onLifecycleComplete
-          ? (ids) => {
-              if (creationRows.length === 0) onLifecycleComplete(ids);
-            }
-          : undefined,
+        onLifecycleComplete: halfComplete,
       });
     }
   };

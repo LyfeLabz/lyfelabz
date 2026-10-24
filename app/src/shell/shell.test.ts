@@ -2678,36 +2678,32 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(body).toMatch(/box-sizing:\s*border-box/);
   });
 
-  test("View Summary is a quiet borderless text-style control, not a third boxed button (Sprint 28.6H, Finding 9)", () => {
-    // The base rule is the standalone `.shell-lesson-view-summary { ... }`
-    // block (not the comma-listed responsive/focus rules); it starts with the
-    // quiet text-style padding.
-    const vsMatch = shellHtml.match(
-      /\n\s*\.shell-lesson-view-summary\s*\{\s*padding: 0\.1rem 0;([^}]+)\}/,
-    );
-    expect(vsMatch).not.toBeNull();
-    // Borderless (no boxed outline competing with Assign/Preview), transparent
-    // fill, and never wraps into a crushed two-line box.
-    expect(vsMatch![1]).toMatch(/border:\s*none/);
-    expect(vsMatch![1]).toMatch(/background:\s*transparent/);
-    expect(vsMatch![1]).toMatch(/white-space:\s*nowrap/);
-    // Teacher Units UX Milestone 1 polish: a quiet supporting link - small,
-    // medium weight, no gold underline; hover/focus reveal an ink underline.
-    expect(vsMatch![1]).toMatch(/font-weight:\s*500/);
-    expect(vsMatch![1]).toMatch(/text-decoration:\s*none/);
-    expect(vsMatch![1]).not.toMatch(/gold/);
-    expect(shellHtml).toMatch(
-      /\.shell-lesson-view-summary:hover,\s*\.shell-lesson-view-summary:focus-visible\s*\{[^}]*text-decoration:\s*underline/,
-    );
-    // The Curriculum-only polish is scoped to the Curriculum grid, so the
-    // shared pills and My Units rows are untouched.
+  test("Results-first: the assigned-lesson Results pill is pale teal-blue with dark teal text; no card View Summary CSS remains", () => {
     const stripped = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
-    expect(stripped).toMatch(/\.shell-curriculum-grid \.shell-lesson-badge\s*\{[^}]*font-size:\s*0\.68rem/);
-    expect(stripped).toMatch(/\.shell-curriculum-grid \.shell-lesson-title-row \.shell-lesson-title\s*\{\s*flex:\s*0 1 auto;/);
-    expect(stripped).toMatch(/\n\s*\.shell-lesson-badge\s*\{[^}]*font-size:\s*0\.75rem/);
+    const base = stripped.match(
+      /\n\s*\.shell-lesson-assign\.shell-lesson-results-action\s*\{([^}]+)\}/,
+    );
+    expect(base).not.toBeNull();
+    expect(base![1]).toMatch(/background:\s*#e0f1f3/i);
+    expect(base![1]).toMatch(/color:\s*#205b68/i);
+    expect(base![1]).toMatch(/border-color:\s*#b5dadd/i);
+    expect(stripped).toMatch(
+      /\.shell-lesson-results-action:hover,\s*\.shell-lesson-assign\.shell-lesson-results-action:focus-visible\s*\{/,
+    );
+    expect(stripped).toMatch(/\.shell-lesson-results-action:active\s*\{/);
+    expect(stripped).toMatch(
+      /\.shell-lesson-results-action:focus-visible\s*\{[^}]*box-shadow:\s*var\(--tw-focus-ring/,
+    );
+    // Geometry is shared with Assign/Preview (same button, relabeled), so no
+    // results-specific size/padding overrides exist.
+    expect(base![1]).not.toMatch(/height|padding|min-width|border-radius/);
+    // The results color is not reused for unit-membership pills.
+    expect(stripped).not.toMatch(/\.shell-resource-unit[^{]*\{[^}]*#e0f1f3/i);
+    // The retired card-level View Summary control has no styling left.
+    expect(stripped).not.toMatch(/\.shell-lesson-view-summary/);
   });
 
-  test("Sprint 28.6H.4 (Task D1/D2): the Assign/Preview pair shrink-wraps to the left and never stretches; View Summary lives in the title row", () => {
+  test("Sprint 28.6H.4 (Task D1/D2): the Assign/Preview pair shrink-wraps to the left and never stretches", () => {
     // The pair is a plain flex row (NOT an intrinsic grid, whose 1fr columns
     // did not equalize under shrink-to-fit and produced the mismatched live
     // widths). It shrink-wraps to its content and sits at the left of the card
@@ -2729,8 +2725,7 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(actionsMatch).not.toBeNull();
     expect(actionsMatch![1]).toMatch(/flex-direction:\s*column/);
     // Teacher Units UX Milestone 1: the footer row holds the Resources
-    // disclosure at the left; View Summary follows the resource type in the
-    // title row, after a presentational dot shown only when it is visible.
+    // disclosure at the left.
     const footerRowMatch = shellHtml.match(
       /\n\s*\.shell-lesson-footer-row\s*\{([^}]+)\}/,
     );
@@ -2738,17 +2733,6 @@ describe("Assign dialog CSS ships with the shell host page", () => {
     expect(footerRowMatch![1]).toMatch(/display:\s*flex/);
     const strippedCss = shellHtml.replace(/\/\*[\s\S]*?\*\//g, "");
     expect(strippedCss).not.toMatch(/\.shell-lesson-resources-toggle\s*\{[^}]*margin-left:\s*auto/);
-    expect(strippedCss).toMatch(
-      /\.shell-lesson-title-row\s*>\s*\.shell-lesson-resource-type\s*\+\s*\.shell-lesson-view-summary:not\(\[hidden\]\)::before\s*\{[^}]*content:\s*"\\00B7"\s*\/\s*"";/,
-    );
-    // View Summary is no longer a direct child of the actions stack (that CSS
-    // rule is gone); it must not carry any greedy flex basis.
-    expect(shellHtml).not.toMatch(
-      /\.shell-lesson-actions\s*>\s*\.shell-lesson-view-summary/,
-    );
-    expect(shellHtml).not.toMatch(
-      /\.shell-lesson-view-summary\s*\{[^}]*flex:\s*1 1 100%/,
-    );
   });
 
   test("clicking Assign appends the overlay to the document body", async () => {

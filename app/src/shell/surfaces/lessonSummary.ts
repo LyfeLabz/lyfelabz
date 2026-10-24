@@ -3,7 +3,8 @@ import type {
   LessonSummaryCallable,
 } from "../../assignments/summary/types";
 
-// Sprint 28.6E: Curriculum-owned lesson-level View Summary surface.
+// Sprint 28.6E: Curriculum-owned lesson-level summary surface, presented to
+// teachers as the lesson's Results (formerly "View Summary").
 //
 // This surface answers the lesson-mastery question locked by Blueprint
 // §10-11: "How has this lesson performed across the classes and
@@ -26,20 +27,34 @@ export type LessonSummarySurfaceInput = {
   readonly lessonSlug: string;
   readonly lessonSummary: LessonSummaryCallable;
   readonly onBack: () => void;
+  // Results-first: opens the EXISTING Curriculum assignment dialog for this
+  // lesson (assign to more classes, settings, history, Classroom status).
+  // Omitted when no assignment workflow is wired, so no dead control renders.
+  readonly onManageAssignments?: () => void;
 };
 
 // Maps any callable/network failure to calm, teacher-facing copy. Raw
 // Firebase error messages, stack traces, and callable names are never
 // exposed (Blueprint §16, Sprint 28.6E error contract).
 function friendlyError(): string {
-  return "We could not load this lesson summary. Try again in a moment.";
+  return "We could not load these results. Try again in a moment.";
 }
+
+// Handle returned to the owner so a confirmed assignment change made from
+// Manage Assignments can re-read the same certified callable in place.
+export type LessonSummarySurfaceHandle = {
+  readonly refresh: () => void;
+  // Polite status region in the Results header, styled like the Curriculum
+  // assignment banner. The owner writes assignment outcome messages here
+  // while the Curriculum grid (and its own banner) is hidden.
+  readonly status: HTMLElement;
+};
 
 export function renderLessonSummarySurface(
   host: HTMLElement,
   input: LessonSummarySurfaceInput,
-): void {
-  const { doc, lessonTitle, lessonSlug, lessonSummary, onBack } = input;
+): LessonSummarySurfaceHandle {
+  const { doc, lessonTitle, lessonSlug, lessonSummary, onBack, onManageAssignments } = input;
 
   host.textContent = "";
 
@@ -47,7 +62,7 @@ export function renderLessonSummarySurface(
   section.className = "shell-lesson-summary";
   section.setAttribute("data-testid", "lesson-summary-surface");
   section.setAttribute("data-lesson-slug", lessonSlug);
-  section.setAttribute("aria-labelledby", "lesson-summary-heading");
+  section.setAttribute("aria-labelledby", "lesson-summary-eyebrow lesson-summary-heading");
 
   // Back to Curriculum - a real button, keyboard operable, first in the
   // focus order so return is always reachable.
@@ -61,13 +76,53 @@ export function renderLessonSummarySurface(
   });
   section.appendChild(back);
 
+  // Results-first: the surface is presented as the lesson's Results. The
+  // header pairs the "Results" eyebrow + lesson title with the secondary
+  // Manage Assignments action.
+  const header = doc.createElement("div");
+  header.className = "shell-lesson-summary-header";
+  header.setAttribute("data-testid", "lesson-summary-header");
+
+  const titleGroup = doc.createElement("div");
+  titleGroup.className = "shell-lesson-summary-title-group";
+
+  const eyebrow = doc.createElement("p");
+  eyebrow.id = "lesson-summary-eyebrow";
+  eyebrow.className = "shell-lesson-summary-eyebrow";
+  eyebrow.setAttribute("data-testid", "lesson-summary-eyebrow");
+  eyebrow.textContent = "Results";
+  titleGroup.appendChild(eyebrow);
+
   const heading = doc.createElement("h2");
   heading.id = "lesson-summary-heading";
   heading.className = "shell-lesson-summary-title";
   heading.tabIndex = -1;
   heading.setAttribute("data-testid", "lesson-summary-title");
   heading.textContent = lessonTitle;
-  section.appendChild(heading);
+  titleGroup.appendChild(heading);
+  header.appendChild(titleGroup);
+
+  if (onManageAssignments !== undefined) {
+    const manage = doc.createElement("button");
+    manage.type = "button";
+    manage.className = "shell-lesson-summary-manage";
+    manage.setAttribute("data-testid", "lesson-summary-manage");
+    manage.textContent = "Manage Assignments";
+    manage.setAttribute("aria-label", `Manage assignments for ${lessonTitle}`);
+    manage.addEventListener("click", () => {
+      onManageAssignments();
+    });
+    header.appendChild(manage);
+  }
+  section.appendChild(header);
+
+  const status = doc.createElement("p");
+  status.className = "shell-curriculum-success";
+  status.setAttribute("data-testid", "lesson-summary-status");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.hidden = true;
+  section.appendChild(status);
 
   // Sprint 28.6H.5 (Task B1): the introductory sentence ("How this lesson has
   // performed across your classes and assignments.") is removed and NOT
@@ -95,7 +150,7 @@ export function renderLessonSummarySurface(
     loading.setAttribute("data-testid", "lesson-summary-loading");
     loading.setAttribute("role", "status");
     loading.setAttribute("aria-live", "polite");
-    loading.textContent = "Loading lesson summary";
+    loading.textContent = "Loading results";
     contentHost.appendChild(loading);
   };
 
@@ -219,4 +274,13 @@ export function renderLessonSummarySurface(
   };
 
   void load();
+
+  return {
+    // Re-reads the same callable. The load token discards any older
+    // in-flight response, so a refresh never shows stale data.
+    refresh: () => {
+      void load();
+    },
+    status,
+  };
 }

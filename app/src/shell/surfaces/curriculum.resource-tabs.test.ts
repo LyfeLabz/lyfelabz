@@ -11,6 +11,7 @@
 import type { Session } from "../../session/types";
 import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
+import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
 import type { LessonSummaryCallable } from "../../assignments/summary/types";
 import {
   renderCurriculumSurface,
@@ -55,12 +56,27 @@ const TAB_TYPES = [
   ["challenges", "challenge", "Challenge"],
 ] as const;
 
-function mount(): HTMLElement {
+function mount(assignedSlugs: ReadonlyArray<string> = []): HTMLElement {
   const div = document.createElement("div");
   document.body.appendChild(div);
   renderCurriculumSurface(div, teacher, {
     listClasses: emptyListClasses,
     lessonSummary,
+    assignmentDetail: {
+      register: () => undefined,
+      open: () => undefined,
+      list: () =>
+        assignedSlugs.map(
+          (slug, i) =>
+            ({
+              assignmentId: `a${i}`,
+              title: "Check for Understanding",
+              className: "6A",
+              status: "published",
+              lessonSlug: slug,
+            }) as AssignmentDetailMetadata,
+        ),
+    },
   });
   return div;
 }
@@ -261,8 +277,8 @@ describe("filtering", () => {
 });
 
 describe("Lessons regression", () => {
-  test("Lessons keeps Assign, Preview, Resources, View Summary, and Lesson Summary after a tab round trip", () => {
-    const root = mount();
+  test("Lessons keeps Assign/Results, Preview, Resources, and Lesson Summary after a tab round trip", () => {
+    const root = mount(["what-is-life"]);
     q<HTMLButtonElement>(root, "curriculum-tab-extensions")!.click();
     q<HTMLButtonElement>(root, "curriculum-tab-lessons")!.click();
     const lessonsPanel = q(root, "curriculum-panel-lessons")!;
@@ -274,7 +290,7 @@ describe("Lessons regression", () => {
     expect(lessonsPanel.querySelectorAll(".shell-lesson-card")).toHaveLength(lessons.length);
 
     const slug = "what-is-life";
-    expect(q<HTMLButtonElement>(lessonsPanel, `lesson-assign-${slug}`)!.textContent).toMatch(/Assign/);
+    expect(q<HTMLButtonElement>(lessonsPanel, `lesson-assign-${slug}`)!.textContent).toBe("Results");
     expect(q<HTMLAnchorElement>(lessonsPanel, `lesson-preview-${slug}`)!.target).toBe("_blank");
 
     const toggle = q<HTMLButtonElement>(lessonsPanel, `lesson-resources-toggle-${slug}`)!;
@@ -282,7 +298,9 @@ describe("Lessons regression", () => {
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(q(lessonsPanel, `lesson-resources-${slug}`)!.hidden).toBe(false);
 
-    q<HTMLButtonElement>(lessonsPanel, `lesson-view-summary-${slug}`)!.click();
+    const results = q<HTMLButtonElement>(lessonsPanel, `lesson-assign-${slug}`)!;
+    expect(results.textContent).toBe("Results");
+    results.click();
     expect(q(root, "lesson-summary-surface")).not.toBeNull();
     expect(q(root, "curriculum-view")!.hidden).toBe(true);
     q<HTMLButtonElement>(root, "lesson-summary-back")!.click();
