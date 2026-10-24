@@ -64,7 +64,7 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
   });
 
   describe("vocabulary explorer", () => {
-    const TERMS = ["Matter", "Mass", "Volume", "Density", "Triple Beam Balance", "Graduated Cylinder"];
+    const TERMS = ["Matter", "Mass", "Volume", "Density", "Triple Beam Balance", "Graduated Cylinder", "Buoyancy", "Water Displacement"];
     const DEFS = {
       matter: ["Anything that has mass and takes up space (volume).", "The most common states of matter are solid, liquid, and gas."],
       mass: ["The amount of matter in an object.", "Mass is measured in grams (g) with a triple beam balance."],
@@ -72,6 +72,8 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       density: ["A measure of how much matter is packed into a space.", "Density is the ratio of mass to volume: D = m ÷ V, in g/cm³ or g/mL."],
       balance: ["The lab tool scientists use to measure mass in grams.", "You slide the riders along the three beams until the pointer lines up with zero."],
       cylinder: ["A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).", null],
+      buoyancy: ["The upward force a fluid exerts on an object placed in it.", "This upward push is also called the buoyant force. An object floats when the buoyant force balances its weight."],
+      displacement: ["The movement of water out of the way when an object enters or moves through it.", "The water pushed aside takes up the same volume as the part of the object that is underwater. It helps you measure volume, and it causes the buoyant force."],
     };
     const terms = () => [...doc.querySelectorAll("#vocab .vx-term")];
     const term = (key) => doc.querySelector(`#vocab .vx-term[data-term="${key}"]`);
@@ -79,7 +81,7 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
     const shown = () => [...doc.querySelectorAll("#vocab .vx-panel")].filter((p) => !p.hidden).map((p) => p.dataset.term);
     const said = () => doc.getElementById("vx-announce").textContent;
 
-    test("renders six accessible selectors, the intro, and exact definitions", () => {
+    test("renders eight accessible selectors, the intro, and exact definitions", () => {
       expect(terms().map((t) => t.querySelector(".gc-term").textContent)).toEqual(TERMS);
       for (const t of terms()) {
         expect(t.tagName).toBe("BUTTON");
@@ -154,15 +156,16 @@ describe.each(FILES)("Measuring Matter vocabulary and Quick Check in %s", (rel) 
       const eyebrows = [...doc.querySelectorAll(".check-card > .check-eyebrow")].map((e) => e.textContent);
       expect(eyebrows).toEqual([
         "Predict", "Quick Check · Not graded", "Quick Check · Not graded",
-        "Step 1 · Predict", "Step 3 · Check Your Understanding · Not graded",
+        "Step 1 · Predict", "Step 3 · Check Your Understanding · Not graded", "Step 4 · Explain With Evidence",
         "Predict",
+        "Step 1 · Predict", "Step 3 · Explain · Not graded", "Step 4 · Check: Buoyancy Is a Force",
       ]);
       expect(doc.querySelectorAll("#quiz .check-card, #quiz .check-opt")).toHaveLength(0);
     });
 
     test("labels every option group by its question and styles every option", () => {
       const groups = [...doc.querySelectorAll('.check-card [role="group"], .worked-example [role="group"]')];
-      expect(groups).toHaveLength(8);
+      expect(groups).toHaveLength(12);
       for (const g of groups) {
         const label = doc.getElementById(g.getAttribute("aria-labelledby"));
         expect(label).not.toBeNull();

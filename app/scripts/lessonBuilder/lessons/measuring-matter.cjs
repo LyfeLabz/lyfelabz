@@ -33,6 +33,7 @@ module.exports = {
     v2: "app/lessons/lesson_measuring-matter.html",
   },
   generatedNotice: { v1: V1_NOTICE, v2: V2_NOTICE },
+  canonicalAssessmentRevisionId: "assessment_measuring-matter__r2",
   requiredLabels: {
     v1Only: [
       "legacy-mode-toggle-markup",

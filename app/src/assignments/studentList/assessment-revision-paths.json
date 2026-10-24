@@ -91,7 +91,8 @@
       "assessment_layers-of-time__r1": "/app/lessons/lesson_layers-of-time.html"
     },
     "measuring-matter": {
-      "assessment_measuring-matter__r1": "/app/lessons/lesson_measuring-matter.html"
+      "assessment_measuring-matter__r1": "/app/lessons/assessment-revisions/lesson_measuring-matter__r1.html",
+      "assessment_measuring-matter__r2": "/app/lessons/assessment-revisions/lesson_measuring-matter__r2.html"
     },
     "nature-of-waves": {
       "assessment_nature-of-waves__r1": "/app/lessons/lesson_nature-of-waves.html"

@@ -1437,6 +1437,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .dx-reset:hover { border-color: var(--density); background: var(--density-dim); }
 .dx-check.check-card { margin-bottom: 0; }
+.dx-check.check-card + .dx-check.check-card { margin-top: 1rem; }
 /* Wide cards: question and its feedback on the left, choices stacked on
    the right, so the reserved feedback space sits beside the choices. */
 @container dx-lab (min-width: 46rem) {
@@ -1469,6 +1470,69 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   .dx-step.check-card { padding-left: 0.7rem; padding-right: 0.7rem; }
   .dx-math strong { white-space: normal; }
 }
+
+/* ── BUOYANCY (Explain) + BOAT SHAPE INVESTIGATION (ungraded, nothing stored) ──
+   The key idea reuses the density idea row. The investigation reuses the
+   Lab 4 card shell (.dx-lab), its step cards, shape switch, reset button
+   and feedback zones; only the tank, readouts and force bars are new. */
+.by-desc { margin-bottom: 1.4rem; }
+.by-desc strong { color: var(--teal); }
+.name-it p.by-rule { font-family: 'Fredoka One', cursive; font-size: 1.2rem; line-height: 1.35; color: var(--teal); margin-top: 0.6rem; }
+.by-idea { margin-bottom: 1rem; }
+.by-link { font-size: 1rem; line-height: 1.6; color: var(--text-muted); max-width: 760px; margin: 0 0 1.6rem; }
+.dx-lab.by-lab { border-color: rgba(59,200,232,0.3); margin-bottom: 0; }
+.by-lab .mlab-tag { color: var(--teal); }
+.by-intro { font-size: 1rem; line-height: 1.6; color: var(--text-muted); max-width: 760px; margin: 0 0 1rem; }
+.by-intro strong { color: var(--text); }
+.by-work {
+  margin-bottom: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.by-head .dx-step-label { color: var(--teal); }
+.by-shapes { margin: 0.4rem 0 0.9rem; }
+.by-shapes .dx-mode-tag { color: var(--teal); }
+.by-shapes .dx-mode[aria-pressed="true"] { background: rgba(59,200,232,0.14); border-color: var(--teal); }
+.by-shapes .dx-mode:not([aria-pressed="true"]):hover { border-color: rgba(59,200,232,0.4); }
+.by-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1rem 1.4rem; align-items: start; }
+@container dx-lab (max-width: 46rem) { .by-grid { grid-template-columns: minmax(0, 1fr); } }
+.by-figure { margin: 0; min-width: 0; }
+.by-svg { display: block; width: 100%; max-width: 360px; height: auto; margin: 0 auto; }
+.by-caption { margin-top: 0.4rem; font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); }
+.by-data { min-width: 0; }
+.by-vals { margin: 0; }
+.by-val { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 0.8rem; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.95rem; line-height: 1.45; }
+.by-val dt { font-weight: 800; color: var(--text-muted); min-width: 0; }
+.by-val dd { margin: 0 0 0 auto; font-weight: 900; color: var(--text); text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.by-val dd small { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); }
+.by-forces { display: grid; gap: 0.45rem; margin-top: 0.8rem; }
+.by-force { display: grid; grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) auto; align-items: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 800; }
+.by-force-name { min-width: 0; overflow-wrap: anywhere; }
+.by-weight .by-force-name { color: var(--gold); }
+.by-up .by-force-name { color: var(--teal); }
+.by-bar { display: block; height: 0.8rem; border-radius: 99px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.by-bar-fill { display: block; height: 100%; border-radius: 99px; }
+.by-weight .by-bar-fill { background: var(--gold); }
+.by-up .by-bar-fill { background: var(--teal); }
+.by-force-val { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--text); }
+@container dx-lab (max-width: 22rem) {
+  .by-work { padding: 0.8rem 0.7rem; }
+  .by-force { grid-template-columns: minmax(0, 1fr) auto; }
+  .by-bar { grid-column: 1 / -1; grid-row: 2; }
+}
+.by-forces-text { margin-top: 0.5rem; font-size: 0.92rem; line-height: 1.5; color: var(--text-muted); }
+.by-verdict { margin-top: 0.6rem; padding: 0.5rem 0.8rem; border-radius: 10px; font-size: 1rem; font-weight: 900; line-height: 1.4; }
+.by-verdict.float { color: #a8e6c4; background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); }
+.by-verdict.sink  { color: #ffb4a8; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); }
+.by-explain { margin-top: 0.9rem; font-size: 1rem; line-height: 1.6; color: var(--text); }
+.by-limits { margin: 0.3rem 0 0; padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); }
+.by-limits li + li { margin-top: 0.3rem; }
+.by-check.check-card { margin-bottom: 0; }
+.by-check.check-card + .by-check.check-card { margin-top: 1rem; }
+.by-bridge { margin-top: 1rem; padding: 0.8rem 1rem; border-radius: 12px; border-left: 4px solid var(--gold); background: rgba(245,200,66,0.07); font-size: 1rem; font-weight: 700; line-height: 1.55; color: var(--text); }
+.by-intro, .by-link, .by-explain, .by-forces-text, .by-verdict, .by-caption, .by-bridge, .by-limits { overflow-wrap: anywhere; min-width: 0; }
 
 /* ── DENSITY LAB ── */
 .density-lab {
@@ -1641,7 +1705,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   border-radius: 99px;
 }
 
-/* Vocabulary Explorer: six term selectors above one definition panel.
+/* Vocabulary Explorer: eight term selectors above one definition panel.
    Exactly one term is selected; choosing another swaps the panel.
    Markup: .vx > #vx-announce + .vx-grid (button.vx-term[aria-pressed])
    + .vx-panels (.vx-panel > .vx-panel-term + .gc-lead + .gc-support).
@@ -1653,8 +1717,11 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .gc-blue   { --vx: var(--matter); }
 .gc-green  { --vx: var(--green);  }
 .vx-sr, .disp-sr, .predict-sr, .dx-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.vx-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 0.75rem; }
-@media (max-width: 720px) { .vx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* At most four columns (two on phones); each word keeps a rem-based
+   minimum, so enlarged text drops to fewer, wider columns instead of
+   breaking words. */
+.vx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, max(12rem, calc((100% - 2.25rem) / 4))), 1fr)); grid-auto-rows: 1fr; gap: 0.75rem; }
+@media (max-width: 720px) { .vx-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(9rem, calc((100% - 0.75rem) / 2))), 1fr)); } }
 .vx-term {
   display: flex;
   align-items: center;
@@ -1939,7 +2006,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
       <div class="goal-card">
         <span class="goal-icon">🧮</span>
-        <div class="goal-text">Calculate the density of an object from its mass and volume, and use density to explain why objects sink or float.</div>
+        <div class="goal-text">Calculate density using mass and volume, and explain how density, water displacement, and buoyancy affect whether objects float or sink.</div>
         <span class="goal-std">6.MS-PS1-7(MA)</span>
       </div>
     </div>
@@ -1993,6 +2060,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <button class="vx-term gc-orange" type="button" aria-pressed="false" aria-controls="vx-def-density" data-term="density"><span class="gc-term">Density</span><span class="vx-check" aria-hidden="true">✓</span></button>
         <button class="vx-term gc-teal" type="button" aria-pressed="false" aria-controls="vx-def-balance" data-term="balance"><span class="gc-term">Triple Beam Balance</span><span class="vx-check" aria-hidden="true">✓</span></button>
         <button class="vx-term gc-green" type="button" aria-pressed="false" aria-controls="vx-def-cylinder" data-term="cylinder"><span class="gc-term">Graduated Cylinder</span><span class="vx-check" aria-hidden="true">✓</span></button>
+        <button class="vx-term gc-blue" type="button" aria-pressed="false" aria-controls="vx-def-buoyancy" data-term="buoyancy"><span class="gc-term">Buoyancy</span><span class="vx-check" aria-hidden="true">✓</span></button>
+        <button class="vx-term gc-green" type="button" aria-pressed="false" aria-controls="vx-def-displacement" data-term="displacement"><span class="gc-term">Water Displacement</span><span class="vx-check" aria-hidden="true">✓</span></button>
       </div>
       <div class="vx-panels">
         <div class="vx-panel gc-blue" id="vx-def-matter" data-term="matter">
@@ -2024,6 +2093,16 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <h3 class="vx-panel-term">Graduated Cylinder</h3>
           <p class="gc-lead">A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).</p>
         </div>
+        <div class="vx-panel gc-blue" id="vx-def-buoyancy" data-term="buoyancy" hidden>
+          <h3 class="vx-panel-term">Buoyancy</h3>
+          <p class="gc-lead">The upward force a fluid exerts on an object placed in it.</p>
+          <p class="gc-support">This upward push is also called the buoyant force. An object floats when the buoyant force balances its weight.</p>
+        </div>
+        <div class="vx-panel gc-green" id="vx-def-displacement" data-term="displacement" hidden>
+          <h3 class="vx-panel-term">Water Displacement</h3>
+          <p class="gc-lead">The movement of water out of the way when an object enters or moves through it.</p>
+          <p class="gc-support">The water pushed aside takes up the same volume as the part of the object that is underwater. It helps you measure volume, and it causes the buoyant force.</p>
+        </div>
       </div>
     </div>
 
@@ -2033,7 +2112,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Pre-load the four terms and two tools before they appear in tasks.</li><li>Pair each unit with its tool so the trio stays linked.</li></ul>
+          <ul class="edu-note-text"><li>Pre-load the six terms and two tools before they appear in tasks.</li><li>Pair each unit with its tool so the trio stays linked.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -2649,6 +2728,21 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         </div>
       </div>
 
+      <!-- Step 4 asks for the claim and the evidence behind it, after the
+           student has moved the slider. Same retry pattern as Step 3. -->
+      <div class="check-card dx-step dx-check dx-why" id="dx-why">
+        <div class="check-eyebrow">Step 4 · Explain With Evidence</div>
+        <div class="check-q" id="dx-why-q"></div>
+        <div class="check-options dx-options" id="dx-why-options" role="group" aria-labelledby="dx-why-q">
+          <button class="check-opt dx-why-opt" type="button"></button>
+          <button class="check-opt dx-why-opt" type="button"></button>
+          <button class="check-opt dx-why-opt" type="button"></button>
+        </div>
+        <div class="tm-fb-zone" id="dx-why-fb-zone">
+          <div class="tm-fb" id="dx-why-fb" aria-live="polite"></div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Density Challenge: the prediction gates the tank, inside one card. -->
@@ -2734,6 +2828,157 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
           <ul class="edu-note-text"><li>Lab 4 marks the held variable with a lock and text, never color alone</li><li>Prediction gates the tank lab</li><li>Math panel and tank shown side by side</li><li>Compare cards contrast bowling ball and beach ball</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN / ELABORATE - BUOYANCY AND THE BOAT SHAPE INVESTIGATION
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="buoyancy" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem;">
+  <div class="container">
+    <span class="section-label" style="color: var(--teal);">Explain · Meet Buoyancy</span>
+    <h2 class="section-title">Why Does Water Push Up?</h2>
+    <p class="section-desc by-desc">When you push a ball underwater, you can feel the water pushing back. That upward force is called <strong>buoyancy</strong>, or the <strong>buoyant force</strong>.</p>
+
+    <div class="dz-idea by-idea">
+      <div class="name-it teal-it dz-key">
+        <div class="name-it-label">Key idea: Buoyancy</div>
+        <p>When an object enters water, it pushes water out of the way. This is called <strong>water displacement</strong>. The water pushes upward on the object. The more water an object displaces, the greater the upward buoyant force.</p>
+        <p class="by-rule">An object floats when the upward buoyant force balances its weight.</p>
+      </div>
+      <div class="observe-row dz-balls by-notes">
+        <div class="observe-card">
+          <span class="observe-icon" aria-hidden="true">🔵</span>
+          <span><strong>Displacing water is not enough by itself.</strong> A glass marble displaces water too, but even fully underwater it cannot push aside enough water to balance its weight, so it sinks.</span>
+        </div>
+        <div class="observe-card green-card">
+          <span class="observe-icon" aria-hidden="true">💧</span>
+          <span><strong>How strong is the push?</strong> The buoyant force depends on how much water is displaced and on the density of the fluid. In fresh water (1 g/mL), each 1 mL pushed aside gives enough upward force to hold up 1 g.</span>
+        </div>
+      </div>
+    </div>
+    <p class="by-link">This is why the density rule from the Density Challenge works. An object less dense than water can push aside water equal to its own mass before it is fully underwater, so it floats. An object denser than water cannot, even when it is completely underwater.</p>
+
+    <!-- Boat Shape Investigation: one material, one mass, two shapes.
+         Every number and every drawing comes from the model in its script.
+         Ungraded; nothing is stored or sent. -->
+    <div class="dx-lab by-lab" id="by-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Boat Shape Investigation</span>
+        <h3 class="mlab-title">Same Mass. Different Shape.</h3>
+      </div>
+      <p class="by-intro"><strong>Can changing an object's shape help it float even when its mass stays the same?</strong> Both shapes below are made from the same 40 g of the same material. The material has a density of 2 g/cm³, so it is denser than water.</p>
+
+      <div class="check-card check-predict dx-step" id="by-predict">
+        <div class="check-eyebrow">Step 1 · Predict</div>
+        <div class="check-q" id="by-predict-q">Two objects have the same mass and are made from the same material. One is compact and the other is shaped like a wide, hollow boat. Which is more likely to float?</div>
+        <div class="check-options dx-options" role="group" aria-labelledby="by-predict-q">
+          <button class="check-opt by-pred" type="button" aria-pressed="false" data-choice="compact">The compact one, because its material is packed tightly together.</button>
+          <button class="check-opt by-pred" type="button" aria-pressed="false" data-choice="same">Neither. Same mass and same material means they act the same.</button>
+          <button class="check-opt by-pred" type="button" aria-pressed="false" data-choice="hull">The wide, hollow boat, because its shape can push aside more water.</button>
+        </div>
+        <div class="dx-note-zone" id="by-note-zone">
+          <p class="dx-predict-note" id="by-predict-note" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="by-work">
+        <div class="dx-explore-head by-head">
+          <div class="dx-step-label">Step 2 · Investigate</div>
+          <button class="dx-reset" id="by-reset" type="button">Reset Investigation</button>
+        </div>
+        <div class="dx-modes by-shapes" role="group" aria-label="Choose a shape">
+          <button class="dx-mode by-shape" type="button" aria-pressed="true" data-shape="compact"><span class="dx-mode-tag">Shape A:</span> <span class="dx-mode-name">Compact Solid</span></button>
+          <button class="dx-mode by-shape" type="button" aria-pressed="false" data-shape="hull"><span class="dx-mode-tag">Shape B:</span> <span class="dx-mode-name">Wide, Hollow Hull</span></button>
+        </div>
+        <div class="by-grid">
+          <figure class="by-figure">
+            <svg class="by-svg" id="by-svg" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label=""><g id="by-g"></g></svg>
+            <figcaption class="by-caption">Side view, drawn to scale. The dashed line is the water level before the object went in. The light blue outline marks the part of the object that is underwater: the space of the water it pushed aside.</figcaption>
+          </figure>
+          <div class="by-data">
+            <dl class="by-vals">
+              <div class="by-val"><dt>Mass</dt><dd id="by-mass"></dd></div>
+              <div class="by-val"><dt>Overall volume</dt><dd id="by-vol"></dd></div>
+              <div class="by-val"><dt>Average density of the whole object</dt><dd id="by-avg"></dd></div>
+              <div class="by-val"><dt>Water displaced</dt><dd id="by-disp"></dd></div>
+            </dl>
+            <div class="by-forces" aria-hidden="true">
+              <div class="by-force by-weight"><span class="by-force-name">↓ Weight</span><span class="by-bar"><span class="by-bar-fill" id="by-weight-bar"></span></span><span class="by-force-val" id="by-weight-val"></span></div>
+              <div class="by-force by-up"><span class="by-force-name">↑ Buoyant force</span><span class="by-bar"><span class="by-bar-fill" id="by-up-bar"></span></span><span class="by-force-val" id="by-up-val"></span></div>
+            </div>
+            <p class="by-forces-text" id="by-forces-text"></p>
+            <p class="by-verdict" id="by-verdict"></p>
+          </div>
+        </div>
+        <p class="by-explain" id="by-explain"></p>
+        <details class="dx-about">
+          <summary>About this model</summary>
+          <ul class="by-limits">
+            <li>The water is fresh water with a density of 1 g/mL, and gravity is the same everywhere in the tank. So 1 mL of water pushed aside gives an upward force that can hold up 1 g. Forces here are described by the mass they can hold up.</li>
+            <li>1 mL and 1 cm³ are the same amount of space.</li>
+            <li>Both shapes use the same 40 g of material with a density of 2 g/cm³, so the material itself always takes up 20 cm³. Reshaping it never changes the material's density.</li>
+            <li>Shape A is the material pressed into one solid cube, about 2.7 cm on each side, with no air inside.</li>
+            <li>Shape B is the same material made into an open box 8 cm long, 5 cm wide, and 3 cm tall, with thin walls. It encloses 120 cm³ in all: 20 cm³ of material around 100 cm³ of air. It stays upright and no water gets inside.</li>
+            <li>A hull that fills with water no longer keeps that water out, so it acts like its 20 cm³ of material and sinks.</li>
+            <li>The tank is 12 cm wide and 7 cm from front to back, so the water level rises 1 cm for every 84 mL pushed aside.</li>
+          </ul>
+        </details>
+        <p class="dx-sr" id="by-announce" aria-live="polite" aria-atomic="true"></p>
+      </div>
+
+      <div class="check-card dx-step dx-check by-check" id="by-check">
+        <div class="check-eyebrow">Step 3 · Explain · Not graded</div>
+        <div class="check-q" id="by-check-q">Why can the hollow hull float even though the compact solid sinks?</div>
+        <div class="check-options dx-options" id="by-check-options" role="group" aria-labelledby="by-check-q">
+          <button class="check-opt by-opt" type="button">Reshaping the material made the material itself less dense than water.</button>
+          <button class="check-opt by-opt" type="button">Its larger overall volume lets it push aside 40 mL of water, so the buoyant force balances its weight.</button>
+          <button class="check-opt by-opt" type="button">Spreading the material into a thin hull took away some of its mass.</button>
+        </div>
+        <div class="tm-fb-zone" id="by-fb-zone">
+          <div class="tm-fb" id="by-fb" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <!-- Step 4: buoyancy is a force, not another word for floating. -->
+      <div class="check-card dx-step dx-check by-check by-sink" id="by-sink">
+        <div class="check-eyebrow">Step 4 · Check: Buoyancy Is a Force</div>
+        <div class="check-q" id="by-sink-q">Does water push upward on an object that sinks?</div>
+        <div class="check-options dx-options" id="by-sink-options" role="group" aria-labelledby="by-sink-q">
+          <button class="check-opt by-sink-opt" type="button">Yes. Water pushes upward on submerged objects, even when they sink.</button>
+          <button class="check-opt by-sink-opt" type="button">No. Water only pushes upward on objects that float.</button>
+          <button class="check-opt by-sink-opt" type="button">No. Sinking objects experience only a downward force.</button>
+        </div>
+        <div class="tm-fb-zone" id="by-sink-fb-zone">
+          <div class="tm-fb" id="by-sink-fb" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <p class="by-bridge">Engineers use these ideas when designing boats. A boat must displace enough water to support its own weight and anything it carries.</p>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name the cause behind the density rule: displaced water pushes up.</li><li>Show that shape changes overall volume and displacement, not the material's density.</li><li>Prepare students for Floatia without naming a design or simulating the penny challenge.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling (displacement creates the buoyant force)</li><li>Misconception checking (reshaping changes material density; displacing any water means floating)</li><li>Controlled comparison: same mass and material, one change in shape</li><li>Predict, investigate, then explain</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Shape buttons, not dragging; full keyboard use</li><li>Every value and result in text, never color or drawing alone</li><li>Drawing described for screen readers and updated on each switch</li><li>Ungraded and optional; nothing is stored</li></ul>
         </div>
       </div>
     </div>
@@ -3090,7 +3335,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <textarea class="think-input" id="mm-thinking" placeholder="Write your explanation here..." aria-label="Explain how a giant steel ship can float while a tiny pebble sinks, using mass, volume, and density"></textarea>
       <div class="think-model" id="mm-think-model">
         <span class="tm-label">One strong way to say it</span>
-        <strong>Steel itself is denser than water</strong>, so a solid block of steel sinks. A ship's hull is different: it is hollow and wide, so it surrounds a lot of space, much of it filled with air. Divide the ship's total mass by its whole volume, including that space, and its <strong>average density</strong> is less than water's. As the hull settles into the water, it pushes aside, or <strong>displaces</strong>, water, and the water pushes back up on the hull. This upward push is called the buoyant force. The ship settles until that upward push balances its weight, and then it floats. A pebble is solid rock, which is denser than water. When it is underwater, the upward push on it is smaller than its weight, so it sinks. A strong answer uses mass, volume, and density, and explains how the ship's shape lets it displace enough water to float.
+        <strong>Steel itself is denser than water</strong>, so a solid block of steel sinks. A ship's hull is different: it is hollow and wide, so it surrounds a lot of space, much of it filled with air. Divide the ship's total mass by its whole volume, including that space, and its <strong>average density</strong> is less than water's. As the hull settles into the water, it pushes aside, or <strong>displaces</strong>, water, and the water pushes back up on the hull. This upward push is called the <strong>buoyant force</strong>, or buoyancy. The ship settles until that upward push balances its weight, and then it floats. A pebble is solid rock, which is denser than water. Even fully underwater, it can push aside only its own small volume of water. That is the most upward push it can get, and it is still smaller than its weight, so it sinks. A strong answer uses mass, volume, and density, and explains how the ship's shape lets it displace enough water to float.
       </div>
     </div>
 
@@ -3857,6 +4102,16 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
           fb: 'Correct! 80 g ÷ 20 cm³ = 4 g/cm³. Twice the mass in the same volume gives twice the density.' },
         { text: 'It halves from 2\u00a0g/cm³ to 1\u00a0g/cm³.',
           fb: 'Not quite. The volume did not change, and the mass went up to 80 g. Try 80 g ÷ 20 cm³.' }
+      ],
+      whyQ: 'When the volume stayed the same and the mass increased, what happened to density? Use evidence from the two blocks.',
+      whyGate: 'Collect your evidence first. Move the mass slider above 40 g, then compare the two blocks.',
+      why: [
+        { text: 'Density increased. Both squares stayed the same size, but Your Block held more dots.', ok: true,
+          fb: 'Yes. Both blocks had a volume of 20 cm³, but Your Block packed more mass (more dots) into that same space, so its density rose above 2 g/cm³.' },
+        { text: 'Density increased, because Your Block grew bigger when its mass went up.',
+          fb: 'Look again at the two squares. They stayed the same size, because the volume was locked at 20 cm³. Only the number of dots, the mass, changed.' },
+        { text: 'Density stayed the same, because the volume did not change.',
+          fb: 'The volume did stay at 20 cm³, but compare the density under each block. Your Block held more mass in the same space, so its density was greater than 2 g/cm³.' }
       ]
     },
     volume: {
@@ -3873,6 +4128,16 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
           fb: 'Not quite. The same 40 g of matter now fills twice the space. Try 40 g ÷ 40 cm³.' },
         { text: 'It decreases from 2\u00a0g/cm³ to 1\u00a0g/cm³.', ok: true,
           fb: 'Correct! 40 g ÷ 40 cm³ = 1 g/cm³. The same mass in twice the volume gives half the density.' }
+      ],
+      whyQ: 'When the mass stayed the same and the volume increased, what happened to density? Use evidence from the two blocks.',
+      whyGate: 'Collect your evidence first. Move the volume slider above 20 cm³, then compare the two blocks.',
+      why: [
+        { text: 'Density increased, because Your Block got bigger.',
+          fb: 'A bigger block is not always a denser block. Your Block kept the same 8 dots (40 g), but they spread over a larger square, so its density fell below 2 g/cm³.' },
+        { text: 'Density stayed the same, because the mass did not change.',
+          fb: 'The mass did stay at 40 g, but compare the density under each block. The same dots filled more space, so Your Block\'s density was less than 2 g/cm³.' },
+        { text: 'Density decreased. Your Block had the same dots spread across a larger square.', ok: true,
+          fb: 'Yes. Both blocks had 40 g of mass (8 dots), but Your Block spread that mass over a larger volume, so its density fell below 2 g/cm³.' }
       ]
     }
   };
@@ -3907,6 +4172,10 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
   var checkBtns = [].slice.call(lab.querySelectorAll('.dx-opt'));
   var fbZone = document.getElementById('dx-fb-zone');
   var fb = document.getElementById('dx-fb');
+  var whyQ = document.getElementById('dx-why-q');
+  var whyBtns = [].slice.call(lab.querySelectorAll('.dx-why-opt'));
+  var whyZone = document.getElementById('dx-why-fb-zone');
+  var whyFb = document.getElementById('dx-why-fb');
 
   /* mode: the active investigation. m, v: Your Block. prediction and
      observed belong to the active investigation only and are cleared on
@@ -3916,6 +4185,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
   var prediction = null;
   var observed = false;
   var passed = false;
+  var whyPassed = false;
   var lastCompare = 'same';
   var announceTimer;
 
@@ -4078,6 +4348,25 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       sizer.textContent = ch.fb;
       fbZone.appendChild(sizer);
     });
+    /* Step 4 resets the same way, with one more sizer for the reminder
+       to collect evidence first. */
+    whyPassed = false;
+    whyQ.textContent = cfg.whyQ;
+    whyBtns.forEach(function(btn, i){
+      btn.textContent = cfg.why[i].text;
+      btn.classList.remove('right', 'wrong');
+      btn.removeAttribute('aria-disabled');
+    });
+    whyFb.className = 'tm-fb';
+    whyFb.textContent = '';
+    [].slice.call(whyZone.querySelectorAll('.tm-fb-sizer')).forEach(function(el){ el.remove(); });
+    cfg.why.map(function(ch){ return ch.fb; }).concat(cfg.whyGate).forEach(function(text){
+      var sizer = document.createElement('div');
+      sizer.className = 'tm-fb ok tm-fb-sizer';
+      sizer.setAttribute('aria-hidden', 'true');
+      sizer.textContent = text;
+      whyZone.appendChild(sizer);
+    });
   }
 
   /* Moving the active slider above its starting value is the evidence
@@ -4160,6 +4449,33 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     });
   });
 
+  /* Step 4 asks about evidence, so it waits until the active slider has
+     moved past its starting value; until then it says how to get some.
+     Otherwise it retries exactly like Step 3. */
+  whyBtns.forEach(function(btn, i){
+    btn.addEventListener('click', function(){
+      var cfg = MODES[mode];
+      if (whyPassed || btn.getAttribute('aria-disabled') === 'true') return;
+      whyBtns.forEach(function(b){ b.classList.remove('wrong'); });
+      if (!observed) {
+        whyFb.textContent = cfg.whyGate;
+        whyFb.className = 'tm-fb visible no';
+        return;
+      }
+      var choice = cfg.why[i];
+      whyFb.textContent = choice.fb;
+      if (choice.ok) {
+        whyPassed = true;
+        btn.classList.add('right');
+        whyFb.className = 'tm-fb visible ok';
+        whyBtns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
+      } else {
+        btn.classList.add('wrong');
+        whyFb.className = 'tm-fb visible no';
+      }
+    });
+  });
+
   resetCheck();
   sizeNotes();
   render();
@@ -4227,6 +4543,288 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 })();
 </script>
 
+
+<!-- ===== BOAT SHAPE INVESTIGATION (ungraded, nothing stored) ===== -->
+<script>
+(function(){
+  var lab = document.getElementById('by-lab');
+  if (!lab) return;
+  /* The model. Fresh water is 1 g/mL and gravity is constant, so each mL
+     of water pushed aside gives an upward force that holds up 1 g. Both
+     shapes are the same 40 g of a 2 g/cm³ material, so the material always
+     takes up 20 cm³. Only the shape, and so the overall volume, changes.
+     An object floats when it can push aside MASS / WATER mL of water before
+     its whole overall volume is underwater (for the open hull: before
+     water reaches its rim). Otherwise it sinks with all of it underwater. */
+  var WATER = 1, MASS = 40, MATERIAL = 2;
+  var MATERIAL_V = MASS / MATERIAL;
+  var CUBE = Math.cbrt(MATERIAL_V);
+  var HULL = { l: 8, w: 5, h: 3 };
+  var TANK = { l: 12, w: 7, h: 9, water: 5 };
+  var SHAPES = {
+    compact: { name: 'Shape A, compact solid', overall: MATERIAL_V, footprint: CUBE * CUBE, width: CUBE, height: CUBE },
+    hull: { name: 'Shape B, wide, hollow hull', overall: HULL.l * HULL.w * HULL.h, footprint: HULL.l * HULL.w, width: HULL.l, height: HULL.h }
+  };
+  function settle(key) {
+    var sh = SHAPES[key];
+    var needed = MASS / WATER;
+    var floats = sh.overall > needed;
+    var displaced = floats ? needed : sh.overall;
+    return {
+      floats: floats,
+      displaced: displaced,
+      buoyant: displaced * WATER,
+      under: displaced / sh.footprint,
+      avg: MASS / sh.overall,
+      rise: displaced / (TANK.l * TANK.w)
+    };
+  }
+  function round(n, places) { var f = Math.pow(10, places); return Math.round(n * f) / f; }
+  function approx(n, places) { var r = round(n, places); return (Math.abs(r - n) < 1e-9 ? '' : '≈ ') + r; }
+
+  var TEXT = {
+    compact: {
+      vol: 'all material, no air',
+      avg: 'same as the material',
+      disp: 'the most it can: it is fully underwater',
+      forces: 'The buoyant force (20 g) is less than the weight (40 g). The tank floor holds up the other 20 g.',
+      explain: 'The compact solid is all material, so its overall volume is only 20 cm³. Even fully underwater it can push aside only 20 mL of water. That buoyant force cannot balance its 40 g weight, so it sinks.'
+    },
+    hull: {
+      vol: '20 cm³ material + 100 cm³ air',
+      avg: 'the material is still 2 g/cm³',
+      disp: 'only 1 cm of its 3 cm height is underwater',
+      forces: 'The buoyant force (40 g) balances the weight (40 g).',
+      explain: 'The same 40 g of material now surrounds 100 cm³ of air, so the hull\'s overall volume is 120 cm³ and its average density is less than water\'s. It settles until it has pushed aside 40 mL of water. Then the buoyant force balances its weight, and it floats with most of the hull above the water.'
+    }
+  };
+  var PREDICTIONS = { compact: 'the compact one would float', same: 'they would act the same', hull: 'the wide, hollow boat would float' };
+  var START_NOTE = 'Make a prediction, then switch between the two shapes to test it.';
+  var TEST_NOTE = 'Now switch between Shape A and Shape B below.';
+  var EVIDENCE = 'With the same 40 g of mass, the compact solid sank and the wide, hollow hull floated.';
+  var CHOICES = [
+    { fb: 'Not quite. The material did not change: it is 2 g/cm³ in both shapes. What changed is the overall volume of the whole object, which now includes the air inside the hull.' },
+    { ok: true, fb: 'Yes. Both shapes have 40 g of mass. The hull\'s overall volume (120 cm³) lets it push aside the 40 mL of water it needs while staying partly above the surface. The compact solid can push aside only 20 mL. Displaced water makes the buoyant force, and only the hull displaces enough to balance its weight.' },
+    { fb: 'Not quite. Both shapes have the same 40 g of mass. Nothing was added or taken away; the material was only reshaped.' }
+  ];
+  /* Step 4: one retryable check that sinking objects feel buoyancy too. */
+  var SINK = [
+    { ok: true, fb: 'Yes. Water pushes upward on objects in the water, even when they sink. An object sinks when its weight is greater than the upward buoyant force.' },
+    { fb: 'Water pushes upward on submerged objects whether they float or sink. Compare the upward force with the object\'s weight. The compact solid sank, yet the water still held up 20 g of its 40 g weight.' },
+    { fb: 'Water pushes upward on submerged objects whether they float or sink. Compare the upward force with the object\'s weight. Its weight pulls down, and the buoyant force still pushes up, just not enough to balance it.' }
+  ];
+  var GATE = 'Investigate first. Switch to Shape B: Wide, Hollow Hull, and compare it with Shape A.';
+
+  var svg = document.getElementById('by-svg');
+  var shapeBtns = [].slice.call(lab.querySelectorAll('.by-shape'));
+  var predBtns = [].slice.call(lab.querySelectorAll('.by-pred'));
+  var predictNote = document.getElementById('by-predict-note');
+  var noteZone = document.getElementById('by-note-zone');
+  var checkBtns = [].slice.call(lab.querySelectorAll('.by-opt'));
+  var fbZone = document.getElementById('by-fb-zone');
+  var fb = document.getElementById('by-fb');
+  var announcer = document.getElementById('by-announce');
+  var announceTimer;
+
+  /* shape: what the tank shows. observed: the hull has been shown, so the
+     comparison has been made. Nothing here is stored or sent. */
+  var shape = 'compact';
+  var prediction = null;
+  var observed = false;
+  var passed = false;
+
+  function announce(msg) {
+    clearTimeout(announceTimer);
+    announcer.textContent = '';
+    announceTimer = setTimeout(function(){ announcer.textContent = msg; }, 100);
+  }
+
+  /* Side view at S px per cm. The water level, the object's position and
+     the outlined underwater part all come from settle(), so the picture
+     always matches the numbers beside it. */
+  var S = 18, X0 = 22, FLOOR = 184, MID = X0 + TANK.l * S / 2;
+  function draw(key) {
+    var sh = SHAPES[key], r = settle(key);
+    var top = FLOOR - TANK.h * S, startY = FLOOR - TANK.water * S;
+    var levelY = FLOOR - (TANK.water + r.rise) * S;
+    var w = sh.width * S, h = sh.height * S, x = MID - w / 2;
+    var bottom = r.floats ? levelY + r.under * S : FLOOR;
+    var y = bottom - h;
+    var f = function(n){ return n.toFixed(2); };
+    var html = '<rect x="' + X0 + '" y="' + f(levelY) + '" width="' + (TANK.l * S) + '" height="' + f(FLOOR - levelY) + '" fill="rgba(59,130,246,0.24)"/>' +
+      '<line x1="' + X0 + '" y1="' + f(levelY) + '" x2="' + (X0 + TANK.l * S) + '" y2="' + f(levelY) + '" stroke="rgba(124,200,248,0.8)" stroke-width="2"/>' +
+      '<line class="by-start" x1="' + X0 + '" y1="' + startY + '" x2="' + (X0 + TANK.l * S) + '" y2="' + startY + '" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-dasharray="5 4"/>' +
+      '<text x="' + (X0 + 4) + '" y="' + (startY + 13) + '" font-size="10" font-weight="700" fill="rgba(255,255,255,0.8)">start</text>';
+    if (key === 'hull') {
+      html += '<rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(w) + '" height="' + f(h) + '" fill="#2b3f56"/>' +
+        '<text x="' + MID + '" y="' + f(y + h / 2 + 4) + '" font-size="11" font-weight="700" text-anchor="middle" fill="rgba(255,255,255,0.75)">air</text>' +
+        '<path class="by-object" d="M' + f(x) + ' ' + f(y) + ' V' + f(bottom) + ' H' + f(x + w) + ' V' + f(y) + '" fill="none" stroke="#c9d6e2" stroke-width="3.5" stroke-linejoin="round"/>';
+    } else {
+      html += '<rect class="by-object" x="' + f(x) + '" y="' + f(y) + '" width="' + f(w) + '" height="' + f(h) + '" rx="3" fill="#c9d6e2" stroke="#9fb8cc" stroke-width="2"/>';
+    }
+    var uy = Math.max(levelY, y);
+    html += '<rect class="by-under" x="' + f(x - 3) + '" y="' + f(uy) + '" width="' + f(w + 6) + '" height="' + f(bottom - uy + 3) + '" rx="3" fill="none" stroke="#9fe3ff" stroke-width="2"/>' +
+      '<path d="M' + (X0 - 2) + ' ' + top + ' V' + (FLOOR + 2) + ' H' + (X0 + TANK.l * S + 2) + ' V' + top + '" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/>';
+    svg.firstElementChild.innerHTML = html;
+    svg.setAttribute('aria-label', 'Side view of the tank. ' + (r.floats
+      ? 'The hollow hull floats with ' + round(r.under, 2) + ' cm of its ' + sh.height + ' cm height underwater.'
+      : 'The compact solid rests on the bottom, fully underwater.') +
+      ' It pushed aside ' + r.displaced + ' mL of water, so the water level rose about ' + round(r.rise, 2) + ' cm.');
+  }
+
+  function render() {
+    var r = settle(shape), t = TEXT[shape];
+    shapeBtns.forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-shape') === shape ? 'true' : 'false'); });
+    document.getElementById('by-mass').textContent = MASS + ' g';
+    document.getElementById('by-vol').innerHTML = SHAPES[shape].overall + ' cm³<small>' + t.vol + '</small>';
+    document.getElementById('by-avg').innerHTML = approx(r.avg, 2) + ' g/cm³<small>' + t.avg + '</small>';
+    document.getElementById('by-disp').innerHTML = r.displaced + ' mL<small>' + t.disp + '</small>';
+    document.getElementById('by-weight-bar').style.width = '100%';
+    document.getElementById('by-up-bar').style.width = (r.buoyant / MASS * 100) + '%';
+    document.getElementById('by-weight-val').textContent = MASS + ' g';
+    document.getElementById('by-up-val').textContent = r.buoyant + ' g';
+    document.getElementById('by-forces-text').textContent = t.forces;
+    var verdict = document.getElementById('by-verdict');
+    verdict.className = 'by-verdict ' + (r.floats ? 'float' : 'sink');
+    verdict.innerHTML = '<span aria-hidden="true">' + (r.floats ? '✓' : '✗') + ' </span>Result: ' + (r.floats ? 'Floats' : 'Sinks');
+    document.getElementById('by-explain').textContent = t.explain;
+    draw(shape);
+    renderPrediction();
+  }
+
+  function noteFor(choice, reveal) {
+    if (!choice) return START_NOTE;
+    if (!reveal) return '<strong>Prediction saved: ' + PREDICTIONS[choice] + '.</strong> ' + TEST_NOTE;
+    if (choice === 'hull') return '<strong>Your prediction matches the evidence.</strong> ' + EVIDENCE;
+    return '<strong>You predicted ' + PREDICTIONS[choice] + '. The evidence shows something different.</strong> ' + EVIDENCE;
+  }
+
+  function renderPrediction() {
+    var reveal = prediction && observed;
+    predBtns.forEach(function(btn){
+      var on = btn.getAttribute('data-choice') === prediction;
+      btn.classList.toggle('chosen', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (reveal) btn.setAttribute('aria-disabled', 'true');
+      else btn.removeAttribute('aria-disabled');
+    });
+    var note = noteFor(prediction, reveal);
+    if (predictNote.innerHTML !== note) predictNote.innerHTML = note;
+  }
+
+  /* Hidden copies of every note and every feedback message reserve the
+     space the longest needs, so answering never shifts the lab. */
+  function sizers(zone, cls, items, asHtml) {
+    [].slice.call(zone.querySelectorAll('.' + cls.split(' ').pop())).forEach(function(el){ el.remove(); });
+    items.forEach(function(content){
+      var el = document.createElement(zone === noteZone ? 'p' : 'div');
+      el.className = cls;
+      el.setAttribute('aria-hidden', 'true');
+      if (asHtml) el.innerHTML = content; else el.textContent = content;
+      zone.appendChild(el);
+    });
+  }
+
+  function resetCheck() {
+    passed = false;
+    checkBtns.forEach(function(btn){
+      btn.classList.remove('right', 'wrong');
+      btn.removeAttribute('aria-disabled');
+    });
+    fb.className = 'tm-fb';
+    fb.textContent = '';
+  }
+
+  shapeBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var next = btn.getAttribute('data-shape');
+      if (next === shape) return;
+      shape = next;
+      if (shape === 'hull') observed = true;
+      render();
+      var r = settle(shape);
+      announce(SHAPES[shape].name + ': ' + (r.floats ? 'floats' : 'sinks') + '. It pushes aside ' + r.displaced + ' mL of water. ' + TEXT[shape].forces);
+    });
+  });
+
+  predBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (btn.getAttribute('aria-disabled') === 'true') return;
+      prediction = btn.getAttribute('data-choice');
+      renderPrediction();
+    });
+  });
+
+  /* Unlimited retries, as in Lab 4. The check asks about the comparison,
+     so until the hull has been shown it says how to make it. */
+  checkBtns.forEach(function(btn, i){
+    btn.addEventListener('click', function(){
+      if (passed || btn.getAttribute('aria-disabled') === 'true') return;
+      checkBtns.forEach(function(b){ b.classList.remove('wrong'); });
+      if (!observed) {
+        fb.textContent = GATE;
+        fb.className = 'tm-fb visible no';
+        return;
+      }
+      var choice = CHOICES[i];
+      fb.textContent = choice.fb;
+      if (choice.ok) {
+        passed = true;
+        btn.classList.add('right');
+        fb.className = 'tm-fb visible ok';
+        checkBtns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
+      } else {
+        btn.classList.add('wrong');
+        fb.className = 'tm-fb visible no';
+      }
+    });
+  });
+
+  var sinkBtns = [].slice.call(lab.querySelectorAll('.by-sink-opt'));
+  var sinkFb = document.getElementById('by-sink-fb');
+  var sinkPassed = false;
+  function resetSink() {
+    sinkPassed = false;
+    sinkBtns.forEach(function(b){ b.classList.remove('right', 'wrong'); b.removeAttribute('aria-disabled'); });
+    sinkFb.className = 'tm-fb';
+    sinkFb.textContent = '';
+  }
+  sinkBtns.forEach(function(btn, i){
+    btn.addEventListener('click', function(){
+      if (sinkPassed || btn.getAttribute('aria-disabled') === 'true') return;
+      sinkBtns.forEach(function(b){ b.classList.remove('wrong'); });
+      sinkFb.textContent = SINK[i].fb;
+      if (SINK[i].ok) {
+        sinkPassed = true;
+        btn.classList.add('right');
+        sinkFb.className = 'tm-fb visible ok';
+        sinkBtns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); });
+      } else {
+        btn.classList.add('wrong');
+        sinkFb.className = 'tm-fb visible no';
+      }
+    });
+  });
+
+  document.getElementById('by-reset').addEventListener('click', function(){
+    shape = 'compact';
+    prediction = null;
+    observed = false;
+    resetCheck();
+    resetSink();
+    render();
+    announce('Investigation reset. Shape A, the compact solid, is showing. Make a new prediction.');
+  });
+
+  var notes = [noteFor(null, false)];
+  Object.keys(PREDICTIONS).forEach(function(k){ notes.push(noteFor(k, false), noteFor(k, true)); });
+  sizers(noteZone, 'dx-predict-note dx-note-sizer', notes, true);
+  sizers(fbZone, 'tm-fb ok tm-fb-sizer', CHOICES.map(function(c){ return c.fb; }).concat(GATE), false);
+  sizers(document.getElementById('by-sink-fb-zone'), 'tm-fb ok tm-fb-sizer', SINK.map(function(c){ return c.fb; }), false);
+  resetCheck();
+  render();
+})();
+</script>
 
 <!-- ===== QUIZ ===== -->
 <script>
@@ -4313,31 +4911,31 @@ var mmQuizQuestions = [
       "Air is matter, because it has mass and takes up space"
     ],
     correct: 3,
-    explanation: "Air is matter. The filled balloon has more mass because the air inside it has mass, and the air also takes up space (volume). Anything with mass and volume is matter, including gases."
+    explanation: "Air is matter. The filled balloon has more mass because the air inside it has mass, and the air also takes up space (volume). Anything with mass and volume is matter, including gases. The scale shows only a small increase, because the air around the balloon also pushes up on it."
   },
   {
-    // Q7 - what density measures (DOK 1)
-    q: "What does density actually measure?",
+    // Q7 - why a hollow boat floats: displacement and buoyancy (DOK 2)
+    q: "A boat is built from material that is denser than water, yet the boat floats. Why?",
     options: [
-      "The total weight of an object sitting on a balance",
-      "The amount of space an object takes up",
-      "How much matter is packed into a given amount of space",
-      "Whether an object is a solid, a liquid, or a gas"
+      "Its hollow shape lets it displace enough water to support its weight",
+      "Its hollow shape makes the material itself less dense than water",
+      "The water takes away some of the boat's mass while it floats",
+      "The air inside the boat stops gravity from pulling it down"
     ],
-    correct: 2,
-    explanation: "Density is how much matter (mass) is packed into a given volume: D = m ÷ V. It is not the same as mass alone or volume alone - it is the ratio of the two."
+    correct: 0,
+    explanation: "The boat's material is still denser than water. Its hollow shape gives it a large overall volume, so it can push aside water equal to its own mass before it is fully underwater. The upward buoyant force then balances its weight. Reshaping does not make the material less dense, the water takes away no mass, and gravity still pulls on the boat."
   },
   {
     // Q8 - sink/float reasoning (DOK 2)
-    q: "A solid object is dropped into water and floats. What must be true about it?",
+    q: "An object with no hollow spaces is placed in water and floats on its own. What must be true about it?",
     options: [
       "Its mass is less than the mass of all the water",
       "Its volume is smaller than the container holding the water",
-      "It has to be hollow somewhere inside",
+      "Its mass must be smaller than the mass of every sinking object",
       "Its density is less than the density of water"
     ],
     correct: 3,
-    explanation: "Floating and sinking depend on density, not mass alone. An object floats when its density is less than the density of water (1 g/cm³). A huge steel ship floats because its overall density is low."
+    explanation: "Floating and sinking depend on density, not mass alone. An object floats when its density is less than the density of water (1 g/cm³), so it can displace its own mass of water before it is fully underwater. A huge steel ship floats because its overall density is low."
   },
   {
     // Q9 - measuring an irregular solid (DOK 2)

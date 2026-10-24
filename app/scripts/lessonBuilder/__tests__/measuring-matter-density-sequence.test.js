@@ -62,10 +62,10 @@ describe.each(FILES)("Measuring Matter density sequence in %s", (rel) => {
   };
 
   describe("sequence", () => {
-    test("the Density Challenge leads straight into the quiz", () => {
+    test("the Density Challenge leads into buoyancy, then straight into the quiz", () => {
       const ids = [...doc.querySelectorAll("main > section")].map((s) => s.id);
       const at = ids.indexOf("density");
-      expect(ids.slice(at, at + 2)).toEqual(["density", "quiz"]);
+      expect(ids.slice(at, at + 3)).toEqual(["density", "buoyancy", "quiz"]);
       const sections = [...$("density").querySelectorAll(".dx-lab, .dz-challenge")];
       expect(sections.map((el) => el.id)).toEqual(["dx-lab", "dz-challenge"]);
     });
@@ -94,7 +94,7 @@ describe.each(FILES)("Measuring Matter density sequence in %s", (rel) => {
     test("the goals and the essential question stay at the top of the lesson", () => {
       const goals = [...doc.querySelectorAll("#goals .goal-text")].map(text);
       expect(goals).toHaveLength(2);
-      expect(goals[1]).toContain("Calculate the density of an object from its mass and volume");
+      expect(goals[1]).toBe("Calculate density using mass and volume, and explain how density, water displacement, and buoyancy affect whether objects float or sink.");
       expect(html.indexOf("How can a giant steel ship float while a tiny pebble sinks?")).toBeLessThan(html.indexOf('id="goals"'));
     });
 

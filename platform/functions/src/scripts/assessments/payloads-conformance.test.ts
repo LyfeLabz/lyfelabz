@@ -119,7 +119,8 @@ const PAYLOAD_DIR = __dirname;
 // conscious update to this constant and a human review, rather than passing
 // unnoticed because the loop simply iterated a different number of files.
 // Renewable Resources r2 adds the approved historical-evidence assessment.
-const EXPECTED_PAYLOAD_COUNT = 52;
+// Measuring Matter r2 adds the teacher-approved buoyancy item (replacing Q7).
+const EXPECTED_PAYLOAD_COUNT = 53;
 
 function discoverPayloadFiles(): string[] {
   return fs
