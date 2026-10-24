@@ -142,7 +142,7 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
   describe("Same Mass. Different Shape.", () => {
     test("asks a short prediction and starts on the compact solid", () => {
       expect(text($("by-lab").querySelector(".mlab-title"))).toBe("Same Mass. Different Shape.");
-      expect(text("by-predict-q")).toBe("Same 40 g. Same material. Which shape floats?");
+      expect(text("by-predict-q")).toBe("Two objects are made from the same material and each has a mass of 40 g. One is a compact solid. The other is shaped like a hollow boat. Which will float?");
       expect([...doc.querySelectorAll(".by-pred")].map(text)).toEqual(["The compact solid", "Both act the same", "The hollow boat"]);
       expect([...doc.querySelectorAll(".by-shape")].map(text)).toEqual(["Solid", "Boat"]);
       expect(shapeBtn("compact").getAttribute("aria-pressed")).toBe("true");
@@ -245,7 +245,7 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
     });
 
     test("prediction: saved at once, answered by the evidence once both shapes are seen", () => {
-      expect(text("by-predict-note")).toBe("Make a prediction to open the investigation.");
+      expect(text("by-predict-note")).toBe("");
       click(pred("compact"));
       expect(pred("compact").getAttribute("aria-pressed")).toBe("true");
       expect(text("by-predict-note")).toBe("Prediction saved: the compact solid. Now try both shapes below.");
@@ -308,7 +308,7 @@ describe.each(FILES)("Measuring Matter buoyancy in %s", (rel) => {
       expect(shapeBtn("compact").getAttribute("aria-pressed")).toBe("true");
       expect(readouts().verdict).toBe("✗ Result: Sinks");
       expect([...doc.querySelectorAll(".by-pred")].some((b) => b.getAttribute("aria-pressed") === "true")).toBe(false);
-      expect(text("by-predict-note")).toBe("Make a prediction to open the investigation.");
+      expect(text("by-predict-note")).toBe("");
       expect(opts().some((b) => b.classList.contains("right") || b.hasAttribute("aria-disabled"))).toBe(false);
       expect(text("by-fb")).toBe("");
       expect($("by-work").hidden).toBe(true);

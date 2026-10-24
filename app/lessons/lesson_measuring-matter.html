@@ -2863,7 +2863,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
       <div class="check-card check-predict dx-step" id="by-predict">
         <div class="check-eyebrow">Step 1 · Predict</div>
-        <div class="check-q" id="by-predict-q">Same 40 g. Same material. Which shape floats?</div>
+        <div class="check-q" id="by-predict-q">Two objects are made from the same material and each has a mass of 40 g. One is a compact solid. The other is shaped like a hollow boat. Which will float?</div>
         <div class="check-options dx-options" role="group" aria-labelledby="by-predict-q">
           <button class="check-opt by-pred" type="button" aria-pressed="false" data-choice="compact">The compact solid</button>
           <button class="check-opt by-pred" type="button" aria-pressed="false" data-choice="same">Both act the same</button>
@@ -4388,7 +4388,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     hull: '40 mL pushed aside. 40 g of push balances 40 g. It floats.'
   };
   var PREDICTIONS = { compact: 'the compact solid', same: 'both act the same', hull: 'the hollow boat' };
-  var START_NOTE = 'Make a prediction to open the investigation.';
+  var START_NOTE = '';
   var TEST_NOTE = 'Now try both shapes below.';
   var EVIDENCE = 'The solid sank and the boat floated.';
   var CHOICES = [
