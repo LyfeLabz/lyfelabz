@@ -1,13 +1,19 @@
 # LyfeLabz Current Platform State
 
-## E2 local release-control status, October 27, 2026
+## My Units v3: live in production, October 27, 2026
 
-My Units E1 Phase 1 is locally implemented by E2, uncommitted and not deployed. The active release observer/receipt/current-release format is schema 2; the operator's unconditional real-project enable interlocks are replaced with verified current release evidence, exact CAS/confirmation and atomic audit. This is capability in local source, not activation authority. Default backend/client builds remain closed; all nine handlers and their authorization are unchanged. Production remains unaffected by these local edits.
+My Units v3 is a **live production feature** in `lyfelabz-prod`, released from commit `f1c476f`.
 
-Custom registry/provenance/checkpoint qualification is outside the critical release path. Required deployment/route/configuration, Rules denial, Hosting pair and compatible closed-only rollback checks remain. Historical interlock/review status in older sections is preserved as history and superseded by this entry. Next operation: separately authorized E3 staging preparation and closed rollout, including legacy marker closure first if still enabled. See [E2 workflow](U2_6_RELEASE_READINESS_RUNBOOK.md#e2-simplified-release-and-operator-workflow).
+- **Availability policy:** `platformConfig/teacherUnitsAvailability` is schema 2, **enabled, generation 3**, pinned to backend build `b4b04435` (policy-controlled, clean, from `f1c476f`), accepting client contract `teacher-units-v3`. Initialize (gen 1), prepare (gen 2) and enable (gen 3) each committed through the operator CLI with exact CAS and a linked history entry and audit event.
+- **Deployed surfaces:** the nine `teacherUnits*` Functions (Node 22, max 20 instances, anonymous calls 401); Firestore Rules identical to the committed source (deny-only additions); paired `teacher-units` Hosting release, certified, serving the policy-controlled v3 client.
+- **Verified teacher workflows:** staging end to end (create, edit, add resources, reorder with persistence, archive, restore, Unit Results). Production smoke test as a real teacher: My Units capability enabled and list loads, Curriculum Add to Unit offered, existing classes and assignments unaffected.
+- **Emergency shutdown:** the operator `close` command (pinned per-project operator impersonation, short-lived credentials) returns the policy to closed; rehearsed on staging, about 9 seconds, with open teacher tabs losing access. Retained rollback: the prior Hosting pair, the prior Rules ruleset and a closed-only Functions build from `f1c476f`.
+- **Known limitations:** the production smoke test was read-only (no unit was created in production). A live cross-school isolation test was not run because only one school is configured; tenant isolation rests on server-side enforcement and automated coverage (Rules matrix, Functions ownership/tenant tests). Operator commands require the owner's short-lived impersonation credentials.
+
+See [Teacher Units](TEACHER_UNITS.md) and the [operator runbook](U2_6_RELEASE_READINESS_RUNBOOK.md#current-option-b-operator-and-release-workflow).
 
 
-**Status:** Canonical platform reference; My Units Option B with E2 release controls is a local, uncommitted candidate pending separately authorized staging acceptance and production rollout.
+**Status:** Canonical platform reference; My Units v3 (Option B) is live in production (see the October 27, 2026 entry above).
 **Purpose:** Orient a fresh session to the currently certified LyfeLabz platform without reconstructing it from sprint history.
 
 ---
@@ -47,9 +53,9 @@ Hosting: **two Firebase Hosting sites in `lyfelabz-prod`, released together as o
 
 ---
 
-## My Units Option B: local candidate, separate from certified production
+## My Units Option B architecture
 
-B1a-B1g implement the owner-selected trusted-operator architecture; B1h updates documentation only. [Teacher Units](TEACHER_UNITS.md) is the current domain/availability contract, with the [ADR](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md), [operator runbook](U2_6_RELEASE_READINESS_RUNBOOK.md#current-option-b-operator-and-release-workflow) and [integrated review handoff](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md#b1h-integrated-review-handoff). This status does not certify the uncommitted candidate or supersede Release 1 production facts.
+Live in production since October 27, 2026 (see the status entry above). B1a-B1g implement the owner-selected trusted-operator architecture; B1h updates documentation only. [Teacher Units](TEACHER_UNITS.md) is the current domain/availability contract, with the [ADR](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md), [operator runbook](U2_6_RELEASE_READINESS_RUNBOOK.md#current-option-b-operator-and-release-workflow) and [integrated review handoff](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md#b1h-integrated-review-handoff). This status does not certify the uncommitted candidate or supersede Release 1 production facts.
 
 The server checks schema-2 policy and actual schema-2 build identity with protocol v3, tenant authorization and placement on every management transaction/retry/replay and response read. The shared bootstrap-scoped capability lifecycle gates all unit UI entry points; it remains advisory. Ordinary client/backend builds are closed. Explicit target-bound policy-capable compilation requires server policy; real-project enable remains interlocked even after read-only preflight. Close/recovery outcomes do not establish fleet shutdown.
 
@@ -297,7 +303,7 @@ Read this document first, then route to the single strongest canonical source fo
 | Non-lesson completion definitions, evidence trust boundaries, eligibility evaluator, Gravity Wells verifier (`gravity-wells.orbit@1`). Status: pure code and tests only (RA-2); not called, not deployed, no storage. | `RESOURCE_COMPLETION_EVIDENCE_CORE.md` |
 | Non-lesson evidence persistence (`resourceEvidence`, working evidence, verified runs, immutable submitted snapshot). Status: services and tests only (RA-3A); not exported or deployed; production binding ports fail closed (RA-3B adapters exist but are not wired); no Rules change (default-deny). | `RESOURCE_EVIDENCE_PERSISTENCE.md` |
 | Frozen completion definitions (`completionDefinitions/{assessmentRevisionId}`, SHA-256 content hash), atomic non-lesson deployment (five items), `completionBinding` on published non-lesson assignments, and transactional `assignmentsPublish` / `assignmentsUpdateDraft` (publication concurrency, all types). Status: RA-3B code and tests; non-lesson assignability unchanged; activation blockers A-D open. | `FROZEN_COMPLETION_DEFINITIONS.md` |
-| Teacher Units / My Units: callable-only teacher/current-school domain operations, schema-2 availability/build identity, v3 protocol, shared client capability lifecycle and audited operator CAS. B1a-B1g are locally implemented; default builds closed and real enable interlocked. Independent review and all new external release/activation gates pending. Historical staging marker observations are not current Option B certification. | `TEACHER_UNITS.md`; `ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md`; `MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md`; `U2_6_RELEASE_READINESS_RUNBOOK.md` |
+| Teacher Units / My Units: callable-only teacher/current-school domain operations, schema-2 availability/build identity, v3 protocol, shared client capability lifecycle and audited operator CAS. Live in production from `f1c476f` (policy enabled, generation 3, build `b4b04435`); default builds closed. Historical staging marker observations are not current Option B certification. | `TEACHER_UNITS.md`; `ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md`; `MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md`; `U2_6_RELEASE_READINESS_RUNBOOK.md` |
 | Environments, session policy | `PLATFORM_OPERATIONS_SPECIFICATION.md` |
 | Lesson build system, markers, equivalence | `CLAUDE.md`; `app/scripts/lessonBuilder/lessons/<slug>.cjs` |
 | Lesson content standards, voice, quiz/vocab rules | `CLAUDE.md` |
