@@ -14,6 +14,7 @@ const P = lib('teacherUnits/availability-policy.js');
 const V = lib('teacherUnits/availability-protocol.js');
 const B = lib('teacherUnits/availability-runtime-build.js');
 const A = lib('shared/audit/write-audit-event.js');
+const T = lib('shared/types/audit-event.js');
 const { Timestamp, FieldValue } = req('firebase-admin/firestore');
 const POLICY = 'platformConfig/teacherUnitsAvailability', HISTORY = 'teacherUnitsAvailabilityHistory';
 const CLOUD = { 'lyfelabz-prod': ['production', '182791689935'], 'lyfelabz-staging': ['staging', '293337283840'] };
@@ -209,13 +210,26 @@ function restoreBefore(v, depth = 0) {
   }
   deny('unknown private snapshot version');
 }
+// Canonical audit grammar and server timestamp (buildAuditEventWrite), with the
+// event allocated on the SAME bound Firestore instance as the transaction. The
+// Functions helper allocates on the ambient Admin app, which an explicitly
+// impersonated operator process never initializes.
+function boundAuditWriter(db) {
+  const events = db.collection(T.AUDIT_EVENTS_COLLECTION);
+  return (tx, input) => {
+    const { write, record } = A.buildAuditEventWrite(input);
+    const ref = events.doc(); tx.set(ref, write);
+    return { eventId: ref.id, record };
+  };
+}
 /** All adapters are trusted server dependencies. Tests inject synthetic demo
  * contexts; the CLI never accepts a caller-provided credential verdict. */
-function createController({ db, identity, authenticate, writeAudit = A.writeAuditEventInTransaction,
+function createController({ db, identity, authenticate, writeAudit,
   inspectBuild = B.inspectAvailabilityRuntimeArtifact, releaseEvidence = async () => deny('current-release evidence unavailable'), now = Date.now, uuid = randomUUID }) {
   identity = checked(V.validate(() => {}, identity));
   if (!equal(identity, target(identity.projectId, {}))) deny('invalid project/environment tuple');
   if (db.projectId !== identity.projectId || db.databaseId !== '(default)') deny('database target mismatch');
+  writeAudit ??= boundAuditWriter(db);
   const policyRef = db.doc(POLICY);
   const auth = async permissions => context(await authenticate(), identity, permissions, now());
   async function verify(input) {

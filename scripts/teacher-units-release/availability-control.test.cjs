@@ -186,6 +186,18 @@ if (require.main === module) {
     assert.equal((await h.controller.execute(p, p.confirm)).status, 'committed-current');
     const history = h.db.rows.get(`${C.HISTORY}/${p.transitionId}`).value; assert.equal(JSON.stringify(history).includes('private before evidence'), false);
   });
+  test('default audit writer allocates on the bound database, never the ambient Admin app', async () => {
+    // Regression: the impersonated operator Firestore is not getAdminFirestore(),
+    // so the Admin-bound helper refused every staging recoverClosed execution.
+    const h = harness(), { writeAudit, ...deps } = h.deps, controller = C.createController(deps);
+    const p = await controller.review('prepare', h.options); assert.equal((await controller.execute(p, p.confirm)).status, 'committed-current');
+    h.db.rows.get(C.POLICY).value = { schemaVersion: 1, legacy: 'private before evidence' };
+    const r = await controller.review('recoverClosed', recoveryOptions(h));
+    const executed = await controller.execute(r, r.confirm); assert.equal(executed.status, 'committed-current'); assert.equal(executed.shutdownConfirmed, true);
+    const history = h.db.rows.get(`${C.HISTORY}/${r.transitionId}`).value, audit = h.db.rows.get(`auditEvents/${history.auditEventId}`).value;
+    assert.equal(audit.correlationId, r.transitionId); assert.equal(audit.payload.transition, 'recoverClosed'); assert.ok(audit.occurredAt instanceof Timestamp);
+    assert.equal(req('firebase-admin/app').getApps().length, 0);
+  });
   test('wrong confirmation, stale plan, different identity and different authenticated subject refuse before dispatch', async () => {
     for (const change of ['confirm', 'expiry', 'subject', 'project']) {
       const h = harness(), p = await h.controller.review('prepare', h.options);
