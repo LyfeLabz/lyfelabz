@@ -724,6 +724,10 @@ if(require.main===module) {
       await assert.rejects(Active.refreshCurrentRelease(f.bundle,{get,now:()=>NOW,fetchImpl:async()=>new Response('missing',{status:404}),readArtifact}),/unavailable/);
       await assert.rejects(Active.refreshCurrentRelease(f.bundle,{get:async(url,binary)=>url.includes('firebasehosting.googleapis.com')?{release:{version:{name:'sites/wrong/versions/old'}}}:get(url,binary),now:()=>NOW,fetchImpl,readArtifact}),/version changed/);
       await assert.rejects(Active.refreshCurrentRelease(f.bundle,{get,now:()=>NOW,fetchImpl,readArtifact:async()=>Buffer.from('wrong archive')}),/archive changed/);
+      // Regression: Hosting-ignored artifact paths are never served; their recorded hash is carried, not fetched.
+      seen.length=0;f.bundle.hosting.app.files={...files.app,'wonderbox/index.html':'e'.repeat(64)};f.bundle.hosting.marketing.files={...files.marketing,'lesson_cell-types.html':'f'.repeat(64)};
+      const carried=await Active.refreshCurrentRelease(f.bundle,{get,now:()=>NOW,fetchImpl,readArtifact});
+      assert.equal(carried.hosting.app.files['wonderbox/index.html'],'e'.repeat(64));assert.equal(carried.hosting.marketing.files['lesson_cell-types.html'],'f'.repeat(64));assert.equal(seen.some(u=>u.includes('wonderbox')||u.includes('lesson_cell-types')),false);assert.equal(seen.length,2);
       f.bundle.hosting.app.files={'../secret':K.sha256Bytes(body)};
       await assert.rejects(Active.refreshCurrentRelease(f.bundle,{get,now:()=>NOW,fetchImpl,readArtifact}),/file path/);
     }finally{f.cleanup();}

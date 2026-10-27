@@ -4,7 +4,8 @@
 const { execFileSync } = require('node:child_process');
 const { PROJECT_NUMBERS, MAX_AGE_MS, MAX_PREPARE_AGE_MS, canonical, fingerprint, list,
   normalizeRemoteIndexes, archiveRuntime, resource } = require('../hosting-release/backend-state.cjs');
-const { environmentForProject, readTargetSites } = require('../hosting-release/contract.cjs');
+const { environmentForProject, readTargetSites, readConfigFile, readHostingTargets, requestPathFor, isRedirected } = require('../hosting-release/contract.cjs');
+const { FIREBASE_BUILTIN_IGNORES, isHostingIgnored } = require('../../app/scripts/lessonBuilder/hostingExclusion.cjs');
 const K = require('../../platform/functions/lib/teacherUnits/a3-canonical.js');
 const B = require('../../platform/functions/lib/teacherUnits/availability-runtime-build.js');
 const P = require('../../platform/functions/lib/teacherUnits/availability-policy.js');
@@ -471,14 +472,19 @@ async function refreshScopedCurrentRelease(raw,{get,now=()=>new Date().toISOStri
   const rollbackArtifact=artifact(unpackOptionB(rollbackBytes),'closed-only');
   if(rollbackArtifact.build.backendBuildId!==b.rollback.backendBuildId || rollbackArtifact.build.sourceSha!==b.rollback.sourceSha || rollbackArtifact.placementFingerprint!==b.placementFingerprint || b.rollback.deploymentMode!=='closed-only') refuse('incompatible rollback application');
   const observation=await inspectScoped({project:b.projectId,get,now,plan:b.configurationApproval});
-  const hosting={projectId:b.projectId,observedAt:now()};
+  const hosting={projectId:b.projectId,observedAt:now()}, targets=readHostingTargets(readConfigFile(env.config));
   for(const key of ['app','marketing']) {
     const channel=await get(`https://firebasehosting.googleapis.com/v1beta1/sites/${sites[key]}/channels/live`);
     const versionName=channel?.release?.version?.name;
     if(typeof versionName!=='string' || versionName!==`sites/${sites[key]}/versions/${b.certifiedReceipt?.hosting?.[key]?.version}`) refuse('current Hosting live version changed');
     if(b.hosting?.[key]?.site!==sites[key] || b.hosting[key].origin!==env.origins[key] || !b.hosting[key].files || !Object.keys(b.hosting[key].files).length) refuse('expected paired Hosting files required');
-    const files={};
+    // Hosting-ignored and redirect-shadowed artifact paths are never served, so
+    // they have no live bytes (certify skips them the same way); their recorded
+    // hashes stay bound by the candidate fingerprint. Every served path is re-fetched.
+    const ignore=FIREBASE_BUILTIN_IGNORES.concat(targets[key].ignore || []), files={};
     for(const name of Object.keys(b.hosting[key].files)) {
+      hostingPath(name);
+      if(isHostingIgnored(name,ignore) || isRedirected(requestPathFor(name),targets[key])) {files[name]=b.hosting[key].files[name];continue;}
       const response=await fetchImpl(`${env.origins[key]}/${hostingPath(name)}`,{redirect:'error',cache:'no-store'});
       if(response.status!==200) refuse('served Hosting file unavailable');files[name]=K.sha256Bytes(Buffer.from(await response.arrayBuffer()));
     }

@@ -115,3 +115,25 @@ test('provider failures never print tokens or credential contents through CLI', 
     stdout: { write: v => output += v }, stderr: { write: v => output += v } });
   assert.equal(code, 1); assert.equal(output, 'Option B REFUSED: operation could not be verified\n');
 });
+
+test('production pins its own App Engine operator; cross-project identities and reviews refuse', async () => {
+  const prod = C.target('lyfelabz-prod', {}), prodEmail = 'lyfelabz-prod@appspot.gserviceaccount.com';
+  const prodConfig = () => ({ ...config(), quota_project_id: prod.projectId,
+    service_account_impersonation_url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${prodEmail}:generateAccessToken` });
+  const c = C.operatorCredential(prod, prodConfig());
+  assert.equal(c.email, prodEmail); assert.equal(c.client.getTargetPrincipal(), prodEmail); assert.equal(c.client.lifetime, 600);
+  // Staging operator URL against production, and production URL against staging, refuse before RPC.
+  assert.throws(() => C.operatorCredential(prod, { ...config(), quota_project_id: prod.projectId }));
+  assert.throws(() => C.operatorCredential(identity, { ...prodConfig(), quota_project_id: identity.projectId }));
+  assert.throws(() => C.operatorCredential({ ...prod, projectNumber: identity.projectNumber }, prodConfig()));
+  const prodReview = { ...review(), projectId: prod.projectId, projectNumber: prod.projectNumber, principalSubject: prodEmail };
+  const prodProvider = () => { const p = provider(); p.getTokenInfo = async () => ({ email: prodEmail, email_verified: true, expiry_date: now + 600000,
+    scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
+    p.request = async ({ url }) => ({ data: url.includes(':testIamPermissions') ? { permissions: C.WRITE } :
+      { projectId: prod.projectId, name: `projects/${prod.projectNumber}`, state: 'ACTIVE' } }); return p; };
+  const prodVerify = (accessReview, e = prodEmail) => C.verifyCredential({ client: prodProvider(), identity: prod, email: e, accessReview, impersonated: true, now: () => now, write: true });
+  assert.equal((await prodVerify(prodReview)).operator.principalSubject, prodEmail);
+  await assert.rejects(prodVerify(review()));
+  await assert.rejects(prodVerify(prodReview, email));
+  await assert.rejects(prodVerify({ ...prodReview, acceptedProjectRoles: ['roles/owner'] }));
+});
