@@ -1,8 +1,8 @@
 'use strict';
 // Option B operator control. No import of historical authorization or markers.
-// Cloud execution is never implicit. Only direct, explicitly selected service
-// account credentials are supported here; browser/user/ambiguous impersonated
-// credentials refuse. Actual external use still requires owner authorization.
+// Cloud execution is never implicit. Explicit direct service-account keys or
+// pinned staging impersonation are supported; user credentials are never the
+// operator identity. Actual external use still requires owner authorization.
 const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
@@ -377,14 +377,16 @@ function createController({ db, identity, authenticate, writeAudit = A.writeAudi
   return { review, execute, verify, preEnable };
 }
 
-/** Independently inspect the selected direct service-account access token,
+/** Independently inspect the selected effective service-account access token,
  * pinned project identity and effective permissions. Provider transport is
  * injected in tests; no serialized --principal/authenticated label is used.
  * Database-conditional grants are not widened if a project permission probe
  * cannot establish them: this profile refuses. Project-wide blast radius must
  * already have a retained explicit owner access review; this tool grants none. */
-async function verifyCredential({ client, identity, email, accessReview, now = Date.now, write = false, list = false }) {
-  exact(accessReview, ['schemaVersion', 'projectId', 'projectNumber', 'databaseId', 'principalSubject', 'permissionCheckScope', 'blastRadiusAccepted', 'approvalRef']);
+async function verifyCredential({ client, identity, email, accessReview, impersonated = false, now = Date.now, write = false, list = false }) {
+  exact(accessReview, ['schemaVersion', 'projectId', 'projectNumber', 'databaseId', 'principalSubject', 'permissionCheckScope', 'blastRadiusAccepted', 'approvalRef', ...(impersonated ? ['acceptedProjectRoles'] : [])]);
+  if (impersonated && (identity.projectId !== 'lyfelabz-staging' || email !== IMPERSONATION_EMAIL ||
+      !equal(accessReview.acceptedProjectRoles, ['roles/editor']))) deny('explicit staging Editor access approval required');
   if (accessReview.schemaVersion !== 1 || accessReview.projectId !== identity.projectId || accessReview.projectNumber !== identity.projectNumber ||
       accessReview.databaseId !== '(default)' || accessReview.principalSubject !== email || accessReview.permissionCheckScope !== 'project' ||
       accessReview.blastRadiusAccepted !== true || typeof accessReview.approvalRef !== 'string' || !accessReview.approvalRef.trim()) deny('owner access review required for supported permission-check scope');
@@ -429,24 +431,62 @@ function selectedApp(identity, key) {
   return initializeApp({ projectId: identity.projectId, credential: cert({ projectId: key.project_id,
     clientEmail: key.client_email, privateKey: key.private_key }) });
 }
+const IMPERSONATION_EMAIL = 'lyfelabz-staging@appspot.gserviceaccount.com';
+const IMPERSONATION_URL = `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${IMPERSONATION_EMAIL}:generateAccessToken`;
+const OPERATOR_SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.email'];
+// Explicit standard impersonation config only. Never use ADC, configured token
+// endpoints, delegates, or the source user's token for Firestore/provider calls.
+function operatorCredential(identity, key) {
+  const { GoogleAuth, OAuth2Client, Impersonated } = req('google-auth-library');
+  if (key.type === 'impersonated_service_account') {
+    const fields = ['type', 'source_credentials', 'service_account_impersonation_url'];
+    exact(key, [...fields, ...['delegates', 'quota_project_id'].filter(k => Object.hasOwn(key, k))]);
+    if (identity.projectId !== 'lyfelabz-staging' || identity.projectNumber !== '293337283840' ||
+        key.service_account_impersonation_url !== IMPERSONATION_URL ||
+        key.delegates !== undefined && !equal(key.delegates, []) ||
+        key.quota_project_id !== undefined && key.quota_project_id !== identity.projectId) deny('unapproved impersonation target or delegates');
+    const source = key.source_credentials;
+    exact(source, ['type', 'client_id', 'client_secret', 'refresh_token']);
+    if (source.type !== 'authorized_user' || ['client_id', 'client_secret', 'refresh_token'].some(k => typeof source[k] !== 'string' || !source[k].trim())) deny('invalid explicit impersonation source');
+    const sourceClient = new OAuth2Client({ clientId: source.client_id, clientSecret: source.client_secret });
+    sourceClient.setCredentials({ refresh_token: source.refresh_token });
+    const client = new Impersonated({ sourceClient, targetPrincipal: IMPERSONATION_EMAIL, targetScopes: OPERATOR_SCOPES,
+      delegates: [], lifetime: 600, endpoint: 'https://iamcredentials.googleapis.com' });
+    return { client, email: IMPERSONATION_EMAIL, impersonated: true };
+  }
+  if (key.type !== 'service_account' || typeof key.client_email !== 'string' || !/^[a-zA-Z0-9_.-]+@[a-z0-9.-]+\.gserviceaccount\.com$/.test(key.client_email) ||
+      typeof key.private_key !== 'string' || key.token_uri !== 'https://oauth2.googleapis.com/token' ||
+      key.universe_domain !== undefined && key.universe_domain !== 'googleapis.com' ||
+      Object.keys(key).some(k => ['service_account_impersonation_url', 'credential_source', 'source_credentials', 'token_url'].includes(k))) deny('explicit direct service-account or approved staging impersonation credentials required');
+  const auth = new GoogleAuth({ scopes: OPERATOR_SCOPES });
+  return { client: auth.fromJSON(key), email: key.client_email, impersonated: false };
+}
+function impersonatedFirestore(identity, client) {
+  // The Admin SDK certificate path cannot bind a custom OAuth client. Use the
+  // installed Firestore SDK's explicit GoogleAuth transport; never initialize ADC.
+  const { GoogleAuth } = req('google-auth-library');
+  const { Firestore } = req('@google-cloud/firestore');
+  if (req('firebase-admin/app').getApps().some(a => a.name === '[DEFAULT]')) deny('ambient default Admin app present; use a fresh operator process');
+  const auth = new GoogleAuth({ authClient: client, projectId: identity.projectId });
+  // Firestore debug settings serialization must never expose source refresh credentials.
+  Object.defineProperty(auth, 'toJSON', { value: () => '[explicit impersonated operator auth]' });
+  return new Firestore({ projectId: identity.projectId, databaseId: identity.databaseId,
+    auth, host: 'firestore.googleapis.com', ssl: true });
+}
 async function connect(identity, flags, command) {
   if (identity.environment === 'emulator') deny('demo emulator requires an explicitly injected local operator profile; no credential impersonation fallback');
   if (!flags.live) deny('cloud connection requires separate external authorization and explicit --live');
   const key = readJSON(flags.credentials), accessReview = readJSON(flags['access-review']);
-  if (key.type !== 'service_account' || typeof key.client_email !== 'string' || !/^[a-zA-Z0-9_.-]+@[a-z0-9.-]+\.gserviceaccount\.com$/.test(key.client_email) ||
-      typeof key.private_key !== 'string' || key.token_uri !== 'https://oauth2.googleapis.com/token' ||
-      key.universe_domain !== undefined && key.universe_domain !== 'googleapis.com' ||
-      Object.keys(key).some(k => ['service_account_impersonation_url', 'credential_source', 'source_credentials', 'token_url'].includes(k))) deny('only explicit direct service-account credentials supported; user/browser/impersonated credentials refuse');
-  const { GoogleAuth } = req('google-auth-library');
-  const auth = new GoogleAuth({ scopes: ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.email'] });
-  const client = auth.fromJSON(key);
-  const authenticate = () => verifyCredential({ client, identity, email: key.client_email, accessReview,
+  const { client, email, impersonated } = operatorCredential(identity, key);
+  const authenticate = () => verifyCredential({ client, identity, email, accessReview, impersonated,
     write: !['show', 'verify'].includes(command), list: command === 'show' });
   await authenticate();
   const { deleteApp } = req('firebase-admin/app');
-  const app = selectedApp(identity, key);
+  const app = impersonated ? null : selectedApp(identity, key);
+  let db;
+  const close = () => impersonated ? db?.terminate() : deleteApp(app);
   try {
-    const db = lib('shared/firestore/admin.js').getAdminFirestore();
+    db = impersonated ? impersonatedFirestore(identity, client) : lib('shared/firestore/admin.js').getAdminFirestore();
     db.settings({ host: 'firestore.googleapis.com', ssl: true });
     if (db.projectId !== identity.projectId || db.databaseId !== '(default)' || db._settings?.ssl === false ||
         ['host', 'servicePath', 'apiEndpoint'].some(k => db._settings?.[k] !== undefined && db._settings[k] !== 'firestore.googleapis.com')) deny('bound database destination mismatch');
@@ -458,8 +498,8 @@ async function connect(identity, flags, command) {
       const get = require('../hosting-release/backend-state.cjs').readApi({ token: token.token });
       return require('./option-b-observation.cjs').refreshCurrentRelease(bundle, { get, now: () => new Date().toISOString() });
     };
-    return { controller: createController({ db, identity, authenticate, releaseEvidence }), close: () => deleteApp(app) };
-  } catch (error) { await deleteApp(app); throw error; }
+    return { controller: createController({ db, identity, authenticate, releaseEvidence }), close };
+  } catch (error) { await close(); throw error; }
 
 }
 async function main(argv, ctx = {}) {
@@ -504,5 +544,5 @@ async function main(argv, ctx = {}) {
   } finally { if (connection?.close) { try { await connection.close(); } catch { stderr.write('Option B connection cleanup could not be confirmed\n'); } } }
 }
 module.exports = { POLICY, HISTORY, READ, WRITE, Refusal, target, encode, ts, cas, auditInput, serializePlan, restorePlan,
-  createController, verifyCredential, selectedApp, parse, main };
+  createController, verifyCredential, selectedApp, operatorCredential, impersonatedFirestore, parse, main };
 if (require.main === module) main(process.argv.slice(2)).then(code => { process.exitCode = code; });
