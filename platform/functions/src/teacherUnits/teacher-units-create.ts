@@ -337,7 +337,7 @@ export function createTeacherUnitsCreateHandler(enforcement: TeacherUnitsEnforce
 
 const teacherUnitsCreateHandler = createTeacherUnitsCreateHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsCreate = platformCallable(teacherUnitsCreateHandler);
+export const teacherUnitsCreate = platformCallable({ maxInstances: 20 }, teacherUnitsCreateHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsCreateHandler = teacherUnitsCreateHandler;

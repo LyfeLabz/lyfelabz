@@ -147,7 +147,7 @@ const teacherUnitsSetResourcesHandler = createTeacherUnitsSetResourcesHandler(
   PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
 );
 
-export const teacherUnitsSetResources = platformCallable(teacherUnitsSetResourcesHandler);
+export const teacherUnitsSetResources = platformCallable({ maxInstances: 20 }, teacherUnitsSetResourcesHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsSetResourcesHandler = teacherUnitsSetResourcesHandler;

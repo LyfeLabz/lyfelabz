@@ -62,7 +62,7 @@ export function createTeacherUnitsRestoreHandler(enforcement: TeacherUnitsEnforc
 
 const teacherUnitsRestoreHandler = createTeacherUnitsRestoreHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsRestore = platformCallable(teacherUnitsRestoreHandler);
+export const teacherUnitsRestore = platformCallable({ maxInstances: 20 }, teacherUnitsRestoreHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsRestoreHandler = teacherUnitsRestoreHandler;

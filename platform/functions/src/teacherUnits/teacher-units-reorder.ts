@@ -312,7 +312,7 @@ export function createTeacherUnitsReorderHandler(enforcement: TeacherUnitsEnforc
 
 const teacherUnitsReorderHandler = createTeacherUnitsReorderHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsReorder = platformCallable(teacherUnitsReorderHandler);
+export const teacherUnitsReorder = platformCallable({ maxInstances: 20 }, teacherUnitsReorderHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsReorderHandler = teacherUnitsReorderHandler;

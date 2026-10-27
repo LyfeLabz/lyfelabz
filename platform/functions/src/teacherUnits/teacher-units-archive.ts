@@ -65,7 +65,7 @@ export function createTeacherUnitsArchiveHandler(enforcement: TeacherUnitsEnforc
 
 const teacherUnitsArchiveHandler = createTeacherUnitsArchiveHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsArchive = platformCallable(teacherUnitsArchiveHandler);
+export const teacherUnitsArchive = platformCallable({ maxInstances: 20 }, teacherUnitsArchiveHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsArchiveHandler = teacherUnitsArchiveHandler;
