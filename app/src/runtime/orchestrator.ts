@@ -34,9 +34,18 @@ import type {
 // Idempotency and duplicate protection are enforced client-side in
 // addition to the server-side invariants: begin caches its promise so
 // concurrent callers observe the same result, autosave coalesces on
-// byte-identical payloads, and finalize reuses a single per-runtime
+// byte-identical payloads, and finalize reuses a single per-attempt
 // idempotencyKey so a retry after transport failure lines up with the
 // certified idempotency contract in the finalize callable.
+//
+// New attempts. A committed finalize deletes the server session, so a second
+// attempt on the same page needs a new session. `restart()` waits for the
+// previous submission to settle, discards every per-attempt value (session,
+// idempotency key, cached result, autosave baseline) and begins again; the
+// next finalize then writes a new attempt under a new key. A repeated
+// finalize with the SAME responses is still the cached duplicate; different
+// responses after a submission are refused, never answered with the earlier
+// attempt's success.
 
 const IDEMPOTENCY_KEY_MAX_LENGTH = 128;
 
@@ -59,6 +68,10 @@ export type AssessmentRuntime = {
     writtenResponse?: string,
   ): Promise<FinalizeResult>;
   getAttempt(attemptId?: string): Promise<AttemptSummary>;
+  // True once finalize has been called for the current attempt (in flight,
+  // settled, or failed) until `restart()` starts the next one.
+  hasSubmittedAttempt(): boolean;
+  restart(): Promise<void>;
   destroy(): void;
 };
 
@@ -103,6 +116,19 @@ export class AssessmentRevisionIntegrityError extends Error {
   }
 }
 
+// A finalize whose responses differ from the attempt this runtime already
+// submitted. Its result is never reused for the new answers; the student
+// starts a new attempt instead. Student-facing, no internal identifiers.
+export const ATTEMPT_ALREADY_SUBMITTED_MESSAGE =
+  "This attempt was already submitted, so these answers were not sent. Select Try Again to start a new attempt, then submit again.";
+
+export class AttemptAlreadySubmittedError extends Error {
+  constructor() {
+    super(ATTEMPT_ALREADY_SUBMITTED_MESSAGE);
+    this.name = "AttemptAlreadySubmittedError";
+  }
+}
+
 function truncateIdempotencyKey(raw: string): string {
   if (raw.length <= IDEMPOTENCY_KEY_MAX_LENGTH) return raw;
   return raw.slice(0, IDEMPOTENCY_KEY_MAX_LENGTH);
@@ -134,11 +160,18 @@ const RECOVERABLE_ERROR_CODES: ReadonlyArray<string> = [
   "cancelled",
 ];
 
-function isRecoverable(err: unknown): boolean {
-  if (err === null || typeof err !== "object") return false;
+// The Firebase client reports callable failures as `functions/<code>`
+// (FunctionsError); fakes and older call sites use the bare code.
+function callableErrorCode(err: unknown): string | undefined {
+  if (err === null || typeof err !== "object") return undefined;
   const code = (err as { code?: unknown }).code;
-  if (typeof code !== "string") return false;
-  return RECOVERABLE_ERROR_CODES.includes(code);
+  if (typeof code !== "string") return undefined;
+  return code.startsWith("functions/") ? code.slice("functions/".length) : code;
+}
+
+function isRecoverable(err: unknown): boolean {
+  const code = callableErrorCode(err);
+  return code !== undefined && RECOVERABLE_ERROR_CODES.includes(code);
 }
 
 export function createAssessmentRuntime(
@@ -160,9 +193,34 @@ export function createAssessmentRuntime(
   let finalizePromise: Promise<FinalizeResult> | null = null;
   let finalizedState: FinalizedState | null = null;
   let integrityError: AssessmentRevisionIntegrityError | null = null;
+  // The refusal that moved the runtime to `error`, rethrown by later calls so
+  // the lesson reports the actual cause rather than a generic guard error.
+  let fatalError: unknown = null;
+  // Serialized responses of the current attempt's finalize; set when finalize
+  // is called and cleared by `restart()`.
+  let submittedPayload: string | null = null;
+  let restartPromise: Promise<void> | null = null;
+  // A new attempt starts from an empty page, so its begin must not restore the
+  // previous attempt's answers into it.
+  let adoptOnBegin = true;
   // Persisted responses this page adopted from the Live session (see
   // `adoptPersisted`). Cleared once the session is finalized.
   let persisted: readonly SessionResponse[] = [];
+
+  function enterError(err: unknown): void {
+    mode = "error";
+    fatalError = err;
+  }
+
+  function errorStateError(): unknown {
+    return integrityError ?? fatalError ?? new Error("assessment runtime is in an error state");
+  }
+
+  // Only yields while a restart is pending, so a call made with none pending
+  // claims its attempt synchronously (before a same-tick restart can look).
+  async function settledRestart(): Promise<void> {
+    await restartPromise?.catch(() => undefined);
+  }
 
   function adoptPersisted(state: PersistedSessionState): void {
     if (state.responses.length === 0) {
@@ -210,14 +268,14 @@ export function createAssessmentRuntime(
       throw new Error("assessment runtime is inert without assignment context");
     }
     if (mode === "error") {
-      throw integrityError ?? new Error("assessment runtime is in an error state");
+      throw errorStateError();
     }
   }
 
   async function ensureBegun(): Promise<void> {
     if (mode === "active" || mode === "finalized") return;
     if (mode === "error") {
-      throw integrityError ?? new Error("assessment runtime is in an error state");
+      throw errorStateError();
     }
     if (assignmentId === null) return;
     if (beginPromise !== null) {
@@ -237,17 +295,19 @@ export function createAssessmentRuntime(
         verifyRevision(outcome.assessmentRevisionId);
         sessionId = outcome.sessionId;
         mode = "active";
-        adoptPersisted({
-          responses: outcome.responses ?? [],
-          ...(isNonEmptyString(outcome.assessmentPresentationRevisionId)
-            ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId }
-            : {}),
-        });
+        if (adoptOnBegin) {
+          adoptPersisted({
+            responses: outcome.responses ?? [],
+            ...(isNonEmptyString(outcome.assessmentPresentationRevisionId)
+              ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId }
+              : {}),
+          });
+        }
       } catch (err) {
         if (err instanceof AssessmentRevisionIntegrityError) throw err;
         if (!destroyed) {
           if (!isRecoverable(err)) {
-            mode = "error";
+            enterError(err);
           }
           beginPromise = null;
         }
@@ -262,7 +322,7 @@ export function createAssessmentRuntime(
     if (assignmentId === null) return;
     if (mode === "finalized") return;
     if (mode === "error") {
-      throw integrityError ?? new Error("assessment runtime is in an error state");
+      throw errorStateError();
     }
     await ensureBegun();
   }
@@ -273,6 +333,17 @@ export function createAssessmentRuntime(
   ): Promise<{ readonly persisted: boolean }> {
     if (destroyed) return { persisted: false };
     if (assignmentId === null) return { persisted: false };
+    if (restartPromise !== null) await settledRestart();
+    return writeAutosave(responses, writtenResponse);
+  }
+
+  // The autosave body. finalize calls it directly: a restart waits for an
+  // in-flight finalize, so finalize must not in turn wait for the restart.
+  async function writeAutosave(
+    responses: readonly SessionResponse[],
+    writtenResponse: string | undefined,
+  ): Promise<{ readonly persisted: boolean }> {
+    if (destroyed) return { persisted: false };
     if (mode === "finalized") return { persisted: false };
     guardActive();
     await ensureBegun();
@@ -300,7 +371,7 @@ export function createAssessmentRuntime(
         return result;
       } catch (err) {
         if (!destroyed && !isRecoverable(err)) {
-          mode = "error";
+          enterError(err);
         }
         throw err;
       } finally {
@@ -320,15 +391,28 @@ export function createAssessmentRuntime(
     if (assignmentId === null) {
       throw new Error("assessment runtime is inert without assignment context");
     }
+    if (restartPromise !== null) await settledRestart();
     if (mode === "error") {
-      throw integrityError ?? new Error("assessment runtime is in an error state");
+      throw errorStateError();
     }
-    if (finalizedState !== null) {
-      return finalizedState.result;
+    // A duplicate submit of the same answers shares the one finalize (cached
+    // or in flight). Different answers after a submission belong to a new
+    // attempt and must never be answered with this attempt's result.
+    const requestPayload = serialize(responses, writtenResponse);
+    if (finalizedState !== null || finalizePromise !== null) {
+      if (submittedPayload !== requestPayload) {
+        throw new AttemptAlreadySubmittedError();
+      }
+      if (finalizedState !== null) return finalizedState.result;
+      if (finalizePromise !== null) return finalizePromise;
     }
-    if (finalizePromise !== null) {
-      return finalizePromise;
+    // A retry after a failed finalize reuses the key only for the same
+    // answers, so a commit whose response was lost replays as that attempt
+    // and never as the result for different answers.
+    if (submittedPayload !== null && submittedPayload !== requestPayload) {
+      finalizeIdempotencyKey = null;
     }
+    submittedPayload = requestPayload;
     finalizePromise = (async (): Promise<FinalizeResult> => {
       await ensureBegun();
       if (sessionId === null) {
@@ -340,7 +424,7 @@ export function createAssessmentRuntime(
       // coalesced by the autosave path; only a real change makes a
       // second write. The Show Your Thinking text rides the same final
       // autosave so finalize freezes it from the session onto the attempt.
-      await autosave(responses, writtenResponse);
+      await writeAutosave(responses, writtenResponse);
       if (finalizeIdempotencyKey === null) {
         finalizeIdempotencyKey = truncateIdempotencyKey(env.randomId());
       }
@@ -357,7 +441,7 @@ export function createAssessmentRuntime(
       } catch (err) {
         if (!destroyed) {
           if (!isRecoverable(err)) {
-            mode = "error";
+            enterError(err);
           }
           finalizePromise = null;
         }
@@ -365,6 +449,47 @@ export function createAssessmentRuntime(
       }
     })();
     return finalizePromise;
+  }
+
+  // Starts a genuine new attempt (see the header). An integrity or other
+  // non-recoverable error is terminal for this page load and is rethrown.
+  async function restart(): Promise<void> {
+    if (destroyed) return;
+    if (assignmentId === null) return;
+    // Concurrent callers (several quick answers) share one restart.
+    let pending = restartPromise;
+    if (pending === null) {
+      const run = (async (): Promise<void> => {
+        // The previous attempt's submission settles first, so its outcome is
+        // never attributed to the new attempt.
+        if (finalizePromise !== null) await finalizePromise.catch(() => undefined);
+        if (inflightAutosave !== null) await inflightAutosave.catch(() => undefined);
+        if (destroyed) return;
+        if (mode === "error") throw errorStateError();
+        // A committed finalize deleted the session; an uncommitted one may
+        // still be Live. Either way begin answers with the deterministic
+        // session id (a new session, or an idempotent replay of the live one).
+        sessionId = null;
+        beginPromise = null;
+        mode = "pending";
+        finalizeIdempotencyKey = null;
+        finalizePromise = null;
+        finalizedState = null;
+        submittedPayload = null;
+        lastAutosaveSerialized = null;
+        persisted = [];
+        adoptOnBegin = false;
+        await ensureBegun();
+      })();
+      restartPromise = run;
+      pending = run;
+      void run
+        .catch(() => undefined)
+        .then(() => {
+          if (restartPromise === run) restartPromise = null;
+        });
+    }
+    await pending;
   }
 
   async function getAttempt(attemptId?: string): Promise<AttemptSummary> {
@@ -389,6 +514,7 @@ export function createAssessmentRuntime(
     beginPromise = null;
     inflightAutosave = null;
     finalizePromise = null;
+    restartPromise = null;
   }
 
   return {
@@ -399,6 +525,8 @@ export function createAssessmentRuntime(
     autosave,
     finalize,
     getAttempt,
+    hasSubmittedAttempt: () => submittedPayload !== null,
+    restart,
     destroy,
   };
 }
@@ -410,3 +538,6 @@ export const __internal = {
   truncateIdempotencyKey,
   isRecoverable,
 };
+
+// Shared with the lesson adapter so both classify callable failures alike.
+export { isRecoverable as isRecoverableCallableError };

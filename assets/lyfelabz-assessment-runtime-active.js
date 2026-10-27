@@ -7830,6 +7830,13 @@
       this.reason = reason;
     }
   };
+  var ATTEMPT_ALREADY_SUBMITTED_MESSAGE = "This attempt was already submitted, so these answers were not sent. Select Try Again to start a new attempt, then submit again.";
+  var AttemptAlreadySubmittedError = class extends Error {
+    constructor() {
+      super(ATTEMPT_ALREADY_SUBMITTED_MESSAGE);
+      this.name = "AttemptAlreadySubmittedError";
+    }
+  };
   function truncateIdempotencyKey(raw) {
     if (raw.length <= IDEMPOTENCY_KEY_MAX_LENGTH) return raw;
     return raw.slice(0, IDEMPOTENCY_KEY_MAX_LENGTH);
@@ -7848,11 +7855,15 @@
     "resource-exhausted",
     "cancelled"
   ];
-  function isRecoverable(err) {
-    if (err === null || typeof err !== "object") return false;
+  function callableErrorCode(err) {
+    if (err === null || typeof err !== "object") return void 0;
     const code = err.code;
-    if (typeof code !== "string") return false;
-    return RECOVERABLE_ERROR_CODES.includes(code);
+    if (typeof code !== "string") return void 0;
+    return code.startsWith("functions/") ? code.slice("functions/".length) : code;
+  }
+  function isRecoverable(err) {
+    const code = callableErrorCode(err);
+    return code !== void 0 && RECOVERABLE_ERROR_CODES.includes(code);
   }
   function createAssessmentRuntime(input) {
     const { version: version5, callables, env } = input;
@@ -7868,7 +7879,21 @@
     let finalizePromise = null;
     let finalizedState = null;
     let integrityError = null;
+    let fatalError = null;
+    let submittedPayload = null;
+    let restartPromise = null;
+    let adoptOnBegin = true;
     let persisted = [];
+    function enterError(err) {
+      mode = "error";
+      fatalError = err;
+    }
+    function errorStateError() {
+      return integrityError ?? fatalError ?? new Error("assessment runtime is in an error state");
+    }
+    async function settledRestart() {
+      await restartPromise?.catch(() => void 0);
+    }
     function adoptPersisted(state) {
       if (state.responses.length === 0) {
         persisted = [];
@@ -7905,13 +7930,13 @@
         throw new Error("assessment runtime is inert without assignment context");
       }
       if (mode === "error") {
-        throw integrityError ?? new Error("assessment runtime is in an error state");
+        throw errorStateError();
       }
     }
     async function ensureBegun() {
       if (mode === "active" || mode === "finalized") return;
       if (mode === "error") {
-        throw integrityError ?? new Error("assessment runtime is in an error state");
+        throw errorStateError();
       }
       if (assignmentId === null) return;
       if (beginPromise !== null) {
@@ -7928,15 +7953,17 @@
           verifyRevision(outcome.assessmentRevisionId);
           sessionId = outcome.sessionId;
           mode = "active";
-          adoptPersisted({
-            responses: outcome.responses ?? [],
-            ...isNonEmptyString(outcome.assessmentPresentationRevisionId) ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId } : {}
-          });
+          if (adoptOnBegin) {
+            adoptPersisted({
+              responses: outcome.responses ?? [],
+              ...isNonEmptyString(outcome.assessmentPresentationRevisionId) ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId } : {}
+            });
+          }
         } catch (err) {
           if (err instanceof AssessmentRevisionIntegrityError) throw err;
           if (!destroyed) {
             if (!isRecoverable(err)) {
-              mode = "error";
+              enterError(err);
             }
             beginPromise = null;
           }
@@ -7950,13 +7977,18 @@
       if (assignmentId === null) return;
       if (mode === "finalized") return;
       if (mode === "error") {
-        throw integrityError ?? new Error("assessment runtime is in an error state");
+        throw errorStateError();
       }
       await ensureBegun();
     }
     async function autosave(responses, writtenResponse) {
       if (destroyed) return { persisted: false };
       if (assignmentId === null) return { persisted: false };
+      if (restartPromise !== null) await settledRestart();
+      return writeAutosave(responses, writtenResponse);
+    }
+    async function writeAutosave(responses, writtenResponse) {
+      if (destroyed) return { persisted: false };
       if (mode === "finalized") return { persisted: false };
       guardActive();
       await ensureBegun();
@@ -7981,7 +8013,7 @@
           return result;
         } catch (err) {
           if (!destroyed && !isRecoverable(err)) {
-            mode = "error";
+            enterError(err);
           }
           throw err;
         } finally {
@@ -7997,21 +8029,28 @@
       if (assignmentId === null) {
         throw new Error("assessment runtime is inert without assignment context");
       }
+      if (restartPromise !== null) await settledRestart();
       if (mode === "error") {
-        throw integrityError ?? new Error("assessment runtime is in an error state");
+        throw errorStateError();
       }
-      if (finalizedState !== null) {
-        return finalizedState.result;
+      const requestPayload = serialize(responses, writtenResponse);
+      if (finalizedState !== null || finalizePromise !== null) {
+        if (submittedPayload !== requestPayload) {
+          throw new AttemptAlreadySubmittedError();
+        }
+        if (finalizedState !== null) return finalizedState.result;
+        if (finalizePromise !== null) return finalizePromise;
       }
-      if (finalizePromise !== null) {
-        return finalizePromise;
+      if (submittedPayload !== null && submittedPayload !== requestPayload) {
+        finalizeIdempotencyKey = null;
       }
+      submittedPayload = requestPayload;
       finalizePromise = (async () => {
         await ensureBegun();
         if (sessionId === null) {
           throw new Error("session was not established");
         }
-        await autosave(responses, writtenResponse);
+        await writeAutosave(responses, writtenResponse);
         if (finalizeIdempotencyKey === null) {
           finalizeIdempotencyKey = truncateIdempotencyKey(env.randomId());
         }
@@ -8028,7 +8067,7 @@
         } catch (err) {
           if (!destroyed) {
             if (!isRecoverable(err)) {
-              mode = "error";
+              enterError(err);
             }
             finalizePromise = null;
           }
@@ -8036,6 +8075,36 @@
         }
       })();
       return finalizePromise;
+    }
+    async function restart() {
+      if (destroyed) return;
+      if (assignmentId === null) return;
+      let pending = restartPromise;
+      if (pending === null) {
+        const run = (async () => {
+          if (finalizePromise !== null) await finalizePromise.catch(() => void 0);
+          if (inflightAutosave !== null) await inflightAutosave.catch(() => void 0);
+          if (destroyed) return;
+          if (mode === "error") throw errorStateError();
+          sessionId = null;
+          beginPromise = null;
+          mode = "pending";
+          finalizeIdempotencyKey = null;
+          finalizePromise = null;
+          finalizedState = null;
+          submittedPayload = null;
+          lastAutosaveSerialized = null;
+          persisted = [];
+          adoptOnBegin = false;
+          await ensureBegun();
+        })();
+        restartPromise = run;
+        pending = run;
+        void run.catch(() => void 0).then(() => {
+          if (restartPromise === run) restartPromise = null;
+        });
+      }
+      await pending;
     }
     async function getAttempt(attemptId) {
       if (destroyed) {
@@ -8058,6 +8127,7 @@
       beginPromise = null;
       inflightAutosave = null;
       finalizePromise = null;
+      restartPromise = null;
     }
     return {
       version: version5,
@@ -8067,6 +8137,8 @@
       autosave,
       finalize,
       getAttempt,
+      hasSubmittedAttempt: () => submittedPayload !== null,
+      restart,
       destroy
     };
   }
@@ -8112,8 +8184,60 @@
     const host = win.location.hostname;
     return host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
   }
+  var DEFAULT_EMULATOR_ENDPOINTS = {
+    projectId: PROJECT_ID,
+    auth: { host: "127.0.0.1", port: 9099 },
+    firestore: { host: "127.0.0.1", port: 8080 },
+    functions: { host: "127.0.0.1", port: 5001 }
+  };
+  var DEMO_PROJECT_ID = /^demo-[a-z0-9][a-z0-9-]{0,24}[a-z0-9]$/;
+  var LOOPBACK_HOSTS = /* @__PURE__ */ new Set(["127.0.0.1", "localhost"]);
+  var SERVICES = ["auth", "firestore", "functions"];
+  function invalidOverride(reason) {
+    throw new Error(`Invalid __lyfelabzEmulatorOverride: ${reason}`);
+  }
+  function parseEmulatorOverride(raw) {
+    if (raw === null || typeof raw !== "object") invalidOverride("must be an object");
+    const value = raw;
+    const projectId = value.projectId;
+    if (typeof projectId !== "string" || !DEMO_PROJECT_ID.test(projectId)) {
+      invalidOverride("projectId must be a demo-* project id");
+    }
+    const endpoints = {};
+    const ports = /* @__PURE__ */ new Set();
+    for (const service of SERVICES) {
+      const entry = value[service];
+      if (entry === null || typeof entry !== "object") invalidOverride(`${service} is required`);
+      const { host, port } = entry;
+      if (typeof host !== "string" || !LOOPBACK_HOSTS.has(host)) {
+        invalidOverride(`${service}.host must be 127.0.0.1 or localhost`);
+      }
+      if (typeof port !== "number" || !Number.isInteger(port) || port < 1024 || port > 65535) {
+        invalidOverride(`${service}.port must be an integer from 1024 to 65535`);
+      }
+      if (ports.has(port)) invalidOverride(`${service}.port duplicates another service`);
+      ports.add(port);
+      endpoints[service] = { host, port };
+    }
+    return {
+      projectId,
+      auth: endpoints.auth,
+      firestore: endpoints.firestore,
+      functions: endpoints.functions
+    };
+  }
+  function getEmulatorEndpoints(win = typeof window === "undefined" ? void 0 : window) {
+    if (!win || !isEmulatorHost(win)) return null;
+    const raw = win.__lyfelabzEmulatorOverride;
+    if (raw === void 0) return DEFAULT_EMULATOR_ENDPOINTS;
+    return parseEmulatorOverride(raw);
+  }
   function getFirebaseClientConfig(win = typeof window === "undefined" ? void 0 : window) {
-    if (!win || isEmulatorHost(win)) return EMULATOR_CONFIG;
+    if (!win) return EMULATOR_CONFIG;
+    const endpoints = getEmulatorEndpoints(win);
+    if (endpoints !== null) {
+      return endpoints === DEFAULT_EMULATOR_ENDPOINTS ? EMULATOR_CONFIG : { ...EMULATOR_CONFIG, projectId: endpoints.projectId };
+    }
     const injected = win.__lyfelabzFirebaseConfig;
     if (injected && typeof injected === "object") {
       return {
@@ -8372,10 +8496,29 @@
     return text.length > WRITTEN_RESPONSE_MAX_LENGTH ? text.slice(0, WRITTEN_RESPONSE_MAX_LENGTH).trim() : text;
   }
   function isRecoverableFirebaseError(err) {
-    if (err === null || typeof err !== "object") return false;
-    const code = err.code;
-    if (typeof code !== "string") return false;
-    return code === "unavailable" || code === "internal" || code === "deadline-exceeded" || code === "resource-exhausted" || code === "cancelled";
+    return isRecoverable(err);
+  }
+  var STALE_SESSION_CODES = /* @__PURE__ */ new Set([
+    "assessmentSessions.sessionNotFound",
+    "assessmentSessions.sessionNotLive",
+    "assessmentAttempts.sessionNotFound",
+    "assessmentAttempts.sessionNotLive"
+  ]);
+  var STALE_SESSION_MESSAGE = "This quiz was already submitted in another tab or window, so these answers were not submitted. Close the other tabs for this assignment, then go back to My Science and open the assignment again.";
+  function platformErrorCode(err) {
+    if (err === null || typeof err !== "object") return void 0;
+    const details = err.details;
+    if (details === null || typeof details !== "object") return void 0;
+    const code = details.code;
+    return typeof code === "string" ? code : void 0;
+  }
+  function finalizeFailureMessage(err) {
+    const platformCode = platformErrorCode(err);
+    if (platformCode !== void 0 && STALE_SESSION_CODES.has(platformCode)) {
+      return STALE_SESSION_MESSAGE;
+    }
+    const message = err?.message;
+    return typeof message === "string" ? message : "submission failed";
   }
   var NOT_READY_MESSAGE = "Your submission service isn't ready yet. Refresh the page and try again.";
   function safeErrorEnvelope(err) {
@@ -8414,8 +8557,12 @@
     } catch {
     }
   }
+  function supersededSubmission() {
+    return new Promise(() => void 0);
+  }
   function installLessonQuiz(win, runtime, hasAssignmentContext, restoreGuard = { restoring: false }) {
     const mapSelections = (indexSelections) => mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win)));
+    let attemptGeneration = 0;
     const helper = {
       version: VERSION,
       optionLetters: OPTION_LETTERS,
@@ -8424,6 +8571,15 @@
       autosave: async (indexSelections) => {
         if (runtime === null || !runtime.hasAssignmentContext) return null;
         if (restoreGuard.restoring) return null;
+        if (runtime.hasSubmittedAttempt()) {
+          attemptGeneration += 1;
+          try {
+            await runtime.restart();
+          } catch (err) {
+            recordLastError(win, "begin", err);
+            return null;
+          }
+        }
         let responses;
         try {
           responses = mapSelections(indexSelections);
@@ -8459,17 +8615,19 @@
         const writtenResponse = normalizeWrittenResponse(options);
         const deliveryNav = win[NAMESPACE]?.deliveryNavigation;
         deliveryNav?.finalizeStarted?.();
+        const generation = attemptGeneration;
         try {
           const result = await runtime.finalize(responses, writtenResponse);
           deliveryNav?.finalizeSettled?.(true);
+          if (generation !== attemptGeneration) return supersededSubmission();
           return { ok: true, result };
         } catch (err) {
           deliveryNav?.finalizeSettled?.(false);
           recordLastError(win, "finalize", err);
-          const message = err.message;
+          if (generation !== attemptGeneration) return supersededSubmission();
           return {
             ok: false,
-            message: typeof message === "string" ? message : "submission failed",
+            message: finalizeFailureMessage(err),
             recoverable: isRecoverableFirebaseError(err)
           };
         }
@@ -8499,9 +8657,6 @@
       return null;
     }
     return null;
-  }
-  function isEmulatorHost2(win) {
-    return isEmulatorHost(win);
   }
   function waitForUser(auth) {
     return new Promise((resolve, reject) => {
@@ -8742,13 +8897,16 @@
     const app = existingApp ?? initializeApp(getFirebaseClientConfig(win));
     const auth = getAuth(app);
     const functions = getFunctions(app);
-    if (isEmulatorHost2(win)) {
+    const emulators = getEmulatorEndpoints(win);
+    if (emulators !== null) {
       try {
-        connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+        connectAuthEmulator(auth, `http://${emulators.auth.host}:${emulators.auth.port}`, {
+          disableWarnings: true
+        });
       } catch {
       }
       try {
-        connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        connectFunctionsEmulator(functions, emulators.functions.host, emulators.functions.port);
       } catch {
       }
     }

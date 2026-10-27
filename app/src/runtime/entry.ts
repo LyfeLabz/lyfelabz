@@ -8,7 +8,7 @@ import {
 } from "firebase/functions";
 import type { Functions } from "firebase/functions";
 
-import { createAssessmentRuntime } from "./orchestrator";
+import { createAssessmentRuntime, isRecoverableCallableError } from "./orchestrator";
 import type { AssessmentRuntime } from "./orchestrator";
 import { detectLaunchRef } from "./launchParams";
 import type {
@@ -511,16 +511,37 @@ function normalizeWrittenResponse(options: unknown): string | undefined {
 // Non-recoverable errors surface `{ok:false,recoverable:false}` so the
 // lesson can move on. Neither branch throws; lessons never need try/catch.
 function isRecoverableFirebaseError(err: unknown): boolean {
-  if (err === null || typeof err !== "object") return false;
-  const code = (err as { code?: unknown }).code;
-  if (typeof code !== "string") return false;
-  return (
-    code === "unavailable" ||
-    code === "internal" ||
-    code === "deadline-exceeded" ||
-    code === "resource-exhausted" ||
-    code === "cancelled"
-  );
+  return isRecoverableCallableError(err);
+}
+
+// The session this page was answering no longer accepts answers: another tab
+// or window submitted it (a committed finalize deletes the session) or it is
+// no longer Live. The platform code travels in `HttpsError.details.code`.
+const STALE_SESSION_CODES: ReadonlySet<string> = new Set([
+  "assessmentSessions.sessionNotFound",
+  "assessmentSessions.sessionNotLive",
+  "assessmentAttempts.sessionNotFound",
+  "assessmentAttempts.sessionNotLive",
+]);
+
+const STALE_SESSION_MESSAGE =
+  "This quiz was already submitted in another tab or window, so these answers were not submitted. Close the other tabs for this assignment, then go back to My Science and open the assignment again.";
+
+function platformErrorCode(err: unknown): string | undefined {
+  if (err === null || typeof err !== "object") return undefined;
+  const details = (err as { details?: unknown }).details;
+  if (details === null || typeof details !== "object") return undefined;
+  const code = (details as { code?: unknown }).code;
+  return typeof code === "string" ? code : undefined;
+}
+
+function finalizeFailureMessage(err: unknown): string {
+  const platformCode = platformErrorCode(err);
+  if (platformCode !== undefined && STALE_SESSION_CODES.has(platformCode)) {
+    return STALE_SESSION_MESSAGE;
+  }
+  const message = (err as { message?: unknown } | null)?.message;
+  return typeof message === "string" ? message : "submission failed";
 }
 
 // Sentinel error surfaced to the lesson UI when the runtime is not yet
@@ -597,6 +618,14 @@ function recordLastError(
   }
 }
 
+// The student already started a new attempt while this submission was in
+// flight. Its outcome belongs to the discarded attempt, so the lesson's
+// handler is never called: it would otherwise write that outcome over the new
+// attempt's quiz. The attempt itself is recorded (or not) on the server.
+function supersededSubmission(): Promise<never> {
+  return new Promise<never>(() => undefined);
+}
+
 // The shim-owned student navigation state (assets/lyfelabz-assessment-runtime.js).
 type DeliveryNavigationState = {
   finalizeStarted?: () => void;
@@ -613,6 +642,13 @@ function installLessonQuiz(
   // runtime that loads before the page finishes parsing still sees the block.
   const mapSelections = (indexSelections: ReadonlyArray<number | null | undefined>) =>
     mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win)));
+  // New attempts. Every lesson locks its answers once Submit is pressed and only
+  // unlocks them by rebuilding the quiz (Try Again), so an answer arriving
+  // after a submission is the first answer of a new attempt. The adapter then
+  // restarts the runtime (a new session and idempotency key) before saving it,
+  // and the earlier submission's pending outcome is dropped rather than
+  // reported over the new attempt. No lesson markup or script changes.
+  let attemptGeneration = 0;
   const helper: LessonQuizGlobal = {
     version: VERSION,
     optionLetters: OPTION_LETTERS,
@@ -622,6 +658,16 @@ function installLessonQuiz(
     autosave: async (indexSelections) => {
       if (runtime === null || !runtime.hasAssignmentContext) return null;
       if (restoreGuard.restoring) return null;
+      if (runtime.hasSubmittedAttempt()) {
+        attemptGeneration += 1;
+        try {
+          await runtime.restart();
+        } catch (err) {
+          // The new attempt could not begin; finalize reports the cause.
+          recordLastError(win, "begin", err);
+          return null;
+        }
+      }
       let responses: readonly SessionResponse[];
       try {
         responses = mapSelections(indexSelections);
@@ -668,17 +714,19 @@ function installLessonQuiz(
       // unfinished so Back to My Science still warns.
       const deliveryNav = win[NAMESPACE]?.deliveryNavigation;
       deliveryNav?.finalizeStarted?.();
+      const generation = attemptGeneration;
       try {
         const result = await runtime.finalize(responses, writtenResponse);
         deliveryNav?.finalizeSettled?.(true);
+        if (generation !== attemptGeneration) return supersededSubmission();
         return { ok: true, result };
       } catch (err) {
         deliveryNav?.finalizeSettled?.(false);
         recordLastError(win, "finalize", err);
-        const message = (err as { message?: unknown }).message;
+        if (generation !== attemptGeneration) return supersededSubmission();
         return {
           ok: false,
-          message: typeof message === "string" ? message : "submission failed",
+          message: finalizeFailureMessage(err),
           recoverable: isRecoverableFirebaseError(err),
         };
       }
