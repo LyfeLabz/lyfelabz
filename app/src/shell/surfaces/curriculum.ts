@@ -48,7 +48,7 @@ import type { TeacherUnit, TeacherUnitGrade } from "../../teacherUnits/types";
 import { unitColorKey } from "../../teacherUnits/unitColor";
 import { getFlatResourceById } from "../../curriculum/resourceProjection";
 import { curriculumSelectionFor, isSelectableResourceId, type CurriculumSelection } from "./curriculumSelection";
-import { openAddToUnitDialog, teacherUnitsSurfaceEnabled, type AddToUnitOutcome } from "./teacherUnitsPanel";
+import { openAddToUnitDialog, teacherUnitsSurfaceEnabled, teacherUnitsActionsEnabled, type AddToUnitOutcome } from "./teacherUnitsPanel";
 import type { MyUnitsOpenUnitIntent } from "./myUnits";
 import { buildResourceCard, buildLessonPreviewLink } from "./resourceCard";
 import { mintAssignmentId } from "./shared/assignmentId";
@@ -1375,6 +1375,7 @@ export function renderCurriculumSurface(
   lessonsPanel.className = "shell-curriculum-lessons-panel";
   // Milestone 2A: the resource selection, only while My Units is available.
   const unitsSeam = deps.teacherUnits ?? null;
+  if (unitsSeam !== null && teacherUnitsSurfaceEnabled(unitsSeam)) void unitsSeam.capability?.enter("curriculum");
   const selection: CurriculumSelection | null =
     unitsSeam !== null && teacherUnitsSurfaceEnabled(unitsSeam)
       ? curriculumSelectionFor(unitsSeam, session.uid)
@@ -1531,6 +1532,7 @@ export function renderCurriculumSurface(
       doc,
       view: curriculumView,
       controller: unitsController,
+      seam: unitsSeam,
       openMyUnits: deps.openMyUnits ?? null,
     }).render;
     const bar = renderSelectionBar({
@@ -1633,6 +1635,7 @@ export function renderCurriculumSurface(
 // requested per card. Returning to this browser tab re-reads it, at most
 // once per 30 seconds, like My Units.
 type UnitMembershipInput = {
+  readonly seam: TeacherUnitsSurfaceSeam;
   readonly doc: Document;
   readonly view: HTMLElement;
   readonly controller: TeacherUnitsController;
@@ -1727,6 +1730,17 @@ function createUnitMembership(input: UnitMembershipInput): { readonly render: ()
       dispose();
       return;
     }
+    if (!teacherUnitsActionsEnabled(input.seam.capability)) {
+      for (const p of Array.from(view.querySelectorAll<HTMLElement>(".shell-resource-unit-pill"))) {
+        p.setAttribute("aria-disabled", "true");
+        if (p instanceof HTMLButtonElement) p.disabled = true;
+      }
+      return;
+    }
+    for (const p of Array.from(view.querySelectorAll<HTMLElement>(".shell-resource-unit-pill"))) {
+      p.removeAttribute("aria-disabled");
+      if (p instanceof HTMLButtonElement) p.disabled = false;
+    }
     if (!ready) return;
     const byResource = new Map<string, TeacherUnit[]>();
     for (const u of controller.activeUnits()) {
@@ -1748,6 +1762,7 @@ function createUnitMembership(input: UnitMembershipInput): { readonly render: ()
   };
 
   const read = (): void => {
+    if (!teacherUnitsActionsEnabled(input.seam.capability)) return;
     lastRead = Date.now();
     const mine = ++seq;
     void controller.loadActiveUnits().then((ok) => {
@@ -1764,11 +1779,19 @@ function createUnitMembership(input: UnitMembershipInput): { readonly render: ()
   };
 
   const unsubscribe = controller.subscribe(render);
+  const unsubscribeCapability = input.seam.capability?.subscribe(() => {
+    render();
+    if (!ready && teacherUnitsActionsEnabled(input.seam.capability)) read();
+  }) ?? (() => undefined);
   doc.addEventListener("visibilitychange", onVisibility);
+  const observer = new MutationObserver(() => { if (!view.isConnected && wasConnected) dispose(); });
+  observer.observe(doc, { childList: true, subtree: true });
   const dispose = (): void => {
     if (disposed) return;
     disposed = true;
     unsubscribe();
+    unsubscribeCapability();
+    observer.disconnect();
     doc.removeEventListener("visibilitychange", onVisibility);
     controller.dispose();
   };
@@ -1923,15 +1946,18 @@ function renderSelectionBar(input: SelectionBarInput): {
     Array.from(view.querySelectorAll<HTMLInputElement>("input[type=checkbox][data-resource-id]"));
 
   const update = (): void => {
+    const enabled = teacherUnitsActionsEnabled(input.seam.capability);
+    add.disabled = !enabled;
     const size = selection.size();
     let shown = 0;
     for (const box of checkboxes()) {
+      box.disabled = !enabled;
       const id = box.getAttribute("data-resource-id") ?? "";
       const on = selection.has(id);
       if (box.checked !== on) box.checked = on;
       if (on && box.closest("[hidden]") === null) shown += 1;
     }
-    setBarActive(size > 0);
+    setBarActive(size > 0 && enabled);
     const hidden = size - shown;
     const text = size === 0 ? "" : `${size} selected${hidden > 0 ? ` (${hidden} not shown)` : ""}`;
     // Only real changes are written, so the polite region is not re-announced.
@@ -1978,6 +2004,8 @@ function renderSelectionBar(input: SelectionBarInput): {
   };
 
   add.addEventListener("click", () => {
+    void input.seam.capability?.revalidate();
+    if (!teacherUnitsActionsEnabled(input.seam.capability)) return;
     const ids = selection.ids();
     if (ids.length === 0) return;
     openAddToUnitDialog(doc, {
@@ -2016,6 +2044,23 @@ function renderSelectionBar(input: SelectionBarInput): {
     input.focusAfterClear().focus();
   });
 
+  const unsubscribeCapability = input.seam.capability?.subscribe(() => {
+    if (!view.isConnected) { unsubscribeCapability(); return; }
+    update();
+  }) ?? (() => undefined);
+  const observer = new MutationObserver(() => {
+    if (!view.isConnected) { unsubscribeCapability(); unsubscribe(); observer.disconnect(); }
+  });
+  observer.observe(doc, { childList: true, subtree: true });
+  // Capture prevents a synthetic change on a closed checkbox from changing selection.
+  view.addEventListener("change", (event) => {
+    if (teacherUnitsActionsEnabled(input.seam.capability)) return;
+    if (!(event.target instanceof HTMLInputElement) || !event.target.matches("input[type=checkbox][data-resource-id]")) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    update();
+    void input.seam.capability?.revalidate();
+  }, true);
   dock.append(region, notice);
   return { dock, update };
 }

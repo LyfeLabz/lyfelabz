@@ -1,5 +1,50 @@
 # U2.6 A3 contracts — A3-1
 
+## Current status and supersession (October 26, 2026)
+
+Current local architecture: [Option B blueprint](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md)
+and [trusted-operator ADR](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md).
+Use [Teacher Units](TEACHER_UNITS.md) for the active feature contract and the
+[release-readiness runbook](U2_6_RELEASE_READINESS_RUNBOOK.md) for operator and
+release gates. The B1h integrated review handoff is recorded in the blueprint.
+
+Option B replaces active signed-release/evidence-graph authorization with a
+server-only schema-2 availability policy, clean schema-2 backend build identity,
+`teacher-units-v3` capability schema 3 and mutation envelope schema 2. The backend
+remains authoritative and fails closed for missing, invalid, closed, unreadable
+or incompatible policy/runtime state. Policy instance, generation, exact target
+and placement remain bound; there is no runtime activation lease.
+
+Historical Ed25519 approvals, artifact-pinned keys, KMS custody, signed manifests
+and certification records below retain their original meaning for the A3 design
+and archived inspection/replay. They are not active Option B runtime authority,
+an authorization fallback, or mandatory My Units signing/key-project launch work.
+Retaining a historical module or its `a3-` filename does not restore that authority.
+
+This is local implementation documentation, not independent security acceptance,
+provider/IAM verification, deployed Rules certification, deployment or activation.
+The source/general client gate remains closed. An explicit target/origin-bound
+policy-capable compiler profile still requires backend-enabled availability.
+Real-project enable remains interlocked in the operator CLI and controller;
+read-only pre-enable validation does not remove it. Independent integrated review
+and separately authorized staging, production and activation gates remain.
+
+### Current contract routing
+
+Active policy/transition validation is
+[`availability-policy.ts`](../../platform/functions/src/teacherUnits/availability-policy.ts).
+Active protocol definitions are
+[`availability-protocol.ts`](../../platform/functions/src/teacherUnits/availability-protocol.ts)
+and the standalone client
+[`availabilityProtocol.ts`](../../app/src/teacherUnits/availabilityProtocol.ts).
+Legacy schema-1 policy/build evidence and v2 discovery/envelopes below stay
+historical; they cannot satisfy the active v3/schema-2 parsers. Stable canonical
+encoding and strict parsing helpers may be reused without inheriting signed
+release authority. Existing domain receipt identity, revision checks, tenant
+isolation, no-op/replay behavior and atomic domain audits remain required.
+
+## Historical A3 record (preserved)
+
 Status: pure contracts and validation only. Teacher Units remains closed by the
 existing application/build gate. No policy or release record is created by these
 modules. At A3-1 certification, A3 server enforcement was not connected and A2

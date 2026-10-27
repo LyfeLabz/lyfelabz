@@ -72,3 +72,22 @@ test("injected seam cannot add My Units to a closed release", () => {
   expect(createController).not.toHaveBeenCalled();
   shellMount.remove();
 });
+
+
+test("source availability remains closed on approved origins and with injected runtime flags", () => {
+  const original = window.location;
+  const flags = globalThis as typeof globalThis & { TEACHER_UNITS_ENABLED?: boolean; teacherUnitsReleaseIntent?: string };
+  flags.TEACHER_UNITS_ENABLED = true;
+  flags.teacherUnitsReleaseIntent = "teacher-units";
+  try {
+    for (const origin of ["https://app.lyfelabz.com", "https://lyfelabz-staging.web.app", "https://preview.example"]) {
+      Object.defineProperty(window, "location", { configurable: true, value: { origin } });
+      expect(teacherUnitsAvailable()).toBe(false);
+      expect(requireTeacherUnitsAvailable).toThrow("unavailable");
+    }
+  } finally {
+    Object.defineProperty(window, "location", { configurable: true, value: original });
+    delete flags.TEACHER_UNITS_ENABLED;
+    delete flags.teacherUnitsReleaseIntent;
+  }
+});

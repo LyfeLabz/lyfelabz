@@ -48,6 +48,7 @@ function hostingCandidate(pair, root = repositoryRoot) {
   return candidate;
 }
 function releaseCandidate(pair, root = repositoryRoot) {
+  if (pair?.backendFormat === OPTION_B_FORMAT) return optionBCandidate(pair, root);
   return releaseIntent(pair?.releaseIntent) === 'teacher-units' ? localCandidate(pair, root) : hostingCandidate(pair, root);
 }
 const MAX_AGE_MS = 5 * 60 * 1000;
@@ -369,7 +370,9 @@ function assertCompatible(candidate, evidence, now) {
   if (!evidence.indexes?.configuration || fingerprint(evidence.indexes.configuration) !== evidence.indexes.configurationHash || canonical(candidate.indexes) !== canonical(evidence.indexes.configuration)) refuse('index identity uncertain or incompatible');
   return { policy: 'u26-a1-exact-backend-artifact-v1', compatible: true };
 }
-async function verifyBackend({ project, pair, get, token, fetchImpl, run, unpack, now, root } = {}) {
+async function verifyBackend(options = {}) {
+  const { project, pair, get, token, fetchImpl, run, unpack, now, root } = options;
+  if (pair?.backendFormat === OPTION_B_FORMAT) return verifyOptionBBackend(options);
   environmentForProject(project); // before credentials, network, or filesystem reads
   const candidate = localCandidate(pair, root);
   if (environmentForProject(project).name === 'production' && candidate.source.dirty !== false) refuse('production candidate must be built from a clean checkout');
@@ -378,7 +381,9 @@ async function verifyBackend({ project, pair, get, token, fetchImpl, run, unpack
   const compatibility = assertCompatible(candidate, evidence, now?.());
   return { candidate, evidence, compatibility };
 }
-function receipt({ phase, project, intent, candidate, evidence, hosting, recordedAt = new Date().toISOString() }) {
+function receipt(options) {
+  const { phase, project, intent, candidate, evidence, hosting, recordedAt = new Date().toISOString() } = options;
+  if (candidate?.kind === OPTION_B_CANDIDATE) return optionBReceipt({...options, recordedAt});
   assertIntentForProject(intent, project);
   if (!['prepared','certified'].includes(phase) || candidate?.releaseIntent !== intent) refuse('unknown release receipt phase or mismatched intent');
   if (candidate.availabilityEvidence !== 'build-contract-assertion' || candidate.teacherUnitsAvailability !== expectedAvailability(intent) || !/^[a-f0-9]{64}$/.test(candidate.applicationBuildFingerprint || '')) refuse('missing, unknown or enabled availability candidate evidence');
@@ -398,6 +403,7 @@ function receipt({ phase, project, intent, candidate, evidence, hosting, recorde
 // Prepare records bind explicit scope, candidate and rollback observations.
 // Neither a historical backend observation nor a baseline is current authority.
 function verifyPrepared(prepared, project, candidate, now = new Date().toISOString()) {
+  if (candidate?.kind === OPTION_B_CANDIDATE) return verifyOptionBPrepared(prepared, project, candidate, now);
   const environment = environmentForProject(project);
   const intent = assertIntentForProject(candidate?.releaseIntent, project);
   const r = prepared?.evidenceReceipt;
@@ -419,7 +425,128 @@ function verifyPrepared(prepared, project, candidate, now = new Date().toISOStri
     if (prepared.surfaces[target].site !== expectedSite) refuse('wrong-project rollback site');
   }
 }
-module.exports = { PROJECT_NUMBERS, REQUIRED_FUNCTIONS, LIMITS, MAX_AGE_MS, MAX_PREPARE_AGE_MS, canonical, fingerprint, localCandidate,
+// Explicit current-format route. Historical eight-endpoint comparison above
+// remains unchanged and never converts an old receipt into Option B authority.
+const OPTION_B_FORMAT = 'teacher-units-option-b-v1';
+const OPTION_B_CANDIDATE = 'lyfelabz.teacherUnitsOptionBCandidate';
+const OPTION_B_RECEIPT = 'lyfelabz.teacherUnitsOptionBReleaseReceipt';
+function optionBTarget(project) {
+  const environment = environmentForProject(project);
+  return {projectId:project, environment:environment.name, origin:environment.origins.app};
+}
+function optionBCandidate(pair, root = repositoryRoot) {
+  if (pair?.backendFormat !== OPTION_B_FORMAT || pair.releaseIntent !== 'teacher-units' ||
+      canonical(pair.target) !== canonical(optionBTarget(pair.target?.projectId)) ||
+      !/^[a-f0-9]{40}$/.test(pair.source?.sha || '') || typeof pair.source?.dirty !== 'boolean' ||
+      !pair.files?.app || !pair.files?.marketing) refuse('invalid Option B pair target/source');
+  let build;
+  try {
+    build = JSON.parse(execFileSync(process.execPath,[path.join(__dirname,'../../app/scripts/build-application.cjs'),
+      '--verify',root,'teacher-units',pair.target.projectId,pair.target.environment,pair.target.origin],
+      {encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:120000,maxBuffer:8*1024*1024}));
+  } catch { refuse('unverifiable Option B controlled application build'); }
+  if (build.schemaVersion !== 2 || build.releaseIntent !== 'teacher-units' || build.availability !== 'server-policy-required' ||
+      build.runtimeAvailability !== 'not-certified' || build.availabilityEvidence !== 'build-contract-assertion' ||
+      canonical(build.policyTarget) !== canonical(pair.target) ||
+      pair.files.app['app/dist/bundle.js'] !== build.outputs?.['app/dist/bundle.js'] ||
+      pair.files.app['app/index.html'] !== build.inputs?.['app/index.html']) refuse('Option B compiler target/outputs incompatible');
+  const artifact = require('../../platform/functions/lib/teacherUnits/availability-runtime-build.js')
+    .inspectAvailabilityRuntimeArtifact(path.join(root,'platform/functions'));
+  if (artifact.build.deploymentMode !== 'policy-controlled' || artifact.build.sourceDirty !== false ||
+      artifact.build.sourceSha !== pair.source.sha || pair.source.dirty !== false || artifact.placementFingerprint !== pair.unitPlacement?.fingerprint)
+    refuse('Option B requires exact clean policy-controlled backend build');
+  return {kind:OPTION_B_CANDIDATE,schemaVersion:1,protocolVersion:'teacher-units-v3',projectId:pair.target.projectId,
+    projectNumber:PROJECT_NUMBERS[pair.target.projectId],environment:pair.target.environment,databaseId:'(default)',
+    source:pair.source,backendBuildId:artifact.build.backendBuildId,
+    hostingArtifactFingerprint:fingerprint(pair.files),placementFingerprint:artifact.placementFingerprint,
+    rulesSourceHash:sha256(fs.readFileSync(path.join(root,'platform/firebase/firestore.rules'))),
+    functionsArtifactFingerprint:artifact.functionsArtifactFingerprint,runtimeFiles:artifact.runtimeFiles,
+    indexes:normalizeLocalIndexes(JSON.parse(fs.readFileSync(path.join(root,'platform/firebase/firestore.indexes.json'),'utf8'))),
+    applicationBuildFingerprint:fingerprint(build),releaseIntent:'teacher-units',teacherUnitsAvailability:'server-policy-required',
+    availabilityEvidence:'build-contract-assertion'};
+}
+async function verifyOptionBBackend({project,pair,get,unpack,now,root,rulesApproval,rulesReport,approvalDigest,configurationApproval,token,fetchImpl,run} = {}) {
+  environmentForProject(project);
+  if (pair?.target?.projectId !== project) refuse('Option B target mismatch');
+  if (!rulesApproval || !rulesReport || !/^[a-f0-9]{64}$/.test(approvalDigest || '') || !configurationApproval)
+    refuse('Option B approved Rules/configuration evidence required before provider access');
+  if (require('../teacher-units-release/option-b-rules-evidence.cjs').parseApproval(rulesApproval).schemaVersion !== 2 ||
+      configurationApproval.schemaVersion !== 2) refuse('E2 source-scoped Rules and deployment configuration required');
+  const candidate = optionBCandidate(pair,root);
+  if (environmentForProject(project).name === 'production' && candidate.source.dirty !== false) refuse('production requires clean checkout');
+  if (canonical(pair.backendCandidate) !== canonical(candidate)) refuse('Option B candidate changed since pair build');
+  const observer = require('../teacher-units-release/option-b-observation.cjs');
+  const evidence = await observer.inspectOptionB({project,get:get || readApi({token:token || tokenFromGcloud(run),fetchImpl}),unpack,now,plan:configurationApproval});
+  const compatibility = observer.assertCompatible(candidate,evidence,{rulesApproval,rulesReport,approvalDigest,configurationApproval,now:now?.()});
+  return {candidate,evidence,compatibility,rulesApproval,rulesReport,approvalDigest,configurationApproval};
+}
+// Current Option B receipts use the actual prepare/certify producer contracts.
+// Historical receipt formats above remain inspection-only for Option B.
+function validateOptionBHosting(hosting, phase, project, recordedAt) {
+  const utc=(value,label)=>{
+    if (typeof value !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3}(?:\d{3})?(?:\d{3})?)?Z$/.test(value) ||
+        !Number.isFinite(Date.parse(value)) || new Date(Date.parse(value)).toISOString().slice(0,19)!==value.slice(0,19)) refuse(`${label} timestamp missing or invalid`);
+    return Date.parse(value);
+  };
+  const at=utc(recordedAt,'receipt'), sites=require('./contract.cjs').readTargetSites(project);
+  const version=v=>typeof v==='string' && /^[a-f0-9]+$/.test(v);
+  const count=v=>Number.isSafeInteger(v) && v>=0;
+  if (!hosting || typeof hosting!=='object' || Array.isArray(hosting) || Object.keys(hosting).sort().join(',')!=='app,marketing') refuse('paired Hosting records required');
+  for (const target of ['app','marketing']) {
+    const h=hosting[target];
+    if (!h || typeof h!=='object' || Array.isArray(h) || h.site!==sites[target]) refuse('wrong-project or missing Hosting site');
+    if (phase==='prepared') {
+      if (!version(h.baseline?.version) || utc(h.baseline.releaseTime,'Hosting baseline')>at) refuse('missing rollback baseline or future timestamp');
+    } else {
+      if (!version(h.version) || !version(h.previous) || h.version===h.previous) refuse('missing or inconsistent Hosting version/rollback reference');
+      if (utc(h.releaseTime,'Hosting release')>at) refuse('future Hosting release');
+      if (!h.bytes || !count(h.bytes.matched) || h.bytes.matched<1 || !count(h.bytes.redirected)) refuse('missing or invalid certification byte checks');
+    }
+  }
+}
+function optionBReceipt({phase,project,intent,candidate,evidence,hosting,rulesApproval,rulesReport,approvalDigest,configurationApproval,recordedAt}) {
+  assertIntentForProject(intent,project);
+  if (!['prepared','certified'].includes(phase) || intent !== 'teacher-units' || candidate.projectId !== project ||
+      candidate.teacherUnitsAvailability !== 'server-policy-required' || candidate.releaseIntent !== intent ||
+      !hosting?.app || !hosting?.marketing) refuse('invalid Option B receipt scope');
+  validateOptionBHosting(hosting,phase,project,recordedAt);
+  if (canonical(configurationApproval) !== canonical(evidence?.configurationApproval)) refuse('Option B configuration approval differs from observation');
+  const observation = require('../teacher-units-release/option-b-observation.cjs');
+  // Explicit historical reconstruction only. Active prepare/predeploy/enable
+  // require schema 2; rebuilding an old receipt never qualifies a new release.
+  const compare = evidence?.schemaVersion === 1 ? observation.historical.assertCompatible : observation.assertCompatible;
+  const compatibility = compare(candidate,evidence,
+    {rulesApproval,rulesReport,approvalDigest,configurationApproval,now:recordedAt});
+  // Raw report bytes retain the exact approved digest through receipt replay.
+  if (Buffer.isBuffer(rulesApproval)) rulesApproval = rulesApproval.toString('utf8');
+  if (Buffer.isBuffer(rulesReport)) rulesReport = rulesReport.toString('utf8');
+  return stable({kind:OPTION_B_RECEIPT,schemaVersion:evidence.schemaVersion,phase,recordedAt,project,
+    environment:environmentForProject(project).name,releaseIntent:intent,candidate,backend:evidence,compatibility,
+    rulesApproval,rulesReport,approvalDigest,configurationApproval,hosting,teacherUnitsReadiness:'compatible-backend-observed-policy-required',
+    activation:'not-approved',availability:'not-verified',fleetVerification:'not-performed',
+    authority:'historical observation only; independent current pre-enable verification required'});
+}
+function verifyOptionBPrepared(prepared,project,candidate,now) {
+  const environment = environmentForProject(project), r = prepared?.evidenceReceipt;
+  if (prepared?.kind !== 'lyfelabz.hostingPreparedRelease' || prepared.schemaVersion !== 3 ||
+      prepared.project !== project || prepared.environment !== environment.name || prepared.releaseIntent !== 'teacher-units' ||
+      canonical(prepared.source) !== canonical(candidate.source) || canonical(prepared.candidate) !== canonical(candidate) ||
+      r?.kind !== OPTION_B_RECEIPT || r.schemaVersion !== 2 || r.phase !== 'prepared' ||
+      r.project !== project || canonical(r.candidate) !== canonical(candidate)) refuse('missing or changed current Option B prepare evidence');
+  const preparedTime=timestamp(prepared.preparedAt,'prepared'), current=timestamp(now,'current');
+  if (preparedTime > current || current-preparedTime > MAX_PREPARE_AGE_MS || timestamp(r.recordedAt,'receipt') > preparedTime ||
+      preparedTime-timestamp(r.recordedAt,'receipt') > MAX_AGE_MS) refuse('stale Option B preparation');
+  const expected=optionBReceipt({phase:'prepared',project,intent:'teacher-units',candidate,evidence:r.backend,hosting:prepared.surfaces,
+    rulesApproval:r.rulesApproval,rulesReport:r.rulesReport,approvalDigest:r.approvalDigest,configurationApproval:r.configurationApproval,recordedAt:r.recordedAt});
+  if (canonical(expected) !== canonical(r)) refuse('Option B Rules approval or rollback receipt changed');
+  for (const target of ['app','marketing']) {
+    const surface=prepared.surfaces[target];
+    if (surface?.site !== require('./contract.cjs').readTargetSites(project)[target] ||
+        !/^[a-f0-9]+$/.test(surface.baseline?.version || '') || timestamp(surface.baseline.releaseTime,'baseline') > preparedTime)
+      refuse('missing or wrong-project paired rollback baseline');
+  }
+}
+module.exports = { OPTION_B_FORMAT, OPTION_B_CANDIDATE, OPTION_B_RECEIPT, optionBTarget, optionBCandidate, verifyOptionBBackend, optionBReceipt, verifyOptionBPrepared, PROJECT_NUMBERS, REQUIRED_FUNCTIONS, LIMITS, MAX_AGE_MS, MAX_PREPARE_AGE_MS, canonical, fingerprint, localCandidate,
   releaseIntent, assertIntentForProject, STAGING_UX_TEST_INTENT, hostingCandidate, releaseCandidate, list, normalizeLocalIndexes, normalizeRemoteIndexes, tokenFromGcloud, readApi, archiveRuntime, inspectBackend,
   assertFresh, assertCompatible, verifyBackend, receipt, verifyPrepared,
   // Export-only (A3-6 S4 reuse); behavior unchanged.

@@ -57,22 +57,25 @@ function hashInventory(directory) {
   return Object.fromEntries(artifactFiles(directory).map((file) => [file, sha256(fs.readFileSync(path.join(directory, file)))]));
 }
 
-function buildPair({ intent, runBundleBuild = true, runFunctionsBuild = true, log = console.log, placementParity = assertUnitPlacementParity } = {}) {
+function buildPair({ intent, target, runBundleBuild = true, runFunctionsBuild = true, log = console.log, placementParity = assertUnitPlacementParity } = {}) {
+  if (target && (intent !== 'teacher-units' || require('./backend-state.cjs').canonical(target) !==
+      require('./backend-state.cjs').canonical(require('./backend-state.cjs').optionBTarget(target.projectId))))
+    throw new Error('[hosting-release] invalid explicit Option B build target');
   const config = readConfigFile(productionConfigFile);
   const targets = readHostingTargets(config);
   assertCatalogCurrent();
   const unitPlacement = placementParity();
   require('./backend-state.cjs').releaseIntent(intent);
   if (runBundleBuild) {
-    // Same controlled builder used by npm app build. Only the staging-only
-    // 'staging-ux-test' intent changes availability (origin-gated); tooling
-    // refuses that intent for production.
-    execFileSync(process.execPath, [path.join(repositoryRoot, 'app/scripts/build-application.cjs'), '--build', repositoryRoot, intent], { cwd:repositoryRoot, stdio:['ignore','ignore','inherit'] });
+    // General stays closed. The explicit target-bound Option B profile is
+    // policy-capable only; backend eligibility remains authoritative.
+    execFileSync(process.execPath, [path.join(repositoryRoot, 'app/scripts/build-application.cjs'), '--build', repositoryRoot, intent, ...(target ? [target.projectId,target.environment,target.origin] : [])], { cwd:repositoryRoot, stdio:['ignore','ignore','inherit'] });
   }
   if (intent === 'teacher-units' && runFunctionsBuild) {
     // Rebuild the packaged runtime locally, without deploying Functions.
     fs.rmSync(path.join(repositoryRoot, 'platform/functions/lib'), { recursive: true, force: true });
-    execFileSync(FUNCTIONS_BUILD[0], FUNCTIONS_BUILD[1], { cwd: repositoryRoot, stdio: 'inherit' });
+    execFileSync(FUNCTIONS_BUILD[0], FUNCTIONS_BUILD[1], { cwd: repositoryRoot, stdio: 'inherit',
+      env:{...process.env,A3_BUILD_PROFILE:target ? 'policy-controlled' : '',A3_EXPECTED_SOURCE_SHA:target ? gitSource().sha : ''} });
   }
   const appDirectory = path.join(repositoryRoot, targets.app.public);
   const marketingDirectory = path.join(repositoryRoot, targets.marketing.public);
@@ -89,6 +92,9 @@ function buildPair({ intent, runBundleBuild = true, runFunctionsBuild = true, lo
     pair,
     files: { app: hashInventory(appDirectory), marketing: hashInventory(marketingDirectory) }
   };
+  if (intent === 'teacher-units' && target) {
+    record.backendFormat = require('./backend-state.cjs').OPTION_B_FORMAT; record.target = target;
+  }
   record.candidate = require('./backend-state.cjs').releaseCandidate(record);
   if (intent === 'teacher-units') record.backendCandidate = record.candidate;
   fs.mkdirSync(recordDirectory, { recursive: true });
@@ -128,18 +134,21 @@ async function hostingPredeploy({ project = process.env.GCLOUD_PROJECT, build = 
   const intent = assertIntentForProject(prepared?.releaseIntent, project);
   verifyPrepared(prepared, project, prepared.candidate);
   verifyExisting({prepared, project, read, candidateFor});
-  const built = build({intent});
+  const built = build({intent,...(prepared.candidate?.kind === require('./backend-state.cjs').OPTION_B_CANDIDATE ?
+    {target:require('./backend-state.cjs').optionBTarget(project)} : {})});
   if (built.record.schemaVersion !== 3 || built.record.releaseIntent !== intent) throw new Error('[hosting-release] rebuilt pair intent/schema differs from preparation');
   const candidate = candidateFor(built.record);
   verifyPrepared(prepared, project, candidate);
   if (environmentForProject(project).name === 'production' && candidate.source.dirty !== false) throw new Error('[hosting-release] production requires a clean candidate');
   // Independently prove project/site membership even for a general release.
   const hosting = Object.fromEntries(Object.entries(readTargetSites(project)).map(([target,site]) => [target,discover({project,site})]));
-  const backend = intent === 'teacher-units' ? await verify({project,pair:built.record}) : null;
+  const backend = intent === 'teacher-units' ? await verify({project,pair:built.record,...require('./release.cjs').optionBReceiptInputs(prepared.evidenceReceipt)}) : null;
   if (intent === 'teacher-units') {
     if (!backend || canonical(backend.candidate) !== canonical(candidate)) throw new Error('[hosting-release] missing or changed Teacher Units backend candidate');
-    assertFresh(backend.evidence, project);
-    assertCompatible(candidate, backend.evidence);
+    if (candidate.kind === require('./backend-state.cjs').OPTION_B_CANDIDATE) {
+      require('../teacher-units-release/option-b-observation.cjs').assertCompatible(candidate,backend.evidence,
+        {...require('./release.cjs').optionBReceiptInputs(prepared.evidenceReceipt)});
+    } else { assertFresh(backend.evidence, project); assertCompatible(candidate, backend.evidence); }
   }
   const result = { releaseIntent:intent, candidate, hosting, backend,
     teacherUnitsReadiness:backend ? 'compatible-backend-observed' : intent === 'staging-ux-test' ? 'staging-ux-test-uncertified' : 'not-evaluated' };

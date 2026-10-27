@@ -1,5 +1,9 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   assertFails,
+  assertSucceeds,
+  initializeTestEnvironment,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
 import {
@@ -68,11 +72,32 @@ function unitDoc(teacherId: string, schoolId: string, title = "Earth Systems") {
   };
 }
 
-describe("Firestore Rules: teacherUnits/{unitId}", () => {
+// The second source is a synthetic local copy matching the documented kind of
+// drift. It is not captured deployed Rules or owner-approved equivalence proof.
+describe.each(["repository", "synthetic-missing-explicit-unit-denies"] as const)("Firestore Rules: teacherUnits/{unitId} (%s)", (sourceKind) => {
   let testEnv: RulesTestEnvironment;
 
   beforeAll(async () => {
-    testEnv = await createTestEnvironment();
+    if (sourceKind === "repository") {
+      testEnv = await createTestEnvironment();
+    } else {
+      const original = readFileSync(resolve(__dirname, "..", "firestore.rules"), "utf8");
+      let synthetic = original;
+      for (const block of [
+        "    match /teacherUnits/{unitId} {\n      allow read, write: if false;\n    }",
+        "    match /teacherUnitCreateReceipts/{receiptId} {\n      allow read, write: if false;\n    }",
+      ]) {
+        if (!synthetic.includes(block)) throw new Error("Expected explicit deny block missing from local source");
+        synthetic = synthetic.replace(block, "");
+      }
+      if (!synthetic.includes("match /{document=**}")) throw new Error("Terminal default-deny must remain");
+      const [host, port] = (process.env.FIRESTORE_EMULATOR_HOST ?? "127.0.0.1:8080").split(":");
+      if (host !== "127.0.0.1" && host !== "localhost") throw new Error("Local emulator required");
+      testEnv = await initializeTestEnvironment({
+        projectId: "lyfelabz-rules-test",
+        firestore: { host, port: Number(port), rules: synthetic },
+      });
+    }
   });
 
   afterAll(async () => {
@@ -391,6 +416,8 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
       ["platformConfig", "teacherUnitsAvailability"],
       ["teacherUnitsBackendReleases", HEX],
       ["teacherUnitsReleaseEvidence", HEX],
+      ["teacherUnitsAvailabilityHistory", "00000000-0000-4000-8000-000000000001"],
+      ["unmatchedOptionBDefaultDeny", "probe"],
       ["teacherUnits/" + UNIT_ID + "/revisions", "r1"],
       ["teacherUnits/" + UNIT_ID + "/anything", "x1"],
     ];
@@ -412,6 +439,10 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
         });
         await setDoc(doc(db, "teacherUnitsBackendReleases", HEX), { ...owned, releaseId: HEX });
         await setDoc(doc(db, "teacherUnitsReleaseEvidence", HEX), { ...owned, kind: "teacher-units-activation" });
+        await setDoc(doc(db, "teacherUnitsAvailabilityHistory", "00000000-0000-4000-8000-000000000001"), {
+          schemaVersion: 2, command: "close", generation: 2, ...owned,
+        });
+        await setDoc(doc(db, "unmatchedOptionBDefaultDeny", "probe"), { serverOnly: true });
         await setDoc(doc(db, "teacherUnits", UNIT_ID, "revisions", "r1"), { ...owned, revision: 1 });
         await setDoc(doc(db, "teacherUnits", UNIT_ID, "anything", "x1"), owned);
       });
@@ -442,6 +473,17 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
           });
         }
 
+        it("keeps existing own-profile access independent of server-only Option B records", async () => {
+          const db = caller.ctx().firestore();
+          const ownUid = caller.name === "unauthenticated" ? null :
+            caller.name.startsWith("suspended") || caller.name === "owning active teacher" ? OWNER_UID :
+            caller.name === "other teacher, same school" ? OTHER_TEACHER_UID :
+            caller.name === "teacher, different school" ? OTHER_SCHOOL_TEACHER_UID :
+            caller.name === "student" ? STUDENT_UID : ADMIN_UID;
+          if (ownUid === null) await assertFails(getDoc(doc(db, "users", OWNER_UID)));
+          else await assertSucceeds(getDoc(doc(db, "users", ownUid)));
+        });
+
         it("denies collection-group queries over every Teacher Units collection", async () => {
           const db = caller.ctx().firestore();
           for (const group of [
@@ -449,6 +491,10 @@ describe("Firestore Rules: teacherUnits/{unitId}", () => {
             "teacherUnitCreateReceipts",
             "teacherUnitsBackendReleases",
             "teacherUnitsReleaseEvidence",
+            "teacherUnitsAvailabilityHistory",
+            "platformConfig",
+            "auditEvents",
+            "unmatchedOptionBDefaultDeny",
             "revisions",
             "anything",
           ]) {

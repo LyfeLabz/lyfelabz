@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic B1a policy foundation only; no live configuration, credentials, approval verification or persistence. All transition outputs are proposals. SDK Timestamp fields use this test-only JSON codec and must be hydrated explicitly.",
+  "timestampCodec": "SDK Timestamp as exact {seconds,nanoseconds}; JSON objects are rejected by the runtime parser",
+  "target": {
+    "environment": "staging",
+    "projectId": "lyfelabz-staging",
+    "projectNumber": "293337283840",
+    "region": "us-central1",
+    "databaseId": "(default)"
+  },
+  "emulatorTarget": {
+    "environment": "emulator",
+    "projectId": "demo-option-b-test",
+    "projectNumber": "0",
+    "region": "us-central1",
+    "databaseId": "(default)"
+  },
+  "productionTarget": {
+    "environment": "production",
+    "projectId": "lyfelabz-prod",
+    "projectNumber": "182791689935",
+    "region": "us-central1",
+    "databaseId": "(default)"
+  },
+  "runtime": {
+    "identity": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)"
+    },
+    "identityCurrent": true,
+    "backendBuildId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "deploymentMode": "policy-controlled",
+    "sourceDirty": false,
+    "clientContractVersion": "teacher-units-v3",
+    "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "policies": {
+    "closed": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "schemaVersion": 2,
+      "enforcementVersion": "teacher-units-option-b-v1",
+      "policyInstanceId": "00000000-0000-4000-8000-000000000001",
+      "generation": 1,
+      "mode": "closed",
+      "approvedBackendBuildId": null,
+      "acceptedClientContractVersions": [],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "createdAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      },
+      "updatedAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      },
+      "updatedBy": {
+        "principalSubject": "operator@example.test",
+        "credentialSubject": "operator@example.test",
+        "delegationSubject": null
+      },
+      "transitionId": "00000000-0000-4000-8000-000000000010",
+      "reason": "Synthetic closed preparation",
+      "approvalRef": null,
+      "lastEnabledAt": null,
+      "lastClosedAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      }
+    },
+    "prepared": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "schemaVersion": 2,
+      "enforcementVersion": "teacher-units-option-b-v1",
+      "policyInstanceId": "00000000-0000-4000-8000-000000000001",
+      "generation": 2,
+      "mode": "closed",
+      "approvedBackendBuildId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "acceptedClientContractVersions": [],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "createdAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      },
+      "updatedAt": {
+        "seconds": 1792886401,
+        "nanoseconds": 123456789
+      },
+      "updatedBy": {
+        "principalSubject": "operator@example.test",
+        "credentialSubject": "operator@example.test",
+        "delegationSubject": null
+      },
+      "transitionId": "00000000-0000-4000-8000-000000000011",
+      "reason": "Synthetic closed preparation",
+      "approvalRef": null,
+      "lastEnabledAt": null,
+      "lastClosedAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      }
+    },
+    "enabled": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "schemaVersion": 2,
+      "enforcementVersion": "teacher-units-option-b-v1",
+      "policyInstanceId": "00000000-0000-4000-8000-000000000001",
+      "generation": 3,
+      "mode": "enabled",
+      "approvedBackendBuildId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "acceptedClientContractVersions": [
+        "teacher-units-v3"
+      ],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "createdAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      },
+      "updatedAt": {
+        "seconds": 1792886402,
+        "nanoseconds": 123456789
+      },
+      "updatedBy": {
+        "principalSubject": "operator@example.test",
+        "credentialSubject": "operator@example.test",
+        "delegationSubject": null
+      },
+      "transitionId": "00000000-0000-4000-8000-000000000012",
+      "reason": "Synthetic enable proposal",
+      "approvalRef": "synthetic-enable-decision",
+      "lastEnabledAt": {
+        "seconds": 1792886402,
+        "nanoseconds": 123456789
+      },
+      "lastClosedAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      }
+    },
+    "closedAfterEnable": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "schemaVersion": 2,
+      "enforcementVersion": "teacher-units-option-b-v1",
+      "policyInstanceId": "00000000-0000-4000-8000-000000000001",
+      "generation": 4,
+      "mode": "closed",
+      "approvedBackendBuildId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "acceptedClientContractVersions": [],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "createdAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      },
+      "updatedAt": {
+        "seconds": 1792886403,
+        "nanoseconds": 123456789
+      },
+      "updatedBy": {
+        "principalSubject": "operator@example.test",
+        "credentialSubject": "operator@example.test",
+        "delegationSubject": null
+      },
+      "transitionId": "00000000-0000-4000-8000-000000000013",
+      "reason": "Synthetic close proposal",
+      "approvalRef": null,
+      "lastEnabledAt": {
+        "seconds": 1792886402,
+        "nanoseconds": 123456789
+      },
+      "lastClosedAt": {
+        "seconds": 1792886403,
+        "nanoseconds": 123456789
+      }
+    },
+    "enabledBeforeMax": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "schemaVersion": 2,
+      "enforcementVersion": "teacher-units-option-b-v1",
+      "policyInstanceId": "00000000-0000-4000-8000-000000000001",
+      "generation": 9007199254740990,
+      "mode": "enabled",
+      "approvedBackendBuildId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "acceptedClientContractVersions": [
+        "teacher-units-v3"
+      ],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "createdAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      },
+      "updatedAt": {
+        "seconds": 1792886402,
+        "nanoseconds": 123456789
+      },
+      "updatedBy": {
+        "principalSubject": "operator@example.test",
+        "credentialSubject": "operator@example.test",
+        "delegationSubject": null
+      },
+      "transitionId": "00000000-0000-4000-8000-000000000012",
+      "reason": "Synthetic enable proposal",
+      "approvalRef": "synthetic-enable-decision",
+      "lastEnabledAt": {
+        "seconds": 1792886402,
+        "nanoseconds": 123456789
+      },
+      "lastClosedAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      }
+    },
+    "enabledMax": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "schemaVersion": 2,
+      "enforcementVersion": "teacher-units-option-b-v1",
+      "policyInstanceId": "00000000-0000-4000-8000-000000000001",
+      "generation": 9007199254740991,
+      "mode": "enabled",
+      "approvedBackendBuildId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "acceptedClientContractVersions": [
+        "teacher-units-v3"
+      ],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "createdAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      },
+      "updatedAt": {
+        "seconds": 1792886402,
+        "nanoseconds": 123456789
+      },
+      "updatedBy": {
+        "principalSubject": "operator@example.test",
+        "credentialSubject": "operator@example.test",
+        "delegationSubject": null
+      },
+      "transitionId": "00000000-0000-4000-8000-000000000012",
+      "reason": "Synthetic enable proposal",
+      "approvalRef": "synthetic-enable-decision",
+      "lastEnabledAt": {
+        "seconds": 1792886402,
+        "nanoseconds": 123456789
+      },
+      "lastClosedAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      }
+    },
+    "closedMax": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "schemaVersion": 2,
+      "enforcementVersion": "teacher-units-option-b-v1",
+      "policyInstanceId": "00000000-0000-4000-8000-000000000001",
+      "generation": 9007199254740991,
+      "mode": "closed",
+      "approvedBackendBuildId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "acceptedClientContractVersions": [],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "createdAt": {
+        "seconds": 1792886400,
+        "nanoseconds": 123456789
+      },
+      "updatedAt": {
+        "seconds": 1792886403,
+        "nanoseconds": 123456789
+      },
+      "updatedBy": {
+        "principalSubject": "operator@example.test",
+        "credentialSubject": "operator@example.test",
+        "delegationSubject": null
+      },
+      "transitionId": "00000000-0000-4000-8000-000000000013",
+      "reason": "Synthetic close proposal",
+      "approvalRef": null,
+      "lastEnabledAt": {
+        "seconds": 1792886402,
+        "nanoseconds": 123456789
+      },
+      "lastClosedAt": {
+        "seconds": 1792886403,
+        "nanoseconds": 123456789
+      }
+    },
+    "recovered": {
+      "environment": "staging",
+      "projectId": "lyfelabz-staging",
+      "projectNumber": "293337283840",
+      "region": "us-central1",
+      "databaseId": "(default)",
+      "schemaVersion": 2,
+      "enforcementVersion": "teacher-units-option-b-v1",
+      "policyInstanceId": "00000000-0000-4000-8000-000000000002",
+      "generation": 1,
+      "mode": "closed",
+      "approvedBackendBuildId": null,
+      "acceptedClientContractVersions": [],
+      "placementFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "createdAt": {
+        "seconds": 1792886404,
+        "nanoseconds": 123456789
+      },
+      "updatedAt": {
+        "seconds": 1792886404,
+        "nanoseconds": 123456789
+      },
+      "updatedBy": {
+        "principalSubject": "operator@example.test",
+        "credentialSubject": "operator@example.test",
+        "delegationSubject": null
+      },
+      "transitionId": "00000000-0000-4000-8000-000000000014",
+      "reason": "Separately approved synthetic closed recovery",
+      "approvalRef": "synthetic-repair-decision",
+      "lastEnabledAt": null,
+      "lastClosedAt": {
+        "seconds": 1792886404,
+        "nanoseconds": 123456789
+      }
+    }
+  },
+  "validTransitions": [
+    {
+      "transition": "initialize",
+      "previous": null,
+      "next": "closed",
+      "kind": "change"
+    },
+    {
+      "transition": "prepare",
+      "previous": "closed",
+      "next": "prepared",
+      "kind": "change"
+    },
+    {
+      "transition": "prepare",
+      "previous": "prepared",
+      "next": "prepared",
+      "kind": "noop"
+    },
+    {
+      "transition": "enable",
+      "previous": "prepared",
+      "next": "enabled",
+      "kind": "change"
+    },
+    {
+      "transition": "close",
+      "previous": "enabled",
+      "next": "closedAfterEnable",
+      "kind": "change"
+    },
+    {
+      "transition": "close",
+      "previous": "closedAfterEnable",
+      "next": "closedAfterEnable",
+      "kind": "noop"
+    },
+    {
+      "transition": "close",
+      "previous": "enabledBeforeMax",
+      "next": "closedMax",
+      "kind": "change"
+    },
+    {
+      "transition": "close",
+      "previous": "closedMax",
+      "next": "closedMax",
+      "kind": "noop"
+    }
+  ],
+  "invalidPolicies": [
+    {
+      "base": "closed",
+      "path": [
+        "schemaVersion"
+      ],
+      "value": 1
+    },
+    {
+      "base": "closed",
+      "path": [
+        "generation"
+      ],
+      "value": 0
+    },
+    {
+      "base": "closed",
+      "path": [
+        "generation"
+      ],
+      "value": "9007199254740992"
+    },
+    {
+      "base": "closed",
+      "path": [
+        "placementFingerprint"
+      ],
+      "value": "invalid"
+    },
+    {
+      "base": "enabled",
+      "path": [
+        "approvedBackendBuildId"
+      ],
+      "value": null
+    },
+    {
+      "base": "enabled",
+      "path": [
+        "acceptedClientContractVersions"
+      ],
+      "value": [
+        "teacher-units-v2"
+      ]
+    },
+    {
+      "base": "enabled",
+      "path": [
+        "approvalRef"
+      ],
+      "value": null
+    },
+    {
+      "base": "closed",
+      "path": [
+        "updatedBy",
+        "principalSubject"
+      ],
+      "value": ""
+    },
+    {
+      "base": "closed",
+      "path": [
+        "transitionId"
+      ],
+      "value": "not-a-uuid"
+    },
+    {
+      "base": "closed",
+      "path": [
+        "reason"
+      ],
+      "value": " padded "
+    }
+  ]
+}

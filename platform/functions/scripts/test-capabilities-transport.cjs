@@ -17,7 +17,7 @@ const installedModules = path.join(root, 'node_modules');
 if (!fs.existsSync(fixtureModules)) fs.symlinkSync(installedModules, fixtureModules, 'dir');
 if (fs.realpathSync(fixtureModules) !== fs.realpathSync(installedModules)) throw new Error('Unexpected fixture dependency root');
 // Load the real compiled production endpoint, plus a fixture-only endpoint built by the
-// A3-3 handler factory with an explicitly injected demo-bootstrap local profile. The
+// Option B handler factory with an explicitly injected demo-bootstrap local profile. The
 // fixture exists only in this disposable directory; production exports accept no profile.
 const lib = (relative) => JSON.stringify(path.join(root, 'lib', relative));
 fs.writeFileSync(path.join(fixture, 'functions/index.cjs'), [

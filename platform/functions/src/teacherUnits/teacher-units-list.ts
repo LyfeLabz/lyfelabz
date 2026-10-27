@@ -33,7 +33,7 @@ import {
 // ordering clause). Units the teacher created at a previous school are
 // never read. The query runs in the same transaction snapshot that
 // re-verifies the caller's canonical authorization (user, school,
-// district) and A3-3 availability, so a revocation committed before that
+// district) and Option B availability, so a revocation committed before that
 // snapshot is honored.
 //
 // Archived units are excluded unless `includeArchived` is true; `grade`
@@ -102,7 +102,7 @@ export function createTeacherUnitsListHandler(enforcement: TeacherUnitsEnforceme
   return async function teacherUnitsListHandler(
     request: CallableRequest<unknown>,
   ): Promise<TeacherUnitsListResponse> {
-    const identity = await requireRuntimeIdentity(enforcement);
+    const identity = await requireRuntimeIdentity(enforcement, "teacherUnitsList");
     const actor = await assertActiveTeacher(request);
     const payload = requestObject(request.data);
     assertOnlyAllowedKeys(payload, ["includeArchived", "grade"]);

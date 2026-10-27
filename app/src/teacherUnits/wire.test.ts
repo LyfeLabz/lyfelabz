@@ -1,3 +1,4 @@
+import type { TeacherUnitsCapabilityState } from "./capabilityState";
 import { TeacherUnitsCompatibilityError } from "./compatibilityError";
 import type { Functions } from "firebase/functions";
 
@@ -34,8 +35,8 @@ import {
 const FUNCTIONS = {} as Functions;
 // A structurally valid A3-3 mutation envelope (A3-1 compatibilityRule).
 const ENVELOPE = Object.freeze({
-  schemaVersion: 1 as const,
-  clientContractVersion: "teacher-units-v2" as const,
+  schemaVersion: 2 as const,
+  clientContractVersion: "teacher-units-v3" as const,
   policyInstanceId: "0f8fad5b-d9cb-469f-a165-70867728950e",
   policyGeneration: 3,
   backendReleaseId: "a".repeat(64),
@@ -692,7 +693,7 @@ describe("A2 mutation dispatch guard", () => {
     ["missing field", Object.fromEntries(Object.entries(ENVELOPE).filter(([k]) => k !== "placementFingerprint"))],
     ["v1 contract", { ...ENVELOPE, clientContractVersion: "teacher-units-v1" }],
     ["extra field", { ...ENVELOPE, retryAfter: 1 }],
-    ["schema 2", { ...ENVELOPE, schemaVersion: 2 }],
+    ["legacy schema 1", { ...ENVELOPE, schemaVersion: 1 }],
   ])("an invalid envelope (%s) blocks dispatch locally", async (_label, envelope) => {
     const c = createFirebaseTeacherUnitsCallables(FUNCTIONS, async () => () => envelope as unknown as typeof ENVELOPE);
     await expect(c.archive(requests.archive)).rejects.toBeInstanceOf(TeacherUnitsCompatibilityError);
@@ -715,4 +716,24 @@ test("A2 compatible declaration cannot attest a separately deployed mutation rev
   expect(verify).toHaveBeenCalledTimes(1);
   expect(invocations[0].payload).toHaveProperty("expectedSchoolId", "school");
   expect(invocations[0].payload).not.toHaveProperty("clientContractVersion");
+});
+
+test("backend availability refusal invalidates shared controls and preserves dispatched error", async () => {
+  const invalidate = jest.fn();
+  const lifecycle = { invalidate } as unknown as TeacherUnitsCapabilityState;
+  const callables = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT, lifecycle);
+  const failure = Object.assign(new Error("closed"), { details: { code: "teacherUnits.availabilityClosed" } });
+  nextError = failure;
+  await expect(callables.archive({ unitId: UNIT_A, expectedRevision: 3 })).rejects.toBe(failure);
+  expect(invalidate).toHaveBeenCalledWith("closed");
+  expect(invocations).toHaveLength(1);
+});
+
+test("read availability refusal invalidates shared controls without adding an envelope", async () => {
+  const invalidate = jest.fn();
+  const callables = createFirebaseTeacherUnitsCallables(FUNCTIONS, PERMIT, { invalidate } as unknown as TeacherUnitsCapabilityState);
+  nextError = Object.assign(new Error("policy"), { details: { code: "teacherUnits.policyChanged" } });
+  await expect(callables.get({ unitId: UNIT_A })).rejects.toBe(nextError);
+  expect(invalidate).toHaveBeenCalledWith("incompatible");
+  expect(invocations[0].payload).toEqual({ unitId: UNIT_A });
 });

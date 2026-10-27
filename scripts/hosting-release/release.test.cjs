@@ -21,6 +21,8 @@ const {
   toApiRouting,
   isRedirected
 } = require('./contract.cjs');
+// A clean source checkout has no generated dist directory yet.
+test.before(() => fs.mkdirSync(path.join(repositoryRoot, 'dist'), { recursive: true }));
 const {
   checkSamples,
   compareLiveFiles,
@@ -448,4 +450,13 @@ test('staging-ux-test is refused for production by prepare preflight and certify
     assert.equal(result.record.releaseIntent,'staging-ux-test');
     assert.equal(result.record.evidenceReceipt.teacherUnitsReadiness,'staging-ux-test-uncertified');
   }finally{fs.rmSync(g.root,{recursive:true,force:true});}
+});
+
+test('Option B receipt input selection never converts a historical receipt into active approval',()=>{
+  const {optionBReceiptInputs,optionBInputs}=require('./release.cjs');
+  assert.deepEqual(optionBReceiptInputs({kind:'lyfelabz.releaseEvidenceReceipt',rulesApproval:'legacy'}),{});
+  const value={kind:'lyfelabz.teacherUnitsOptionBReleaseReceipt',rulesApproval:'approval',rulesReport:'report',approvalDigest:'d',configurationApproval:{}};
+  assert.deepEqual(optionBReceiptInputs(value),{rulesApproval:'approval',rulesReport:'report',approvalDigest:'d',configurationApproval:{}});
+  for(const args of [{},{'rules-approval':'x'},{'rules-approval':'x','rules-report':'y','approval-digest':'z'}])
+    assert.throws(()=>optionBInputs(args),/requires Rules approval/);
 });

@@ -23,7 +23,7 @@ import {
   requireRuntimeIdentity,
   respondAfterCommit,
 } from "./a3-enforcement";
-import type { MutationCompatibilityV1 } from "./a3-protocol";
+import type { MutationCompatibilityV2 } from "./availability-protocol";
 import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
@@ -92,7 +92,7 @@ import { TEACHER_UNITS_LIST_MAX, listOwnedTeacherUnits } from "./teacher-units-l
 export type TeacherUnitsReorderRequest = {
   readonly grade: TeacherUnitGrade;
   readonly units: ReadonlyArray<{ readonly unitId: string; readonly expectedRevision: number }>;
-  readonly compatibility: MutationCompatibilityV1;
+  readonly compatibility: MutationCompatibilityV2;
 };
 
 export type TeacherUnitsReorderResponse = {
@@ -302,7 +302,7 @@ export function createTeacherUnitsReorderHandler(enforcement: TeacherUnitsEnforc
   return async function teacherUnitsReorderHandler(
     request: CallableRequest<unknown>,
   ): Promise<TeacherUnitsReorderResponse> {
-    const identity = await requireRuntimeIdentity(enforcement);
+    const identity = await requireRuntimeIdentity(enforcement, "teacherUnitsReorder");
     const actor = await assertActiveTeacher(request);
     const input = validateRequest(request.data);
     const scope = { identity, enforcement, endpoint: "teacherUnitsReorder" } as const;

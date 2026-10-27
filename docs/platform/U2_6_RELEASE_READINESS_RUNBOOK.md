@@ -1,3 +1,150 @@
+# My Units release readiness and operator runbook
+
+## E2 simplified release and operator workflow
+
+Active as of October 27, 2026 in LOCAL UNCOMMITTED source only. E2 supersedes older statements requiring the real-enable interlock, custom checkpoint/Build-provenance/registry qualification, exact desired/running image equality, explicit Run executionEnvironment and per-application-build Rules approval coupling. Historical evidence remains readable. No deployed state changes until separately authorized operations.
+
+**Release preparation**
+
+1. Owner selects the coherent release commit from the dirty tree; use a clean exact-commit checkout with installed dependencies. No automatic bulk commit. Build/check serially, at most two Jest workers.
+2. E3 requires explicit staging authorization. Inspect current staging policy; close an enabled schema-1 marker with the retained legacy marker tool and verify old management refusal BEFORE replacing endpoints. Never enable through that marker. E2 does not run this migration.
+3. Prepare a schema-2 configuration JSON with fields `kind: lyfelabz.teacherUnitsOptionBConfigurationApproval`, `schemaVersion: 2`, `projectId`, `backendBuildId`, `sourceSha`, `settings`, `automaticUpdatesAccepted: true`, `principalSubject`, `decisionRef`, `reviewedAt`. `settings` contains `runtimeServiceAccount`, `timeoutSeconds`, `maxInstanceRequestConcurrency`, `availableMemory`, `availableCpu`, `minInstanceCount`, `maxInstanceCount`, `ingressSettings: ALLOW_ALL`, and the reviewed user `environmentVariables` map. Provider-generated target/project variables are checked separately. Use actual reviewed settings, not invented fixture values. Unknown harmless provider metadata is retained, not a certification requirement.
+4. Retain a clean compatible CLOSED-ONLY source ZIP with its actual schema-2 build record, source SHA and SHA-256; inspect the actual bytes before activation. A policy-controlled archive plus a currently closed policy is insufficient emergency recovery if policy writes fail. Keep the controlled artifact separately. Build both sequentially from the reviewed source. Default Functions build is closed-only. To deploy the controlled artifact, keep `A3_BUILD_PROFILE=policy-controlled` and `A3_EXPECTED_SOURCE_SHA=<reviewed SHA>` set through Firebase predeploy, which rebuilds. A controlled build never enables availability.
+5. Deploy only `teacherUnitsArchive`, `teacherUnitsCapabilities`, `teacherUnitsCreate`, `teacherUnitsGet`, `teacherUnitsList`, `teacherUnitsReorder`, `teacherUnitsRestore`, `teacherUnitsSetResources`, `teacherUnitsUpdate`. Always pass `--project lyfelabz-staging` or `--project lyfelabz-prod`, `--config firebase.json`, and the exact nine `functions:<name>` entries to `--only`. No bare Functions deploy and no manual Cloud Run PATCH. A partial/mixed deployment stays closed.
+6. Retrieve the actual deployed Rules source. Use Rules approval schema 2: the previous Rules schema minus `releaseSourceSha`, `backendBuildId`, `hostingArtifactFingerprint`, `placementFingerprint`. Retain exact project/default database, local/deployed hashes and bytes, ruleset resource, complete existing denial/equivalence report, review and report digest. The report format/matrix is unchanged. Reuse this record while the tested source and relevant assumptions stay unchanged. An actual access allow requires a separate targeted decision; different bytes alone do not justify deploying Rules. Required Teacher Units index groups are checked; unrelated index inventories do not block this release.
+7. The existing prepare/certify commands retain `--intent teacher-units --rules-approval <schema2.json> --rules-report <report.json> --approval-digest <digest> --configuration-approval <schema2.json>`. Compute the Rules record digest with `digestApproval` from `scripts/teacher-units-release/option-b-rules-evidence.cjs`. This is content consistency, not a signature or a new review ceremony. Prepare, predeploy and certify all use the active verifier; do not use a general-intent fallback or skip flag. Deploy BOTH Hosting targets with `--only hosting:app,hosting:marketing`; staging Hosting uses `--config firebase.staging.json`, production Hosting uses `firebase.json`. Retain the previous live pair before deployment and inspect served bytes afterward.
+
+Live channel verification uses the documented [Channel.release resource](https://firebase.google.com/docs/reference/hosting/rest/v1beta1/sites.channels). E2 uses read-only Hosting APIs; no provider API changes are needed.
+
+**Current-release record**
+
+Retain one private JSON record, assembled from the actual candidate, certification output and named human decisions. Its exact fields are:
+
+- `kind: lyfelabz.teacherUnitsOptionBCurrentReleaseEvidence`, `schemaVersion: 2`, `projectId`, `policyInstanceId`, `policyGeneration`, `backendBuildId`, `placementFingerprint`, `approvalRef`, `preparedAt`, `observedAt`.
+- `candidate` from the paired build; `observation`, `configurationApproval`, `rulesApproval`, original `rulesReport` JSON text and `approvalDigest`; `certifiedReceipt` from the certification output's `evidenceReceipt`. Schema-1 records never qualify.
+- `hosting: {projectId, observedAt, app, marketing}`. Each surface contains actual `site`, `origin`, `version`, `files` (relative paths to SHA-256 hashes). Use the complete expected pair inventory from the build. Pre-enable independently reads the live channels and those served bytes; it does not trust the saved hashes as current observations.
+- `review: {principalSubject, decisionRef, reviewedAt, iamScopeAccepted: true, routingAccepted: true, automaticUpdatesAccepted: true, purpose}`. Purpose is exactly `staging-validation` for staging or `production-activation` for production; decisionRef equals the explicit approvalRef. This records the actual accepted operator/route/runtime scope, not a claim of cryptographic attestation.
+- `provenance: provider-observed` only for actual evidence. Synthetic test fixtures are not deployment evidence. No serialized credential verdict is accepted by the CLI.
+- `rollback: {projectId, backendBuildId, sourceSha, deploymentMode: closed-only, artifactRef, artifactSha256, verifiedClosed: true, hosting: {app, marketing}}`. artifactRef is an absolute private path to the retained closed-only source ZIP. The CLI hashes/inspects this file and checks build/placement compatibility before activation. Both Hosting rollback versions must match the certified receipt's previous versions. verifiedClosed records verification of the compatible closed-only fallback using the build/profile and denial checks; it can precede staging activation. The actual staging enable/close rehearsal is recorded separately in production stagingAcceptance.
+- `stagingAcceptance` is null for a bounded staging validation enable. Production requires `{projectId: lyfelabz-staging, sourceSha, decisionRef, acceptedAt, teacherWorkflowsPassed: true, securityTestsPassed: true, shutdownRehearsed: true}` for the same reviewed source. Never fabricate acceptance to start staging; the distinct purpose prevents that circular requirement.
+
+Human decisions and Rules reports are trusted release records, not provider-signed proofs. The tool refreshes backend/Hosting observations and validates the retained closed-only artifact each time; it never renews review, certification, Rules-test or acceptance timestamps. Changed security-relevant facts require a new dry-run/confirmation. Defaults remain a five-minute current observation, 24-hour preparation and ten-minute saved confirmation; exact policy CAS is rechecked transactionally. These checks do not eliminate provider changes occurring after observation.
+
+**Operator commands, only under separate external authorization**
+
+Use `node scripts/teacher-units-release/cli.cjs availability <command>`. Every cloud command requires `--live --project <exact project> --credentials <private direct service-account JSON> --access-review <private access-review JSON>`. Existing supported credential verification pins the actual token subject, project number and required permissions; it never creates accounts, grants IAM, discovers a browser principal or trusts an operator-label argument. `--live` allows connection; it never by itself enables or writes.
+
+- `show`: read current policy/history. Missing/unreadable state is never claimed enabled or safely closed.
+- `prepare --build-root <clean Functions artifact> --expected-source-sha <SHA> --release-prepared-at <UTC> --reason <reason> --out <private plan>`: dry-run only. First initialization creates closed generation 1 without an approved build; after executing that plan, a second prepare pins the build while remaining closed. A legacy/malformed policy requires separate `recoverClosed` with exact recovery authorization.
+- `checkEnable --current-release-evidence <record.json> --approval-ref <decision>`: read-only current verification. It prints explicit-confirmation-required, not activation permission.
+- `enable --current-release-evidence <record.json> --approval-ref <decision> --reason <reason> --out <private enable-plan.json>`: authenticate, verify the prepared closed policy/current release and save a dry-run plan. No write. Review its target, expected CAS, proposed mode, transition ID and confirm digest.
+- `enable --current-release-evidence <same record.json> --plan <enable-plan.json> --execute --confirm <exact digest>`: repeat current checks and operator authentication, require unchanged release identity/exact policy CAS, then atomically write policy, history and canonical audit. The command/target are bound to the saved plan. Do not automatically rebase stale plans. A status of unconfirmed/conflicting is nonzero and is not success.
+- `verify --plan <saved plan>`: reconcile exact transition/history/audit after a lost acknowledgement. Replay of an already committed real enable returns its current/superseded status without reenabling a later closed policy.
+- `close --reason <reason> --out <private close-plan.json>`, followed by `close --plan <close-plan.json> --execute --confirm <digest>`: independent emergency closure. No current-release record, registry, provenance, Hosting or rollback archive is needed. Check committed-current with shutdownConfirmed, then verify callable denial across all serving routes. A preexisting closed policy may return verified-noop. MAX generation or malformed policy requires separately authorized recoverClosed; failure/unconfirmed write is never closure.
+
+Plans include private before-state and are saved create-only with mode 0600. Keep the exact saved plan and release record in approved private storage for reconciliation; do not publish credentials or student data. Policy/history/audit are transactional; history is not tamper-proof against trusted Admin writers. Backend closure is authoritative. A Hosting rollback alone cannot disable server access.
+
+If close cannot be confirmed, deploy the retained compatible closed-only build across all nine endpoints under explicit recovery authorization and verify all routes; never restore the legacy-marker runtime. Restore both recorded Hosting versions if required. Preserve units/receipts/audits. Re-enable requires fresh explicit approval.
+
+**E3 and production boundaries**
+
+Next: E3 staging preparation/closed rollout, with real credential support, deployed Rules denial, actual endpoint generation/region migration checks, required indexes, legacy marker closure, nine closed Functions and paired Hosting verification. E3 does not implicitly authorize staging enable or production work. Later staging workflow/security/shutdown acceptance authorizes only its bounded test window. Production deployment is separately authorized and CLOSED; production activation needs its own named decision and failure-close authority. E2 changed local code only and supplies no cloud evidence or activation approval. No broad audit or provider-provenance experiment is a prerequisite.
+
+
+## Historical B1 Option B operator and release workflow
+
+Status at B1h, October 26, 2026: B1a-B1g are local implementations, uncommitted and not independently reviewed. B1h changes documentation only. These templates describe supported interfaces for **later separately authorized operations**. They were not executed during B1h and authorize no cloud read/write, deployment, activation or IAM change. An uncommitted dirty working tree is not a distributable release candidate.
+
+Current contracts: [Teacher Units](TEACHER_UNITS.md), [ADR](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md), [blueprint D-F/G6](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md), [Hosting pairing](DOMAIN_AND_HOSTING_CONTRACT.md). Review package: [B1h integrated handoff](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md#b1h-integrated-review-handoff).
+
+### Credentials and explicit target
+
+Every operator invocation supplies literal `--project lyfelabz-prod` or `--project lyfelabz-staging`; aliases/defaults, ambient target conflicts, and cloud/emulator mixing refuse. Project IDs/numbers are pinned to production `182791689935` and staging `293337283840`, region `us-central1`, database `(default)`. No ordinary browser, teacher or application administrator can perform operator transitions.
+
+`cli.cjs availability` dispatches to `availability-control.cjs`. The supported real operator credential profile is explicit direct service-account JSON via `--credentials`, with `--live` and private `--access-review`. It independently checks effective token email/verification, expiry/scope, provider project identity and effective permission responses. User/browser/impersonated or ambiguous profiles refuse. No credential bytes belong in plans, audit, logs or documentation. Token/provider behavior and inherited rights still require authorized real-world acceptance.
+
+The access-review JSON has exactly `schemaVersion:1`, `projectId`, `projectNumber`, `databaseId`, `principalSubject`, `permissionCheckScope:"project"`, `blastRadiusAccepted:true`, `approvalRef`. It must match the independently verified subject and target; its retained owner decision accepts the actual project-level blast radius. It is not authentication by itself. Unverifiable conditional grants refuse; the tool neither grants IAM nor widens scope.
+
+`verify` requires `datastore.databases.get` and `datastore.entities.get`. `show` also requires `datastore.entities.list`. Transitions and persistence-read-only `checkEnable` additionally require `datastore.entities.create` and `datastore.entities.update`. This permission profile does not prove collection-scoped exclusivity, safe inherited impersonation, or effective IAM least privilege. Review actual holders/roles/conditions before external use.
+
+Hosting release observation uses the existing selected `gcloud auth print-access-token` read transport (or an injected test transport), after explicit project/candidate/evidence validation. This is distinct from the operator's explicit service-account profile. No observer token or receipt authorizes policy mutation.
+
+### Inspect, initialize and prepare
+
+Templates use placeholders that must be replaced with reviewed private inputs. Run only under separate external authorization:
+
+```sh
+node scripts/teacher-units-release/cli.cjs availability show \
+  --project '<PROJECT>' --live \
+  --credentials '<PRIVATE_SA_JSON>' --access-review '<PRIVATE_ACCESS_REVIEW_JSON>'
+
+node scripts/teacher-units-release/cli.cjs availability prepare \
+  --project '<PROJECT>' --live \
+  --credentials '<PRIVATE_SA_JSON>' --access-review '<PRIVATE_ACCESS_REVIEW_JSON>' \
+  --build-root '<ABSOLUTE_FUNCTIONS_ARTIFACT_ROOT>' \
+  --expected-source-sha '<APPROVED_40HEX_SHA>' \
+  --release-prepared-at '<UTC_ISO_MILLISECONDS>' \
+  --reason '<REASON>' --approval-ref '<OWNER_DECISION_REF>' \
+  --out '<NEW_PRIVATE_PLAN_JSON>'
+```
+
+`show` reports observed schema-2 policy and a bounded recent history window; missing/invalid/unreadable state is not confirmed shutdown. `prepare` inspects exact clean `policy-controlled` schema-2 build bytes and source SHA; preparation evidence must be no older than 24 hours and never future-dated. A missing singleton first initializes UUID/generation 1 **closed and unprepared**, with null approved build and empty contracts. After verified initialization, make a second fresh prepare proposal to select the build. Existing valid closed preparation increments generation only on a real change; a no-op writes nothing. Never silently convert malformed or legacy marker state.
+
+A proposal is dry-run by default. Review target, operator, exact updateTime/instance/generation CAS, transition UUID, build/placement and confirmation digest. `--out` creates a private, new-only plan file. Confirm and verify the same command ID:
+
+```sh
+node scripts/teacher-units-release/cli.cjs availability prepare \
+  --project '<PROJECT>' --live \
+  --credentials '<PRIVATE_SA_JSON>' --access-review '<PRIVATE_ACCESS_REVIEW_JSON>' \
+  --plan '<SAVED_PRIVATE_PLAN>' --execute --confirm '<EXACT_CONFIRMATION_DIGEST>'
+
+node scripts/teacher-units-release/cli.cjs availability verify \
+  --project '<PROJECT>' --live \
+  --credentials '<PRIVATE_SA_JSON>' --access-review '<PRIVATE_ACCESS_REVIEW_JSON>' \
+  --plan '<SAME_SAVED_PRIVATE_PLAN>'
+```
+
+Execution requires the same verified operator/credential subject, unchanged CAS, valid transition, and confirmation age at most ten minutes. The transaction stages policy, create-only history and canonical operator audit together. Failed history/audit staging cannot be reported as a partial successful transition. Verification independently reads all three linked records.
+
+### Current release and Rules preflight; enable remains blocked
+
+`option-b-observation.cjs` validates current nine-endpoint schema-2/v3 artifacts, exact project/build/placement and reviewed configuration. The Rules attachment is strict duplicate-free JSON of kind `lyfelabz.teacherUnitsOptionBRulesApproval`; G6 binds release SHA/build/Hosting/placement, local source hash, exact deployed ruleset resource/hash, report bytes/digest, tested byte pair and reviewer/owner reference. `exact` needs equal local/deployed hashes. `reviewed-equivalent` accepts only the explicitly approved pair with the complete dual-source passing matrix and full-diff review. Even equal bytes at a different ruleset resource require fresh approval. No hash stripping, normalization or skip flag is supported; a mismatch never authorizes deploying Rules.
+
+The configuration approval binds the actually observed configuration digest, including reviewed Run `buildConfig` and runtime-update posture. The current-release bundle also binds policy UUID/generation, a certified B receipt, current paired served file hashes, and explicit effective-IAM/routing/runtime residual review. Old receipts/signatures and synthetic production evidence refuse. Provider observations/Hosting evidence expire after five minutes; preparation/certification/review bounds are checked separately. No finite emulator matrix proves arbitrary Rules equivalence or actual deployed-source acceptance.
+
+```sh
+node scripts/teacher-units-release/cli.cjs availability checkEnable \
+  --project '<PROJECT>' --live \
+  --credentials '<PRIVATE_SA_JSON>' --access-review '<PRIVATE_ACCESS_REVIEW_JSON>' \
+  --current-release-evidence '<PRIVATE_CURRENT_BUNDLE>' \
+  --approval-ref '<OWNER_DECISION_REF>'
+```
+
+`checkEnable` needs a prepared closed policy. It refreshes provider backend observations with bound credentials, validates retained independent Rules/Hosting/IAM evidence, then rereads policy CAS and operator context. It does not fabricate refreshed Hosting/review dates. Its result is consistency evidence only: `liveEnable:"interlocked"`, `authority:"none"`, `shutdownConfirmed:false`, `fleetVerification:"not-performed"`.
+
+**There is no executable real-project enable workflow in this candidate.** CLI enable refuses before connection; controller proposal/execution also interlock. No flag, environment variable, synthetic fixture or successful preflight lifts that protection. A later separately authorized, independently reviewed source correction is needed to make a real enable path operational; an owner activation decision alone cannot bypass the current interlock. Demo transitions exist only through explicit local test injection, not a supported real-target shortcut.
+
+### Closure, unknown outcomes and recovery
+
+Emergency close does not load signed evidence, build artifacts, Hosting or release observations. Use `availability close` with the same explicit binding/credentials, `--reason`, `--approval-ref` and a new private `--out`; review then execute the saved close plan with the exact digest, as in the prepare execution template. Verify that same plan afterward. Credential/IAM/database availability and CAS still apply; there is no unaudited bypass.
+
+Results distinguish `committed-current`, `committed-superseded`, `verified-noop`, `not-committed`, `conflicting` and `unconfirmed`. A timeout/refusal after dispatch is not proof a write failed. Keep the original plan/transition ID, reconcile linked evidence with `verify`, and do not automatically rebase/resend or create a new command. `committed-superseded` reports current observed availability, not the older transition as current. Missing policy is not a verified successful shutdown. Verified closed results are schema-2 policy/history/audit scoped; they do not prove fleet routing, compatible deployed code or recall of earlier data/writes.
+
+Enabled generation `Number.MAX_SAFE_INTEGER` stays enabled. Ordinary close reports **still enabled; recovery required**. Separately authorize `recoverClosed`: bind exact target and observed updateTime/UUID/generation, fresh replacement UUID, placement, verified operator, reason and decision reference in `--recovery-authorization '<PRIVATE_AUTHORIZATION_JSON>'`; propose with `--policy-instance-id`, `--placement-fingerprint`, `--reason`, `--approval-ref`, and mandatory new private `--out`. The plan contains a private typed before-state snapshot; malformed raw data is not copied into canonical audit/history. Confirm within the normal CAS window and verify. Recovery creates generation 1 closed, null build and empty contracts; it neither resets an enabled instance silently nor implies a successful close before verified persistence. Re-prepare separately afterward.
+
+### Release sequence and remaining acceptance
+
+Local build/test, staging certification, closed production deployment, activation approval and verified production availability are distinct states. B receipts explicitly report activation not approved, availability not verified and fleet verification not performed. Before any external operation: complete the integrated B2 review, select an exact reviewed clean source/dependency candidate and separately authorize the relevant environment/scope.
+
+For later authorized B preparation/certification, use explicit `--project`, `--intent teacher-units`, and private `--rules-approval`, `--rules-report`, `--approval-digest`, `--configuration-approval` inputs. Preparation supports `--expect-sha`; certify reuses the prepared source/evidence and paired baselines. The same controlled compiler/backend profile is reconstructed by predeploy. `general` retains closed compilation and paired Hosting checks without a Teacher Units backend-readiness claim. The target-bound policy-capable profile, preparation and certification never enable policy.
+
+Staging must reconcile all nine deployed builds, actual IAM/impersonation/routes/Run configuration, exact deployed Rules/report approval, indexes, both Hosting sites/served bytes and authenticated teacher/negative tenant/role/accessibility workflows. Close and verify the old staging marker before the reviewed closed replacement; explicitly recover fresh schema-2 closed state. New Rules deployment is conditional on a separately approved necessary change. Rehearsing real enable/close additionally needs the interlock implementation gate resolved and separate authorization. Production closed deployment, final activation and final availability/fleet observation remain later decisions. On failure close policy if possible, reconcile uncertainty, restore known-good compatible closed backend and both recorded Hosting baselines, then verify actual routes and cached-client refusal. Policy readback alone never closes this release gate.
+
+## Historical A1 reference
+
+The original A1 record below is preserved for historical eight-endpoint receipt/replay and closed-profile evidence. Its original source baselines, certification statements and both-intents-closed claims are version-specific, not the active B compiler or launch prerequisites. Legacy replay cannot authorize current B requests. General release safeguards and applicable source/import/paired-byte protections remain required.
+
+
 # U2.6 A1 release evidence and deployment safeguards
 
 ## Scope and certification meaning

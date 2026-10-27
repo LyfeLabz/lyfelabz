@@ -221,19 +221,15 @@ test('local candidate never treats source SHA as deployed identity and checks co
     fs.writeFileSync(path.join(dir,'lib/index.js'),'runtime');fs.writeFileSync(path.join(dir,'lib/teacherUnits/unit-placeable-resources.json'),JSON.stringify({resourceIds:ids}));
     for(const f of ['package.json','package-lock.json'])fs.writeFileSync(path.join(dir,f),'{}');
     fs.writeFileSync(path.join(root,'platform/firebase/firestore.rules'),'rules');fs.writeFileSync(path.join(root,'platform/firebase/firestore.indexes.json'),'{"indexes":[],"fieldOverrides":[]}');
-    const pair={releaseIntent:'teacher-units',source:candidate.source,files:{app:buildFixture(root,'teacher-units'),marketing:{}},unitPlacement:{fingerprint:artifact.placementFingerprint}};
-    pair.backendCandidate=localCandidate(pair,root);
-    assert.equal(pair.backendCandidate.functionsArtifactFingerprint,artifact.artifactFingerprint);
-    let reads=0;
-    const f=fixture();
-    const verified=await verifyBackend({project:f.project,pair,root,get:async(...args)=>{reads++;return f.get(...args);},unpack:()=>artifact,now:()=>NOW});
-    assert.equal(verified.compatibility.compatible,true);
-    assert.ok(reads>0);reads=0;
-    fs.writeFileSync(path.join(dir,'lib/index.js'),'changed-after-build');
-    await assert.rejects(verifyBackend({project:f.project,pair,root,get:()=>reads++}),/candidate changed since pair build/);
-    assert.equal(reads,0);
-    fs.writeFileSync(path.join(dir,'lib/index.js'),'runtime');
-    assert.throws(() => localCandidate({...pair,unitPlacement:{fingerprint:'f'.repeat(64)}},root),/placement/);
+    const pair={releaseIntent:'teacher-units',source:candidate.source,files:{app:buildFixture(root,'general'),marketing:{}},unitPlacement:{fingerprint:artifact.placementFingerprint}};
+    // Active teacher-units compilation requires an explicit Option B target.
+    // The frozen legacy comparator above remains tested on historical fixtures.
+    assert.throws(() => localCandidate(pair,root),/unverifiable/);
+    pair.releaseIntent='general';
+    const c=hostingCandidate(pair,root);
+    assert.notEqual(c.applicationBuildFingerprint,c.source.sha);
+    fs.writeFileSync(path.join(root,'app/dist/bundle.js'),'changed-after-build');
+    assert.throws(() => hostingCandidate(pair,root),/unverifiable/);
   } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
 
@@ -427,4 +423,95 @@ test('staging-ux-test predeploy runs for staging without backend reads, and refu
   const g=await hookFixture('staging-ux-test');
   await assert.rejects(hostingPredeploy({...g.args,project:'lyfelabz-prod'}),/only for the staging project/);
   assert.equal(g.calls.length,0);
+});
+
+test('Option B routing requires explicit target and approved attachments before credential access',async()=>{
+  const b=require('./backend-state.cjs');let calls=0;
+  assert.deepEqual(b.optionBTarget('lyfelabz-prod'),{projectId:'lyfelabz-prod',environment:'production',origin:'https://app.lyfelabz.com'});
+  assert.throws(()=>b.optionBTarget('default'),/unsupported project/);
+  const pair={backendFormat:b.OPTION_B_FORMAT,target:b.optionBTarget('lyfelabz-staging')};
+  await assert.rejects(b.verifyBackend({project:'lyfelabz-prod',pair,run:()=>calls++}),/target mismatch/);
+  await assert.rejects(b.verifyBackend({project:'lyfelabz-staging',pair,run:()=>calls++}),/approved Rules\/configuration evidence required/);
+  assert.equal(calls,0);
+  assert.throws(()=>b.releaseCandidate({...pair,releaseIntent:'teacher-units',target:{...pair.target,origin:'https://preview.invalid'}}),/target/);
+  assert.throws(()=>b.receipt({phase:'prepared',project:'lyfelabz-prod',intent:'teacher-units',candidate:{kind:b.OPTION_B_CANDIDATE,projectId:'lyfelabz-staging'}}),/scope/);
+});
+
+test('Option B local candidate verifies schema-2 content, controlled mode and exact compiler target',async()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'option-b-pair-'));
+  try {
+    const b=require('./backend-state.cjs'), target=b.optionBTarget('lyfelabz-staging');
+    buildFixture(root,'general');
+    const app=await require('../../app/scripts/build-application.cjs').build(root,'teacher-units',target);
+    const dir=path.join(root,'platform/functions');fs.mkdirSync(path.join(dir,'lib/teacherUnits'),{recursive:true});
+    fs.mkdirSync(path.join(root,'platform/firebase'),{recursive:true});
+    fs.writeFileSync(path.join(dir,'lib/index.js'),'runtime');
+    fs.writeFileSync(path.join(dir,'lib/teacherUnits/unit-placeable-resources.json'),JSON.stringify({resourceIds:ids}));
+    for(const file of ['package.json','package-lock.json'])fs.writeFileSync(path.join(dir,file),'{}');
+    fs.writeFileSync(path.join(root,'platform/firebase/firestore.rules'),'rules');
+    fs.writeFileSync(path.join(root,'platform/firebase/firestore.indexes.json'),JSON.stringify({indexes:[],fieldOverrides:[]}));
+    const inventory=require('../../platform/functions/lib/teacherUnits/a3-runtime-artifact.js').inventoryRuntimeArtifact(dir);
+    const inputs={schemaVersion:2,enforcementVersion:'teacher-units-option-b-v1',deploymentMode:'policy-controlled',
+      sourceSha:candidate.source.sha,sourceTree:'b'.repeat(40),sourceDirty:false,
+      runtimePayloadFingerprint:inventory.runtimePayloadFingerprint,placementFingerprint:inventory.placementFingerprint,
+      supportedClientContractVersions:['teacher-units-v3']};
+    const derived=require('../../platform/functions/lib/teacherUnits/availability-runtime-build.js').deriveBackendBuildId(inputs);
+    assert.equal(derived.ok,true);
+    fs.writeFileSync(path.join(dir,'lib/teacherUnits/a3-runtime-build.json'),JSON.stringify({...inputs,backendBuildId:derived.value}));
+    const pair={backendFormat:b.OPTION_B_FORMAT,target,releaseIntent:'teacher-units',source:candidate.source,
+      files:{app:{'app/dist/bundle.js':app.outputs['app/dist/bundle.js'],'app/index.html':app.inputs['app/index.html']},marketing:{}},
+      unitPlacement:{fingerprint:inventory.placementFingerprint}};
+    const current=b.releaseCandidate(pair,root);
+    assert.equal(current.kind,b.OPTION_B_CANDIDATE);assert.equal(current.backendBuildId,derived.value);
+    assert.equal(current.teacherUnitsAvailability,'server-policy-required');assert.equal(current.protocolVersion,'teacher-units-v3');
+    fs.writeFileSync(path.join(dir,'lib/index.js'),'modified');
+    assert.throws(()=>b.releaseCandidate(pair,root),/content mismatch/);
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('current Option B receipts bind exact Rules/config approvals and both rollback baselines',async()=>{
+  const f=await require('../teacher-units-release/option-b-observation.test.cjs').fixture();
+  try {
+    const b=require('./backend-state.cjs'), project=f.candidate.projectId;
+    const hosting=Object.fromEntries(Object.entries(require('./contract.cjs').readTargetSites(project)).map(([target,site])=>
+      [target,{site,baseline:{version:'abc123',releaseTime:f.now}}]));
+    const args={phase:'prepared',project,intent:'teacher-units',candidate:f.candidate,evidence:f.evidence,hosting,
+      rulesApproval:f.rulesApproval,rulesReport:f.rulesReport,approvalDigest:f.approvalDigest,
+      configurationApproval:f.configurationApproval,recordedAt:f.now};
+    const r=b.receipt(args);
+    assert.equal(r.kind,b.OPTION_B_RECEIPT);assert.equal(r.activation,'not-approved');
+    assert.equal(r.availability,'not-verified');assert.equal(r.fleetVerification,'not-performed');
+    const prepared={kind:'lyfelabz.hostingPreparedRelease',schemaVersion:3,releaseIntent:'teacher-units',project,
+      environment:f.candidate.environment,source:f.candidate.source,candidate:f.candidate,evidenceReceipt:r,
+      preparedAt:f.now,surfaces:hosting};
+    verifyPrepared(prepared,project,f.candidate,f.now);
+    assert.equal(canonical(b.receipt(args)),canonical(r));
+    for(const mutation of [p=>{p.evidenceReceipt.kind='lyfelabz.releaseEvidenceReceipt';},
+      p=>{p.surfaces.marketing.baseline.version='';},p=>{p.evidenceReceipt.approvalDigest='a'.repeat(64);},
+      p=>{p.evidenceReceipt.configurationApproval.decisionRef='different';}]) {
+      const bad=structuredClone(prepared);mutation(bad);assert.throws(()=>verifyPrepared(bad,project,f.candidate,f.now));
+    }
+    assert.throws(()=>b.receipt({...args,configurationApproval:{...f.configurationApproval,decisionRef:'different'}}),/differs/);
+    assert.throws(()=>b.receipt({...args,rulesReport:Buffer.from('{}')}));
+    assert.throws(()=>b.receipt({...args,recordedAt:new Date(Date.parse(f.now)+300001).toISOString()}),/stale/);
+  } finally {f.cleanup();}
+});
+
+test('B2-001 incomplete and wrong-site certification records refuse',async()=>{
+  const f=await require('../teacher-units-release/option-b-observation.test.cjs').fixture();
+  try {
+    for(const hosting of [{app:{},marketing:{}},{app:{site:'wrong'},marketing:{site:'wrong'}}])
+      assert.throws(()=>require('./backend-state.cjs').optionBReceipt({phase:'certified',project:f.candidate.projectId,intent:'teacher-units',candidate:f.candidate,evidence:f.evidence,hosting,...f,recordedAt:f.now}));
+  }finally{f.cleanup();}
+ });
+
+test('B2-001 prepare requires real rollback versions, sites and UTC timestamps',async()=>{
+  const f=await require('../teacher-units-release/option-b-observation.test.cjs').fixture();
+  try {
+    const hosting=Object.fromEntries(Object.entries(require('./contract.cjs').readTargetSites(f.candidate.projectId)).map(([key,site])=>[key,{site,baseline:{version:'abc123',releaseTime:f.now}}]));
+    for(const mutate of [h=>{h.app={};},h=>{h.app.site='lyfelabz-prod';},h=>{delete h.app.baseline.version;},h=>{delete h.app.baseline.releaseTime;},h=>{h.app.baseline.releaseTime='2026-02-30T12:00:00.000Z';},h=>{h.app.baseline.releaseTime='2026-10-27T12:00:00.000Z';}]) {
+      const bad=structuredClone(hosting); mutate(bad);
+      assert.throws(()=>require('./backend-state.cjs').optionBReceipt({phase:'prepared',project:f.candidate.projectId,intent:'teacher-units',...f,candidate:f.candidate,evidence:f.evidence,hosting:bad,recordedAt:f.now}));
+    }
+  }finally{f.cleanup();}
 });

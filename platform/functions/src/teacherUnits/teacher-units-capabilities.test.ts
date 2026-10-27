@@ -1,4 +1,4 @@
-// A3-3 schema 2 discovery request parsing (approved decision record, Decision 1).
+// A3-3 schema 3 discovery request parsing (approved decision record, Decision 1).
 // Transactional discovery behavior, availability declarations and production
 // wiring are covered in teacher-units.test.ts against the hermetic Firestore
 // stand-in. The A2 schema 1 / teacher-units-v1 protocol is retired: legacy
@@ -11,7 +11,7 @@ import { RUNTIME_PLACEMENT_FINGERPRINT } from "./a3-enforcement";
 import { UNIT_PLACEABLE_RESOURCE_ID_LIST } from "./unit-placeable-resources";
 
 const { TEACHER_UNITS_OPERATIONS, readCapabilityRequest } = capabilities;
-const valid = { schemaVersion: 2, nonce: "0123456789abcdef", clientContractVersion: "teacher-units-v2" };
+const valid = { schemaVersion: 3, nonce: "0123456789abcdef", clientContractVersion: "teacher-units-v3" };
 
 function codeOf(fn: () => unknown): string {
   try {
@@ -23,16 +23,16 @@ function codeOf(fn: () => unknown): string {
   return "accepted";
 }
 
-test("accepts exactly the schema 2 / teacher-units-v2 request", () => {
+test("accepts exactly the schema 3 / teacher-units-v3 request", () => {
   expect(readCapabilityRequest({ ...valid })).toEqual(valid);
 });
 
 test.each([
   ["exact A2 v1 request", { schemaVersion: 1, nonce: valid.nonce, clientContractVersion: "teacher-units-v1" }],
-  ["schema 2 with v1 contract", { ...valid, clientContractVersion: "teacher-units-v1" }],
+  ["schema 3 with v1 contract", { ...valid, clientContractVersion: "teacher-units-v1" }],
   ["schema 1 with v2 contract", { ...valid, schemaVersion: 1 }],
   ["unknown contract", { ...valid, clientContractVersion: "v2" }],
-  ["schema 3", { ...valid, schemaVersion: 3 }],
+  ["schema 3", { ...valid, schemaVersion: 2 }],
 ])("refuses %s as contractUnsupported", (_label, data) => {
   expect(codeOf(() => readCapabilityRequest(data))).toBe("teacherUnits.contractUnsupported");
 });
@@ -40,10 +40,10 @@ test.each([
 test.each([
   ["null", null],
   ["array", []],
-  ["string", "schema 2"],
+  ["string", "schema 3"],
   ["empty object", {}],
   ["unknown field", { ...valid, projectId: "lyfelabz-prod" }],
-  ["missing nonce", { schemaVersion: 2, clientContractVersion: "teacher-units-v2" }],
+  ["missing nonce", { schemaVersion: 3, clientContractVersion: "teacher-units-v3" }],
   ["short nonce", { ...valid, nonce: "short" }],
   ["nonce with spaces", { ...valid, nonce: "0123456789 abcdef" }],
 ])("refuses %s as invalidRequest", (_label, data) => {

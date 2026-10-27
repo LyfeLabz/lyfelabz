@@ -850,3 +850,28 @@ test('S6f F2: an error raised during a live discovery that carries the active to
     assert.equal(fs.existsSync(path.join(root, 'd')), false);
   } finally { spy.restore(); f.cleanup(); fs.rmSync(root, { recursive: true, force: true }); }
 });
+
+// B1e: explicit new route; historical routes and their evidence remain unchanged.
+test('Option B routing rejects implicit targets and identity labels; cloud enable reaches the explicit credential adapter', async () => {
+  let opens = 0; const err = [], out = [];
+  const context = { env: {}, stdout: { write: s => out.push(s) }, stderr: { write: s => err.push(s) },
+    connect: async () => { opens++; throw new Error('must not open'); } };
+  for (const argv of [ ['availability', 'show'], ['availability', 'enable', '--project', 'lyfelabz-prod', '--live'],
+    ['availability', 'close', '--project', 'demo-b1e', '--operator-subject', 'claimed-owner'] ]) {
+    assert.equal(await C.main(argv, { optionB: context }), 1);
+  }
+  assert.equal(opens, 1); assert.match(err.join(''), /REFUSED/);
+});
+test('Option B CLI defaults to private dry-run plans and explicitly confirmed execution', async () => {
+  const B = require('./availability-control.test.cjs'), h = B.harness(); await B.initialize(h);
+  const dir = scratch(), plan = path.join(dir, 'plan.json'), stdout = [], stderr = [];
+  const context = { env: {}, stdout: { write: s => stdout.push(s) }, stderr: { write: s => stderr.push(s) },
+    connect: async identity => { assert.equal(identity.projectId, h.identity.projectId); return { controller: h.controller }; } };
+  const before = h.db.rows.size;
+  assert.equal(await C.main(['availability', 'close', '--project', h.identity.projectId, '--reason', 'Synthetic close', '--out', plan], { optionB: context }), 0);
+  assert.equal(h.db.rows.size, before); assert.equal(JSON.parse(stdout.at(-1)).status, 'dry-run');
+  assert.equal(fs.statSync(plan).mode & 0o777, 0o600);
+  const p = JSON.parse(fs.readFileSync(plan, 'utf8'));
+  assert.equal(await C.main(['availability', 'close', '--project', h.identity.projectId, '--execute', '--plan', plan, '--confirm', p.confirm], { optionB: context }), 0);
+  assert.equal(JSON.parse(stdout.at(-1)).status, 'verified-noop'); assert.equal(stderr.length, 0);
+});

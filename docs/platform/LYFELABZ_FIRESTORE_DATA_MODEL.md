@@ -530,7 +530,7 @@ Lifecycle: `submitted` → `finalized` within the finalization transaction. Rete
 
 Purpose: The single append-only event log for the platform. This Firestore collection **is** the authoritative audit sink referenced in PDR-013. It is made append-only by Security Rules that permit `create` from trusted server context only and forbid `update` and `delete` for every role, including Platform Administrator. Retention export to cold storage is a mirror for retention, not a second authoritative sink.
 
-Audit events have a two-stage field-requirement contract that reflects the actor context of the event:
+Audit events have an actor-specific field-requirement contract that reflects the actor context of the event:
 
 - User-actor events are written in response to an authenticated caller's action. Every user-actor event carries a resolvable `schoolId`.
 - System-actor events are written by triggers, scheduled jobs, or other trusted-server contexts where no user actor initiated the action. A system-actor event may pre-date the target's school association, in which case `schoolId` is absent from the record.
@@ -538,7 +538,7 @@ Audit events have a two-stage field-requirement contract that reflects the actor
 Required fields (all events):
 
 - actorUserId: Who performed the action. For system-actor events, this is the subject of the event (for example, the newly provisioned user's uid).
-- actorRole: Role at the time of the action, because a user's role may change later. Permitted values are the canonical `Role` enumeration (`teacher`, `student`, `platformAdministrator`) or the sentinel `system` for trusted-server contexts where no user actor initiated the action.
+- actorRole: Role at the time of the action, because a user's role may change later. Permitted values are the canonical `Role` enumeration (`teacher`, `student`, `platformAdministrator`), `system` for trusted-server contexts, or the strictly scoped audit-only `operator` exception below. `operator` is never a user Role or claim.
 - action: A short verb such as class.created, assignment.published, submission.finalized.
 - targetType: The kind of object acted upon.
 - targetId: The document ID of the object acted upon.
@@ -546,12 +546,50 @@ Required fields (all events):
 
 Conditionally required field:
 
-- schoolId: For administrative scoping. Required for every user-actor event. Required for every system-actor event that has a resolvable school association at write time. Absent only when no school association exists at write time, as with `auth.userProvisioned`, which fires before the user has selected or been assigned to a school. An empty-string `schoolId` is never permitted.
+- schoolId: For administrative scoping. Required for every user-actor event. Required for every system-actor event that has a resolvable school association at write time. Absent only when no school association exists at write time, as with `auth.userProvisioned`, which fires before the user has selected or been assigned to a school. An empty-string `schoolId` is never permitted. The exact global My Units operator exception below instead forbids school and district context.
 
 Optional fields:
 
 - payload: A small structured object describing the specifics of the action.
 - correlationId: For linking a chain of events triggered by a single user action.
+
+**My Units availability exception (Option B, B1d).**
+
+Option B adds one global audit-only exception: `actorRole: "operator"` is valid
+if and only if `action: "teacherUnits.availabilityChanged"`,
+`targetType: "teacherUnitsAvailability"`, and
+`targetId: "platformConfig/teacherUnitsAvailability"`. Conversely, that action
+requires this operator/target tuple. `correlationId` is a required canonical
+lowercase UUID v4 identifying the transition; `actorUserId` must equal
+`payload.operator.principalSubject`. No `schoolId` or `districtId` may be
+supplied, including an explicitly undefined field. Unknown input and nested
+payload fields are rejected for this exception.
+
+Its required payload has exactly `{transition, policyInstanceId, generation,
+mode, approvedBackendBuildId, placementFingerprint, operator, reason,
+approvalRef}`. Transitions are `initialize`, `prepare`, `enable`, `close`, or
+`recoverClosed`. Instance IDs are canonical lowercase UUID v4; generation is a
+positive safe integer through `Number.MAX_SAFE_INTEGER`. Build and placement
+identities are lowercase SHA-256 digests, with build nullable while closed.
+Enable requires enabled mode, a build and a non-null approval reference;
+prepare/close require closed mode. Initialize/recoverClosed require closed
+mode, generation 1 and null build. Enabled maximum generation remains enabled.
+`operator` is exactly `{principalSubject, credentialSubject, delegationSubject}`:
+subjects are nonempty well-formed text, at most 256 code points, without
+controls; delegation may be null. `reason` is trimmed nonempty text of at most
+1000 code points; approvalRef is null or trimmed nonempty text of at most 256
+code points, without controls. Never include credentials or student data.
+
+This shared writer validates structure and attribution consistency; supplied
+subjects are not authentication or approval proof. The future B1e trusted
+operator tool must verify credentials and authorization, bind every field to
+the same validated policy transition and decision, and enlist policy, history
+and canonical audit in one transaction after all reads. B1d adds no operator
+entry point, callable privilege, IAM grant, application Role or client access.
+Transaction enlistment does not prove commit, shutdown or successful readback;
+B1e must verify them, reconcile uncertainty and suppress duplicate/no-op audits.
+Existing user school/district requirements, system exceptions and historical
+audit record interpretation remain unchanged.
 
 Relationships: References users and targets by ID. Never referenced by application documents.
 

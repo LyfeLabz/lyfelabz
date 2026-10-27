@@ -1,3 +1,4 @@
+import type { TeacherUnitsCapabilityState } from "./capabilityState";
 import { TeacherUnitsCompatibilityError } from "./compatibilityError";
 import type { Auth } from "firebase/auth";
 import { onIdTokenChanged } from "firebase/auth";
@@ -5,8 +6,8 @@ import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 import { getPlaceableResources } from "./placeableResources";
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
-import { type MutationCompatibilityV1, validateCapabilityResponse, validateMutationCompatibility } from "./a3Protocol";
-const CONTRACT = "teacher-units-v2";
+import { type MutationCompatibilityV2, validateCapabilityResponse, validateMutationCompatibility } from "./availabilityProtocol";
+const CONTRACT = "teacher-units-v3";
 export { TeacherUnitsCompatibilityError } from "./compatibilityError";
 const refuse = (): never => { throw new TeacherUnitsCompatibilityError(); };
 export type CompatibilitySession = {
@@ -30,8 +31,8 @@ export function trustedTeacherUnitsEnvironment(origin: string): CompatibilityExp
     return { projectId: "lyfelabz-staging", environment: "staging", region: "us-central1" };
   return refuse();
 }
-// Schema 2 discovery (U2_6_A3_CONTRACTS.md, Protocol). Only an `enabled`,
-// deployment-eligible declaration that accepts `teacher-units-v2` and matches
+// Schema 3 discovery (U2_6_A3_CONTRACTS.md, Protocol). Only an `enabled`,
+// policy-eligible declaration that accepts `teacher-units-v3` and matches
 // this session's trusted environment, caller and placement yields a mutation
 // envelope. Closed and unverified declarations are valid responses that
 // authorize nothing, so the mutation is refused locally before dispatch.
@@ -39,7 +40,7 @@ export function evaluateTeacherUnitsCapability(raw: unknown, expected: Compatibi
   uid: string;
   schoolId: string;
   districtId: string;
-}, placementFingerprint: string): MutationCompatibilityV1 {
+}, placementFingerprint: string): MutationCompatibilityV2 {
   // No emulator project is supplied, so an emulator declaration refuses.
   const checked = validateCapabilityResponse(raw);
   if (!checked.ok)
@@ -48,7 +49,7 @@ export function evaluateTeacherUnitsCapability(raw: unknown, expected: Compatibi
   const a = t.availability;
   if (checked.value.nonce !== nonce || b.projectId !== expected.projectId || b.environment !== expected.environment || b.region !== expected.region || c.uid !== caller.uid || c.role !== "teacher" || c.schoolId !== caller.schoolId || c.districtId !== caller.districtId || t.placementFingerprint !== placementFingerprint || a.state !== "enabled" || a.deploymentEligible !== true || t.acceptedClientContractVersions.length !== 1 || !(t.acceptedClientContractVersions as readonly string[]).includes(CONTRACT) || a.policyInstanceId === null || a.policyGeneration === null || a.backendReleaseId === null)
     return refuse();
-  const envelope = validateMutationCompatibility({ schemaVersion: 1, clientContractVersion: CONTRACT, policyInstanceId: a.policyInstanceId, policyGeneration: a.policyGeneration, backendReleaseId: a.backendReleaseId, placementFingerprint });
+  const envelope = validateMutationCompatibility({ schemaVersion: 2, clientContractVersion: CONTRACT, policyInstanceId: a.policyInstanceId, policyGeneration: a.policyGeneration, backendReleaseId: a.backendReleaseId, placementFingerprint });
   if (!envelope.ok)
     return refuse();
   return Object.freeze({ ...envelope.value });
@@ -61,17 +62,30 @@ export function assertTeacherUnitsTransport(functions: Functions, auth: Auth, ex
   if (functions.app !== auth.app || functions.app.options.projectId !== expected.projectId || functions.region !== expected.region || functions.customDomain !== null || emulatorOrigin !== null || auth.emulatorConfig !== null)
     refuse();
 }
-// A3-4: a single-use permit that rechecks the verified context and returns
-// the A3-3 mutation `compatibility` envelope obtained by the same fresh
+// A fresh single-use permit that rechecks the verified context and returns
+// the Option B mutation `compatibility` envelope obtained by the same fresh
 // discovery. The envelope is attached immediately before dispatch and never
-// persisted (U2_6_A3_CONTRACTS.md, Protocol).
-export type TeacherUnitsMutationVerifier = () => Promise<() => MutationCompatibilityV1>;
-export function createTeacherUnitsMutationVerifier(functions: Functions, auth: Auth, readSession: () => CompatibilitySession | null): TeacherUnitsMutationVerifier {
+// persisted. backendReleaseId denotes the approved backend build identity.
+export type TeacherUnitsMutationVerifier = () => Promise<() => MutationCompatibilityV2>;
+export type CapabilityLifecycleBridge = TeacherUnitsCapabilityState;
+export function createTeacherUnitsMutationVerifier(functions: Functions, auth: Auth, readSession: () => CompatibilitySession | null, lifecycle?: CapabilityLifecycleBridge): TeacherUnitsMutationVerifier {
   // Resolve expectations only when the closed release permits construction.
   requireTeacherUnitsAvailable();
   const expected = trustedTeacherUnitsEnvironment(window.location.origin);
   const capability = httpsCallable(functions, "teacherUnitsCapabilities", { timeout: 10000 });
-  return async () => {
+  if (lifecycle) {
+    const initialUser = auth.currentUser;
+    let initial = true;
+    const stop = onIdTokenChanged(auth, observed => {
+      if (initial && observed === initialUser) { initial = false; return; }
+      initial = false;
+      lifecycle.invalidate("stale");
+    });
+    lifecycle.addCleanup(stop);
+  }
+  const discover = async (kind: "display" | "mutation") => {
+    const ticket = lifecycle?.begin(kind);
+    if (lifecycle && !ticket) return refuse();
     let unsubscribe: (() => void) | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let handedOff = false;
@@ -103,7 +117,7 @@ export function createTeacherUnitsMutationVerifier(functions: Functions, auth: A
         requireTeacherUnitsAvailable();
         assertTeacherUnitsTransport(functions, auth, expected);
         const current = readSession();
-        if (expired || changed || auth.currentUser !== user || !current || current.uid !== session.uid || current.schoolId !== session.schoolId || current.generation !== session.generation)
+        if ((ticket && !lifecycle?.current(ticket)) || expired || changed || auth.currentUser !== user || !current || current.uid !== session.uid || current.schoolId !== session.schoolId || current.generation !== session.generation)
           refuse();
       };
       const work = async () => {
@@ -116,15 +130,36 @@ export function createTeacherUnitsMutationVerifier(functions: Functions, auth: A
         const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(getPlaceableResources().map(r => r.id))));
         const fingerprint = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
         assertCurrent();
-        const response = await capability({ schemaVersion: 2, nonce, clientContractVersion: CONTRACT });
-        const envelope = evaluateTeacherUnitsCapability(response.data, expected, nonce, { uid: user.uid, schoolId: session.schoolId, districtId }, fingerprint);
+        const response = await capability({ schemaVersion: 3, nonce, clientContractVersion: CONTRACT });
+        const parsed = validateCapabilityResponse(response.data);
+        if (!parsed.ok) {
+          if (ticket) lifecycle?.publish(ticket, { status: "incompatible" });
+          return refuse();
+        }
+        // Closed declarations still require every transport/caller/nonce binding.
+        const r = parsed.value;
+        if (r.nonce !== nonce || r.backend.projectId !== expected.projectId || r.backend.environment !== expected.environment || r.backend.region !== expected.region || r.caller.uid !== user.uid || r.caller.schoolId !== session.schoolId || r.caller.districtId !== districtId || r.teacherUnits.placementFingerprint !== fingerprint) {
+          if (ticket) lifecycle?.publish(ticket, { status: "incompatible" });
+          return refuse();
+        }
+        const availability = r.teacherUnits.availability;
+        const envelope = availability.state === "enabled"
+          ? evaluateTeacherUnitsCapability(response.data, expected, nonce, { uid: user.uid, schoolId: session.schoolId, districtId }, fingerprint)
+          : null;
         const after = await user.getIdTokenResult();
         if (after.token !== token.token)
           refuse();
         assertCurrent();
+        if (ticket && !lifecycle?.publish(ticket, {
+          status: availability.state === "enabled" ? "enabled" : availability.state === "closed" ? "closed" : "unavailable",
+          ...(availability.policyInstanceId !== null ? { policyInstanceId: availability.policyInstanceId, policyGeneration: availability.policyGeneration! } : {}),
+        })) return refuse();
+        if (!envelope && kind === "mutation") return refuse();
         return envelope;
       };
       const envelope = await Promise.race([work(), new Promise<never>((_, reject) => { timer = setTimeout(() => { expired = true; cleanup(); reject(new TeacherUnitsCompatibilityError()); }, 10000); })]);
+      if (kind === "display") return undefined;
+      if (!envelope) return refuse();
       handedOff = true;
       let consumed = false;
       return () => {
@@ -139,6 +174,7 @@ export function createTeacherUnitsMutationVerifier(functions: Functions, auth: A
       };
     }
     catch {
+      if (ticket && lifecycle?.current(ticket)) lifecycle.publish(ticket, { status: "unavailable" });
       return refuse();
     }
     finally {
@@ -147,5 +183,11 @@ export function createTeacherUnitsMutationVerifier(functions: Functions, auth: A
         cleanup();
       }
     }
+  };
+  lifecycle?.setDiscover(async () => { await discover("display"); });
+  return async () => {
+    const permit = await discover("mutation");
+    if (!permit) return refuse();
+    return permit;
   };
 }

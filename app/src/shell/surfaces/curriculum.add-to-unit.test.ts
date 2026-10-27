@@ -11,6 +11,7 @@
  * (scripts/teacher-units-test-setup.js) with in-memory callables that model
  * the server's revision check.
  */
+import type { TeacherUnitsSurfaceSeam as CapabilitySeam } from "../../teacherUnits/unitsController";
 import * as fs from "fs";
 import * as path from "path";
 import type { Session } from "../../session/types";
@@ -27,6 +28,17 @@ import { canonicalId } from "../../curriculum/resourceProjection";
 import { mountTeacherShell, type ShellDeps } from "../shell";
 import { _resetCurriculumSessionStateForTest } from "./curriculum";
 import { _resetMyUnitsSurfaceStateForTest } from "./myUnits";
+
+// Explicit test substitution; compiler production availability stays closed.
+const enabledCapability = {
+  getSnapshot: () => ({ status: "enabled" as const }),
+  subscribe: () => () => undefined,
+  refresh: async () => undefined,
+  enter: async () => undefined,
+  revalidate: async () => undefined,
+  invalidate: () => undefined,
+  dispose: () => undefined,
+} as unknown as NonNullable<CapabilitySeam["capability"]>;
 
 const emptyListClasses: ListClasses = () => Promise.resolve(Object.freeze<ClassSummary[]>([]));
 const flush = async (): Promise<void> => {
@@ -82,7 +94,7 @@ function memoryStorage(): Storage {
 
 // An in-memory server: list by grade, get, create, and setResources with the
 // revision check (writeConflict) the real callable enforces.
-function server(initial: TeacherUnit[]) {
+function server(initial: TeacherUnit[], capability = enabledCapability) {
   const store = new Map(initial.map((u) => [u.unitId, u]));
   const callables = {
     list: jest.fn(async (req: { grade?: string; includeArchived?: boolean }) => ({
@@ -116,6 +128,7 @@ function server(initial: TeacherUnit[]) {
   };
   const storage = memoryStorage();
   const seam: TeacherUnitsSurfaceSeam = createTeacherUnitsSurfaceSeam({
+      capability,
     callables: callables as unknown as TeacherUnitsCallables,
     readFirebaseUid: () => "teacherA",
     readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),
@@ -787,5 +800,101 @@ describe("Build Units refinements", () => {
       expect(spy.mock.calls[call]![0]).toEqual(via === "pointer" ? { focusVisible: false } : undefined);
     }
     spy.mockRestore();
+  });
+});
+
+
+describe("shared Option B capability in Curriculum", () => {
+  function lifecycle(initial: string) {
+    let status = initial;
+    const listeners = new Set<() => void>();
+    const capability = {
+      ...enabledCapability,
+      getSnapshot: () => ({ status }),
+      enter: jest.fn(async () => undefined),
+      revalidate: jest.fn(async () => undefined),
+      subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
+    } as unknown as NonNullable<TeacherUnitsSurfaceSeam["capability"]>;
+    return { capability, set: (next: string) => { status = next; for (const listener of listeners) listener(); }, listeners };
+  }
+
+  test.each(["unknown", "checking", "enabled", "closed", "unavailable", "incompatible", "stale"])(
+    "Curriculum-first %s permits selection and Add only when enabled", async (state) => {
+      const life = lifecycle(state);
+      const s = server([], life.capability);
+      const root = mount({ teacherUnits: s.seam });
+      click(root, "nav-curriculum");
+      await flush();
+      expect(life.capability.enter).toHaveBeenCalledWith("curriculum");
+      const checkbox = box(root, `lesson-select-${LESSON_A.slug}`);
+      expect(checkbox.disabled).toBe(state !== "enabled");
+      expect((q(root, "curriculum-selection-add") as HTMLButtonElement).disabled).toBe(state !== "enabled");
+      if (state !== "enabled") {
+        toggle(root, `lesson-select-${LESSON_A.slug}`);
+        expect(countText(root)).toBe("");
+        click(root, "curriculum-selection-add");
+        expect(q(document, "units-add-dialog")).toBeNull();
+        expect(s.callables.create).not.toHaveBeenCalled();
+        expect(s.callables.setResources).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  test("repeated Curriculum teardown disposes open dialogs and ignores late mutation callbacks", async () => {
+    const life = lifecycle("enabled");
+    for (let cycle = 0; cycle < 3; cycle++) {
+      const held = unit();
+      const s = server([held], life.capability);
+      const root = mount({ teacherUnits: s.seam });
+      click(root, "nav-curriculum");
+      await flush();
+      toggle(root, `lesson-select-${LESSON_A.slug}`);
+      const dialog = await openDialog(root);
+      choose(`units-add-choice-${held.unitId}`);
+      let finish!: () => void;
+      s.callables.setResources.mockImplementationOnce(async () => {
+        await new Promise<void>(resolve => { finish = resolve; });
+        return { unit: { ...held, resourceIds: [LESSON_A.slug], revision: 2 }, noop: false };
+      });
+      click(dialog, "units-add-confirm");
+      await flush();
+      expect(s.callables.setResources).toHaveBeenCalledTimes(1);
+      const notice = q(root, "curriculum-unit-notice-text")!;
+      const before = notice.textContent;
+      root.remove();
+      await flush();
+      expect(q(document, "units-add-dialog")).toBeNull();
+      expect(life.listeners.size).toBe(0);
+      life.set("closed");
+      finish();
+      await flush();
+      expect(q(document, "units-add-dialog")).toBeNull();
+      expect(notice.textContent).toBe(before);
+      expect(s.callables.setResources).toHaveBeenCalledTimes(1);
+      life.set("enabled");
+    }
+  });
+
+  test("shared closure disables selection, membership and an already-open picker without clearing its intent", async () => {
+    const life = lifecycle("enabled");
+    const held = unit({ resourceIds: [LESSON_A.slug] });
+    const s = server([held], life.capability);
+    const root = mount({ teacherUnits: s.seam });
+    click(root, "nav-curriculum");
+    await flush();
+    toggle(root, `lesson-select-${LESSON_A.slug}`);
+    await openDialog(root);
+    expect(q(document, "units-add-dialog")).not.toBeNull();
+    life.set("closed");
+    expect(box(root, `lesson-select-${LESSON_A.slug}`).disabled).toBe(true);
+    for (const control of Array.from(q(document, "units-add-dialog")!.querySelectorAll<HTMLButtonElement>("button.shell-assign-confirm"))) expect(control.disabled).toBe(true);
+    expect(countText(root)).toContain("1 selected");
+    expect(s.callables.setResources).not.toHaveBeenCalled();
+    expect(s.callables.create).not.toHaveBeenCalled();
+    const pill = root.querySelector<HTMLButtonElement>(".shell-resource-unit-pill");
+    if (pill !== null) expect(pill.disabled).toBe(true);
+    root.remove();
+    await flush();
+    expect(life.listeners.size).toBe(0);
   });
 });

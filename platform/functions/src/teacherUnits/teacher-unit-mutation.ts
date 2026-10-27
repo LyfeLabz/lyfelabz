@@ -13,7 +13,7 @@ import {
   type TeacherUnitUpdateWrite,
 } from "../shared";
 import { type A3Scope, type TeacherUnitsMutationOperation, respondAfterCommit } from "./a3-enforcement";
-import type { MutationCompatibilityV1 } from "./a3-protocol";
+import type { MutationCompatibilityV2 } from "./availability-protocol";
 import {
   assertOwnedUnit,
   authorizeTeacherUnitsTransaction,
@@ -99,7 +99,7 @@ export type TeacherUnitMutationTarget = {
   readonly operation: Exclude<TeacherUnitsMutationOperation, "create" | "reorder">;
   readonly unitId: string;
   readonly expectedRevision: number;
-  readonly compatibility: MutationCompatibilityV1;
+  readonly compatibility: MutationCompatibilityV2;
 };
 
 export async function mutateOwnedTeacherUnit(

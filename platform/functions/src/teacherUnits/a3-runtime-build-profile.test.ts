@@ -5,12 +5,13 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { canonicalJSON, parseStrictJSON } from "./a3-canonical";
-import { inspectRuntimeArtifact, inventoryRuntimeArtifact, RUNTIME_BUILD_PATH, validateRuntimeBuild } from "./a3-runtime-artifact";
-import type { RuntimeBuildRecord } from "./a3-runtime-artifact";
+import { inventoryRuntimeArtifact } from "./a3-runtime-artifact";
+import { inspectAvailabilityRuntimeArtifact as inspectRuntimeArtifact, RUNTIME_BUILD_PATH, validateAvailabilityRuntimeBuild as validateRuntimeBuild, deriveBackendBuildId } from "./availability-runtime-build";
+import type { AvailabilityRuntimeBuild as RuntimeBuildRecord } from "./availability-runtime-build";
 
 type Writer = {
   writeRuntimeBuild(options: { root: string; env: Record<string, string | undefined>;
-    inventoryRuntimeArtifact: typeof inventoryRuntimeArtifact; canonicalJSON: typeof canonicalJSON }): RuntimeBuildRecord;
+    inventoryRuntimeArtifact: typeof inventoryRuntimeArtifact; canonicalJSON: typeof canonicalJSON; deriveBackendBuildId: typeof deriveBackendBuildId }): RuntimeBuildRecord;
   RECORD: string;
 };
 const writer = createRequire(__filename)(join(__dirname, "../../scripts/write-a3-runtime-build.cjs")) as Writer;
@@ -18,7 +19,7 @@ let root: string, scratch: string[] = [];
 const put = (path: string, value: string) => writeFileSync(join(root, path), value);
 const git = (...args: string[]) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.invalid", "-c", "commit.gpgsign=false", ...args],
   { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
-const run = (env: Record<string, string | undefined> = {}) => writer.writeRuntimeBuild({ root, env, inventoryRuntimeArtifact, canonicalJSON });
+const run = (env: Record<string, string | undefined> = {}) => writer.writeRuntimeBuild({ root, env, inventoryRuntimeArtifact, canonicalJSON, deriveBackendBuildId });
 const recordPath = () => join(root, RUNTIME_BUILD_PATH);
 const head = () => git("rev-parse", "HEAD");
 const controlled = () => ({ A3_BUILD_PROFILE: "policy-controlled", A3_EXPECTED_SOURCE_SHA: head() });
@@ -141,7 +142,7 @@ test("refuses a directory that is not a Git checkout, for every profile", () => 
   rmSync(join(root, ".git"), { recursive: true, force: true });
   const outside = mkdtempSync(join(tmpdir(), "a3-build-nogit-")); scratch.push(outside);
   for (const env of [{}, { A3_BUILD_PROFILE: "policy-controlled", A3_EXPECTED_SOURCE_SHA: "a".repeat(40) }])
-    expect(() => writer.writeRuntimeBuild({ root: outside, env, inventoryRuntimeArtifact, canonicalJSON })).toThrow();
+    expect(() => writer.writeRuntimeBuild({ root: outside, env, inventoryRuntimeArtifact, canonicalJSON, deriveBackendBuildId })).toThrow();
 });
 
 test("refuses a repository with no commit (unresolvable HEAD)", () => {

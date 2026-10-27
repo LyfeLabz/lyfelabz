@@ -1,3 +1,5 @@
+import { createTeacherUnitsCapabilityState } from "./teacherUnits/capabilityState";
+import { getPlaceableResources } from "./teacherUnits/placeableResources";
 import { createTeacherUnitsMutationVerifier } from "./teacherUnits/backendCompatibility";
 import { teacherUnitsReleaseBoundary } from "./teacherUnits/releaseBoundary";
 import { configureGoogleSignInProvider } from "./session/googleSignInProvider";
@@ -687,6 +689,8 @@ async function run(): Promise<void> {
 
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
+    teacherUnits?.dispose?.();
+    teacherUnits = null;
     renderLoadingSurface(mount);
     // Latency optimization (see assignments/studentList/prefetch.ts): when
     // the locally cached token already says "student", start the two
@@ -754,13 +758,24 @@ async function run(): Promise<void> {
       updateClassColor = createFirebaseUpdateClassColor(functions);
       assignmentSummary = createAssignmentSummaryCallable(functions);
       lessonSummary = createLessonResultsCallable(functions);
-      teacherUnits = teacherUnitsReleaseBoundary(() =>
-        createTeacherUnitsSurfaceSeam({
+      teacherUnits = teacherUnitsReleaseBoundary(() => {
+        const capability = createTeacherUnitsCapabilityState({
+          readContext: () => runToken === currentRunToken && lastActiveTeacher === session
+            ? [session.uid, session.schoolId, runToken, auth.currentUser,
+              window.location.origin, functions, functions.app.options.projectId,
+              functions.region, functions.customDomain, auth.emulatorConfig,
+              (functions as typeof functions & { emulatorOrigin?: unknown }).emulatorOrigin,
+              JSON.stringify(getPlaceableResources().map(resource => resource.id))]
+            : null,
+          visibility: document,
+        });
+        return createTeacherUnitsSurfaceSeam({
+          capability,
           callables: createFirebaseTeacherUnitsCallables(functions, createTeacherUnitsMutationVerifier(functions, auth, () =>
             runToken === currentRunToken && lastActiveTeacher === session
               ? { uid: session.uid, schoolId: session.schoolId, generation: runToken }
               : null,
-          )),
+          capability), capability),
           readFirebaseUid: () => auth.currentUser?.uid ?? null,
           // Only this run's own session, while this run is current and
           // has installed it: a new run (sign-out, account switch,
@@ -774,8 +789,8 @@ async function run(): Promise<void> {
             readActiveSession: () => lastActiveTeacher,
           }),
           createStore: (scope) => createTeacherUnitCreateAttemptStore(scope),
-        }),
-      );
+        });
+      });
       assignmentReopen = createAssignmentsReopenCallable(functions);
       assignmentUpdateDraft = createAssignmentsUpdateDraftCallable(functions);
       assignmentPublish = createAssignmentsPublishCallable(functions);

@@ -7,7 +7,7 @@ import {
   readCompatibility,
   requireRuntimeIdentity,
 } from "./a3-enforcement";
-import type { MutationCompatibilityV1 } from "./a3-protocol";
+import type { MutationCompatibilityV2 } from "./availability-protocol";
 import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
@@ -26,7 +26,7 @@ import { mutateOwnedTeacherUnit, type TeacherUnitMutationResponse } from "./teac
 export type TeacherUnitsRestoreRequest = {
   readonly unitId: string;
   readonly expectedRevision: number;
-  readonly compatibility: MutationCompatibilityV1;
+  readonly compatibility: MutationCompatibilityV2;
 };
 
 export type TeacherUnitsRestoreResponse = TeacherUnitMutationResponse;
@@ -37,7 +37,7 @@ export function createTeacherUnitsRestoreHandler(enforcement: TeacherUnitsEnforc
   return async function teacherUnitsRestoreHandler(
     request: CallableRequest<unknown>,
   ): Promise<TeacherUnitsRestoreResponse> {
-    const identity = await requireRuntimeIdentity(enforcement);
+    const identity = await requireRuntimeIdentity(enforcement, "teacherUnitsRestore");
     const actor = await assertActiveTeacher(request);
     const payload = requestObject(request.data);
     assertOnlyAllowedKeys(payload, ["unitId", "expectedRevision", "compatibility"]);

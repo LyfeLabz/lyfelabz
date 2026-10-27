@@ -21,7 +21,7 @@ import {
 // canonical authorization (user, school, district) and the unit are read
 // in one transaction snapshot (`readOwnedTeacherUnit`), so a suspension,
 // role change, school transfer, or school/district change committed before
-// that snapshot is honored. A3-3 availability is enforced in the same
+// that snapshot is honored. Option B availability is enforced in the same
 // snapshot; no compatibility envelope is accepted on reads.
 
 export type TeacherUnitsGetRequest = {
@@ -38,7 +38,7 @@ export function createTeacherUnitsGetHandler(enforcement: TeacherUnitsEnforcemen
   return async function teacherUnitsGetHandler(
     request: CallableRequest<unknown>,
   ): Promise<TeacherUnitsGetResponse> {
-    const identity = await requireRuntimeIdentity(enforcement);
+    const identity = await requireRuntimeIdentity(enforcement, "teacherUnitsGet");
     const actor = await assertActiveTeacher(request);
     const payload = requestObject(request.data);
     assertOnlyAllowedKeys(payload, ["unitId"]);

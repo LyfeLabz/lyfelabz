@@ -105,10 +105,10 @@ function runChecks({ run = execFileSync, log = console.log } = {}) {
 }
 
 // Checks, then the pair build that produces the artifacts to deploy.
-function checkAndBuild({ intent, run = execFileSync, build = buildPair, log = console.log } = {}) {
+function checkAndBuild({ intent, target, run = execFileSync, build = buildPair, log = console.log } = {}) {
   releaseIntent(intent);
   runChecks({ run, log });
-  return build({intent});
+  return build({intent,...(target ? {target} : {})});
 }
 
 async function liveComparison({ environment, sites, built, run }) {
@@ -174,20 +174,21 @@ function verifyBuildSource(source, built) {
 }
 
 async function main(argv = process.argv.slice(2)) {
-  const args = parseArgs(argv, { values: ['project', 'intent', 'expect-sha'], flags: ['allow-dirty', 'offline'] });
+  const args = parseArgs(argv, { values: ['project', 'intent', 'expect-sha','rules-approval','rules-report','approval-digest','configuration-approval'], flags: ['allow-dirty', 'offline'] });
   const gate = preflight({ project: args.project, intent:args.intent, expectSha: args['expect-sha'], allowDirty: Boolean(args['allow-dirty']), offline: Boolean(args.offline) });
-  const built = checkAndBuild({intent:gate.intent});
+  const bInputs = gate.intent === 'teacher-units' ? require('./release.cjs').optionBInputs(args) : {};
+  const built = checkAndBuild({intent:gate.intent,...(gate.intent === 'teacher-units' ? {target:require('./backend-state.cjs').optionBTarget(args.project)} : {})});
   verifyBuildSource(gate.source, built);
   const surfaces = args.offline ? null : await liveComparison({ environment: gate.environment, sites: gate.sites, built });
   // Long Hosting comparisons complete before obtaining fresh backend evidence.
-  const backend = !args.offline && gate.intent === 'teacher-units' ? await verifyBackend({ project:gate.environment.project, pair:built.record }) : null;
+  const backend = !args.offline && gate.intent === 'teacher-units' ? await verifyBackend({ project:gate.environment.project, pair:built.record,...bInputs }) : null;
   const candidate = releaseCandidate(built.record);
   const record = {
     kind: 'lyfelabz.hostingPreparedRelease',
     schemaVersion: 3,
     releaseIntent: gate.intent,
     readiness: args.offline ? 'local-only-not-ready' : gate.intent === 'general' ? 'general-hosting-prepared' : gate.intent === 'staging-ux-test' ? 'staging-ux-test-hosting-prepared' : 'teacher-units-backend-observed',
-    evidenceReceipt: args.offline ? null : receipt({ phase:'prepared', project:gate.environment.project, intent:gate.intent, candidate, evidence:backend?.evidence, hosting:surfaces }),
+    evidenceReceipt: args.offline ? null : receipt({ phase:'prepared', project:gate.environment.project, intent:gate.intent, candidate, evidence:backend?.evidence, hosting:surfaces,...bInputs }),
     candidate,
     preparedAt: new Date().toISOString(),
     project: gate.environment.project,

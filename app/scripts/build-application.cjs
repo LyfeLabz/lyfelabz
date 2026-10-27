@@ -1,6 +1,7 @@
 'use strict';
 // One reviewed entry. Availability is a compiled substitution chosen only by the
-// explicit release intent: 'general' and 'teacher-units' are always closed; the
+// explicit release intent: 'general' is closed; target-bound 'teacher-units'
+// constructs policy-capable UI without granting server availability. The
 // owner-approved 'staging-ux-test' intent (staging human UX testing only,
 // uncertified; docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md) opens only
 // on the staging origin. Release tooling refuses that intent for production.
@@ -17,7 +18,7 @@ const STAGING_UX_TEST_ORIGIN = 'https://lyfelabz-staging.web.app';
 const STAGING_UX_TEST_SOURCE = 'export function teacherUnitsAvailable(): boolean { return typeof location !== "undefined" && location.origin === "' + STAGING_UX_TEST_ORIGIN + '"; }\nexport function requireTeacherUnitsAvailable(): void { if (!teacherUnitsAvailable()) throw new Error("Teacher Units unavailable in this release"); }\n';
 const PROFILES = Object.freeze({
   'general': Object.freeze({ policy: 'teacher-units-canonical-closed-v2', availability: 'closed', source: CLOSED_SOURCE }),
-  'teacher-units': Object.freeze({ policy: 'teacher-units-canonical-closed-v2', availability: 'closed', source: CLOSED_SOURCE }),
+  'teacher-units': Object.freeze({ policy: 'teacher-units-option-b-policy-capable-v1', availability: 'server-policy-required' }),
   'staging-ux-test': Object.freeze({ policy: 'teacher-units-staging-ux-test-v1', availability: 'staging-ux-test', source: STAGING_UX_TEST_SOURCE }),
 });
 const NAMESPACE = 'teacher-units-availability-contract';
@@ -32,6 +33,27 @@ function canonical(value) {
 }
 function refuse(message) { throw new Error(`[application-build] REFUSED: ${message}`); }
 function intent(value) { if (!Object.prototype.hasOwnProperty.call(PROFILES, value)) refuse('unknown release intent'); return value; }
+function policyTarget(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) ||
+      ![Object.prototype, null].includes(Object.getPrototypeOf(value))) refuse('explicit policy target required');
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const fields = ['environment', 'origin', 'projectId'];
+  if (Reflect.ownKeys(value).length !== fields.length || fields.some(k => !descriptors[k] || !descriptors[k].enumerable || !Object.hasOwn(descriptors[k], 'value'))) refuse('exact policy target fields required');
+  const result = Object.fromEntries(fields.map(k => [k, descriptors[k].value]));
+  if (!((result.projectId === 'lyfelabz-prod' && result.environment === 'production' && result.origin === 'https://app.lyfelabz.com') ||
+        (result.projectId === 'lyfelabz-staging' && result.environment === 'staging' && result.origin === STAGING_UX_TEST_ORIGIN))) refuse('untrusted policy target/origin');
+  return Object.freeze(result);
+}
+function profileFor(releaseIntent, target) {
+  const profile = PROFILES[intent(releaseIntent)];
+  if (releaseIntent !== 'teacher-units') {
+    if (target !== undefined) refuse('policy target requires teacher-units intent');
+    return profile;
+  }
+  const binding = policyTarget(target);
+  const source = 'export function teacherUnitsAvailable(): boolean { return typeof location !== "undefined" && location.origin === ' + JSON.stringify(binding.origin) + '; }\nexport function requireTeacherUnitsAvailable(): void { if (!teacherUnitsAvailable()) throw new Error("Teacher Units unavailable in this release"); }\n';
+  return { ...profile, source, policyTarget: binding };
+}
 // Inventory actual files (including untracked/hidden files), not Git or glob output.
 // Dependencies have their own JS/package resolution; this contract covers app/src.
 function checkSource(root = ROOT) {
@@ -66,9 +88,8 @@ function checkSource(root = ROOT) {
   if (!files.includes(AVAILABILITY)) refuse('missing canonical availability module');
   return { extensions: SOURCE_EXTENSIONS, filenameComponents: 'ascii-only', resolutionConfigs: { prohibitedNames: ['package.json', 'tsconfig*.json', 'jsconfig.json'], caseInsensitive: true }, files: files.sort() };
 }
-async function compile(root = ROOT, releaseIntent = 'general') {
-  intent(releaseIntent);
-  const profile = PROFILES[releaseIntent];
+async function compile(root = ROOT, releaseIntent = 'general', target) {
+  const profile = profileFor(releaseIntent, target);
   root = fs.realpathSync(root);
   const sourceContract = checkSource(root);
   const app = path.join(root, 'app');
@@ -136,7 +157,7 @@ async function compile(root = ROOT, releaseIntent = 'general') {
   if (output.length !== 1 || output[0].path !== path.join(app, 'dist/bundle.js')) refuse('unexpected executable output');
   const bundle = Buffer.from(output[0].contents);
   const evidence = { kind: 'lyfelabz.applicationBuild', schemaVersion: 2, policy: profile.policy, releaseIntent,
-    availability: profile.availability, availabilityEvidence: 'build-contract-assertion', runtimeAvailability: 'not-certified',
+    availability: profile.availability, ...(profile.policyTarget ? { policyTarget: profile.policyTarget } : {}), availabilityEvidence: 'build-contract-assertion', runtimeAvailability: 'not-certified',
     sourceContract, canonicalAvailability: { identity: AVAILABILITY, namespace: NAMESPACE, loader: 'ts',
       sourceHash: inputs[AVAILABILITY], replacementHash: hash(profile.source),
       resolvedImports: resolvedImports.sort((a,b) => Buffer.compare(Buffer.from(canonical(a)), Buffer.from(canonical(b)))) },
@@ -145,28 +166,28 @@ async function compile(root = ROOT, releaseIntent = 'general') {
     outputs:{'app/dist/bundle.js':hash(bundle)} };
   return { bundle, evidence:JSON.parse(canonical(evidence)) };
 }
-async function build(root = ROOT, releaseIntent = 'general') {
-  const built = await compile(root, releaseIntent); const directory = path.join(root,'app/dist');
+async function build(root = ROOT, releaseIntent = 'general', target) {
+  const built = await compile(root, releaseIntent, target); const directory = path.join(root,'app/dist');
   fs.mkdirSync(directory,{recursive:true});
   fs.writeFileSync(path.join(directory,'bundle.js'),built.bundle);
   fs.writeFileSync(path.join(directory,'application-build.json'),canonical(built.evidence)+'\n');
   return built.evidence;
 }
-async function verify(root = ROOT, releaseIntent = 'general') {
-  intent(releaseIntent); let evidence, bundle;
+async function verify(root = ROOT, releaseIntent = 'general', target) {
+  const profile = profileFor(releaseIntent, target); let evidence, bundle;
   try { evidence=JSON.parse(fs.readFileSync(path.join(root,'app/dist/application-build.json'),'utf8')); bundle=fs.readFileSync(path.join(root,'app/dist/bundle.js')); }
   catch { refuse('missing or malformed availability build evidence/bundle'); }
-  if (evidence?.schemaVersion !== 2 || evidence.availabilityEvidence !== 'build-contract-assertion' || evidence.runtimeAvailability !== 'not-certified' || evidence.availability !== PROFILES[releaseIntent].availability || evidence.policy !== PROFILES[releaseIntent].policy || evidence.releaseIntent !== releaseIntent) refuse('unknown/enabled availability or mismatched release intent');
-  const rebuilt = await compile(root,releaseIntent);
+  if (evidence?.schemaVersion !== 2 || evidence.availabilityEvidence !== 'build-contract-assertion' || evidence.runtimeAvailability !== 'not-certified' || evidence.availability !== profile.availability || evidence.policy !== profile.policy || evidence.releaseIntent !== releaseIntent) refuse('unknown/enabled availability or mismatched release intent');
+  const rebuilt = await compile(root,releaseIntent,target);
   if (canonical(evidence) !== canonical(rebuilt.evidence) || hash(bundle) !== rebuilt.evidence.outputs['app/dist/bundle.js']) refuse('stale/substituted build evidence or modified bundle');
   return rebuilt.evidence;
 }
 async function main(argv) {
   if (argv.length === 1 && argv[0] === '--check-source') { checkSource(); return; }
   if (argv.length === 0) { await build(); return; }
-  if (argv.length !== 3 || !['--verify','--build'].includes(argv[0])) refuse('expected --build|--verify <repository-root> <general|teacher-units|staging-ux-test>');
-  const evidence=await (argv[0] === '--verify' ? verify : build)(path.resolve(argv[1]),intent(argv[2]));
+  if (![3,6].includes(argv.length) || !['--verify','--build'].includes(argv[0])) refuse('expected --build|--verify <repository-root> <general|teacher-units|staging-ux-test> [projectId environment origin]');
+  const evidence=await (argv[0] === '--verify' ? verify : build)(path.resolve(argv[1]),intent(argv[2]),argv.length === 6 ? {projectId:argv[3],environment:argv[4],origin:argv[5]} : undefined);
   process.stdout.write(canonical(evidence)+'\n');
 }
 if (require.main === module) main(process.argv.slice(2)).catch(error=>{console.error(error.message);process.exitCode=1;});
-module.exports = { compile, build, verify, canonical, hash, CLOSED_SOURCE, STAGING_UX_TEST_SOURCE, STAGING_UX_TEST_ORIGIN, checkSource };
+module.exports = { compile, build, verify, canonical, hash, CLOSED_SOURCE, STAGING_UX_TEST_SOURCE, STAGING_UX_TEST_ORIGIN, checkSource, policyTarget };

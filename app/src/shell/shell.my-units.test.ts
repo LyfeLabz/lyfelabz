@@ -11,6 +11,7 @@
  * (scripts/teacher-units-test-setup.js); releaseAvailability.test.ts covers
  * the real closed module.
  */
+import type { TeacherUnitsSurfaceSeam as CapabilitySeam } from "../teacherUnits/unitsController";
 import type { Session } from "../session/types";
 import type { ClassSummary } from "../classes/types";
 import type { ListClasses } from "../classes/listClasses";
@@ -25,6 +26,17 @@ import { parseShellHash } from "./navigationHistory";
 import { _resetCurriculumSessionStateForTest } from "./surfaces/curriculum";
 import { _resetMyUnitsSurfaceStateForTest } from "./surfaces/myUnits";
 import { getPlaceableResources } from "../teacherUnits/placeableResources";
+
+// Explicit test substitution; compiler production availability stays closed.
+const enabledCapability = {
+  getSnapshot: () => ({ status: "enabled" as const }),
+  subscribe: () => () => undefined,
+  refresh: async () => undefined,
+  enter: async () => undefined,
+  revalidate: async () => undefined,
+  invalidate: () => undefined,
+  dispose: () => undefined,
+} as unknown as NonNullable<CapabilitySeam["capability"]>;
 
 const emptyListClasses: ListClasses = () => Promise.resolve(Object.freeze<ClassSummary[]>([]));
 const flush = (): Promise<void> => new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -89,6 +101,7 @@ function seamWith(units: TeacherUnit[], shared = false) {
   const created: Array<{ initialGrade: string }> = [];
   const make = () =>
     createTeacherUnitsSurfaceSeam({
+      capability: enabledCapability,
       callables: callables as unknown as TeacherUnitsCallables,
       readFirebaseUid: () => "teacherA",
       readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),
@@ -96,6 +109,7 @@ function seamWith(units: TeacherUnit[], shared = false) {
     });
   const one = shared ? make() : null;
   const seam: TeacherUnitsSurfaceSeam = {
+    capability: enabledCapability,
     createController: (input) => {
       created.push(input);
       return (one ?? make()).createController(input);

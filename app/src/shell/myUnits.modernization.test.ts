@@ -12,6 +12,7 @@
  * in-memory callables (the test-only Teacher Units availability fixture is
  * open; see scripts/teacher-units-test-setup.js).
  */
+import type { TeacherUnitsSurfaceSeam as CapabilitySeam } from "../teacherUnits/unitsController";
 import type { Session } from "../session/types";
 import type { ClassSummary } from "../classes/types";
 import type { AssignmentDetailMetadata } from "../assignments/detail/types";
@@ -25,6 +26,17 @@ import { mountTeacherShell, type ShellDeps } from "./shell";
 import { _resetCurriculumSessionStateForTest } from "./surfaces/curriculum";
 import { _resetMyUnitsSurfaceStateForTest } from "./surfaces/myUnits";
 import { _resetUnitExpansionSessionForTest } from "../teacherPreferences/unitExpansionStorage";
+
+// Explicit test substitution; compiler production availability stays closed.
+const enabledCapability = {
+  getSnapshot: () => ({ status: "enabled" as const }),
+  subscribe: () => () => undefined,
+  refresh: async () => undefined,
+  enter: async () => undefined,
+  revalidate: async () => undefined,
+  invalidate: () => undefined,
+  dispose: () => undefined,
+} as unknown as NonNullable<CapabilitySeam["capability"]>;
 
 const flush = (): Promise<void> => new Promise<void>((r) => setTimeout(r, 0));
 const settle = async (): Promise<void> => {
@@ -152,6 +164,7 @@ function setup(units: TeacherUnit[], opts: { batchFails?: boolean } = {}) {
   };
   const storage = memoryStorage();
   const seam = createTeacherUnitsSurfaceSeam({
+      capability: enabledCapability,
     callables: callables as unknown as TeacherUnitsCallables,
     readFirebaseUid: () => "teacherA",
     readActiveTeacher: () => ({ uid: "teacherA", schoolId: "schoolA" }),

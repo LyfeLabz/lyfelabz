@@ -23,8 +23,8 @@ import { TEACHER_UNIT_COLORS, isTeacherUnitColor, unitColorKey } from "./unitCol
 import type { TeacherUnit } from "./types";
 
 const ENVELOPE = Object.freeze({
-  schemaVersion: 1 as const,
-  clientContractVersion: "teacher-units-v2" as const,
+  schemaVersion: 2 as const,
+  clientContractVersion: "teacher-units-v3" as const,
   policyInstanceId: "0f8fad5b-d9cb-469f-a165-70867728950e",
   policyGeneration: 3,
   backendReleaseId: "a".repeat(64),

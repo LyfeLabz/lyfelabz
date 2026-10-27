@@ -133,18 +133,10 @@ async function runTx<T>(fn: (tx: any) => Promise<T>): Promise<T> {
 const mockRequireDistrictContext = jest.fn();
 
 jest.mock("firebase-admin/firestore", () => {
-  class MockTimestamp {
-    constructor(readonly seconds: number, readonly nanoseconds: number) {}
-    static fromMillis(ms: number): MockTimestamp {
-      return new MockTimestamp(Math.floor(ms / 1000), (ms % 1000) * 1_000_000);
-    }
-    toMillis(): number {
-      return this.seconds * 1000 + this.nanoseconds / 1_000_000;
-    }
-  }
+  const { Timestamp } = jest.requireActual("firebase-admin/firestore");
   return {
     FieldValue: { serverTimestamp: () => SERVER_TS, delete: () => DELETE_FIELD },
-    Timestamp: MockTimestamp,
+    Timestamp,
   };
 });
 jest.mock("../shared/firestore/admin", () => ({ getAdminFirestore: () => ({ doc: (path: string) => ref(path) }) }));
@@ -188,22 +180,15 @@ import {
   PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
   RUNTIME_PLACEMENT_FINGERPRINT,
   TEACHER_UNITS_POLICY_PATH,
-  a3Refusal,
   type TeacherUnitsEnforcement,
 } from "./a3-enforcement";
-import { validateCapabilityResponse } from "./a3-protocol";
-import { UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER } from "./a3-release-authority";
-import { STAGING_UX_TEST_EVIDENCE_REF, STAGING_UX_TEST_RELEASE_ID } from "./a3-staging-ux-test";
-import { validateEvidenceReference } from "./a3-bindings";
-import { contentDigest, evidenceRef } from "./a3-canonical";
+import { validateCapabilityResponse } from "./availability-protocol";
 import {
-  A3_FIXTURE,
-  buildEnabledChain,
-  closedPolicy,
+  buildOptionBChain as buildEnabledChain,
+  closedOptionBPolicy as closedPolicy,
   emulatorExpectation,
   stubIdentity,
   testEnforcement,
-  testVerifier,
 } from "./a3-test-support.test";
 import { createTeacherUnitsArchiveHandler } from "./teacher-units-archive";
 import { createTeacherUnitsCapabilitiesHandler } from "./teacher-units-capabilities";
@@ -871,7 +856,7 @@ describe("U1B unit ordering (hermetic)", () => {
 // ---------------------------------------------------------------------------
 
 const NONCE = "a3_nonce_0123456789abcdef";
-const V2_DISCOVERY = { schemaVersion: 2, nonce: NONCE, clientContractVersion: "teacher-units-v2" };
+const V2_DISCOVERY = { schemaVersion: 3, nonce: NONCE, clientContractVersion: "teacher-units-v3" };
 // Client codes treated as confirmed pre-commit rejections
 // (app/src/teacherUnits/saveCoordination.ts PRE_COMMIT_REJECTION_CODES).
 const CLIENT_PRE_COMMIT_CODES = [
@@ -944,9 +929,9 @@ describe("A3-3 production wiring (closed-state guarantee)", () => {
     process.env = original;
   });
 
-  it("binds the UNCONFIGURED verifier and supplies no emulator profile", () => {
+  it("binds Option B artifact checks and supplies no emulator profile", () => {
     expect(Object.isFrozen(PRODUCTION_TEACHER_UNITS_ENFORCEMENT)).toBe(true);
-    expect(PRODUCTION_TEACHER_UNITS_ENFORCEMENT.verifier).toBe(UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER);
+    expect(PRODUCTION_TEACHER_UNITS_ENFORCEMENT).not.toHaveProperty("verifier");
     expect(PRODUCTION_TEACHER_UNITS_ENFORCEMENT.resolveIdentity.length).toBe(0);
   });
 
@@ -982,10 +967,10 @@ describe("A3-3 production wiring (closed-state guarantee)", () => {
     },
   );
 
-  it("keeps every management operation unavailable with the UNCONFIGURED verifier, even for a coherent enabled chain", async () => {
+  it("keeps every management operation unavailable with a closed-only build, even for a valid enabled policy", async () => {
     const unitId = await seedUnit();
     const before = snapshotWrites();
-    const unconfigured = handlersFor(testEnforcement(IDENTITY, CHAIN, { verifier: UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER }));
+    const unconfigured = handlersFor(testEnforcement(IDENTITY, CHAIN, { inspectBuild: () => buildEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT, { deploymentMode: "closed-only" }).build }));
     for (const op of MANAGEMENT) {
       expect(await codeOf(unconfigured[op](req(TEACHER, managementRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
     }
@@ -1000,6 +985,14 @@ describe("A3-3 production wiring (closed-state guarantee)", () => {
 });
 
 describe("A3-3 runtime identity", () => {
+  it("rejects a wrong cloud service binding before canonical tenant reads", async () => {
+    const cloud = stubIdentity({ environment: "production", projectId: "lyfelabz-prod", projectNumber: "182791689935" });
+    const guarded = handlersFor(testEnforcement(cloud, CHAIN)); mockRequireDistrictContext.mockClear();
+    for (const op of MANAGEMENT) expect(await codeOf(guarded[op](req(TEACHER, managementRequest(op, "unit"))))).toBe("teacherUnits.runtimeIdentityUnavailable");
+    expect(await codeOf(guarded.capabilities(req(TEACHER, V2_DISCOVERY)))).toBe("teacherUnits.runtimeIdentityUnavailable");
+    expect(mockRequireDistrictContext).not.toHaveBeenCalled();
+  });
+
   it("refuses unresolved, unaccepted and stale identities before tenant reads", async () => {
     const unitId = await seedUnit();
     const prodAsEmulator = stubIdentity({ ...emulatorExpectation("lyfelabz-prod") });
@@ -1045,10 +1038,10 @@ describe("A3-3 schema 2 discovery and legacy rejection", () => {
     const response = await RAW.capabilities(req(TEACHER, V2_DISCOVERY));
     expect(validateCapabilityResponse(response, "demo-a3-test").ok).toBe(true);
     expect(response).toMatchObject({
-      schemaVersion: 2, nonce: NONCE,
-      backend: { projectId: "demo-a3-test", environment: "emulator", region: "us-central1", enforcementVersion: "teacher-units-a3-v1" },
-      teacherUnits: { apiContractVersion: "teacher-units-v2", acceptedClientContractVersions: ["teacher-units-v2"],
-        supportedClientContractVersions: ["teacher-units-v2"], placementFingerprint: RUNTIME_PLACEMENT_FINGERPRINT,
+      schemaVersion: 3, nonce: NONCE,
+      backend: { projectId: "demo-a3-test", environment: "emulator", region: "us-central1", enforcementVersion: "teacher-units-option-b-v1" },
+      teacherUnits: { apiContractVersion: "teacher-units-v3", acceptedClientContractVersions: ["teacher-units-v3"],
+        supportedClientContractVersions: ["teacher-units-v3"], placementFingerprint: RUNTIME_PLACEMENT_FINGERPRINT,
         availability: { state: "enabled", deploymentEligible: true, backendReleaseId: CHAIN.releaseId } },
       caller: { uid: TEACHER, role: "teacher", schoolId: SCHOOL, districtId: "district-1" },
     });
@@ -1073,11 +1066,11 @@ describe("A3-3 schema 2 discovery and legacy rejection", () => {
 
   it.each([
     ["exact A2 v1 request", { schemaVersion: 1, nonce: NONCE, clientContractVersion: "teacher-units-v1" }, "teacherUnits.contractUnsupported"],
-    ["schema 2 with v1 contract", { schemaVersion: 2, nonce: NONCE, clientContractVersion: "teacher-units-v1" }, "teacherUnits.contractUnsupported"],
-    ["schema 1 with v2 contract", { schemaVersion: 1, nonce: NONCE, clientContractVersion: "teacher-units-v2" }, "teacherUnits.contractUnsupported"],
-    ["string schema version", { schemaVersion: "2", nonce: NONCE, clientContractVersion: "teacher-units-v2" }, "teacherUnits.contractUnsupported"],
+    ["schema 2 with v1 contract", { schemaVersion: 3, nonce: NONCE, clientContractVersion: "teacher-units-v1" }, "teacherUnits.contractUnsupported"],
+    ["schema 1 with v2 contract", { schemaVersion: 1, nonce: NONCE, clientContractVersion: "teacher-units-v3" }, "teacherUnits.contractUnsupported"],
+    ["string schema version", { schemaVersion: "2", nonce: NONCE, clientContractVersion: "teacher-units-v3" }, "teacherUnits.contractUnsupported"],
     ["unknown key", { ...V2_DISCOVERY, projectId: "lyfelabz-prod" }, "teacherUnits.invalidRequest"],
-    ["missing nonce", { schemaVersion: 2, clientContractVersion: "teacher-units-v2" }, "teacherUnits.invalidRequest"],
+    ["missing nonce", { schemaVersion: 2, clientContractVersion: "teacher-units-v3" }, "teacherUnits.invalidRequest"],
     ["short nonce", { ...V2_DISCOVERY, nonce: "short" }, "teacherUnits.invalidRequest"],
     ["null payload", null, "teacherUnits.invalidRequest"],
     ["array payload", [], "teacherUnits.invalidRequest"],
@@ -1092,111 +1085,48 @@ describe("A3-3 schema 2 discovery and legacy rejection", () => {
   });
 });
 
-// A3-6 S2: validateEvidenceReference now accepts a release certification. A certification
-// stored where activation evidence or the activation approval is expected must still refuse.
-function emulatorCertification(): { ref: string; doc: Record<string, any> } {
-  const doc = JSON.parse(JSON.stringify(A3_FIXTURE.valid.releaseCertification));
-  doc.payload.statement = { ...doc.payload.statement, environment: EXPECTED.environment, projectId: EXPECTED.projectId,
-    projectNumber: EXPECTED.projectNumber, backendReleaseId: CHAIN.releaseId, placementFingerprint: RUNTIME_PLACEMENT_FINGERPRINT };
-  doc.payload.source.statementObject.sha256 = contentDigest(doc.payload.statement);
-  // The substitute is valid evidence, so any refusal comes from the kind checks.
-  expect(validateEvidenceReference(evidenceRef(doc.payload), doc, EXPECTED).ok).toBe(true);
-  return { ref: evidenceRef(doc.payload), doc };
-}
-function certificationAsActivationEvidence(): void {
-  const { ref, doc } = emulatorCertification();
-  store.set(ref, { data: doc, version: ++version });
-  setPolicy({ ...CHAIN.policy, activationEvidenceRef: ref });
-}
-function certificationAsActivationApproval(): void {
-  const { ref, doc } = emulatorCertification();
-  store.set(ref, { data: doc, version: ++version });
-  const evidence = JSON.parse(JSON.stringify(CHAIN.documents[CHAIN.activationEvidenceRef]));
-  evidence.payload.authorizationEvidenceRef = ref;
-  store.set(evidenceRef(evidence.payload), { data: evidence, version: ++version });
-  setPolicy({ ...CHAIN.policy, activationEvidenceRef: evidenceRef(evidence.payload) });
-}
-
-describe("A3-3 availability states for management operations", () => {
-  const states: [string, () => void, string][] = [
-    ["release certification in place of activation evidence", certificationAsActivationEvidence, "teacherUnits.deploymentIneligible"],
-    ["release certification in place of activation approval", certificationAsActivationApproval, "teacherUnits.deploymentIneligible"],
-    ["missing policy", () => store.delete(TEACHER_UNITS_POLICY_PATH), "teacherUnits.policyMissing"],
-    ["closed policy", () => setPolicy(closedPolicy(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT)), "teacherUnits.availabilityClosed"],
-    ["malformed policy (unknown field)", () => setPolicy({ ...CHAIN.policy, extra: true }), "teacherUnits.policyInvalid"],
-    ["malformed policy (JSON timestamp)", () => setPolicy({ ...CHAIN.policy, updatedAt: { seconds: 1, nanoseconds: 0 } }), "teacherUnits.policyInvalid"],
-    ["policy for another environment", () => setPolicy({ ...CHAIN.policy, environment: "staging", projectId: "lyfelabz-staging", projectNumber: "293337283840" }), "teacherUnits.policyInvalid"],
-    ["enabled policy without evidence", () => setPolicy({ ...CHAIN.policy, activationEvidenceRef: null }), "teacherUnits.policyInvalid"],
-    ["missing release document", () => store.delete(CHAIN.releaseRef), "teacherUnits.deploymentIneligible"],
-    ["tampered release document", () => store.set(CHAIN.releaseRef, { data: { ...CHAIN.documents[CHAIN.releaseRef], schemaVersion: 2 }, version: ++version }), "teacherUnits.deploymentIneligible"],
-    ["missing deployment approval", () => store.delete(CHAIN.deploymentApprovalRef), "teacherUnits.deploymentIneligible"],
-    ["missing activation evidence", () => store.delete(CHAIN.activationEvidenceRef), "teacherUnits.deploymentIneligible"],
-    ["missing activation approval", () => store.delete(CHAIN.activationApprovalRef), "teacherUnits.deploymentIneligible"],
-    ["policy placement differs from runtime placement", () => setPolicy({ ...CHAIN.policy, placementFingerprint: "e".repeat(64) }), "teacherUnits.deploymentIneligible"],
-  ];
-  it.each(states)("refuses every management operation for %s with no write", async (_label, mutate, code) => {
-    const unitId = await seedUnit();
-    mutate();
-    const before = snapshotWrites();
+describe("Option B availability states for every management operation", () => {
+  it.each([
+    ["missing", () => store.delete(TEACHER_UNITS_POLICY_PATH), "teacherUnits.policyMissing"],
+    ["closed", () => setPolicy(closedPolicy(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT)), "teacherUnits.availabilityClosed"],
+    ["unknown field", () => setPolicy({ ...CHAIN.policy, extra: true }), "teacherUnits.policyInvalid"],
+    ["legacy schema", () => setPolicy({ ...CHAIN.policy, schemaVersion: 1 }), "teacherUnits.policyInvalid"],
+    ["legacy marker", () => setPolicy({ ...CHAIN.policy, activationEvidenceRef: "marker" }), "teacherUnits.policyInvalid"],
+    ["JSON timestamp", () => setPolicy({ ...CHAIN.policy, updatedAt: { seconds: 2, nanoseconds: 0 } }), "teacherUnits.policyInvalid"],
+    ["wrong target", () => setPolicy({ ...CHAIN.policy, projectId: "demo-other" }), "teacherUnits.policyInvalid"],
+    ["no approved build", () => setPolicy({ ...CHAIN.policy, approvedBackendBuildId: null }), "teacherUnits.policyInvalid"],
+    ["wrong contract", () => setPolicy({ ...CHAIN.policy, acceptedClientContractVersions: ["teacher-units-v2"] }), "teacherUnits.policyInvalid"],
+    ["wrong build", () => setPolicy({ ...CHAIN.policy, approvedBackendBuildId: "e".repeat(64) }), "teacherUnits.deploymentIneligible"],
+    ["wrong placement", () => setPolicy({ ...CHAIN.policy, placementFingerprint: "e".repeat(64) }), "teacherUnits.deploymentIneligible"],
+  ] as [string, () => void, string][])("refuses %s without writes", async (_label, mutate, code) => {
+    const unitId = await seedUnit(); mutate(); const before = snapshotWrites();
     for (const op of MANAGEMENT) expect(await codeOf(RAW[op](req(TEACHER, managementRequest(op, unitId))))).toBe(code);
     expect(snapshotWrites()).toBe(before);
   });
-
-  it("reports an unreadable policy as policyUnavailable", async () => {
-    const unitId = await seedUnit();
-    const original = store.get(TEACHER_UNITS_POLICY_PATH)!;
-    // A non-retryable read failure on the policy document.
-    store.set(TEACHER_UNITS_POLICY_PATH, { get data(): Record<string, any> { throw Object.assign(new Error("denied"), { code: 7 }); }, version: original.version });
-    for (const op of ["get", "list", "update"] as const) {
-      expect(await codeOf(RAW[op](req(TEACHER, managementRequest(op, unitId))))).toBe("teacherUnits.policyUnavailable");
-    }
+  it("unreadable singleton denies every endpoint; only tx read errors are retryable", async () => {
+    const id = await seedUnit();
+    store.set(TEACHER_UNITS_POLICY_PATH, { get data(): Record<string, any> { throw Object.assign(new Error("denied"), { code: 7 }); }, version: ++version });
+    for (const op of MANAGEMENT) expect(await codeOf(RAW[op](req(TEACHER, managementRequest(op, id))))).toBe("teacherUnits.policyUnavailable");
+    expect(await codeOf(RAW.capabilities(req(TEACHER, V2_DISCOVERY)))).toBe("teacherUnits.policyUnavailable");
   });
-
-  const ineligible: [string, Partial<TeacherUnitsEnforcement>][] = [
-    ["provenance unverified", { provenance: () => ({ runtimeConsistency: "unverified", available: false, approvalVerification: "unverified", deploymentVerification: "unverified", releaseId: null }) }],
-    ["provenance for another release", { provenance: () => ({ runtimeConsistency: "matched", available: false, approvalVerification: "unverified", deploymentVerification: "unverified", releaseId: "e".repeat(64) }) }],
-    ["provenance throws", { provenance: () => { throw new Error("artifact"); } }],
-    ["verifier throws", { verifier: { verify: () => Promise.reject(new Error("verifier")) } }],
-    // O6: verifier-originated errors fail closed whatever their shape.
-    ["verifier throws a retryable-shaped ABORTED", { verifier: { verify: () => Promise.reject(Object.assign(new Error("aborted"), { code: 10 })) } }],
-    ["verifier throws a transaction-expired-shaped error", { verifier: { verify: () => Promise.reject(Object.assign(new Error("The referenced transaction has expired or is no longer valid."), { code: 3 })) } }],
-    ["verifier throws its own policyUnavailable", { verifier: { verify: () => Promise.reject(a3Refusal("teacherUnits.policyUnavailable")) } }],
-    ["verifier replaces a readEvidence failure", { verifier: { verify: async (input) => {
-      try { await input.readEvidence("teacherUnits/unsupported"); } catch { /* swallowed */ }
-      throw Object.assign(new Error("aborted"), { code: 10 });
-    } } }],
-    ["verifier unverified", { verifier: { verify: () => Promise.resolve({ verdict: "unverified", reason: "revoked" }) } }],
-    ["verdict with an extra field", { verifier: testVerifier(CHAIN, { approved: true }) }],
-    ["verdict for another generation", { verifier: testVerifier(CHAIN, { enabledGeneration: 4 }) }],
-    ["verdict for another release", { verifier: testVerifier(CHAIN, { releaseId: "e".repeat(64) }) }],
-    ["verdict naming another approval", { verifier: testVerifier(CHAIN, { activationApprovalRef: `teacherUnitsReleaseEvidence/${"e".repeat(64)}` }) }],
-    ["verified Hosting fingerprint differs from the activation evidence", { verifier: testVerifier(CHAIN, { hostingCandidateFingerprint: "0".repeat(64) }) }],
-  ];
-  it.each(ineligible)("treats %s as deploymentIneligible", async (_label, override) => {
-    const unitId = await seedUnit();
-    const handlers = handlersFor(testEnforcement(IDENTITY, CHAIN, override));
-    const before = snapshotWrites();
-    for (const op of MANAGEMENT) expect(await codeOf(handlers[op](req(TEACHER, managementRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
-    expect(snapshotWrites()).toBe(before);
-    expect((await handlers.capabilities(req(TEACHER, V2_DISCOVERY))).teacherUnits.availability.state).toBe("unverified");
+  it.each([null, { ...CHAIN.build, schemaVersion: 1 }, { ...CHAIN.build, deploymentMode: "closed-only" },
+    { ...CHAIN.build, sourceDirty: true }, { ...CHAIN.build, backendBuildId: "a".repeat(64) },
+    { ...CHAIN.build, supportedClientContractVersions: ["teacher-units-v2"] }, { ...CHAIN.build, placementFingerprint: "f".repeat(64) }])(
+    "invalid or ineligible build %# cannot authorize", async build => {
+      const id = await seedUnit(); const handlers = handlersFor(testEnforcement(IDENTITY, CHAIN, { inspectBuild: () => build }));
+      const before = snapshotWrites();
+      for (const op of MANAGEMENT) expect(await codeOf(handlers[op](req(TEACHER, managementRequest(op, id))))).toBe("teacherUnits.deploymentIneligible");
+      expect(snapshotWrites()).toBe(before);
+    });
+  it("enabled MAX remains enabled; historical evidence is neither fetched nor consulted", async () => {
+    setPolicy({ ...CHAIN.policy, generation: Number.MAX_SAFE_INTEGER });
+    const r = await RAW.capabilities(req(TEACHER, V2_DISCOVERY));
+    expect(r.teacherUnits.availability).toMatchObject({ state: "enabled", policyGeneration: Number.MAX_SAFE_INTEGER });
+    expect(await RAW.list(req(TEACHER, {}))).toBeDefined();
   });
-
-  it("O6: a non-retryable readEvidence failure reaches the canonical policyUnavailable refusal with no write", async () => {
-    const unitId = await seedUnit();
-    store.set(CHAIN.certificationEvidenceRef, { get data(): Record<string, any> { throw Object.assign(new Error("denied"), { code: 7 }); }, version: ++version });
-    const verifier = { verify: async (input: any) => { await input.readEvidence(CHAIN.certificationEvidenceRef); return testVerifier(CHAIN).verify(input); } };
-    const handlers = handlersFor(testEnforcement(IDENTITY, CHAIN, { verifier }));
-    const before = snapshotWrites();
-    for (const op of MANAGEMENT) expect(await codeOf(handlers[op](req(TEACHER, managementRequest(op, unitId))))).toBe("teacherUnits.policyUnavailable");
-    expect(snapshotWrites()).toBe(before);
-  });
-
-  it("never caches a positive decision: each request and attempt re-evaluates", async () => {
-    const verifier = testVerifier(CHAIN);
-    const handlers = handlersFor(testEnforcement(IDENTITY, CHAIN, { verifier }));
-    await handlers.list(req(TEACHER, {}));
-    await handlers.list(req(TEACHER, {}));
-    expect(verifier.calls).toBe(2);
+  it("never caches positive policy/build checks between calls", async () => {
+    const inspectBuild = jest.fn(() => CHAIN.build); const handlers = handlersFor(testEnforcement(IDENTITY, CHAIN, { inspectBuild }));
+    await handlers.list(req(TEACHER, {})); await handlers.list(req(TEACHER, {})); expect(inspectBuild).toHaveBeenCalledTimes(2);
     setPolicy(closedPolicy(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT));
     expect(await codeOf(handlers.list(req(TEACHER, {})))).toBe("teacherUnits.availabilityClosed");
   });
@@ -1208,7 +1138,7 @@ describe("A3-3 mutation compatibility envelope", () => {
   it.each([
     ["missing", undefined, "teacherUnits.compatibilityRequired"],
     ["null", null, "teacherUnits.invalidCompatibility"],
-    ["schema 2", { ...COMPAT, schemaVersion: 2 }, "teacherUnits.invalidCompatibility"],
+    ["schema 1", { ...COMPAT, schemaVersion: 1 }, "teacherUnits.invalidCompatibility"],
     ["v1 contract", { ...COMPAT, clientContractVersion: "teacher-units-v1" }, "teacherUnits.invalidCompatibility"],
     ["extra field", { ...COMPAT, extra: 1 }, "teacherUnits.invalidCompatibility"],
     ["noncanonical digest", { ...COMPAT, backendReleaseId: COMPAT.backendReleaseId.toUpperCase() }, "teacherUnits.invalidCompatibility"],
@@ -1292,29 +1222,16 @@ describe("A3-3 mutation compatibility envelope", () => {
 });
 
 describe("A3-3 Firestore SDK reruns (approved Option A)", () => {
-  it("re-evaluates availability on a rerun caused by a concurrent policy change", async () => {
-    const unitId = await seedUnit();
-    const next = buildEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT, { generation: 4 });
-    let first = true;
-    const verifier = {
-      calls: 0,
-      verify: async (...args: Parameters<ReturnType<typeof testVerifier>["verify"]>) => {
-        verifier.calls += 1;
-        if (first) {
-          first = false;
-          // The policy moves after this attempt read it: the read set changed, so the attempt reruns.
-          setPolicy(next.policy);
-          for (const [path, data] of Object.entries(next.documents)) store.set(path, { data, version: ++version });
-          return testVerifier(CHAIN).verify(...args);
-        }
-        return testVerifier(next).verify(...args);
-      },
-    };
-    const handlers = handlersFor(testEnforcement(IDENTITY, CHAIN, { verifier }));
+  it("re-evaluates availability on a rerun caused by concurrent policy change", async () => {
+    const unitId = await seedUnit(); const next = buildEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT, { generation: 4 });
+    let calls = 0;
+    const handlers = handlersFor(testEnforcement(IDENTITY, CHAIN, { inspectBuild: () => {
+      if (++calls === 1) setPolicy(next.policy);
+      return CHAIN.build;
+    } }));
     const before = snapshotWrites();
     expect(await codeOf(handlers.update(req(TEACHER, managementRequest("update", unitId))))).toBe("teacherUnits.policyChanged");
-    expect(verifier.calls).toBe(2);
-    expect(snapshotWrites()).toBe(before);
+    expect(calls).toBe(2); expect(snapshotWrites()).toBe(before);
   });
 
   const LANDED: [string, (unitId: string) => Promise<any>, (unitId: string) => void][] = [
@@ -1400,9 +1317,8 @@ describe("A3-3 post-commit responseUnavailable", () => {
   // is unverifiable.
   function failingAfterFirst(): TeacherUnitsEnforcement {
     let calls = 0;
-    const verified = testVerifier(CHAIN);
     return testEnforcement(IDENTITY, CHAIN, {
-      verifier: { verify: (input) => (++calls === 1 ? verified.verify(input) : Promise.resolve({ verdict: "unverified", reason: "revoked" })) },
+      inspectBuild: () => (++calls === 1 ? CHAIN.build : null),
     });
   }
 
@@ -1486,148 +1402,3 @@ describe("A3-3 post-commit responseUnavailable", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Staging UX test mode (docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md).
-// Owner-approved for staging human UX testing only; uncertified.
-// ---------------------------------------------------------------------------
-
-describe("staging UX test marker policy", () => {
-  const STAGING_ENV = { environment: "staging", projectId: "lyfelabz-staging", projectNumber: "293337283840" } as const;
-  const PROD_ENV = { environment: "production", projectId: "lyfelabz-prod", projectNumber: "182791689935" } as const;
-  const STAGING_ID = stubIdentity(STAGING_ENV);
-  const PROD_ID = stubIdentity(PROD_ENV);
-  const markerPolicy = (env: Record<string, string>, extra: Record<string, unknown> = {}) => ({
-    ...CHAIN.policy, ...env, backendReleaseEligibility: { releaseId: STAGING_UX_TEST_RELEASE_ID },
-    activationEvidenceRef: STAGING_UX_TEST_EVIDENCE_REF, ...extra,
-  });
-  const MARKER_COMPAT = { ...COMPAT, backendReleaseId: STAGING_UX_TEST_RELEASE_ID };
-  const markerRequest = (op: Management, unitId: string) => {
-    const data = managementRequest(op, unitId);
-    return "compatibility" in data ? { ...data, compatibility: MARKER_COMPAT } : data;
-  };
-  // The marker path must never consult the verifier or provenance.
-  let verifierCalls = 0;
-  let provenanceCalls = 0;
-  const guarded = (identity: typeof STAGING_ID) => handlersFor(testEnforcement(identity, null, {
-    verifier: { verify: () => { verifierCalls++; return UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER.verify({} as never); } },
-    provenance: () => { provenanceCalls++; throw new Error("provenance must not be read"); },
-  }));
-  beforeEach(() => { verifierCalls = 0; provenanceCalls = 0; });
-
-  it("markers are fixed digests distinct from any synthetic chain", () => {
-    expect(STAGING_UX_TEST_RELEASE_ID).toMatch(/^[a-f0-9]{64}$/);
-    expect(STAGING_UX_TEST_EVIDENCE_REF).toMatch(/^teacherUnitsReleaseEvidence\/[a-f0-9]{64}$/);
-    expect(STAGING_UX_TEST_RELEASE_ID).not.toBe(CHAIN.releaseId);
-  });
-
-  it("enables discovery and the full teacher workflow in the staging identity, without verifier or provenance", async () => {
-    const unitId = await seedUnit();
-    setPolicy(markerPolicy(STAGING_ENV));
-    const staging = guarded(STAGING_ID);
-    const discovery = await staging.capabilities(req(TEACHER, V2_DISCOVERY));
-    expect(validateCapabilityResponse(discovery).ok).toBe(true);
-    expect(discovery).toMatchObject({
-      backend: { projectId: "lyfelabz-staging", environment: "staging" },
-      teacherUnits: { acceptedClientContractVersions: ["teacher-units-v2"],
-        availability: { state: "enabled", deploymentEligible: true, backendReleaseId: STAGING_UX_TEST_RELEASE_ID } },
-    });
-    const created = await staging.create(req(TEACHER, { ...markerRequest("create", unitId), idempotencyKey: "staging-ux-0001" }));
-    expect(created).toMatchObject({ replayed: false, unit: { title: "Earth", grade: "7", revision: 1 } });
-    expect((await staging.list(req(TEACHER, {}))).units).toHaveLength(2);
-    expect((await staging.get(req(TEACHER, { unitId }))).unit.unitId).toBe(unitId);
-    expect((await staging.update(req(TEACHER, markerRequest("update", unitId)))).unit).toMatchObject({ title: "Renamed", revision: 2 });
-    const resources = [UNIT_PLACEABLE_RESOURCE_ID_LIST[1], UNIT_PLACEABLE_RESOURCE_ID_LIST[0]];
-    expect((await staging.setResources(req(TEACHER, { ...markerRequest("setResources", unitId), expectedRevision: 2, resourceIds: resources })))
-      .unit).toMatchObject({ resourceIds: resources, revision: 3 });
-    const order = [{ unitId: created.unit.unitId, expectedRevision: 1 }, { unitId, expectedRevision: 3 }];
-    expect((await staging.reorder(req(TEACHER, { ...markerRequest("reorder", unitId), units: order }))).noop).toBe(false);
-    expect((await staging.archive(req(TEACHER, { ...markerRequest("archive", unitId), expectedRevision: 4 }))).unit.status).toBe("archived");
-    expect((await staging.restore(req(TEACHER, { ...markerRequest("restore", unitId), expectedRevision: 5 }))).unit.status).toBe("active");
-    expect(verifierCalls).toBe(0);
-    expect(provenanceCalls).toBe(0);
-  });
-
-  it("keeps ownership: another teacher in the same school cannot read or change the unit", async () => {
-    const unitId = await seedUnit();
-    setPolicy(markerPolicy(STAGING_ENV));
-    const staging = guarded(STAGING_ID);
-    const before = snapshotWrites();
-    expect(await codeOf(staging.get(req(OTHER, { unitId })))).toBe("teacherUnits.notFound");
-    expect(await codeOf(staging.update(req(OTHER, markerRequest("update", unitId))))).toBe("teacherUnits.notFound");
-    expect((await staging.list(req(OTHER, {}))).units).toEqual([]);
-    expect(snapshotWrites()).toBe(before);
-  });
-
-  it("refuses a student and an unauthenticated caller", async () => {
-    const unitId = await seedUnit();
-    setPolicy(markerPolicy(STAGING_ENV));
-    setUser("student-1", { status: "active", role: "student", schoolId: SCHOOL });
-    const staging = guarded(STAGING_ID);
-    const before = snapshotWrites();
-    for (const op of MANAGEMENT) {
-      expect(await codeOf(staging[op](req("student-1", markerRequest(op, unitId))))).not.toBe("resolved");
-      expect(await codeOf(staging[op]({ data: markerRequest(op, unitId) } as unknown as CallableRequest<unknown>))).not.toBe("resolved");
-    }
-    expect(snapshotWrites()).toBe(before);
-  });
-
-  it("is ineligible in the production identity (marker policy bound to production)", async () => {
-    const unitId = await seedUnit();
-    setPolicy(markerPolicy(PROD_ENV));
-    const production = guarded(PROD_ID);
-    const before = snapshotWrites();
-    for (const op of MANAGEMENT) {
-      expect(await codeOf(production[op](req(TEACHER, markerRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
-    }
-    const discovery = await production.capabilities(req(TEACHER, V2_DISCOVERY));
-    expect(discovery.teacherUnits.availability).toMatchObject({ state: "unverified", deploymentEligible: false });
-    expect(discovery.teacherUnits.acceptedClientContractVersions).toEqual([]);
-    expect(snapshotWrites()).toBe(before);
-    expect(verifierCalls).toBe(0);
-  });
-
-  it("is ineligible in an emulator identity, and a staging-bound policy is invalid for production", async () => {
-    const unitId = await seedUnit();
-    setPolicy(markerPolicy({ environment: EXPECTED.environment, projectId: EXPECTED.projectId, projectNumber: EXPECTED.projectNumber }));
-    const emulator = guarded(IDENTITY);
-    for (const op of MANAGEMENT) {
-      expect(await codeOf(emulator[op](req(TEACHER, markerRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
-    }
-    setPolicy(markerPolicy(STAGING_ENV));
-    const production = guarded(PROD_ID);
-    expect(await codeOf(production.list(req(TEACHER, {})))).toBe("teacherUnits.policyInvalid");
-  });
-
-  it.each([
-    ["only the release marker", { activationEvidenceRef: CHAIN.activationEvidenceRef }],
-    ["only the evidence marker", { backendReleaseEligibility: { releaseId: CHAIN.releaseId } }],
-  ])("takes the certified chain with %s, which the UNCONFIGURED verifier refuses", async (_label, extra) => {
-    const unitId = await seedUnit();
-    setPolicy(markerPolicy(STAGING_ENV, extra));
-    const staging = handlersFor(testEnforcement(STAGING_ID, null, { verifier: UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER }));
-    for (const op of ["get", "list", "update"] as const) {
-      expect(await codeOf(staging[op](req(TEACHER, markerRequest(op, unitId))))).toBe("teacherUnits.deploymentIneligible");
-    }
-  });
-
-  it("refuses a marker policy whose placement differs from the runtime", async () => {
-    const unitId = await seedUnit();
-    setPolicy(markerPolicy(STAGING_ENV, { placementFingerprint: "e".repeat(64) }));
-    const staging = guarded(STAGING_ID);
-    expect(await codeOf(staging.get(req(TEACHER, { unitId })))).toBe("teacherUnits.deploymentIneligible");
-  });
-
-  it("keeps the closed switch and envelope binding authoritative", async () => {
-    const unitId = await seedUnit();
-    const staging = guarded(STAGING_ID);
-    setPolicy({ ...markerPolicy(STAGING_ENV), mode: "closed", activationEvidenceRef: null });
-    expect(await codeOf(staging.get(req(TEACHER, { unitId })))).toBe("teacherUnits.availabilityClosed");
-    setPolicy(markerPolicy(STAGING_ENV));
-    expect(await codeOf(staging.update(req(TEACHER, managementRequest("update", unitId))))).toBe("teacherUnits.policyChanged");
-    expect(await codeOf(staging.update(req(TEACHER, { ...markerRequest("update", unitId),
-      compatibility: { ...MARKER_COMPAT, policyGeneration: 99 } })))).toBe("teacherUnits.policyChanged");
-  });
-
-  it("production wiring is unchanged: UNCONFIGURED verifier", () => {
-    expect(PRODUCTION_TEACHER_UNITS_ENFORCEMENT.verifier).toBe(UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER);
-  });
-});

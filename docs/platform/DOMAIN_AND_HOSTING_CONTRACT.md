@@ -1,5 +1,12 @@
 # LyfeLabz Domain and Hosting Contract
 
+## E2 Teacher Units release adapter, October 27, 2026
+
+The active Teacher Units path uses schema-2 scoped Firebase observations, source-scoped Rules evidence and schema-2 receipts through prepare, predeploy and certify. Historical schema-1 receipts may be reconstructed for inspection but cannot satisfy current prepare/predeploy/activation. Full Cloud Run spec/image equality, registry/provenance/checkpoint qualification and per-build Rules attachment coupling are superseded for this path. General releases and existing paired-site/source/compiler/served-byte protections are unchanged.
+
+Both live Hosting versions and expected served file bytes are re-read before activation. Missing/changed site, version, bytes, serving endpoint, required settings, Rules source, policy CAS or release identity refuses. Certification does not enable. Rollback remains a two-site operation; a Hosting rollback never disables server access. Retain a compatible closed-only Functions archive as independent recovery. See [E2 workflow](U2_6_RELEASE_READINESS_RUNBOOK.md#e2-simplified-release-and-operator-workflow).
+
+
 **Status:** Canonical. Governs domain ownership, Firebase Hosting targets, and
 the paired Hosting release, certification, and rollback procedure.
 **Established:** October 2026 (Phase 1 of the domain and Hosting architecture).
@@ -8,6 +15,13 @@ the paired Hosting release, certification, and rollback procedure.
 Where an older document (sprint reports, `WWW_APP_LESSON_DELIVERY_2026-10-04.md`,
 earlier runbooks) describes a different Hosting deploy procedure, this document
 controls.
+
+**Option B local adoption (October 26, 2026):** the My Units compiler and
+release adapters described below are implemented locally. This is not staging
+acceptance, production deployment, activation approval, or live availability
+verification. See [the Option B ADR](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md)
+and [the release runbook](U2_6_RELEASE_READINESS_RUNBOOK.md). The certified
+Release 1 production baseline is unchanged.
 
 ---
 
@@ -90,10 +104,11 @@ an accidental bare deploy with it can only touch Hosting.
 
 Staging mirrors production with a permanent second site in `lyfelabz-staging`:
 site `lyfelabz-staging-marketing` (`https://lyfelabz-staging-marketing.web.app`,
-no custom domain, no Auth setup; the homepage loads no Firebase SDK). Until that
-site is created, a staging pair deploy fails on the marketing target, and the
-staging app's `/privacy` and `/terms` redirects point at the not-yet-created
-site. One-time creation (human-authorized; new infrastructure):
+no custom domain, no Auth setup; the homepage loads no Firebase SDK). The
+October 18 staging record reports both sites existed. That historical observation
+is not current site-membership or release verification. The original one-time
+bootstrap command was separately authorized infrastructure work; it is retained
+for history, not an instruction to recreate a site:
 
 ```sh
 firebase hosting:sites:create lyfelabz-staging-marketing --project lyfelabz-staging
@@ -109,7 +124,11 @@ Both targets use the same predeploy, `node scripts/hosting-release/build-pair.cj
    (`assertCatalogCurrent`). Builders never regenerate the catalog; drift fails
    the build. Regenerate with `npm --prefix app run curriculum:build` and
    commit.
-2. Build the application bundle (`npm --prefix app run build`).
+2. Build the application bundle through the controlled compiler. `general`
+   remains closed; explicit target-bound `teacher-units` produces policy-capable
+   UI with `availability: "server-policy-required"`, never availability authority.
+   The latter rebuilds Functions with the explicit `policy-controlled` build
+   profile and expected HEAD. Its schema-2 record requires a clean checkout.
 3. Build both artifacts from their manifests
    (`scripts/app-hosting/public-files.json` composes
    `scripts/marketing-hosting/public-files.json`).
@@ -149,9 +168,11 @@ Every marketing path that is not marketing-only must also be served by app.
 | Live routing config equals the local target config | `prepare` (reports), `certify` (enforces) |
 | Every served path live equals the artifact; contract route and redirect samples; catalog navigation to current app lessons | `certify` |
 
-Current GitHub Actions CI runs only for `platform/**` changes. It does **not**
-run `npm --prefix app run verify`, `curriculum:verify`, or the Hosting suites.
-`prepare` is the required release protection.
+Platform CI includes relevant compiler, Teacher Units, and release-tool paths,
+and runs credential-free Option B compiler, Rules-evidence, observer, operator,
+and focused Hosting checks. It does not replace full app verification or real
+paired served-byte certification. `prepare` remains the release protection;
+local fixture success supplies no provider, IAM, or activation approval.
 
 ---
 
@@ -164,7 +185,7 @@ with real installed dependencies (`npm --prefix app ci`; never a symlinked
 1. **Prepare** (never deploys):
 
    ```sh
-   node scripts/hosting-release/prepare.cjs --project lyfelabz-prod --expect-sha <sha>
+   node scripts/hosting-release/prepare.cjs --project lyfelabz-prod --intent general --expect-sha <sha>
    ```
 
    Refuses: a missing or unsupported project (the `.firebaserc` default alias
@@ -190,11 +211,73 @@ with real installed dependencies (`npm --prefix app ci`; never a symlinked
 3. **Certify** from the same checkout:
 
    ```sh
-   node scripts/hosting-release/certify.cjs --project lyfelabz-prod
+   node scripts/hosting-release/certify.cjs --project lyfelabz-prod --intent general
    ```
 
 4. **Record** the certified pair (source SHA, both site versions, both previous
    versions) in the release report or ledger.
+
+### 6.1 Option B Teacher Units release scope
+
+`general` is the Release 1-preserving closed default. Source
+`app/src/teacherUnits/releaseAvailability.ts` stays closed. Explicit
+`teacher-units` compilation requires one exact project/environment/app-origin
+tuple: production is `lyfelabz-prod` / `production` /
+`https://app.lyfelabz.com`; staging is `lyfelabz-staging` / `staging` /
+`https://lyfelabz-staging.web.app`. Unknown or mixed tuples refuse. Compiler
+substitution can construct the client seam only at its pinned origin;
+`runtimeAvailability` remains `not-certified`. Every management request still
+requires backend-authoritative schema-2 policy eligibility and protocol v3
+compatibility. No compiler flag, Hosting receipt, or historical staging marker
+enables the server.
+
+The implemented B pair has `backendFormat: "teacher-units-option-b-v1"` and a
+`lyfelabz.teacherUnitsOptionBCandidate` schema-1 candidate binding the schema-2
+backend build, source, project, environment, ordered placement fingerprint,
+compiler output, Hosting bytes, Rules source, runtime files, and indexes.
+`lyfelabz.teacherUnitsOptionBObservation` records the current nine endpoints,
+including Capabilities, and reviewed provider configuration. Unknown shapes,
+mixed artifacts, incompatible protocol/placement, partial observations, and
+stale or future observations refuse. The earlier eight-endpoint comparator and
+old receipts remain available for historical replay; they cannot authorize B.
+
+B prepare and certify require explicit `--rules-approval`, `--rules-report`,
+`--approval-digest`, and `--configuration-approval` local attachments. G6 in
+[the blueprint](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md#g6-exact-deployed-rules-approval-contract-required)
+defines their approval contract. At prepare, predeploy, and certify the gate
+independently reads the deployed Rules resource and source hash, and requires
+the exact approved ruleset identity, deployed/local hash pair, release binding,
+and passing source-bound focused equivalence report. An equal hash on a new
+unapproved ruleset still refuses. Reviewed equivalence accepts only the
+explicitly approved source pair; it does not normalize Rules, skip the old hash
+safeguard, or authorize a Rules deployment to make hashes match.
+
+Distinct `lyfelabz.teacherUnitsOptionBReleaseReceipt` schema-1 receipts retain
+those exact attachments and comparison claims. Prepared evidence binds both
+rollback baselines. Predeploy verifies existing bytes before rebuilding and
+reobserves backend state; certify requires the same approval attachments and
+both live sites' bytes/routing. The existing pair record and outer
+prepared/certified record versions remain unchanged for general releases.
+B receipts explicitly report `activation: "not-approved"`,
+`availability: "not-verified"`, and `fleetVerification: "not-performed"`.
+
+Local compilation and fixture verification are complete implementation stages,
+not staging certification. Independent integrated review, separately authorized
+staging provider/IAM and Rules verification, staging acceptance, production
+closed deployment, final activation approval, and production availability
+verification remain separate gates. The operator validates current B release
+and Rules evidence but **real-project enable remains interlocked** pending
+independent review and separate release authorization. This document supplies
+no executable bypass or activation permission.
+
+After a failed or uncertain release, retain both Hosting rollback baselines,
+reconcile the actual state of each site, and recover a compatible closed backend
+and coherent Hosting pair under separate authorization. Policy readback verifies
+the singleton and linked evidence only; it cannot prove fleet-wide shutdown.
+Old revisions, routes, served clients, cached-client refusal, and actual
+permissions still need external verification. Assessment Results, Curriculum,
+Classroom assignment, Teacher Workspace, and student behavior retain their
+existing release and security protections.
 
 ---
 
@@ -251,4 +334,5 @@ and follow it with a coherent pair release.
 - Per-host sitemap and robots, declared as host-specific exceptions with
   certification checks beside the existing ones in `certify.cjs`.
 - Lab Report Assistant, Ball Run, and registry cleanup.
-- CI coverage for `app verify` and the Hosting suites.
+- Broader CI coverage for full `app verify` and Hosting certification. The
+  credential-free focused B checks above are already implemented.

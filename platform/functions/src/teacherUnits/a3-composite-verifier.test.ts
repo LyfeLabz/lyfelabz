@@ -14,7 +14,7 @@ import type { CompositeVerifierDependencies } from "./a3-composite-verifier";
 import type { ExpectedEnvironment } from "./a3-contracts";
 import { ED25519_GROUP_ORDER } from "./a3-ed25519";
 import { PRODUCTION_TEACHER_UNITS_ENFORCEMENT, RUNTIME_PLACEMENT_FINGERPRINT } from "./a3-enforcement";
-import { RELEASE_AUTHORITY_UNVERIFIED_REASONS, UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER } from "./a3-release-authority";
+import { RELEASE_AUTHORITY_UNVERIFIED_REASONS } from "./a3-release-authority";
 import type { ReleaseAuthorityInput, ReleaseAuthorityVerdict } from "./a3-release-authority";
 import { PRODUCTION_REVOCATION_LIST, createRevocationList } from "./a3-revocation-list";
 import type { RevocationList } from "./a3-revocation-list";
@@ -551,7 +551,9 @@ describe("not wired (S3)", () => {
   it("production entrypoints cannot reach S1, S2 or S3 modules", () => {
     const graph = reachable("index.ts");
     expect(graph.has("teacherUnits/a3-enforcement.ts")).toBe(true);
-    expect(graph.has("teacherUnits/a3-release-authority.ts")).toBe(true);
+    expect(graph.has("teacherUnits/a3-release-authority.ts")).toBe(false);
+    expect(graph.has("teacherUnits/availability-policy.ts")).toBe(true);
+    expect(graph.has("teacherUnits/availability-runtime-build.ts")).toBe(true);
     expect(graph.size).toBeGreaterThan(50);
     for (const module of S1_S2_S3) expect([module, graph.has(module)]).toEqual([module, false]);
   });
@@ -559,8 +561,10 @@ describe("not wired (S3)", () => {
     const graph = reachable("teacherUnits/a3-composite-verifier.ts");
     for (const module of S1_S2_S3) expect([module, graph.has(module)]).toEqual([module, true]);
   });
-  it("production still uses the UNCONFIGURED verifier and the client gate stays closed", () => {
-    expect(PRODUCTION_TEACHER_UNITS_ENFORCEMENT.verifier).toBe(UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER);
+  it("production uses Option B without verifier fallback and the client gate stays closed", () => {
+    expect(PRODUCTION_TEACHER_UNITS_ENFORCEMENT).not.toHaveProperty("verifier");
+    expect(PRODUCTION_TEACHER_UNITS_ENFORCEMENT).not.toHaveProperty("provenance");
+    expect(typeof PRODUCTION_TEACHER_UNITS_ENFORCEMENT.inspectBuild).toBe("function");
     expect(RUNTIME_PLACEMENT_FINGERPRINT).toMatch(/^[a-f0-9]{64}$/);
     const gate = readFileSync(resolve(SRC, "../../../app/src/teacherUnits/releaseAvailability.ts"), "utf8");
     expect(gate).toMatch(/export function teacherUnitsAvailable\(\): boolean \{ return false; \}/);

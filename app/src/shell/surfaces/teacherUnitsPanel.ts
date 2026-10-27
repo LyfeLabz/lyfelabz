@@ -85,7 +85,68 @@ export function teacherUnitsSurfaceEnabled(seam: unknown): boolean {
   return seam !== null && seam !== undefined && teacherUnitsAvailable();
 }
 
+// Shared state is advisory; each backend operation still enforces availability.
+export type UnitsCapability = NonNullable<TeacherUnitsSurfaceSeam["capability"]>;
+export function teacherUnitsActionsEnabled(capability: UnitsCapability | undefined): boolean {
+  return teacherUnitsAvailable() && capability?.getSnapshot().status === "enabled";
+}
+
+// Keep existing validation/pending disabled states when availability returns.
+// Capture also refuses synthetic events and controls inserted during a render.
+function bindCapabilityControls(
+  root: HTMLElement,
+  capability: UnitsCapability | undefined,
+  exempt = "[data-lesson-slug], .shell-units-results-pill, a",
+  onDetach?: () => void,
+): { readonly apply: () => void; readonly dispose: () => void } {
+  const held = new Map<HTMLInputElement | HTMLButtonElement | HTMLSelectElement | HTMLTextAreaElement, boolean>();
+  let wasConnected = root.isConnected;
+  let disposed = false;
+  const apply = (): void => {
+    if (disposed) return;
+    if (root.isConnected) wasConnected = true;
+    else if (wasConnected) { dispose(); onDetach?.(); return; }
+    const enabled = teacherUnitsActionsEnabled(capability);
+    root.setAttribute("data-capability-status", capability?.getSnapshot().status ?? "unknown");
+    if (enabled) {
+      for (const [control, disabled] of held) control.disabled = disabled;
+      held.clear();
+      return;
+    }
+    for (const control of Array.from(root.querySelectorAll<HTMLInputElement | HTMLButtonElement | HTMLSelectElement | HTMLTextAreaElement>("button,input,select,textarea"))) {
+      if (control.matches(exempt)) continue;
+      if (!held.has(control)) held.set(control, control.disabled);
+      control.disabled = true;
+    }
+  };
+  const refuse = (event: Event): void => {
+    void capability?.revalidate();
+    if (teacherUnitsActionsEnabled(capability)) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest(exempt) !== null) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    void capability?.revalidate();
+  };
+  const events = ["click", "change", "submit", "keydown", "pointerdown", "dragstart"];
+  for (const event of events) root.addEventListener(event, refuse, true);
+  const unsubscribe = capability?.subscribe(apply) ?? (() => undefined);
+  const observer = new MutationObserver(apply);
+  observer.observe(root.ownerDocument, { childList: true, subtree: true });
+  const dispose = (): void => {
+    if (disposed) return;
+    disposed = true;
+    unsubscribe();
+    observer.disconnect();
+    held.clear();
+    for (const event of events) root.removeEventListener(event, refuse, true);
+  };
+  apply();
+  return { apply, dispose };
+}
+
 export type TeacherUnitsPanelOptions = {
+  readonly capability?: UnitsCapability;
   // Units start expanded instead of collapsed (title and resource count).
   readonly unitsInitiallyExpanded?: boolean;
   // The teacher left the archived view from inside the panel.
@@ -289,6 +350,7 @@ export function renderTeacherUnitsPanel(
   };
 
   const root = el("section", "shell-units");
+  const capabilityControls = bindCapabilityControls(root, options.capability, undefined, () => dispose());
   root.setAttribute("data-testid", "units-panel");
   root.setAttribute("aria-labelledby", "units-heading");
   host.appendChild(root);
@@ -3100,6 +3162,7 @@ export function renderTeacherUnitsPanel(
     renderList(s);
     renderPending(s);
     refreshNotices();
+    capabilityControls.apply();
     rescueFocus(before);
   };
 
@@ -3186,6 +3249,7 @@ export function renderTeacherUnitsPanel(
   doc.addEventListener("visibilitychange", onVisibility);
 
   const unsubscribe = controller.subscribe(render);
+  const unsubscribeCapability = options.capability?.subscribe(render) ?? (() => undefined);
   // A confirmed assignment change re-applies every lesson row's Assign /
   // Results control in place (focus and card state are kept).
   const lessonActions = options.lessonActions ?? null;
@@ -3204,6 +3268,8 @@ export function renderTeacherUnitsPanel(
     doc.removeEventListener("visibilitychange", onVisibility);
     unsubscribe();
     unsubscribeLessons();
+    unsubscribeCapability();
+    capabilityControls.dispose();
     controller.dispose();
   };
   render();
@@ -3263,6 +3329,8 @@ const ADD_CREATE_BLOCKED: Partial<Record<CreateBlockedReason, string>> = Object.
 
 export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput): { readonly close: () => void } {
   requireTeacherUnitsAvailable();
+  void input.seam.capability?.revalidate();
+  if (!teacherUnitsActionsEnabled(input.seam.capability)) return Object.freeze({ close: () => undefined });
   const ids = input.resourceIds;
   const shared = input.controller ?? null;
   const controller =
@@ -3291,6 +3359,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   const tid = (e: HTMLElement, id: string): void => e.setAttribute("data-testid", id);
 
   const overlay = el("div", "shell-assign-overlay shell-units-add-overlay");
+  const capabilityControls = bindCapabilityControls(overlay, input.seam.capability, ".shell-assign-cancel", () => close());
   tid(overlay, "units-add-overlay");
   const dialog = el("div", "shell-assign-dialog shell-units-add-dialog");
   dialog.setAttribute("role", "dialog");
@@ -3504,6 +3573,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
 
   const render = (): void => {
     if (closed) return;
+    if (input.returnFocus && !input.returnFocus.isConnected) { close(); return; }
     const s = controller.getState();
     for (const [g, b] of gradeButtons) {
       const active = g === s.grade;
@@ -3528,6 +3598,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     if (legend.textContent !== legendText) legend.textContent = legendText;
     const confirmText = chosen === "new" ? "Create Unit & Add" : "Add to Unit";
     if (confirm.textContent !== confirmText) confirm.textContent = confirmText;
+    capabilityControls.apply();
   };
 
   fieldset.addEventListener("change", (ev) => {
@@ -3552,6 +3623,9 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     doc.removeEventListener("keydown", onKey);
     unregisterModal();
     unsubscribe();
+    unsubscribeCapability();
+    capabilityControls.dispose();
+    ownerObserver.disconnect();
     if (shared === null) controller.dispose();
   };
   const dismiss = (): void => {
@@ -3645,7 +3719,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   };
 
   const submit = async (): Promise<void> => {
-    if (pending || closed) return;
+    if (pending || closed || !teacherUnitsActionsEnabled(input.seam.capability)) return;
     clearProblem();
     if (chosen === null) {
       showProblem("Select a unit, or create a new one.");
@@ -3656,7 +3730,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
       const unitId = chosen;
       setPending("Adding resources...");
       const result = await controller.addResources(unitId, ids);
-      if (closed) return;
+      if (closed || (input.returnFocus && !input.returnFocus.isConnected)) { close(); return; }
       setPending(null);
       if (!settle(unitId, result, null)) render();
       return;
@@ -3676,6 +3750,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     setPending("Creating your unit...");
     await controller.submitCreate({ grade, title: name, description: "" });
     if (closed) return;
+    if (input.returnFocus && !input.returnFocus.isConnected) { close(); return; }
     const s = controller.getState();
     if (s.createBlocked !== null) {
       setPending(null);
@@ -3708,7 +3783,7 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
     newTitle.value = "";
     setPending("Adding resources...");
     const result = await controller.addResources(unit.unitId, ids);
-    if (closed) return;
+    if (closed || (input.returnFocus && !input.returnFocus.isConnected)) { close(); return; }
     setPending(null);
     if (!settle(unit.unitId, result, unit)) render();
   };
@@ -3733,7 +3808,15 @@ export function openAddToUnitDialog(doc: Document, input: AddToUnitDialogInput):
   doc.addEventListener("keydown", onKey);
   const unregisterModal = registerOpenModal(close);
   const unsubscribe = controller.subscribe(render);
+  const unsubscribeCapability = input.seam.capability?.subscribe(render) ?? (() => undefined);
 
+  // The modal lives under body, but its lifetime belongs to Curriculum.
+  // Removing that surface must also cancel subscriptions and late UI work.
+  const owner = input.returnFocus;
+  const ownerObserver = new MutationObserver(() => {
+    if (owner && !owner.isConnected) close();
+  });
+  ownerObserver.observe(doc, { childList: true, subtree: true });
   doc.body.appendChild(overlay);
   render();
   try {

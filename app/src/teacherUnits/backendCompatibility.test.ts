@@ -1,6 +1,7 @@
 /**
  * @jest-environment-options {"url": "https://app.lyfelabz.com/"}
  */
+import type { TeacherUnitsCapabilityState } from "./capabilityState";
 import type { Auth, User } from "firebase/auth";
 import type { Functions } from "firebase/functions";
 import { TextEncoder } from "node:util";
@@ -27,14 +28,14 @@ const FINGERPRINT = createHash("sha256").update(JSON.stringify(["one"])).digest(
 type Availability = { state: string; policyInstanceId: string | null; policyGeneration: number | null; backendReleaseId: string | null; deploymentEligible: boolean };
 const ENABLED: Availability = { state: "enabled", policyInstanceId: POLICY, policyGeneration: 7, backendReleaseId: RELEASE, deploymentEligible: true };
 const response = (nonce = "n".repeat(48), availability: Availability = ENABLED, placementFingerprint = FINGERPRINT) => ({
-  schemaVersion: 2,
+  schemaVersion: 3,
   nonce,
-  backend: { projectId: "lyfelabz-prod", environment: "production", region: "us-central1", enforcementVersion: "teacher-units-a3-v1" },
+  backend: { projectId: "lyfelabz-prod", environment: "production", region: "us-central1", enforcementVersion: "teacher-units-option-b-v1", backendBuildId: RELEASE },
   teacherUnits: {
-    apiContractVersion: "teacher-units-v2",
+    apiContractVersion: "teacher-units-v3",
     supportedOperations: [...OPERATIONS],
-    supportedClientContractVersions: ["teacher-units-v2"],
-    acceptedClientContractVersions: availability.state === "enabled" ? ["teacher-units-v2"] : [],
+    supportedClientContractVersions: ["teacher-units-v3"],
+    acceptedClientContractVersions: availability.state === "enabled" ? ["teacher-units-v3"] : [],
     placementFingerprint,
     availability: { ...availability },
   },
@@ -50,7 +51,7 @@ describe("schema 2 declaration", () => {
   });
   test("an enabled, eligible declaration yields exactly the six-field envelope", () => {
     const envelope = evaluate(response());
-    expect(envelope).toEqual({ schemaVersion: 1, clientContractVersion: "teacher-units-v2", policyInstanceId: POLICY, policyGeneration: 7, backendReleaseId: RELEASE, placementFingerprint: FINGERPRINT });
+    expect(envelope).toEqual({ schemaVersion: 2, clientContractVersion: "teacher-units-v3", policyInstanceId: POLICY, policyGeneration: 7, backendReleaseId: RELEASE, placementFingerprint: FINGERPRINT });
     expect(Object.isFrozen(envelope)).toBe(true);
   });
   test.each([
@@ -76,7 +77,7 @@ describe("schema 2 declaration", () => {
     ["v1 api contract", withTU({ apiContractVersion: "teacher-units-v1" })],
     ["v1 accepted", withTU({ acceptedClientContractVersions: ["teacher-units-v1"] })],
     ["enabled accepting nothing", withTU({ acceptedClientContractVersions: [] })],
-    ["closed accepting v2", (() => { const r = response(undefined, { ...ENABLED, state: "closed", deploymentEligible: false }); return { ...r, teacherUnits: { ...r.teacherUnits, acceptedClientContractVersions: ["teacher-units-v2"] } }; })()],
+    ["closed accepting v2", (() => { const r = response(undefined, { ...ENABLED, state: "closed", deploymentEligible: false }); return { ...r, teacherUnits: { ...r.teacherUnits, acceptedClientContractVersions: ["teacher-units-v3"] } }; })()],
     ["enabled not eligible", response(undefined, { ...ENABLED, deploymentEligible: false })],
     ["enabled without release", response(undefined, { ...ENABLED, backendReleaseId: null })],
     ["partial policy identity", response(undefined, { ...ENABLED, policyGeneration: null })],
@@ -136,7 +137,7 @@ test("sends exactly the schema 2 request with a fresh nonce per verification", a
   expect(capability()).toHaveBeenCalledTimes(2);
   const [first, second] = capability().mock.calls.map(([req]) => req as Record<string, unknown>);
   expect(Object.keys(first).sort()).toEqual(["clientContractVersion", "nonce", "schemaVersion"]);
-  expect(first).toMatchObject({ schemaVersion: 2, clientContractVersion: "teacher-units-v2" });
+  expect(first).toMatchObject({ schemaVersion: 3, clientContractVersion: "teacher-units-v3" });
   expect(first.nonce).toMatch(/^[0-9a-f]{48}$/);
   expect(second.nonce).not.toBe(first.nonce);
   expect(unsubscribe).toHaveBeenCalledTimes(2);
@@ -150,7 +151,7 @@ test.each(["closed", "unverified"])("a %s backend blocks every mutation before d
 test("the server's legacy refusal of a v1 request is not reachable: v2 is always sent", async () => {
   capability().mockRejectedValue(Object.assign(new Error("x"), { details: { code: "teacherUnits.contractUnsupported" } }));
   await expect(verifier()()).rejects.toBeInstanceOf(TeacherUnitsCompatibilityError);
-  expect(capability().mock.calls[0][0]).toMatchObject({ schemaVersion: 2 });
+  expect(capability().mock.calls[0][0]).toMatchObject({ schemaVersion: 3 });
 });
 test("a local origin cannot construct the verifier", () => {
   const original = window.location;
@@ -278,4 +279,93 @@ describe("dispatch through the real adapter", () => {
     expect(capability()).not.toHaveBeenCalled();
     expect(callableFor("teacherUnitsGet").mock.calls[0][0]).toEqual({ unitId: "u1" });
   });
+});
+
+function lifecycleHarness() {
+  let epoch = 0;
+  let sequence = 0;
+  let discover: (() => Promise<void>) | undefined;
+  const cleanups: Array<() => void> = [];
+  const state = {
+    begin: jest.fn(() => ({ epoch, sequence: ++sequence, context: "test" })),
+    current: jest.fn((ticket: { epoch: number; sequence: number }) => ticket.epoch === epoch && ticket.sequence === sequence),
+    publish: jest.fn((ticket: { epoch: number; sequence: number }, observation: { status: string }) => {
+      if (ticket.epoch !== epoch || ticket.sequence !== sequence) return false;
+      if (observation.status !== "enabled") epoch++;
+      return true;
+    }),
+    invalidate: jest.fn(() => { epoch++; }),
+    setDiscover: (fn: () => Promise<void>) => { discover = fn; },
+    addCleanup: (fn: () => void) => { cleanups.push(fn); },
+  };
+  return { state: state as unknown as TeacherUnitsCapabilityState,
+    raw: state, refresh: () => discover!(), dispose: () => cleanups.forEach(fn => fn()) };
+}
+
+test("shared display discovery never lends its observation as a mutation permit", async () => {
+  const shared = lifecycleHarness();
+  const verify = createTeacherUnitsMutationVerifier(functions, auth, () => session, shared.state);
+  await shared.refresh();
+  expect(shared.raw.publish).toHaveBeenLastCalledWith(expect.anything(), { status: "enabled", policyInstanceId: POLICY, policyGeneration: 7 });
+  (await verify())();
+  expect(capability()).toHaveBeenCalledTimes(2);
+  expect(shared.raw.begin.mock.calls).toEqual([["display"], ["mutation"]]);
+  shared.dispose();
+});
+
+test("shared epoch invalidation revokes an unconsumed permit", async () => {
+  const shared = lifecycleHarness();
+  const verify = createTeacherUnitsMutationVerifier(functions, auth, () => session, shared.state);
+  const permit = await verify();
+  shared.state.invalidate("stale");
+  expect(permit).toThrow(TeacherUnitsCompatibilityError);
+  shared.dispose();
+});
+
+test("a display closed result is published without creating a permit", async () => {
+  const shared = lifecycleHarness();
+  createTeacherUnitsMutationVerifier(functions, auth, () => session, shared.state);
+  declared = { ...ENABLED, state: "closed", deploymentEligible: false };
+  await shared.refresh();
+  expect(shared.raw.publish).toHaveBeenLastCalledWith(expect.anything(), { status: "closed", policyInstanceId: POLICY, policyGeneration: 7 });
+  shared.dispose();
+});
+
+test("late enabled response cannot override a newer shared invalidation", async () => {
+  const shared = lifecycleHarness();
+  createTeacherUnitsMutationVerifier(functions, auth, () => session, shared.state);
+  capability().mockImplementation(async (req: { nonce: string }) => {
+    shared.state.invalidate("closed");
+    return { data: response(req.nonce) };
+  });
+  await expect(shared.refresh()).rejects.toBeInstanceOf(TeacherUnitsCompatibilityError);
+  expect(shared.raw.publish).not.toHaveBeenCalled();
+  shared.dispose();
+});
+
+test("actual shared lifecycle requires display enablement and revokes a permit on closure", async () => {
+  const { createTeacherUnitsCapabilityState } = await import("./capabilityState");
+  const shared = createTeacherUnitsCapabilityState({ readContext: () => [session?.uid, session?.schoolId, session?.generation, user] });
+  const verify = createTeacherUnitsMutationVerifier(functions, auth, () => session, shared);
+  await expect(verify()).rejects.toBeInstanceOf(TeacherUnitsCompatibilityError);
+  expect(capability()).not.toHaveBeenCalled();
+  await shared.refresh();
+  expect(shared.getSnapshot().status).toBe("enabled");
+  const permit = await verify();
+  shared.invalidate("closed");
+  expect(permit).toThrow(TeacherUnitsCompatibilityError);
+  expect(capability()).toHaveBeenCalledTimes(2);
+  shared.dispose();
+});
+
+test("actual lifecycle coalesces display refresh and rejects older generation publication", async () => {
+  const { createTeacherUnitsCapabilityState } = await import("./capabilityState");
+  const shared = createTeacherUnitsCapabilityState();
+  createTeacherUnitsMutationVerifier(functions, auth, () => session, shared);
+  await Promise.all([shared.refresh(), shared.refresh()]);
+  expect(capability()).toHaveBeenCalledTimes(1);
+  declared = { ...ENABLED, policyGeneration: 6 };
+  await shared.refresh();
+  expect(shared.getSnapshot().status).not.toBe("enabled");
+  shared.dispose();
 });

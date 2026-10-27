@@ -13,8 +13,12 @@ import {
   type AuditEventWrite,
   type AuditPayload,
   type AuditTargetType,
+  type TeacherUnitsAvailabilityAuditPayload,
 } from "../types/audit-event";
 import type { Role } from "../types/user";
+// Standalone strict data primitives only. No policy, runtime eligibility or I/O.
+import { digest, generation, literal, nullable, object, refuse, stringRule, uuid, validate } from "../../teacherUnits/availability-protocol";
+import type { Rule } from "../../teacherUnits/availability-protocol";
 
 // Input shape for the canonical audit writer.
 //
@@ -56,7 +60,8 @@ const VALID_ROLES: readonly Role[] = [
 ];
 
 // Canonical actor roles accepted by the audit writer per Data Model §3.8.
-// Adds the `system` sentinel used by triggers and other trusted-server
+// This generic branch adds only `system`; the reserved operator tuple is
+// validated separately below. `system` is used by triggers and trusted-server
 // contexts. The domain `Role` union is unchanged, so no user-record shape
 // or custom-claims path can accidentally acquire the sentinel.
 const VALID_ACTOR_ROLES: readonly ActorRole[] = [...VALID_ROLES, "system"];
@@ -85,6 +90,45 @@ function isValidAction(value: unknown): value is AuditAction {
   );
 }
 
+const AVAILABILITY_ACTION = "teacherUnits.availabilityChanged";
+const AVAILABILITY_TARGET = "platformConfig/teacherUnitsAvailability";
+const bounded = (limit: number, trimmed: boolean): Rule => (value, path) => {
+  stringRule(value, path); const text = value as string;
+  // eslint-disable-next-line no-control-regex
+  if (!text.trim() || [...text].length > limit || /[\u0000-\u001f\u007f-\u009f]/.test(text) ||
+      (trimmed && text.trim() !== text)) refuse(path, "bounded nonempty text without controls required");
+};
+const subject = bounded(256, false), reason = bounded(1000, true), approval = bounded(256, true);
+const availabilityPayloadRule = object({
+  transition: literal("initialize", "prepare", "enable", "close", "recoverClosed"),
+  policyInstanceId: uuid, generation, mode: literal("closed", "enabled"), approvedBackendBuildId: nullable(digest),
+  placementFingerprint: digest, operator: object({ principalSubject: subject, credentialSubject: subject, delegationSubject: nullable(subject) }),
+  reason, approvalRef: nullable(approval),
+});
+/** This builder validates supplied attribution, not human credentials or owner
+ * approval. B1e must bind the payload/correlation to its validated next policy,
+ * transition and verified operator context before enlisting the canonical write. */
+function buildAvailabilityAudit(input: unknown): BuiltAuditEvent {
+  const checked = validate<WriteAuditEventInput & { payload: TeacherUnitsAvailabilityAuditPayload; correlationId: string }>((v, path) => {
+    object({ actorUserId: subject, actorRole: literal("operator"), action: literal(AVAILABILITY_ACTION),
+      targetType: literal("teacherUnitsAvailability"), targetId: literal(AVAILABILITY_TARGET),
+      correlationId: uuid, payload: availabilityPayloadRule })(v, path);
+    const r = v as WriteAuditEventInput & { payload: TeacherUnitsAvailabilityAuditPayload };
+    const p = r.payload;
+    if (r.actorUserId !== p.operator.principalSubject) refuse(path, "operator principal attribution mismatch");
+    if (p.mode === "enabled" && (p.approvedBackendBuildId === null || p.approvalRef === null))
+      refuse(path, "enabled build and approval required");
+    if (p.transition === "initialize" || p.transition === "recoverClosed") {
+      if (p.generation !== 1 || p.mode !== "closed" || p.approvedBackendBuildId !== null) refuse(path, "new instance must start closed at generation one without build");
+    } else if (p.transition === "enable") {
+      if (p.mode !== "enabled") refuse(path, "enable must declare enabled mode");
+    } else if (p.mode !== "closed") refuse(path, "prepare/close must declare closed mode");
+  }, input);
+  if (!checked.ok) throw new PlatformError("audit.invalidOperatorEvent", `Invalid My Units operator audit event: ${checked.issue.reason}`);
+  const canonical: Omit<AuditEventWrite, "occurredAt"> = checked.value;
+  return { record: canonical, write: { ...canonical, occurredAt: FieldValue.serverTimestamp() } };
+}
+
 // The single canonical path for writing audit events in the platform.
 //
 // Every callable, trigger, and administrative script that must record a
@@ -94,7 +138,8 @@ function isValidAction(value: unknown): value is AuditAction {
 // - the canonical shape invariant: the object written to Firestore
 //   contains exactly the Data Model §3.8 fields (required, plus any
 //   supplied optional payload and correlationId). No additional fields
-//   are attached, and unknown fields on the input are ignored.
+//   are attached. Legacy inputs ignore unknown fields; the narrow operator
+//   event instead rejects them recursively.
 // - the canonical vocabulary invariant: `action` is a value from
 //   the Sprint 2 audit vocabulary in Sprint 2 §4.5.
 // - the server-time invariant: `occurredAt` is always
@@ -124,6 +169,10 @@ export type BuiltAuditEvent = {
 export function buildAuditEventWrite(
   input: WriteAuditEventInput,
 ): BuiltAuditEvent {
+  // Route reserved data fields without invoking their accessors. The strict
+  // branch then snapshots the entire input and rejects any descriptor tricks.
+  if (Object.getOwnPropertyDescriptor(input, "actorRole")?.value === "operator" ||
+      Object.getOwnPropertyDescriptor(input, "action")?.value === AVAILABILITY_ACTION) return buildAvailabilityAudit(input);
   if (!isNonEmptyString(input.actorUserId)) {
     throw new PlatformError(
       "audit.invalidActorUserId",
@@ -208,6 +257,8 @@ export function buildAuditEventWrite(
       ? { correlationId: input.correlationId }
       : {}),
   };
+
+  if (canonical.actorRole === "operator" || canonical.action === AVAILABILITY_ACTION) return buildAvailabilityAudit(input);
 
   const write: AuditEventWrite = {
     ...canonical,

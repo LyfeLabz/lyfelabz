@@ -11,6 +11,8 @@ const ts = require('typescript');
 const { hostingCandidate } = require('../../scripts/hosting-release/backend-state.cjs');
 const { build, compile, verify, checkSource } = require('./build-application.cjs');
 const ROOT = path.resolve(__dirname,'../..');
+const POLICY_TARGET = Object.freeze({projectId:'lyfelabz-prod',environment:'production',origin:'https://app.lyfelabz.com'});
+const STAGING_TARGET = Object.freeze({projectId:'lyfelabz-staging',environment:'staging',origin:'https://lyfelabz-staging.web.app'});
 function fixture(entry) {
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'u26-build-contract-'));
   const directory=path.join(root,'app/src/teacherUnits');fs.mkdirSync(directory,{recursive:true});
@@ -23,7 +25,7 @@ const IMPORT='import { teacherUnitsReleaseBoundary } from "./teacherUnits/releas
 const SAFE=IMPORT+' globalThis.result = teacherUnitsReleaseBoundary(() => { throw new Error("constructed"); });';
 async function withFixture(entry, run) { const root=fixture(entry);try { await run(root); }finally {fs.rmSync(root,{recursive:true,force:true});} }
 function execute(bundle) {const context={};vm.runInNewContext(bundle.toString(),context);return context;}
-for(const intent of ['general','teacher-units']) test(`${intent} controlled compiler emits closed behavior and deterministic evidence`,async()=>withFixture(SAFE,async root=>{
+for(const intent of ['general']) test(`${intent} controlled compiler emits closed behavior and deterministic evidence`,async()=>withFixture(SAFE,async root=>{
   const first=await build(root,intent); const second=await verify(root,intent);
   expect(second).toEqual(first);expect(first.availability).toBe('closed');expect(first.releaseIntent).toBe(intent);
   expect(first.availabilityEvidence).toBe('build-contract-assertion');
@@ -304,7 +306,7 @@ for (const kind of ['package','tsconfig','jsconfig']) test(`${kind} JSON redirec
   expectCommandPass(process.execPath,[path.join(ROOT,'app/node_modules/typescript/bin/tsc'),'--noEmit','-p',path.join(app,'tsconfig.json')],app);
   expectCommandPass(process.execPath,[path.join(ROOT,'app/node_modules/eslint/bin/eslint.js'),'--ext','.ts','src'],app);
   expectCommandPass(process.execPath,[path.join(ROOT,'app/node_modules/jest/bin/jest.js'),'--config',JSON.stringify({rootDir:app,preset:'ts-jest',testEnvironment:'node',roots:['<rootDir>/src'],testMatch:['**/resolution.test.ts']}),'--runInBand','--silent'],app);
-  for (const intent of ['general','teacher-units']) await expect(build(root,intent)).rejects.toThrow('resolution-controlling JSON configuration');
+  for (const intent of ['general','teacher-units']) await expect(build(root,intent,intent === 'teacher-units' ? POLICY_TARGET : undefined)).rejects.toThrow('resolution-controlling JSON configuration');
   expect(fs.existsSync(path.join(app,'dist/bundle.js'))).toBe(false);
   expect(fs.existsSync(path.join(app,'dist/application-build.json'))).toBe(false);
   for (const command of ['build','typecheck','lint','build:runtime','build:lab-report-cloud']) {
@@ -370,7 +372,7 @@ for (const [kind,name] of [['package','pac\u212Aage.json'],['jsconfig','jsconf\u
     const emitted=await raw();expect(execute(Buffer.from(emitted.outputFiles[0].contents)).marker).toBe('redirected');
   } else await expect(raw()).rejects.toThrow();
   expect(()=>checkSource(root)).toThrow('non-ASCII application source filename component');
-  for (const intent of ['general','teacher-units']) await expect(build(root,intent)).rejects.toThrow('non-ASCII application source filename component');
+  for (const intent of ['general','teacher-units']) await expect(build(root,intent,intent === 'teacher-units' ? POLICY_TARGET : undefined)).rejects.toThrow('non-ASCII application source filename component');
   expect(fs.existsSync(path.join(app,'dist/bundle.js'))).toBe(false);
   expect(fs.existsSync(path.join(app,'dist/application-build.json'))).toBe(false);
   // An old safe artifact must not hide the newly added Unicode configuration.
@@ -404,4 +406,56 @@ for (const name of ['\u017Frc','Src']) test(`source root ${name} cannot alias th
   fs.renameSync(path.join(root,'app/src'),path.join(root,'app',name));
   expect(()=>checkSource(root)).toThrow('missing exact application source directory');
   await expect(build(root,'general')).rejects.toThrow('missing exact application source directory');
+}));
+
+for (const target of [POLICY_TARGET, STAGING_TARGET]) test(`Option B compiler binds policy-capable UI to ${target.projectId}`, async () => withFixture(IMPORT+' globalThis.result = teacherUnitsReleaseBoundary(() => "policy-capable" as never);', async root => {
+  const evidence = await build(root, 'teacher-units', target);
+  expect(await verify(root, 'teacher-units', target)).toEqual(evidence);
+  expect(evidence).toMatchObject({ releaseIntent:'teacher-units', availability:'server-policy-required', runtimeAvailability:'not-certified', policyTarget:target });
+  const bundle = fs.readFileSync(path.join(root,'app/dist/bundle.js'),'utf8');
+  for (const origin of [target.origin, POLICY_TARGET.origin, STAGING_TARGET.origin, undefined, 'https://preview.example', target.origin+'.evil.test']) {
+    const context = origin === undefined ? {} : {location:{origin}};
+    vm.runInNewContext(bundle,context);
+    expect(context.result).toBe(origin === target.origin ? 'policy-capable' : null);
+  }
+  await expect(verify(root,'teacher-units',target === POLICY_TARGET ? STAGING_TARGET : POLICY_TARGET)).rejects.toThrow('REFUSED');
+  await expect(verify(root,'general')).rejects.toThrow('REFUSED');
+}));
+
+test.each([
+  undefined, {}, { ...POLICY_TARGET, origin:'https://preview.example' },
+  { ...POLICY_TARGET, projectId:'lyfelabz-staging' }, { ...POLICY_TARGET, environment:'staging' },
+  { ...POLICY_TARGET, origin:'https://app.lyfelabz.com/' },
+  { ...POLICY_TARGET, approved:true },
+  { ...STAGING_TARGET, origin:POLICY_TARGET.origin },
+])('Option B refuses absent or inconsistent target %#', async target => withFixture(SAFE, async root => {
+  await expect(compile(root,'teacher-units',target)).rejects.toThrow('REFUSED');
+}));
+
+test('Option B refuses target accessors without invoking them', async () => withFixture(SAFE, async root => {
+  const getter = jest.fn(() => POLICY_TARGET.origin);
+  const target = { ...POLICY_TARGET };
+  Object.defineProperty(target,'origin',{enumerable:true,get:getter});
+  await expect(compile(root,'teacher-units',target)).rejects.toThrow('REFUSED');
+  expect(getter).not.toHaveBeenCalled();
+}));
+
+test('Option B source substitution and evidence tampering cannot escape origin binding', async () => withFixture(IMPORT+' globalThis.result = teacherUnitsReleaseBoundary(() => "policy-capable" as never);', async root => {
+  fs.writeFileSync(path.join(root,'app/src/teacherUnits/releaseAvailability.ts'),'export function teacherUnitsAvailable(){return true;} export function requireTeacherUnitsAvailable(){}');
+  const {bundle} = await compile(root,'teacher-units',POLICY_TARGET);
+  expect(execute(bundle).result).toBeNull();
+  for (const field of ['policyTarget','availability','runtimeAvailability','replacementHash']) {
+    await build(root,'teacher-units',POLICY_TARGET);
+    const record = path.join(root,'app/dist/application-build.json');
+    const evidence = JSON.parse(fs.readFileSync(record,'utf8'));
+    if (field === 'policyTarget') evidence.policyTarget = STAGING_TARGET;
+    else if (field === 'replacementHash') evidence.canonicalAvailability.replacementHash = 'f'.repeat(64);
+    else evidence[field] = 'enabled';
+    fs.writeFileSync(record,JSON.stringify(evidence));
+    await expect(verify(root,'teacher-units',POLICY_TARGET)).rejects.toThrow('REFUSED');
+  }
+}));
+
+test('closed and legacy staging profiles reject policy-target overrides', async () => withFixture(SAFE, async root => {
+  for (const intent of ['general','staging-ux-test']) await expect(compile(root,intent,POLICY_TARGET)).rejects.toThrow('REFUSED');
 }));

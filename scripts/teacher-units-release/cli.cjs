@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
-// A3-6 S6a operator CLI (D14). Offline validation, unsigned statement preparation,
+// Historical A3-6 S6a operator CLI (D14), never Option B authorization.
+// Offline validation, unsigned statement preparation,
 // history reporting, and EMULATOR-ONLY registration and availability transitions.
 //
 //   node scripts/teacher-units-release/cli.cjs <command> [subcommand] --project <id> [flags]
@@ -416,6 +417,9 @@ async function run({ command, flags }, target, ctx) {
 
 /** Returns the exit code. `ctx` is injectable for tests; defaults are the process. */
 async function main(argv, ctx = {}) {
+  // Explicit Option B route. Never feeds a new command through the historical
+  // verifier, markers, policies or their argument parser.
+  if (argv[0] === "availability") return require("./availability-control.cjs").main(argv.slice(1), ctx.optionB || ctx);
   const context = { env: ctx.env || process.env, cwd: ctx.cwd || process.cwd(), stdout: ctx.stdout || process.stdout,
     stderr: ctx.stderr || process.stderr, now: ctx.now || (() => new Date().toISOString()), workflowRunId: ctx.workflowRunId || randomUUID(),
     exchange: ctx.exchange, hostingRoot: ctx.hostingRoot };

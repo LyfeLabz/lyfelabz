@@ -1,3 +1,4 @@
+import { createTeacherUnitsCapabilityState, type TeacherUnitsCapabilityState } from "./capabilityState";
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
 import type { TeacherUnitColor } from "./unitColor";
 import { normalizeTeacherUnitError, type TeacherUnitError } from "./errors";
@@ -1467,6 +1468,8 @@ export function createTeacherUnitsController(deps: TeacherUnitsControllerDeps): 
 // otherwise). The shell never touches Firebase or storage: the entry point
 // binds the callables, the Firebase uid reader, and the scoped store here.
 export type TeacherUnitsSurfaceSeam = {
+  readonly capability?: TeacherUnitsCapabilityState;
+  readonly dispose?: () => void;
   readonly createController: (input: {
     readonly uid: string;
     readonly schoolId: string;
@@ -1499,6 +1502,7 @@ export function bootstrapActiveTeacherReader<
 // outlive any one panel and controller (Curriculum navigation, remounts) and
 // end with the seam itself, which the app rebuilds for every bootstrap run.
 export function createTeacherUnitsSurfaceSeam(deps: {
+  readonly capability?: TeacherUnitsCapabilityState;
   readonly callables: TeacherUnitsCallables;
   // The current Firebase Auth uid (null when signed out), read at call time.
   readonly readFirebaseUid: () => string | null;
@@ -1511,7 +1515,10 @@ export function createTeacherUnitsSurfaceSeam(deps: {
 }): TeacherUnitsSurfaceSeam {
   requireTeacherUnitsAvailable();
   const pendingRegistry = createPendingMutationRegistry();
+  const capability = deps.capability ?? createTeacherUnitsCapabilityState();
   return Object.freeze({
+    capability,
+    dispose: () => capability.dispose(),
     createController: ({ uid, schoolId, initialGrade }) => {
       const session = Object.freeze({ teacherId: uid, schoolId });
       return createTeacherUnitsController({

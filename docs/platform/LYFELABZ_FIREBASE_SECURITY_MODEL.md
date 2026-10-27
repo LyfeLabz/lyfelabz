@@ -732,6 +732,44 @@ The LMS Integration Foundation phase (Phase 9, per `TEACHER_PLATFORM_DOMAIN_ROAD
 
 These vocabulary terms are reserved by this document and become live audit terms only when the LMS Integration Foundation phase is scheduled. No sprint may extend the vocabulary silently.
 
+## 11.7.b My Units Availability Operator Audit
+
+Option B adds one global audit-only exception: `actorRole: "operator"` is valid
+if and only if `action: "teacherUnits.availabilityChanged"`,
+`targetType: "teacherUnitsAvailability"`, and
+`targetId: "platformConfig/teacherUnitsAvailability"`. Conversely, that action
+requires this operator/target tuple. `correlationId` is a required canonical
+lowercase UUID v4 identifying the transition; `actorUserId` must equal
+`payload.operator.principalSubject`. No `schoolId` or `districtId` may be
+supplied, including an explicitly undefined field. Unknown input and nested
+payload fields are rejected for this exception.
+
+Its required payload has exactly `{transition, policyInstanceId, generation,
+mode, approvedBackendBuildId, placementFingerprint, operator, reason,
+approvalRef}`. Transitions are `initialize`, `prepare`, `enable`, `close`, or
+`recoverClosed`. Instance IDs are canonical lowercase UUID v4; generation is a
+positive safe integer through `Number.MAX_SAFE_INTEGER`. Build and placement
+identities are lowercase SHA-256 digests, with build nullable while closed.
+Enable requires enabled mode, a build and a non-null approval reference;
+prepare/close require closed mode. Initialize/recoverClosed require closed
+mode, generation 1 and null build. Enabled maximum generation remains enabled.
+`operator` is exactly `{principalSubject, credentialSubject, delegationSubject}`:
+subjects are nonempty well-formed text, at most 256 code points, without
+controls; delegation may be null. `reason` is trimmed nonempty text of at most
+1000 code points; approvalRef is null or trimmed nonempty text of at most 256
+code points, without controls. Never include credentials or student data.
+
+This shared writer validates structure and attribution consistency; supplied
+subjects are not authentication or approval proof. The future B1e trusted
+operator tool must verify credentials and authorization, bind every field to
+the same validated policy transition and decision, and enlist policy, history
+and canonical audit in one transaction after all reads. B1d adds no operator
+entry point, callable privilege, IAM grant, application Role or client access.
+Transaction enlistment does not prove commit, shutdown or successful readback;
+B1e must verify them, reconcile uncertainty and suppress duplicate/no-op audits.
+Existing user school/district requirements, system exceptions and historical
+audit record interpretation remain unchanged.
+
 ## 11.8 Audit Properties
 
 Audit events are:

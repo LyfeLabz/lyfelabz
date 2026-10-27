@@ -12,16 +12,15 @@ import {
   evaluateAvailabilityInTransaction,
   requireRuntimeIdentity,
 } from "./a3-enforcement";
-import { type CapabilityRequestV2, type CapabilityResponseV2, validateCapabilityRequest, validateCapabilityResponse } from "./a3-protocol";
+import { type CapabilityRequestV3, type CapabilityResponseV3, validateCapabilityRequest, validateCapabilityResponse } from "./availability-protocol";
 import { assertActiveTeacher, reassertTeacherContextInTransaction, requestObject } from "./teacher-unit-access";
 
-// teacherUnitsCapabilities - A3-3 schema 2 discovery (approved decision record,
+// teacherUnitsCapabilities - Option B schema 3 discovery (approved decision record,
 // Decision 1). Order: runtime identity before any tenant read; canonical
 // authentication; strict request parsing; then one read-only transaction that
 // reauthorizes the caller and evaluates the uncached availability policy.
-// Legacy schema 1 / teacher-units-v1 requests are refused with
-// `teacherUnits.contractUnsupported`; there is no schema 1 response, dual stack
-// or fallback. Closed discovery remains available under canonical
+// Legacy discovery schemas 1/2 and v1/v2 contracts are refused with
+// `teacherUnits.contractUnsupported`; there is no historical response or fallback. Closed discovery remains available under canonical
 // authentication: closed, missing and unverifiable policies are declared, and
 // only invalid or unreadable policies refuse.
 export const TEACHER_UNITS_OPERATIONS = Object.freeze([
@@ -33,11 +32,11 @@ function invalidRequest(): PlatformError {
   return new PlatformError("teacherUnits.invalidRequest", "Unsupported capability request.");
 }
 
-export function readCapabilityRequest(data: unknown): CapabilityRequestV2 {
+export function readCapabilityRequest(data: unknown): CapabilityRequestV3 {
   const payload = requestObject(data);
   const keys = Object.keys(payload).sort();
   if (keys.length !== REQUEST_KEYS.length || keys.some((key, i) => key !== REQUEST_KEYS[i])) throw invalidRequest();
-  if (payload.schemaVersion !== 2 || payload.clientContractVersion !== TEACHER_UNITS_CLIENT_CONTRACT) {
+  if (payload.schemaVersion !== 3 || payload.clientContractVersion !== TEACHER_UNITS_CLIENT_CONTRACT) {
     throw a3Refusal("teacherUnits.contractUnsupported");
   }
   const parsed = validateCapabilityRequest(payload);
@@ -50,25 +49,27 @@ export function readCapabilityRequest(data: unknown): CapabilityRequestV2 {
 export function createTeacherUnitsCapabilitiesHandler(enforcement: TeacherUnitsEnforcement) {
   return async function teacherUnitsCapabilitiesHandler(
     request: CallableRequest<unknown>,
-  ): Promise<CapabilityResponseV2> {
-    const identity = await requireRuntimeIdentity(enforcement);
+  ): Promise<CapabilityResponseV3> {
+    const identity = await requireRuntimeIdentity(enforcement, "teacherUnitsCapabilities");
     const actor = await assertActiveTeacher(request);
     const capabilityRequest = readCapabilityRequest(request.data);
     const scope = { identity, enforcement, endpoint: "teacherUnitsCapabilities" } as const;
-    const { caller, availability } = await runFirestoreTransaction(async (tx) => {
+    const { caller, availability, backendBuildId } = await runFirestoreTransaction(async (tx) => {
       assertScopeIdentity(scope);
       const verified = await reassertTeacherContextInTransaction(tx, actor);
       const evaluation = await evaluateAvailabilityInTransaction(tx, scope);
-      return { caller: verified, availability: declareAvailability(evaluation) };
+      if (evaluation.backendBuildId === null) throw a3Refusal("teacherUnits.deploymentIneligible");
+      return { caller: verified, availability: declareAvailability(evaluation), backendBuildId: evaluation.backendBuildId };
     });
     const response = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       nonce: capabilityRequest.nonce,
       backend: {
         projectId: identity.projectId,
         environment: identity.environment,
         region: "us-central1",
         enforcementVersion: TEACHER_UNITS_ENFORCEMENT_VERSION,
+        backendBuildId,
       },
       teacherUnits: {
         apiContractVersion: TEACHER_UNITS_CLIENT_CONTRACT,
@@ -80,7 +81,7 @@ export function createTeacherUnitsCapabilitiesHandler(enforcement: TeacherUnitsE
       },
       caller: { uid: caller.uid, role: "teacher", schoolId: caller.schoolId, districtId: caller.districtId },
     };
-    // The server never emits a declaration the A3-1 client contract would refuse.
+    // The server never emits a declaration the Option B client contract would refuse.
     const checked = validateCapabilityResponse(response, identity.environment === "emulator" ? identity.projectId : undefined);
     if (!checked.ok) throw a3Refusal("teacherUnits.policyInvalid");
     return checked.value;

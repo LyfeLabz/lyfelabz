@@ -16,7 +16,7 @@ function selectProfile(env) {
 }
 
 /** Removes any previous record first, so a refused build never leaves stale output that looks current. */
-function writeRuntimeBuild({ root, env, inventoryRuntimeArtifact, canonicalJSON }) {
+function writeRuntimeBuild({ root, env, inventoryRuntimeArtifact, canonicalJSON, deriveBackendBuildId }) {
   const target = path.join(root, RECORD);
   fs.rmSync(target, { force: true });
   const mode = selectProfile(env);
@@ -33,10 +33,13 @@ function writeRuntimeBuild({ root, env, inventoryRuntimeArtifact, canonicalJSON 
       throw new Error('Policy-controlled build refuses symlinked node_modules');
   }
   const inventory = inventoryRuntimeArtifact(root);
-  const record = { schemaVersion: 1, enforcementVersion: 'teacher-units-a3-v1', deploymentMode: mode,
+  const record = { schemaVersion: 2, enforcementVersion: 'teacher-units-option-b-v1', deploymentMode: mode,
     sourceSha, sourceTree, sourceDirty,
     runtimePayloadFingerprint: inventory.runtimePayloadFingerprint, placementFingerprint: inventory.placementFingerprint,
-    supportedClientContractVersions: ['teacher-units-v2'] };
+    supportedClientContractVersions: ['teacher-units-v3'] };
+  const derived = deriveBackendBuildId(record);
+  if (!derived.ok) throw new Error(`Invalid Option B build: ${derived.issue.reason}`);
+  record.backendBuildId = derived.value;
   const temporary = `${target}.${process.pid}.tmp`;
   fs.writeFileSync(temporary, canonicalJSON(record) + '\n');
   fs.renameSync(temporary, target);
@@ -48,10 +51,11 @@ module.exports = { writeRuntimeBuild, selectProfile, RECORD };
 if (require.main === module) {
   const root = path.resolve(__dirname, '..');
   const { inventoryRuntimeArtifact, RUNTIME_BUILD_PATH } = require('../lib/teacherUnits/a3-runtime-artifact');
+  const { deriveBackendBuildId } = require('../lib/teacherUnits/availability-runtime-build');
   const { canonicalJSON } = require('../lib/teacherUnits/a3-canonical');
   if (RUNTIME_BUILD_PATH !== RECORD) throw new Error('Runtime build path drift');
   try {
-    const record = writeRuntimeBuild({ root, env: process.env, inventoryRuntimeArtifact, canonicalJSON });
+    const record = writeRuntimeBuild({ root, env: process.env, inventoryRuntimeArtifact, canonicalJSON, deriveBackendBuildId });
     console.log(`A3 runtime build record written: ${record.deploymentMode}; no approval or availability.`);
   } catch (error) {
     console.error(`A3 runtime build refused; no record written: ${error.message}`);

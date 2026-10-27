@@ -20,7 +20,7 @@ import {
   type TeacherUnitStatus,
 } from "../shared";
 import { type A3Scope, assertScopeIdentity, enforceManagementAvailability } from "./a3-enforcement";
-import type { MutationCompatibilityV1 } from "./a3-protocol";
+import type { MutationCompatibilityV2 } from "./availability-protocol";
 
 // U1A - shared authorization, validation, and projection for the
 // `teacherUnits*` callables. See docs/platform/TEACHER_UNITS.md.
@@ -111,17 +111,17 @@ export async function reassertTeacherContextInTransaction(
   return { uid: actor.uid, schoolId: actor.schoolId, districtId };
 }
 
-// A3-3: the authoritative prefix of every Teacher Units management transaction
+// Option B: the authoritative prefix of every Teacher Units management transaction
 // attempt, in the approved order: runtime identity, canonical reauthorization,
-// then uncached availability (policy, release, evidence, provenance, release
-// authority) and, for mutations, the compatibility envelope. Callers evaluate
+// then uncached Option B policy/build availability and, for mutations, the
+// compatibility envelope. Callers evaluate
 // receipts, replays, no-ops and writes only after this returns. It runs again on
 // every Firestore SDK transaction attempt; nothing is cached.
 export async function authorizeTeacherUnitsTransaction(
   tx: Transaction,
   scope: A3Scope,
   actor: TeacherUnitActor,
-  envelope?: MutationCompatibilityV1,
+  envelope?: MutationCompatibilityV2,
 ): Promise<TeacherUnitActor> {
   assertScopeIdentity(scope);
   const verified = await reassertTeacherContextInTransaction(tx, actor);

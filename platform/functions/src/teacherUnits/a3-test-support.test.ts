@@ -17,6 +17,10 @@ import { createAuthorityRegistry, ed25519KeyId } from "./a3-authority-registry";
 import type { AuthorityAction, AuthorityRegistry } from "./a3-authority-registry";
 import * as B from "./a3-bindings";
 import { approvalSigningBytes, contentDigest, evidenceRef } from "./a3-canonical";
+import { deriveBackendBuildId } from "./availability-runtime-build";
+import type { AvailabilityRuntimeBuild } from "./availability-runtime-build";
+import type { AvailabilityPolicy } from "./availability-policy";
+import type { MutationCompatibilityV2 } from "./availability-protocol";
 import type { TeacherUnitsEnforcement } from "./a3-enforcement";
 import type { MutationCompatibilityV1 } from "./a3-protocol";
 import type { ReleaseAuthorityVerdict, ReleaseAuthorityVerifier } from "./a3-release-authority";
@@ -287,16 +291,36 @@ export function matchedProvenance(releaseId: string): RuntimeProvenanceResult {
     deploymentVerification: "unverified", releaseId });
 }
 
-/** TEST-ONLY enforcement. */
-export function testEnforcement(identity: RuntimeIdentity, chain: EnabledChain | null,
+/** TEST-ONLY B vectors. Historical A3 builders above remain unchanged. */
+export function buildOptionBChain(expected: ExpectedEnvironment, placementFingerprint: string,
+  options: { generation?: number; deploymentMode?: "closed-only" | "policy-controlled" } = {}) {
+  const inputs = { schemaVersion: 2 as const, enforcementVersion: "teacher-units-option-b-v1" as const,
+    deploymentMode: options.deploymentMode ?? "policy-controlled", sourceSha: "a".repeat(40), sourceTree: "b".repeat(40), sourceDirty: false,
+    runtimePayloadFingerprint: "c".repeat(64), placementFingerprint,
+    supportedClientContractVersions: ["teacher-units-v3"] as const };
+  const id = deriveBackendBuildId(inputs); if (!id.ok) throw new Error("invalid synthetic B build");
+  const build: AvailabilityRuntimeBuild = { ...inputs, backendBuildId: id.value };
+  const policy: AvailabilityPolicy = { schemaVersion: 2, enforcementVersion: "teacher-units-option-b-v1",
+    environment: expected.environment, projectId: expected.projectId, projectNumber: expected.projectNumber,
+    region: "us-central1", databaseId: "(default)", policyInstanceId: "123e4567-e89b-42d3-a456-426614174000",
+    generation: options.generation ?? 3, mode: "enabled", approvedBackendBuildId: id.value,
+    acceptedClientContractVersions: ["teacher-units-v3"], placementFingerprint,
+    createdAt: new Timestamp(1, 0), updatedAt: new Timestamp(2, 0), lastClosedAt: new Timestamp(1, 0), lastEnabledAt: new Timestamp(2, 0),
+    updatedBy: { principalSubject: "synthetic-owner", credentialSubject: "synthetic-credential", delegationSubject: null },
+    transitionId: "123e4567-e89b-42d3-a456-426614174001", reason: "Synthetic Option B test", approvalRef: "synthetic-owner-decision" };
+  const compatibility: MutationCompatibilityV2 = { schemaVersion: 2, clientContractVersion: "teacher-units-v3",
+    policyInstanceId: policy.policyInstanceId, policyGeneration: policy.generation, backendReleaseId: id.value, placementFingerprint };
+  return { build, policy, compatibility, releaseId: id.value, documents: {} as Record<string, Record<string, unknown>> };
+}
+export function closedOptionBPolicy(expected: ExpectedEnvironment, placement: string): AvailabilityPolicy {
+  const p = buildOptionBChain(expected, placement).policy;
+  return { ...p, generation: 1, mode: "closed", approvedBackendBuildId: null, acceptedClientContractVersions: [],
+    lastEnabledAt: null, lastClosedAt: p.createdAt, updatedAt: p.createdAt, approvalRef: null };
+}
+export function testEnforcement(identity: RuntimeIdentity, chain: ReturnType<typeof buildOptionBChain> | null,
   overrides: Partial<TeacherUnitsEnforcement> = {}): TeacherUnitsEnforcement {
-  return {
-    resolveIdentity: () => Promise.resolve(identity),
-    isIdentityCurrent: (value) => value === identity,
-    provenance: () => chain ? matchedProvenance(chain.releaseId) : matchedProvenance("0".repeat(64)),
-    verifier: chain ? testVerifier(chain) : { verify: () => Promise.resolve({ verdict: "unverified", reason: "verifierUnconfigured" }) },
-    ...overrides,
-  };
+  return { resolveIdentity: () => Promise.resolve(identity), isIdentityCurrent: value => value === identity,
+    inspectBuild: () => chain?.build ?? null, ...overrides };
 }
 
 // Self-check registered only when this file is the running suite.

@@ -177,7 +177,27 @@ function writeRecord(fileName, record) {
   return target;
 }
 
+// These are explicit private local attachments, not switches bypassing a gate.
+function optionBInputs(args) {
+  const names=['rules-approval','rules-report','approval-digest','configuration-approval'];
+  if (names.some(name => typeof args[name] !== 'string' || !args[name])) fail('Option B requires Rules approval, report, approved digest and configuration approval');
+  const read=name => {
+    if (!fs.lstatSync(args[name]).isFile()) fail('Option B approval input must be a regular local file');
+    const bytes=fs.readFileSync(args[name]);
+    if (bytes.length > 8*1024*1024) fail('Option B approval input too large');
+    return bytes.toString('utf8');
+  };
+  const configurationApproval=require('../../platform/functions/lib/teacherUnits/a3-canonical.js').parseStrictJSON(read('configuration-approval'));
+  return {rulesApproval:read('rules-approval'),rulesReport:read('rules-report'),approvalDigest:args['approval-digest'],configurationApproval};
+}
+function optionBReceiptInputs(receipt) {
+  if (receipt?.kind !== 'lyfelabz.teacherUnitsOptionBReleaseReceipt') return {};
+  return {rulesApproval:receipt.rulesApproval,rulesReport:receipt.rulesReport,approvalDigest:receipt.approvalDigest,
+    configurationApproval:receipt.configurationApproval};
+}
+
 module.exports = {
+  optionBInputs, optionBReceiptInputs,
   checkSamples,
   compareLiveFiles,
   deployCommand,

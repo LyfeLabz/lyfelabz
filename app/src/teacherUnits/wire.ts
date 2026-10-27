@@ -1,8 +1,9 @@
+import { extractTeacherUnitErrorCode, isTeacherUnitsAvailabilityCode } from "./errors";
 import { TeacherUnitsCompatibilityError } from "./compatibilityError";
 import { isTeacherUnitColor } from "./unitColor";
-import type { TeacherUnitsMutationVerifier } from "./backendCompatibility";
+import type { CapabilityLifecycleBridge, TeacherUnitsMutationVerifier } from "./backendCompatibility";
 import { requireTeacherUnitsAvailable } from "./releaseAvailability";
-import { validateMutationCompatibility, type MutationCompatibilityV1 } from "./a3Protocol";
+import { validateMutationCompatibility, type MutationCompatibilityV2 } from "./availabilityProtocol";
 import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 
@@ -220,25 +221,38 @@ function parseReorder(
 export function createFirebaseTeacherUnitsCallables(
   functions: Functions,
   verifyMutation: TeacherUnitsMutationVerifier,
+  lifecycle?: CapabilityLifecycleBridge,
 ): TeacherUnitsCallables {
   requireTeacherUnitsAvailable();
   const call = (name: string) => httpsCallable<Record<string, unknown>, unknown>(functions, name);
   const n = TEACHER_UNITS_CALLABLE_NAMES;
-  const create = call(n.create);
-  const list = call(n.list);
-  const get = call(n.get);
-  const update = call(n.update);
-  const archive = call(n.archive);
-  const restore = call(n.restore);
-  const setResources = call(n.setResources);
-  const reorder = call(n.reorder);
+  const guardedCall = (name: string) => {
+    const fn = call(name);
+    return async (payload: Record<string, unknown>) => {
+      try { return await fn(payload); }
+      catch (error) {
+        const code = extractTeacherUnitErrorCode(error);
+        if (isTeacherUnitsAvailabilityCode(code)) lifecycle?.invalidate(code === "teacherUnits.availabilityClosed" ? "closed" : "incompatible");
+        // Dispatch already happened. Preserve the original uncertainty semantics.
+        throw error;
+      }
+    };
+  };
+  const create = guardedCall(n.create);
+  const list = guardedCall(n.list);
+  const get = guardedCall(n.get);
+  const update = guardedCall(n.update);
+  const archive = guardedCall(n.archive);
+  const restore = guardedCall(n.restore);
+  const setResources = guardedCall(n.setResources);
+  const reorder = guardedCall(n.reorder);
 
-  // The payload is built by the caller before verification. The A3-3
-  // `compatibility` envelope comes from the permit of this attempt's own
+  // The payload is built by the caller before verification. The Option B
+  // schema 2 `compatibility` envelope comes from this attempt's own
   // fresh discovery, is validated, and is attached only to the dispatched
   // copy: it is never written back to the caller's payload or persisted.
-  const mutate = async (fn: ReturnType<typeof call>, payload: Record<string, unknown>) => {
-    let compatibility: MutationCompatibilityV1;
+  const mutate = async (fn: ReturnType<typeof guardedCall>, payload: Record<string, unknown>) => {
+    let compatibility: MutationCompatibilityV2;
     try {
       requireTeacherUnitsAvailable();
       const permit = await verifyMutation();

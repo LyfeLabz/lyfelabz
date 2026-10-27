@@ -1,4 +1,62 @@
-# Teacher Units Staging UX Test Path (Design)
+# Teacher Units Staging UX Test Path (Historical Design)
+
+**Current disposition (October 26, 2026):** historical staging-marker design,
+superseded for current My Units availability by the locally implemented
+[Option B ADR](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md) and
+[implementation blueprint](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md).
+This document preserves the original approved design and deployment record;
+sections 1-10 below describe that earlier mechanism, not the current launch
+runbook. Historical commands and certification prerequisites are not current
+execution authorization.
+
+The active B runtime uses policy schema 2, capability schema 3, mutation envelope
+schema 2, and `teacher-units-v3`. It does not import the staging-marker or signed
+evidence authorization path. Schema-1 marker policies and legacy evidence never
+authorize B management reads or writes. Retained marker helpers and old replay
+tests preserve historical interpretation only.
+
+The `staging-ux-test` compiler/Hosting intent remains a staging-only historical
+adapter. Current `teacher-units` compilation instead requires an explicit
+project/environment/origin tuple and emits `server-policy-required` UI; the
+source and `general` profile remain closed. A retained historical bundle or
+receipt is not current B approval. Current B release tooling observes all nine
+endpoints and requires exact reviewed Rules/configuration and release evidence.
+The real-project operator enable interlock remains in place.
+
+### Required separately authorized staging migration
+
+Before replacing legacy staging endpoints, independently establish the actual
+policy, builds, routes, IAM, Rules, and paired Hosting state. Close the old marker
+using a separately authorized operation appropriate to that legacy instance,
+then verify its actual closure and remaining routes. Do not infer closure from
+a locally changed parser or from deploying only part of the endpoint fleet.
+
+Deploy the reviewed nine-endpoint B backend while closed. With explicit staging
+recovery authorization and an exact CAS against the observed singleton, replace
+the legacy instance with a fresh schema-2 **closed** instance, generation 1, null
+approved build, and empty accepted contracts, atomically with history and the
+canonical audit event. Preserve units, receipts, and historical audit data.
+Never translate marker enablement into B enablement, silently reset an enabled
+instance, or treat generation exhaustion as closure. Reconcile uncertain writes
+before making a new proposal; readback alone does not establish fleet shutdown.
+
+Prepare the reviewed B build on that closed instance, verify the exact Rules
+approval and current release/paired Hosting evidence, then complete separately
+authorized staging acceptance, cached-client closure and rollback checks. Actual
+activation remains a separate owner decision after independent review and any
+required interlock remediation. No staging mutation, deployment, IAM change, or
+activation is authorized by B1h documentation.
+
+**External status:** no fresh cloud observation or authenticated staging UX
+acceptance was performed during B1a-B1h. October 18 and Operation 1J records are
+historical evidence, not current certification. Production source defaults and
+the live-enable interlock remain closed; the production baseline was not
+redeployed. Real IAM, deployed Rules equivalence, routes, served bytes, and
+teacher/accessibility acceptance remain external gates. Use the current
+[release runbook](U2_6_RELEASE_READINESS_RUNBOOK.md) and
+[Hosting contract](DOMAIN_AND_HOSTING_CONTRACT.md) for the supported workflow.
+
+## Historical October 18 record (preserved)
 
 **Status:** Approved by the owner (2026-10-18) and implemented in the repository. Deployed to staging only on 2026-10-18 under owner approval: the 9 `teacherUnits*` Functions, staging policy instance `21819f18-fbce-498c-800f-d9deb8b9dfc3` (enabled, generation 1), Hosting app `d68a530dd7389d99` and marketing `57b772c2ee70550a` (rollback baselines `c7808cd876167ec9` and `934491432825292c`), built from `060bec7` plus uncommitted changes. Rules, indexes, Storage and Auth were not deployed. Production is closed. Authenticated teacher UX testing is pending.
 
@@ -10,7 +68,7 @@
 
 ---
 
-## 1. Why a design is needed (blocker evidence)
+## 1. Why the historical design was needed (October 18 blocker evidence)
 
 Teacher Units is closed in every environment, staging included, by three independent layers. None has a staging switch.
 

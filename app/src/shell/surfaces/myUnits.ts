@@ -107,6 +107,7 @@ export function renderMyUnitsSurface(
   const seam = deps.teacherUnits;
   if (seam === null || !teacherUnitsSurfaceEnabled(seam)) return;
 
+  void seam.capability?.enter("my-units");
   const openUnit = deps.consumeOpenUnitIntent?.() ?? null;
   const initialGrade =
     openUnit !== null
@@ -306,6 +307,7 @@ export function renderMyUnitsSurface(
   // The panel's own heading is this surface's headline.
   mount.setAttribute("aria-labelledby", "units-heading");
   renderTeacherUnitsPanel(mount, controller, {
+    capability: seam.capability,
     lessonActions,
     onUnitResults: openUnitResults,
     onArchivedViewExit: () => history?.push({ kind: "shell-surface", surface: "units" }),

@@ -6,6 +6,7 @@
  * top-level surface; see myUnits.surface.test.ts), the legacy history entry,
  * and the panel's create, edit, conflict, archive, and recovery behavior.
  */
+import type { TeacherUnitsSurfaceSeam as CapabilitySeam } from "../../teacherUnits/unitsController";
 import * as fs from "fs";
 import * as path from "path";
 import type * as AvailabilityBoundary from "../../teacherUnits/releaseAvailability";
@@ -30,6 +31,17 @@ import {
 } from "../../teacherUnits/unitsController";
 import type { TeacherUnit, TeacherUnitsCallables } from "../../teacherUnits/types";
 import { CREATE_ATTEMPT_REPLAY_WINDOW_MS } from "../../teacherUnits/saveCoordination";
+
+// Explicit test substitution; compiler production availability stays closed.
+const enabledCapability = {
+  getSnapshot: () => ({ status: "enabled" as const }),
+  subscribe: () => () => undefined,
+  refresh: async () => undefined,
+  enter: async () => undefined,
+  revalidate: async () => undefined,
+  invalidate: () => undefined,
+  dispose: () => undefined,
+} as unknown as NonNullable<CapabilitySeam["capability"]>;
 
 const teacher: Extract<Session, { kind: "activeTeacher" }> = Object.freeze({
   kind: "activeTeacher",
@@ -169,6 +181,7 @@ describe("My Units panel", () => {
     mem?: ReturnType<typeof memoryStorage>;
     now?: () => number;
     mint?: () => string;
+    capability?: typeof enabledCapability;
   } = {}) {
     const c = opts.c ?? callables();
     const mem = opts.mem ?? memoryStorage();
@@ -182,9 +195,19 @@ describe("My Units panel", () => {
       now: opts.now ?? (() => T0),
       mint: opts.mint ?? (() => "key_00000001"),
     });
-    const view = renderTeacherUnitsPanel(host, ctl, { unitsInitiallyExpanded: true });
+    const view = renderTeacherUnitsPanel(host, ctl, { capability: opts.capability ?? enabledCapability, unitsInitiallyExpanded: true });
     return { host, ctl, c, mem, view };
   }
+
+  test.each(["unknown", "checking", "closed", "unavailable", "incompatible", "stale"])("%s closes every unit-management control", async (status) => {
+    const capability = { ...enabledCapability, getSnapshot: () => ({ status }) } as unknown as typeof enabledCapability;
+    const h = panel({ capability });
+    await flush();
+    for (const control of Array.from(h.host.querySelectorAll<HTMLInputElement | HTMLButtonElement | HTMLSelectElement>("button,input,select"))) {
+      if (!control.matches("[data-lesson-slug], .shell-units-results-pill")) expect(control.disabled).toBe(true);
+    }
+    h.view.dispose();
+  });
 
   const type = (el: HTMLElement | null, value: string) => {
     const input = el as HTMLInputElement | HTMLTextAreaElement;
@@ -393,7 +416,7 @@ describe("My Units panel", () => {
     });
     const dispose = jest.fn(() => inner.dispose());
     const ctl: TeacherUnitsController = { ...inner, dispose };
-    renderTeacherUnitsPanel(host, ctl);
+    renderTeacherUnitsPanel(host, ctl, { capability: enabledCapability });
     host.remove();
     ctl.setShowArchived(true);
     resolve({ units: [unit()] });

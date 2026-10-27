@@ -8,7 +8,7 @@
 // Skips when the emulator host is absent.
 
 import { getApps, initializeApp } from "firebase-admin/app";
-import { DocumentReference, FieldValue, Transaction, getFirestore } from "firebase-admin/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import type { CallableRequest } from "firebase-functions/v2/https";
 
 import { log } from "../shared/logging/logger";
@@ -20,24 +20,13 @@ import {
   type A3Scope,
   type TeacherUnitsEnforcement,
 } from "./a3-enforcement";
-import type { MutationCompatibilityV1 } from "./a3-protocol";
-import { validateCapabilityResponse } from "./a3-protocol";
-import { UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER } from "./a3-release-authority";
+import type { MutationCompatibilityV2 } from "./availability-protocol";
+import { validateCapabilityResponse } from "./availability-protocol";
 import { isResolvedRuntimeIdentity, resolveRuntimeIdentity, type RuntimeIdentity } from "./a3-runtime-identity";
-import { PRODUCTION_AUTHORITY_REGISTRY } from "./a3-authority-registry";
-import { createCompositeReleaseAuthorityVerifier, type CompositeVerifierDependencies } from "./a3-composite-verifier";
-import type { ReleaseAuthorityVerdict } from "./a3-release-authority";
 import {
-  buildEnabledChain,
-  buildSignedEnabledChain,
-  chainSigningKeys,
-  closedPolicy,
+  buildOptionBChain as buildEnabledChain,
+  closedOptionBPolicy as closedPolicy,
   emulatorExpectation,
-  matchedProvenance,
-  testAuthorityRegistry,
-  testRevocationList,
-  testVerifier,
-  type EnabledChain,
 } from "./a3-test-support.test";
 import { readOwnedTeacherUnit, type TeacherUnitActor } from "./teacher-unit-access";
 import { mutateOwnedTeacherUnit, type TeacherUnitMutationTarget } from "./teacher-unit-mutation";
@@ -86,8 +75,9 @@ const EXPECTED = hasEmulator
       authOrigin: `http://${AUTH_EMULATOR_HOST}`,
     })
   : emulatorExpectation(PROJECT);
+type EnabledChain = ReturnType<typeof buildEnabledChain>;
 const CHAIN: EnabledChain = buildEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT);
-const COMPAT: MutationCompatibilityV1 = CHAIN.compatibility;
+const COMPAT: MutationCompatibilityV2 = CHAIN.compatibility;
 let IDENTITY: RuntimeIdentity;
 
 function emulatorEnforcement(overrides: Partial<TeacherUnitsEnforcement> = {}): TeacherUnitsEnforcement {
@@ -97,8 +87,7 @@ function emulatorEnforcement(overrides: Partial<TeacherUnitsEnforcement> = {}): 
       return result.ok ? result.identity : null;
     },
     isIdentityCurrent: isResolvedRuntimeIdentity,
-    provenance: () => matchedProvenance(CHAIN.releaseId),
-    verifier: testVerifier(CHAIN),
+    inspectBuild: () => CHAIN.build,
     ...overrides,
   };
 }
@@ -1895,7 +1884,7 @@ d("A3-3 enforcement (emulator)", () => {
   let w: World;
   const NONCE = "a3_emulator_nonce_0123456789";
   const A3_LESSON = "earths-layers";
-  const DISCOVERY = { schemaVersion: 2, nonce: NONCE, clientContractVersion: "teacher-units-v2" };
+  const DISCOVERY = { schemaVersion: 3, nonce: NONCE, clientContractVersion: "teacher-units-v3" };
 
   beforeAll(() => {
     jest.spyOn(log, "info").mockImplementation(() => undefined);
@@ -1929,9 +1918,9 @@ d("A3-3 enforcement (emulator)", () => {
     expect(await auditsFor(unit.unitId)).toHaveLength(1);
   });
 
-  it("keeps management unavailable with the UNCONFIGURED verifier over real policy and evidence documents", async () => {
+  it("keeps management unavailable with the closed-only build over a real enabled policy", async () => {
     const unit = await createUnit(w);
-    const unconfigured = handlersFor(emulatorEnforcement({ verifier: UNCONFIGURED_RELEASE_AUTHORITY_VERIFIER }));
+    const unconfigured = handlersFor(emulatorEnforcement({ inspectBuild: () => buildEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT, { deploymentMode: "closed-only" }).build }));
     for (const [name, data] of managementRequests(unit.unitId)) {
       await expectCode(unconfigured[name](req(w, w.teacher, data)), "teacherUnits.deploymentIneligible");
     }
@@ -1945,7 +1934,7 @@ d("A3-3 enforcement (emulator)", () => {
   it("round-trips the policy and evidence through Firestore into a contract-valid schema 2 declaration", async () => {
     const response = await RAW.capabilities(req(w, w.teacher, DISCOVERY));
     expect(validateCapabilityResponse(response, PROJECT).ok).toBe(true);
-    expect(response.backend).toEqual({ projectId: PROJECT, environment: "emulator", region: "us-central1", enforcementVersion: "teacher-units-a3-v1" });
+    expect(response.backend).toEqual({ projectId: PROJECT, environment: "emulator", region: "us-central1", enforcementVersion: "teacher-units-option-b-v1", backendBuildId: CHAIN.releaseId });
     expect(response.teacherUnits.availability).toEqual({ state: "enabled", policyInstanceId: COMPAT.policyInstanceId,
       policyGeneration: COMPAT.policyGeneration, backendReleaseId: CHAIN.releaseId, deploymentEligible: true });
     expect(response.caller).toEqual({ uid: w.teacher, role: "teacher", schoolId: w.schoolId, districtId: w.districtId });
@@ -1966,9 +1955,9 @@ d("A3-3 enforcement (emulator)", () => {
     expect(await auditsFor(unit.unitId)).toHaveLength(1);
   });
 
-  it("refuses a missing release document as deploymentIneligible", async () => {
+  it("refuses a mismatched approved build as deploymentIneligible", async () => {
     const unit = await createUnit(w);
-    await db.doc(CHAIN.releaseRef).delete();
+    await db.doc(TEACHER_UNITS_POLICY_PATH).set({ ...CHAIN.policy, approvedBackendBuildId: "e".repeat(64) });
     await expectCode(RAW.get(req(w, w.teacher, { unitId: unit.unitId })), "teacherUnits.deploymentIneligible");
   });
 
@@ -1978,7 +1967,7 @@ d("A3-3 enforcement (emulator)", () => {
     const first = await RAW.create(req(w, w.teacher, { ...data, compatibility: COMPAT }));
     const next = buildEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT, { generation: 4 });
     await seedEnabledPolicy(next);
-    const nextHandlers = handlersFor(emulatorEnforcement({ verifier: testVerifier(next), provenance: () => matchedProvenance(next.releaseId) }));
+    const nextHandlers = handlersFor(emulatorEnforcement({ inspectBuild: () => next.build }));
     await expectCode(nextHandlers.create(req(w, w.teacher, { ...data, compatibility: COMPAT })), "teacherUnits.policyChanged");
     await expectCode(
       nextHandlers.update(req(w, w.teacher, { unitId: first.unit.unitId, expectedRevision: 1, title: "x", compatibility: COMPAT })),
@@ -2010,186 +1999,21 @@ d("A3-3 enforcement (emulator)", () => {
     expect(replay).toMatchObject({ replayed: true, unit: { unitId: ids[0] } });
   });
 
-  // A3-6 S3: the composite verifier injected through the test factory, over real
-  // Firestore policy, release and evidence documents read by A3-3's own readEvidence.
-  // Synthetic test keys only; production exports are unchanged (asserted above).
-  describe("A3-6 S3 composite verifier (test keys only)", () => {
-    const KEYS = chainSigningKeys();
-    const SIGNED = buildSignedEnabledChain(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT, KEYS);
-    const REGISTRY = testAuthorityRegistry(EXPECTED, KEYS);
-    const emptyList = () => testRevocationList(EXPECTED, []);
-    function recording(deps: CompositeVerifierDependencies) {
-      const inner = createCompositeReleaseAuthorityVerifier(deps);
-      const verdicts: ReleaseAuthorityVerdict[] = [];
-      return { verdicts, verifier: { verify: async (input: Parameters<typeof inner.verify>[0]) => {
-        const verdict = await inner.verify(input); verdicts.push(verdict); return verdict;
-      } } };
-    }
-    const composite = (deps: CompositeVerifierDependencies) => {
-      const r = recording(deps);
-      return { ...r, handlers: handlersFor(emulatorEnforcement({ verifier: r.verifier, provenance: () => matchedProvenance(SIGNED.releaseId) })) };
-    };
-    const compat = SIGNED.compatibility;
-    async function expectRefusedEverywhere(handlers: ReturnType<typeof handlersFor>, unitId: string): Promise<void> {
-      const requests: [keyof ReturnType<typeof handlersFor>, Record<string, unknown>][] = [
-        ["create", { grade: "7", title: "S3", idempotencyKey: freshKey(), expectedSchoolId: w.schoolId, compatibility: compat }],
-        ["get", { unitId }], ["list", {}],
-        ["update", { unitId, expectedRevision: 1, title: "Renamed", compatibility: compat }],
-        ["archive", { unitId, expectedRevision: 1, compatibility: compat }],
-        ["setResources", { unitId, expectedRevision: 1, resourceIds: [A3_LESSON], compatibility: compat }],
-        ["reorder", { grade: "7", units: [{ unitId, expectedRevision: 1 }], compatibility: compat }],
-      ];
-      for (const [name, data] of requests) await expectCode(handlers[name](req(w, w.teacher, data)), "teacherUnits.deploymentIneligible");
-      expect((await handlers.capabilities(req(w, w.teacher, DISCOVERY))).teacherUnits.availability).toMatchObject({ state: "unverified", deploymentEligible: false });
-    }
-
-    // The outer beforeEach seeds the unsigned A3-3 chain (used by createUnit); each test
-    // then replaces the policy with the signed chain before exercising the composite.
-    it("a fully signed chain verifies through real transactional reads; management and discovery work", async () => {
-      await seedEnabledPolicy(SIGNED);
-      const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
-      const discovery = await handlers.capabilities(req(w, w.teacher, DISCOVERY));
-      expect(discovery.teacherUnits.availability).toEqual({ state: "enabled", policyInstanceId: compat.policyInstanceId,
-        policyGeneration: compat.policyGeneration, backendReleaseId: SIGNED.releaseId, deploymentEligible: true });
-      const created = await handlers.create(req(w, w.teacher, { grade: "7", title: "Signed", idempotencyKey: freshKey(),
-        expectedSchoolId: w.schoolId, compatibility: compat }));
-      const unitId = created.unit.unitId;
-      expect(await handlers.get(req(w, w.teacher, { unitId }))).toMatchObject({ unit: { unitId, title: "Signed" } });
-      expect((await handlers.list(req(w, w.teacher, {}))).units.map((u: { unitId: string }) => u.unitId)).toContain(unitId);
-      await handlers.update(req(w, w.teacher, { unitId, expectedRevision: 1, title: "Signed 2", compatibility: compat }));
-      expect(await unitData(unitId)).toMatchObject({ title: "Signed 2", revision: 2 });
-      expect(verdicts.length).toBeGreaterThanOrEqual(5);
-      for (const verdict of verdicts) expect(verdict).toMatchObject({ verdict: "verified", certificationEvidenceRef: SIGNED.certificationEvidenceRef });
-    });
-
-    it.each(["deploymentApprovalRef", "activationEvidenceRef", "activationApprovalRef", "certificationEvidenceRef"] as const)(
-      "a pinned revocation of %s refuses every management operation without writing", async target => {
-        const unit = await createUnit(w);
-        await seedEnabledPolicy(SIGNED);
-        const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: testRevocationList(EXPECTED, [SIGNED[target]]) });
-        await expectRefusedEverywhere(handlers, unit.unitId);
-        expect(new Set(verdicts.map(v => v.verdict === "unverified" ? v.reason : "verified"))).toEqual(new Set(["revoked"]));
-        expect(await unitData(unit.unitId)).toMatchObject({ title: "Earth Systems", revision: 1 });
-        expect(await auditsFor(unit.unitId)).toHaveLength(1);
-      });
-
-    it("a missing certification document is certificationUnverified and refuses", async () => {
-      const unit = await createUnit(w);
-      await seedEnabledPolicy(SIGNED);
-      await db.doc(SIGNED.certificationEvidenceRef).delete();
-      const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
-      await expectRefusedEverywhere(handlers, unit.unitId);
-      expect(new Set(verdicts.map(v => v.verdict === "unverified" ? v.reason : "verified"))).toEqual(new Set(["certificationUnverified"]));
-    });
-
-    it("an invalid document at the certification address propagates from readEvidence and refuses", async () => {
-      const unit = await createUnit(w);
-      await seedEnabledPolicy(SIGNED);
-      await db.doc(SIGNED.certificationEvidenceRef).set(SIGNED.documents[SIGNED.activationApprovalRef]);
-      const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
-      await expectRefusedEverywhere(handlers, unit.unitId);
-      // The adapter rethrew A3-3's readEvidence error, so no verdict was recorded (A3-3 maps it to unverified "error").
-      expect(verdicts).toEqual([]);
-    });
-
-    // O6: the callVerifier / readEvidence boundary under the installed SDK's own rerun
-    // loop. The fault is injected into the real Transaction.get for the certification
-    // address only, so the error object originates in A3-3's own txRead.
-    describe("O6 retryable readEvidence errors", () => {
-      const grpc = (code: number, message: string) => Object.assign(new Error(message), { code });
-      function faultCertificationReads(faults: (() => Error)[]): { reads: () => number } {
-        const original = Transaction.prototype.get;
-        let reads = 0;
-        jest.spyOn(Transaction.prototype, "get").mockImplementation(function (this: Transaction, ...args: unknown[]) {
-          const [ref] = args;
-          if (ref instanceof DocumentReference && ref.path === SIGNED.certificationEvidenceRef) {
-            reads += 1;
-            const fault = faults.shift();
-            if (fault) return Promise.reject(fault());
-          }
-          return (original as (...a: unknown[]) => Promise<unknown>).apply(this, args);
-        } as typeof original);
-        return { reads: () => reads };
-      }
-      afterEach(() => jest.restoreAllMocks());
-
-      it.each([
-        ["ABORTED", () => grpc(10, "Aborted due to cross-transaction contention.")],
-        ["UNAVAILABLE", () => grpc(14, "unavailable")],
-        ["INVALID_ARGUMENT transaction expired", () => grpc(3, "The referenced transaction has expired or is no longer valid.")],
-      ])("a %s certification read propagates, the SDK reruns, and the rerun reads fresh evidence", async (_label, fault) => {
-        const unit = await createUnit(w);
-        await seedEnabledPolicy(SIGNED);
-        const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
-        const injected = faultCertificationReads([fault]);
-        const listed = await handlers.list(req(w, w.teacher, {}));
-        expect(listed.units.map((u: { unitId: string }) => u.unitId)).toContain(unit.unitId);
-        // First attempt: the read failed and the adapter rethrew, so no verdict; the
-        // SDK rerun re-read the certification and verified it.
-        expect(injected.reads()).toBe(2);
-        expect(verdicts).toHaveLength(1);
-        expect(verdicts[0]).toMatchObject({ verdict: "verified", certificationEvidenceRef: SIGNED.certificationEvidenceRef });
-      });
-
-      it("a mutation rerun re-reads the certification and commits exactly once", async () => {
-        const unit = await createUnit(w);
-        await seedEnabledPolicy(SIGNED);
-        const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
-        const injected = faultCertificationReads([() => grpc(10, "aborted")]);
-        await handlers.update(req(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, title: "Rerun", compatibility: compat }));
-        const faulted = { reads: injected.reads(), verdicts: verdicts.length };
-        expect(await unitData(unit.unitId)).toMatchObject({ title: "Rerun", revision: 2 });
-        expect(await auditsFor(unit.unitId)).toHaveLength(2);
-        // Baseline: an unfaulted update (write attempt plus post-commit response read).
-        await handlers.update(req(w, w.teacher, { unitId: unit.unitId, expectedRevision: 2, title: "Clean", compatibility: compat }));
-        const clean = { reads: injected.reads() - faulted.reads, verdicts: verdicts.length - faulted.verdicts };
-        // The faulted update made exactly one extra certification read (the rerun) and
-        // no extra verdict (the failed attempt produced none).
-        expect(faulted.reads).toBe(clean.reads + 1);
-        expect(faulted.verdicts).toBe(clean.verdicts);
-        for (const verdict of verdicts) expect(verdict).toMatchObject({ verdict: "verified" });
-      });
-
-      it("a non-retryable certification read refuses as policyUnavailable without rerun or write", async () => {
-        const unit = await createUnit(w);
-        await seedEnabledPolicy(SIGNED);
-        const { handlers, verdicts } = composite({ registry: REGISTRY, revocationList: emptyList() });
-        const injected = faultCertificationReads([() => grpc(7, "denied")]);
-        await expectCode(handlers.update(req(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, title: "No", compatibility: compat })),
-          "teacherUnits.policyUnavailable");
-        expect(injected.reads()).toBe(1);
-        expect(verdicts).toEqual([]);
-        expect(await unitData(unit.unitId)).toMatchObject({ title: "Earth Systems", revision: 1 });
-        expect(await auditsFor(unit.unitId)).toHaveLength(1);
-      });
-
-      it("a verifier-originated ABORTED-shaped error fails closed without an SDK rerun", async () => {
-        const unit = await createUnit(w);
-        await seedEnabledPolicy(SIGNED);
-        const inner = createCompositeReleaseAuthorityVerifier({ registry: REGISTRY, revocationList: emptyList() });
-        let calls = 0;
-        const verifier = { verify: async (input: Parameters<typeof inner.verify>[0]) => {
-          calls += 1; await inner.verify(input); throw grpc(10, "Aborted due to cross-transaction contention.");
-        } };
-        const handlers = handlersFor(emulatorEnforcement({ verifier, provenance: () => matchedProvenance(SIGNED.releaseId) }));
-        await expectRefusedEverywhere(handlers, unit.unitId);
-        // One verification per request (seven management requests plus discovery): no rerun.
-        expect(calls).toBe(8);
-        expect(await unitData(unit.unitId)).toMatchObject({ title: "Earth Systems", revision: 1 });
-        expect(await auditsFor(unit.unitId)).toHaveLength(1);
-      });
-    });
-
-    it("the empty production registry and an environment-mismatched list both refuse", async () => {
-      const unit = await createUnit(w);
-      await seedEnabledPolicy(SIGNED);
-      const empty = composite({ registry: PRODUCTION_AUTHORITY_REGISTRY, revocationList: emptyList() });
-      await expectRefusedEverywhere(empty.handlers, unit.unitId);
-      expect(new Set(empty.verdicts.map(v => v.verdict === "unverified" ? v.reason : "verified"))).toEqual(new Set(["authorityUnrecognized"]));
-      const otherList = composite({ registry: REGISTRY, revocationList: testRevocationList(emulatorExpectation("demo-other"), []) });
-      await expectRefusedEverywhere(otherList.handlers, unit.unitId);
-      expect(new Set(otherList.verdicts.map(v => v.verdict === "unverified" ? v.reason : "verified"))).toEqual(new Set(["dispositionUnresolved"]));
-    });
+  it("concurrent close and mutation serialize; later cached-envelope no-ops refuse", async () => {
+    const unit = await createUnit(w);
+    const [mutation, closure] = await Promise.allSettled([
+      RAW.update(req(w, w.teacher, { unitId: unit.unitId, expectedRevision: 1, title: "Concurrent", compatibility: COMPAT })),
+      db.doc(TEACHER_UNITS_POLICY_PATH).set(closedPolicy(EXPECTED, RUNTIME_PLACEMENT_FINGERPRINT)),
+    ]);
+    expect(closure.status).toBe("fulfilled");
+    if (mutation.status === "rejected") expect(["teacherUnits.availabilityClosed", "teacherUnits.responseUnavailable"]).toContain(mutation.reason.code);
+    const record = await unitData(unit.unitId);
+    expect([1, 2]).toContain(record?.revision);
+    if (typeof record?.revision !== "number") throw new Error("missing revision");
+    expect(await auditsFor(unit.unitId)).toHaveLength(record.revision);
+    await expectCode(RAW.update(req(w, w.teacher, { unitId: unit.unitId, expectedRevision: record?.revision,
+      title: record?.title, compatibility: COMPAT })), "teacherUnits.availabilityClosed");
+    expect((await db.doc(TEACHER_UNITS_POLICY_PATH).get()).data()?.mode).toBe("closed");
   });
 
   function actorOf(uid: string = w.teacher, schoolId: string = w.schoolId): TeacherUnitActor {

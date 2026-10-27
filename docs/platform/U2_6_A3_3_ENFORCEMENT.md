@@ -1,5 +1,58 @@
 # U2.6 A3-3 transactional backend enforcement
 
+## Current status and supersession (October 26, 2026)
+
+Current local architecture: [Option B blueprint](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md)
+and [trusted-operator ADR](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md).
+Use [Teacher Units](TEACHER_UNITS.md) for the active feature contract and the
+[release-readiness runbook](U2_6_RELEASE_READINESS_RUNBOOK.md) for operator and
+release gates. The B1h integrated review handoff is recorded in the blueprint.
+
+Option B replaces active signed-release/evidence-graph authorization with a
+server-only schema-2 availability policy, clean schema-2 backend build identity,
+`teacher-units-v3` capability schema 3 and mutation envelope schema 2. The backend
+remains authoritative and fails closed for missing, invalid, closed, unreadable
+or incompatible policy/runtime state. Policy instance, generation, exact target
+and placement remain bound; there is no runtime activation lease.
+
+Historical Ed25519 approvals, artifact-pinned keys, KMS custody, signed manifests
+and certification records below retain their original meaning for the A3 design
+and archived inspection/replay. They are not active Option B runtime authority,
+an authorization fallback, or mandatory My Units signing/key-project launch work.
+Retaining a historical module or its `a3-` filename does not restore that authority.
+
+This is local implementation documentation, not independent security acceptance,
+provider/IAM verification, deployed Rules certification, deployment or activation.
+The source/general client gate remains closed. An explicit target/origin-bound
+policy-capable compiler profile still requires backend-enabled availability.
+Real-project enable remains interlocked in the operator CLI and controller;
+read-only pre-enable validation does not remove it. Independent integrated review
+and separately authorized staging, production and activation gates remain.
+
+### Current enforcement routing
+
+The retained entry point
+[`a3-enforcement.ts`](../../platform/functions/src/teacherUnits/a3-enforcement.ts)
+now resolves actual identity/build and evaluates the uncached schema-2 policy
+inside management transactions. All nine callable paths retain canonical active
+teacher, school/district isolation and default denial. SDK retries, replays and
+no-ops repeat authorization before domain receipt/unit/revision decisions;
+post-commit response reads reauthorize and preserve uncertain outcomes on failure.
+The signed evidence graph, staging marker and release-authority verifier are not
+active authorization dependencies despite historical descriptions below.
+
+The shared client
+[`capabilityState.ts`](../../app/src/teacherUnits/capabilityState.ts)
+is advisory across My Units and Curriculum entry points. Unknown/checking/closed/
+unavailable/incompatible/stale states disable unit actions; enabled display state
+expires after 30 seconds. Each mutation separately obtains its own fresh,
+ten-second, single-use compatibility permit. Existing Assign, Results and student
+paths remain independent. Cached display data is not recalled by server closure.
+A schema-2 policy readback establishes only the checked policy and linked evidence;
+it does not prove fleet routing/shutdown or delivery of every in-flight response.
+
+## Historical A3 record (preserved)
+
 Status: implemented, uncommitted, awaiting independent certification. Teacher
 Units remains closed: production wiring uses the UNCONFIGURED release-authority
 verifier, so every management read and mutation is refused. No deployment,

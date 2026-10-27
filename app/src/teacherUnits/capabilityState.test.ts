@@ -1,0 +1,162 @@
+import { createTeacherUnitsCapabilityState, type CapabilityTicket } from "./capabilityState";
+
+const POLICY = "123e4567-e89b-4abc-8def-1234567890ab";
+const enabled = { status: "enabled", policyInstanceId: POLICY, policyGeneration: 7 } as const;
+const deferred = () => { let resolve!: () => void; const promise = new Promise<void>(r => { resolve = r; }); return { promise, resolve }; };
+
+describe("shared Option B capability lifecycle", () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+  test("unknown and checking are closed; only validated enabled observations open controls", () => {
+    const state = createTeacherUnitsCapabilityState();
+    expect(state.getSnapshot().status).toBe("unknown");
+    expect(state.begin("mutation")).toBeNull();
+    const ticket = state.begin("display")!;
+    expect(state.getSnapshot().status).toBe("checking");
+    expect(state.begin("mutation")).toBeNull();
+    expect(state.publish(ticket, enabled)).toBe(true);
+    expect(state.getSnapshot().status).toBe("enabled");
+    expect(state.begin("mutation")).not.toBeNull();
+    state.dispose();
+  });
+  test.each(["closed", "unavailable", "incompatible", "stale"] as const)("%s invalidates every pending response and permit", status => {
+    const state = createTeacherUnitsCapabilityState();
+    state.publish(state.begin("display")!, enabled);
+    const permitTicket = state.begin("mutation")!;
+    state.invalidate(status);
+    expect(state.getSnapshot().status).toBe(status);
+    expect(state.current(permitTicket)).toBe(false);
+    expect(state.publish(permitTicket, enabled)).toBe(false);
+    expect(state.begin("mutation")).toBeNull();
+    state.dispose();
+  });
+  test("display discovery coalesces while each mutation gets a distinct ticket", async () => {
+    const state = createTeacherUnitsCapabilityState();
+    const wait = deferred();
+    const discover = jest.fn(async () => { const ticket = state.begin("display")!; await wait.promise; state.publish(ticket, enabled); });
+    state.setDiscover(discover);
+    const a = state.enter("curriculum");
+    const b = state.refresh();
+    expect(a).toBe(b);
+    await Promise.resolve();
+    expect(discover).toHaveBeenCalledTimes(1);
+    wait.resolve(); await a;
+    const first = state.begin("mutation")!;
+    const second = state.begin("mutation")!;
+    expect(first.sequence).not.toBe(second.sequence);
+    expect(state.current(first)).toBe(false);
+    expect(state.current(second)).toBe(true);
+    state.dispose();
+  });
+  test("newer closed/error observations suppress an earlier enabled response", () => {
+    const state = createTeacherUnitsCapabilityState();
+    const earlier = state.begin("display")!;
+    const newer = state.begin("display")!;
+    expect(state.publish(newer, { status: "closed" })).toBe(true);
+    expect(state.publish(earlier, enabled)).toBe(false);
+    expect(state.getSnapshot().status).toBe("closed");
+    state.publish(state.begin("display")!, enabled);
+    const pending = state.begin("display")!;
+    state.publish(state.begin("display")!, { status: "unavailable" });
+    expect(state.publish(pending, enabled)).toBe(false);
+    state.dispose();
+  });
+  test.each(["uid", "school", "district", "bootstrap", "token", "transport", "origin", "project", "placement"])("%s changes revoke current discovery", field => {
+    let context: readonly unknown[] = [field, "before"];
+    const state = createTeacherUnitsCapabilityState({ readContext: () => context });
+    const ticket = state.begin("display")!;
+    context = [field, "after"];
+    expect(state.publish(ticket, enabled)).toBe(false);
+    expect(state.getSnapshot().status).toBe("stale");
+    state.dispose();
+  });
+  test("sign out remains closed and disposal suppresses responses and cleans subscriptions", () => {
+    let context: readonly unknown[] | null = ["teacher"];
+    const state = createTeacherUnitsCapabilityState({ readContext: () => context });
+    const ticket = state.begin("display")!;
+    context = null;
+    expect(state.current(ticket)).toBe(false);
+    expect(state.begin("display")).toBeNull();
+    const cleanup = jest.fn(); state.addCleanup(cleanup);
+    state.dispose(); state.dispose();
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    expect(state.publish(ticket, enabled)).toBe(false);
+  });
+  test("30 second monotonic expiry disables without idle discovery; next event revalidates", async () => {
+    let now = 0;
+    const state = createTeacherUnitsCapabilityState({ now: () => now });
+    const discover = jest.fn(async () => { state.publish(state.begin("display")!, enabled); });
+    state.setDiscover(discover);
+    await state.enter("curriculum");
+    now = 29999; expect(state.getSnapshot().status).toBe("enabled");
+    now = 30000; jest.advanceTimersByTime(30000);
+    expect(state.getSnapshot().status).toBe("stale");
+    expect(discover).toHaveBeenCalledTimes(1);
+    await state.revalidate();
+    expect(discover).toHaveBeenCalledTimes(2);
+    expect(state.getSnapshot().status).toBe("enabled");
+    state.dispose();
+  });
+  test("surface change disables immediately, My Units refreshes after invalidation", async () => {
+    const state = createTeacherUnitsCapabilityState();
+    let pending: CapabilityTicket | null = null;
+    state.setDiscover(async () => { pending = state.begin("display"); });
+    await state.enter("curriculum"); state.publish(pending!, enabled);
+    const old = state.begin("mutation")!;
+    const entry = state.enter("my-units");
+    expect(state.getSnapshot().status).toBe("stale");
+    expect(state.current(old)).toBe(false);
+    await entry;
+    expect(state.getSnapshot().status).toBe("checking");
+    state.invalidate(); await state.enter("my-units");
+    state.publish(pending!, enabled);
+    expect(state.getSnapshot().status).toBe("enabled");
+    state.dispose();
+  });
+  test("visibility loss revokes and return revalidates without polling", async () => {
+    const visibility = new EventTarget() as EventTarget & { visibilityState: DocumentVisibilityState };
+    visibility.visibilityState = "visible";
+    const state = createTeacherUnitsCapabilityState({ visibility });
+    const discover = jest.fn(async () => { state.publish(state.begin("display")!, enabled); });
+    state.setDiscover(discover); await state.enter("curriculum");
+    const ticket = state.begin("mutation")!;
+    visibility.visibilityState = "hidden"; visibility.dispatchEvent(new Event("visibilitychange"));
+    expect(state.getSnapshot().status).toBe("stale");
+    expect(state.current(ticket)).toBe(false);
+    await state.refresh(); expect(discover).toHaveBeenCalledTimes(1);
+    visibility.visibilityState = "visible"; visibility.dispatchEvent(new Event("visibilitychange"));
+    await state.refresh(); expect(discover).toHaveBeenCalledTimes(2);
+    state.dispose();
+    visibility.dispatchEvent(new Event("visibilitychange"));
+    expect(discover).toHaveBeenCalledTimes(2);
+  });
+  test("one instance cannot regress generation; new UUIDs are not lexically ordered", () => {
+    const state = createTeacherUnitsCapabilityState();
+    state.publish(state.begin("display")!, enabled);
+    expect(state.publish(state.begin("display")!, { ...enabled, policyGeneration: 6 })).toBe(false);
+    expect(state.getSnapshot().status).toBe("incompatible");
+    expect(state.publish(state.begin("display")!, { ...enabled, policyInstanceId: "00000000-0000-4000-8000-000000000000", policyGeneration: 1 })).toBe(true);
+    state.dispose();
+  });
+  test("expired requests cannot publish; missing discovery fails closed", async () => {
+    let now = 0;
+    const state = createTeacherUnitsCapabilityState({ now: () => now });
+    const ticket = state.begin("display")!; now = 10000;
+    expect(state.publish(ticket, enabled)).toBe(false);
+    await state.refresh(); expect(state.getSnapshot().status).toBe("unavailable");
+    state.dispose();
+  });
+  test("late rejected discovery cannot overwrite a newer successful lifecycle", async () => {
+    const state = createTeacherUnitsCapabilityState();
+    let reject!: (error: Error) => void;
+    const failed = new Promise<void>((_, r) => { reject = r; });
+    state.setDiscover(() => failed);
+    const first = state.refresh(); await Promise.resolve();
+    state.invalidate();
+    state.setDiscover(async () => { state.publish(state.begin("display")!, enabled); });
+    await state.refresh();
+    reject(new Error("old request")); await first;
+    expect(state.getSnapshot().status).toBe("enabled");
+    state.dispose();
+  });
+});

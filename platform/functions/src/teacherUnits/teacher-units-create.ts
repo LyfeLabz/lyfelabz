@@ -29,7 +29,7 @@ import {
   requireRuntimeIdentity,
   respondAfterCommit,
 } from "./a3-enforcement";
-import type { MutationCompatibilityV1 } from "./a3-protocol";
+import type { MutationCompatibilityV2 } from "./availability-protocol";
 import {
   assertActiveTeacher,
   assertOnlyAllowedKeys,
@@ -110,7 +110,7 @@ export type TeacherUnitsCreateRequest = {
   // Required: the school the create intent was made in. Compared with the
   // verified school; never used as the write's school.
   readonly expectedSchoolId: string;
-  readonly compatibility: MutationCompatibilityV1;
+  readonly compatibility: MutationCompatibilityV2;
 };
 
 export type TeacherUnitsCreateResponse = {
@@ -137,7 +137,7 @@ type ValidatedCreate = {
   readonly color?: TeacherUnitColor | null;
   readonly idempotencyKey: string;
   readonly expectedSchoolId: string;
-  readonly compatibility: MutationCompatibilityV1;
+  readonly compatibility: MutationCompatibilityV2;
 };
 
 function validateRequest(data: unknown): ValidatedCreate {
@@ -327,7 +327,7 @@ export function createTeacherUnitsCreateHandler(enforcement: TeacherUnitsEnforce
   return async function teacherUnitsCreateHandler(
     request: CallableRequest<unknown>,
   ): Promise<TeacherUnitsCreateResponse> {
-    const identity = await requireRuntimeIdentity(enforcement);
+    const identity = await requireRuntimeIdentity(enforcement, "teacherUnitsCreate");
     const actor = await assertActiveTeacher(request);
     const input = validateRequest(request.data);
     const scope = { identity, enforcement, endpoint: "teacherUnitsCreate" } as const;

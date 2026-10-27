@@ -12,6 +12,12 @@ on:
       - 'app/scripts/curriculumRegistry.cjs'
       - 'app/scripts/curriculumCatalog.cjs'
       - 'app/scripts/curriculumParser.cjs'
+      - 'app/scripts/build-application.cjs'
+      - 'app/scripts/build-application.test.js'
+      - 'app/src/teacherUnits/**'
+      - 'app/src/index.ts'
+      - 'app/src/shell/**'
+      - 'scripts/hosting-release/**'
       - 'app/scripts/activityIdentifiers.cjs'
       - 'app/package.json'
       - 'app/package-lock.json'
@@ -33,6 +39,12 @@ on:
       - 'app/scripts/curriculumRegistry.cjs'
       - 'app/scripts/curriculumCatalog.cjs'
       - 'app/scripts/curriculumParser.cjs'
+      - 'app/scripts/build-application.cjs'
+      - 'app/scripts/build-application.test.js'
+      - 'app/src/teacherUnits/**'
+      - 'app/src/index.ts'
+      - 'app/src/shell/**'
+      - 'scripts/hosting-release/**'
       - 'app/scripts/activityIdentifiers.cjs'
       - 'app/package.json'
       - 'app/package-lock.json'
@@ -88,6 +100,16 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      # B1g checks are credential-free and non-authorizing. No provider capture,
+      # live enable, prepare/certify, or deployment command runs in this step.
+      - name: Option B release, Rules approval and operator fixtures
+        run: node --test --test-concurrency=1 ../../scripts/teacher-units-release/option-b-observation.test.cjs ../../scripts/teacher-units-release/option-b-rules-evidence.test.cjs ../../scripts/teacher-units-release/availability-control.test.cjs ../../scripts/hosting-release/backend-state.test.cjs ../../scripts/hosting-release/release.test.cjs
+      - name: Option B controlled compiler (local fixtures)
+        working-directory: app
+        run: npm test -- --maxWorkers=2 --runTestsByPath scripts/build-application.test.js
+      - name: Option B client capability and closure regressions
+        working-directory: app
+        run: npm test -- --runInBand --runTestsByPath src/teacherUnits/availabilityProtocol.test.ts src/teacherUnits/releaseAvailability.test.ts src/teacherUnits/capabilityState.test.ts src/teacherUnits/backendCompatibility.test.ts src/teacherUnits/wire.test.ts src/shell/shell.my-units.test.ts src/shell/myUnits.modernization.test.ts src/shell/surfaces/curriculum.teacher-units.test.ts src/shell/surfaces/curriculum.add-to-unit.test.ts
       # A3-6 S4: provider observer over synthetic fixtures only. No
       # credentials and no provider calls. Uses the compiled lib from Build.
       - name: A3-6 S4 provider observer (fixtures)
@@ -130,6 +152,9 @@ jobs:
         run: npm ci
       - name: A3-6 S6a emulator-only writers (Firestore emulator, demo project)
         run: ../firebase/node_modules/.bin/firebase emulators:exec --only firestore --project demo-a3-s6a --config ../firebase/firebase.json "node --test --test-concurrency=1 ../../scripts/teacher-units-release/registration.emulator.test.cjs ../../scripts/teacher-units-release/availability-cas.emulator.test.cjs"
+
+      - name: Option B atomic operator CAS (local demo emulator)
+        run: ../firebase/node_modules/.bin/firebase emulators:exec --only firestore --project demo-option-b-control --config ../firebase/firebase.json "node --test --test-concurrency=1 ../../scripts/teacher-units-release/availability-control.emulator.test.cjs"
 
   firestore-rules:
     name: Firestore Rules tests

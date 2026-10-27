@@ -267,6 +267,8 @@ export const AUDIT_ACTIONS = [
   // `sortOrder`. Neither carries teacher-authored text.
   "teacherUnits.resourcesUpdated",
   "teacherUnits.reordered",
+  // Option B global policy transition only; requires the exact operator tuple.
+  "teacherUnits.availabilityChanged",
   // Sprint 30A.2 - Google Classroom best-score grade passback. Emitted by
   // the grade-passback synchronization engine (invoked either as a
   // post-commit side effect of `assessmentAttemptsFinalize` or by the
@@ -318,14 +320,30 @@ export type AuditTargetType = string;
 // Canonical actor role for an audit event per Data Model §3.8. Extends the
 // domain `Role` enumeration with the `system` sentinel used by triggers,
 // scheduled jobs, and other trusted-server contexts where no user actor
-// initiated the action. The domain `Role` union is intentionally not
+// initiated the action. The audit-only `operator` sentinel is restricted to
+// the exact My Units availability action/target and has no school context.
+// The domain `Role` union is intentionally not
 // widened so that user-record shapes, custom claims, and onboarding
 // callables continue to see only user-authorable roles.
-export type ActorRole = Role | "system";
+export type ActorRole = Role | "system" | "operator";
+
+/** Audit-only external principal attribution, never a user Role or claim.
+ * The trusted operator tool must derive these subjects from verified credentials. */
+export type TeacherUnitsAvailabilityAuditPayload = Readonly<{
+  transition: "initialize" | "prepare" | "enable" | "close" | "recoverClosed";
+  policyInstanceId: string;
+  generation: number;
+  mode: "closed" | "enabled";
+  approvedBackendBuildId: string | null;
+  placementFingerprint: string;
+  operator: Readonly<{ principalSubject: string; credentialSubject: string; delegationSubject: string | null }>;
+  reason: string;
+  approvalRef: string | null;
+}>;
 
 // The `payload` field is a small structured object per Data Model §3.8. It
-// carries operation-specific detail (never PII) and is optional on every
-// event.
+// carries operation-specific detail. It is optional except for the strict
+// availability operator event, whose subjects/reason follow its narrow contract.
 export type AuditPayload = Readonly<Record<string, unknown>>;
 
 // Canonical audit event record shape per Data Model §3.8.
@@ -334,7 +352,8 @@ export type AuditPayload = Readonly<Record<string, unknown>>;
 // occurredAt. Conditionally required: schoolId (required for user-actor
 // events and for system-actor events with a resolvable school association;
 // absent when no school association exists at write time, as with
-// `auth.userProvisioned`). Optional fields: payload, correlationId. No
+// `auth.userProvisioned`). The global operator exception forbids school/district
+// and requires its exact payload/correlationId. Otherwise these are optional. No
 // other fields exist on this record.
 //
 // This type is the single source of truth for reads of
