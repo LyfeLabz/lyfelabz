@@ -8,9 +8,19 @@
  */
 import * as fs from "fs";
 import * as path from "path";
-import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+import { renderTeacherUnitsPanel, type UnitsCapability } from "./teacherUnitsPanel";
 // These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
-const EXPANDED = { unitsInitiallyExpanded: true } as const;
+// Explicit test substitution; compiler production availability stays closed.
+const enabledCapability = {
+  getSnapshot: () => ({ status: "enabled" as const }),
+  subscribe: () => () => undefined,
+  refresh: async () => undefined,
+  enter: async () => undefined,
+  revalidate: async () => undefined,
+  invalidate: () => undefined,
+  dispose: () => undefined,
+} as unknown as UnitsCapability;
+const EXPANDED = { unitsInitiallyExpanded: true, capability: enabledCapability } as const;
 import {
   createAttemptStorageKey,
   createTeacherUnitCreateAttemptStore,

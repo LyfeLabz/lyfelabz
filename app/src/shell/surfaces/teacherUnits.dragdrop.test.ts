@@ -10,7 +10,18 @@
  */
 import * as fs from "fs";
 import * as path from "path";
-import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+import { renderTeacherUnitsPanel, type UnitsCapability } from "./teacherUnitsPanel";
+
+// Explicit test substitution; compiler production availability stays closed.
+const enabledCapability = {
+  getSnapshot: () => ({ status: "enabled" as const }),
+  subscribe: () => () => undefined,
+  refresh: async () => undefined,
+  enter: async () => undefined,
+  revalidate: async () => undefined,
+  invalidate: () => undefined,
+  dispose: () => undefined,
+} as unknown as UnitsCapability;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -84,7 +95,7 @@ async function panel(initial: TeacherUnit[]) {
     store: createTeacherUnitCreateAttemptStore(SCOPE, () => memoryStorage()),
     initialGrade: "7",
   });
-  renderTeacherUnitsPanel(host, ctl, { unitsInitiallyExpanded: true });
+  renderTeacherUnitsPanel(host, ctl, { unitsInitiallyExpanded: true, capability: enabledCapability });
   await flush();
   return { host, ctl, c, units };
 }

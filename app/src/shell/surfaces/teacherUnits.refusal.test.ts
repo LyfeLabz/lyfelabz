@@ -6,9 +6,19 @@
  * archived when it was checked) stays; whether the unit is archived now,
  * and whether Restore is the next step, follows the current state.
  */
-import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+import { renderTeacherUnitsPanel, type UnitsCapability } from "./teacherUnitsPanel";
 // These suites exercise an open unit; collapse is covered by teacherUnits.compact.test.ts.
-const EXPANDED = { unitsInitiallyExpanded: true } as const;
+// Explicit test substitution; compiler production availability stays closed.
+const enabledCapability = {
+  getSnapshot: () => ({ status: "enabled" as const }),
+  subscribe: () => () => undefined,
+  refresh: async () => undefined,
+  enter: async () => undefined,
+  revalidate: async () => undefined,
+  invalidate: () => undefined,
+  dispose: () => undefined,
+} as unknown as UnitsCapability;
+const EXPANDED = { unitsInitiallyExpanded: true, capability: enabledCapability } as const;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController, type TeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";

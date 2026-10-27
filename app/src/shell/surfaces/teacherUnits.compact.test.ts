@@ -9,7 +9,18 @@
  */
 import * as fs from "fs";
 import * as path from "path";
-import { renderTeacherUnitsPanel } from "./teacherUnitsPanel";
+import { renderTeacherUnitsPanel, type UnitsCapability } from "./teacherUnitsPanel";
+
+// Explicit test substitution; compiler production availability stays closed.
+const enabledCapability = {
+  getSnapshot: () => ({ status: "enabled" as const }),
+  subscribe: () => () => undefined,
+  refresh: async () => undefined,
+  enter: async () => undefined,
+  revalidate: async () => undefined,
+  invalidate: () => undefined,
+  dispose: () => undefined,
+} as unknown as UnitsCapability;
 import { createTeacherUnitCreateAttemptStore } from "../../teacherUnits/createAttemptStore";
 import { createTeacherUnitsController } from "../../teacherUnits/unitsController";
 import { getPlaceableResources } from "../../teacherUnits/placeableResources";
@@ -76,7 +87,7 @@ async function panel(units: TeacherUnit[], create?: jest.Mock) {
     now: () => 1_700_000_000_000,
     mint: () => "key_00000001",
   });
-  const view = renderTeacherUnitsPanel(host, ctl);
+  const view = renderTeacherUnitsPanel(host, ctl, { capability: enabledCapability });
   await flush();
   return { host, ctl, c, view };
 }
@@ -293,7 +304,7 @@ describe("archived view", () => {
       store: createTeacherUnitCreateAttemptStore(SCOPE, () => memoryStorage()),
       initialGrade: "7",
     });
-    renderTeacherUnitsPanel(host, ctl, { onArchivedViewExit });
+    renderTeacherUnitsPanel(host, ctl, { onArchivedViewExit, capability: enabledCapability });
     await flush();
     const region = q(host, "units-archived-view") as HTMLElement;
     expect(region.hidden).toBe(true);
