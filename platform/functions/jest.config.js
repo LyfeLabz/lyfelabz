@@ -17,4 +17,9 @@ module.exports = {
   // nonzero exit code. Jest auto-enables per-test verbosity when a single
   // test file is run, so targeted debugging is unaffected.
   verbose: false,
+  // Local resource cap. Jest's default (CPU cores - 1) launched 9 workers per
+  // run on a 16 GB laptop and, with a second suite running, froze the
+  // machine. Two workers bounds memory for every caller (humans, agents, CI);
+  // an explicit `--maxWorkers` on the command line still overrides it.
+  maxWorkers: 2,
 };

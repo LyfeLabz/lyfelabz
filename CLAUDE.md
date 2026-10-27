@@ -129,6 +129,101 @@ At a stop, report the evidence rather than silently expanding scope.
 
 ---
 
+# LOCAL RESOURCE SAFEGUARDS (mandatory)
+
+The primary machine is a 16 GB Apple Silicon M4 MacBook. A prior freeze
+occurred when independent Jest suites ran at the same time (about 19 worker
+processes). The constraint is total machine load across every session, not the
+worker count inside one test process. Control concurrency; never reduce test
+coverage to fit.
+
+**Jest workers.**
+
+- Never exceed two Jest workers per invocation. Never rely on Jest's default
+  worker count (CPU cores - 1).
+- Pass `--maxWorkers=2` when invoking Jest directly or through any script or
+  config that does not already enforce the cap. Do not raise `--maxWorkers`.
+- Use `--runInBand` for Firebase emulator tests that require sequential
+  execution.
+- A two-worker cap per suite does not permit running two suites at once.
+
+**Sequential heavy operations.**
+
+- Run builds, test suites, and release verification one at a time, in the
+  foreground or as a single background job.
+- Never overlap Jest suites, including suites from different packages (`app`
+  verify, Functions tests, Rules tests).
+- Never run a resource-intensive build alongside another build or test suite.
+  A Hosting `prepare` runs `app` verify itself and counts as a full suite.
+- Before starting a heavy operation, check for existing heavy processes (for
+  example `ps aux | grep -E "jest|esbuild|firebase|tsc" | grep -v grep`). Do
+  not assume this session has exclusive use of the machine.
+- If another Claude Code or Codex session is doing resource-intensive work,
+  wait, or ask Chris to coordinate. If ownership of a process is unclear, ask.
+
+**Node.js process management.**
+
+- Reuse existing development servers when appropriate; avoid redundant servers
+  and unnecessary background Node.js processes.
+- Terminate only processes this session started, by PID. Never terminate
+  another session's Claude Code, Codex, Node.js, Firebase emulator, or
+  development processes, including to free resources.
+- Never use broad kill commands (`killall node`, unrestricted `pkill`
+  patterns).
+
+**Release worktrees and release verification.**
+
+- These safeguards apply equally to `main`, clean release worktrees, staging
+  worktrees, and any isolated or historical checkout.
+- Do not assume main-tree Jest configuration exists in another worktree or
+  older commit. Inspect that checkout's Jest configs before running release
+  `prepare` or verification, and confirm the actual Jest invocations respect
+  the two-worker cap.
+- Run release verification stages sequentially. Preserve every certification
+  gate; never skip, disable, or weaken tests to work around resource limits.
+- If existing release tooling cannot safely enforce the cap, STOP and report
+  before proceeding. Do not silently modify release scripts or tooling.
+
+**Cross-session coordination.** No shared verification lock exists today. Do
+not claim one does, and do not build one without a separate, explicitly
+scoped operation.
+
+**Local development workflow.**
+
+- Default to LOCAL Claude Code and Codex execution. Keep each operation
+  bounded.
+- Preserve unrelated local changes and untracked files.
+- Prefer focused tests during implementation; run full verification when
+  established release gates require it.
+- Leave completed work uncommitted for review in GitHub Desktop (see HUMAN
+  CONTROL GATES).
+
+**Development prompt header.** Task prompts should open with:
+
+```
+Model: Cheapest capable model
+Effort: Low / Medium / High (by task complexity)
+Environment: LOCAL
+Session: NEW / SAME
+```
+
+Use the SAME session within one bounded operation; start a NEW session at
+major certified checkpoints.
+
+**Safeguard status (as of 2026-10-27; re-inspect, do not assume).**
+
+- `platform/firebase/jest.config.js`: `maxWorkers: 1` (committed).
+- Functions emulator tests (`test:emulator`, `test:astra004-hosting`): run
+  `--runInBand` (committed).
+- `app/jest.config.js` and `platform/functions/jest.config.js`:
+  `maxWorkers: 2` present in the `main` working tree but uncommitted at the
+  time of writing. Until committed, any other worktree or checkout lacks it.
+- Pending: confirm those caps are committed; ensure release preparation
+  enforces the cap consistently; consider a cross-session verification lock
+  in a separate operation.
+
+---
+
 # FIREBASE AND PRODUCTION
 
 Production Firebase project: **`lyfelabz-prod`**. Staging: `lyfelabz-staging`.
@@ -567,6 +662,8 @@ Before declaring an implementation complete:
     typecheck, build).
   - `platform/firebase/`: `npm run test:rules` when Rules or data access
     change (CI runs it).
+- Follow LOCAL RESOURCE SAFEGUARDS for every suite and build: one at a time,
+  at most two Jest workers, and no overlap with other sessions' heavy work.
 - For browser-visible changes (lessons, pages, app UI): verify in the browser,
   check console errors, test interactions, confirm responsive behavior.
 - Sweep changed files for em dashes (see STYLE).
@@ -584,5 +681,6 @@ Before declaring an implementation complete:
 5. Anything not verified, and remaining risks.
 6. Production surfaces that would eventually need deployment.
 7. Exact intended files left modified/untracked (what Chris should see under
-   Changes in GitHub Desktop).
+   Changes in GitHub Desktop), with an exact changed-file count.
 8. Confirmation that no commit, push, or deploy was performed.
+9. A checkbox PUNCH LIST (`- [ ]`) of human review items and next steps.
