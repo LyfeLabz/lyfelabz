@@ -295,3 +295,36 @@ describe("formatProgressStatus", () => {
     expect(formatProgressStatus({ answered: 3, total: null, retake: false })).toBe("In Progress · 3 answered");
   });
 });
+
+describe("groupRoster - earlier-occurrence best (display only)", () => {
+  const recipients = [
+    { studentId: "a", studentDisplayName: "Ada" },
+    { studentId: "b", studentDisplayName: "Bea" },
+    { studentId: "c", studentDisplayName: "Cid" },
+  ];
+
+  test("attaches Earlier best only to Not Started rows and never reclassifies", () => {
+    const g = groupRoster({
+      recipients,
+      completed: [{ studentId: "a", percentage: 90, attemptNumber: 1, submittedAt: 1 }],
+      progress: [{ studentId: "c", answered: 2, total: 10, retake: false }],
+      earlierBest: [
+        { studentId: "a", percentage: 50 },
+        { studentId: "b", percentage: 40 },
+        { studentId: "c", percentage: 70 },
+      ],
+    });
+    expect(g.submitted.map((r) => r.studentId)).toEqual(["a"]);
+    expect(g.submitted[0]?.percentage).toBe(90);
+    expect(g.inProgress.map((r) => r.studentId)).toEqual(["c"]);
+    expect(g.inProgress[0]).not.toHaveProperty("earlierBestPercentage");
+    expect(g.notStarted).toEqual([
+      { studentId: "b", studentDisplayName: "Bea", earlierBestPercentage: 40 },
+    ]);
+  });
+
+  test("a Not Started student without earlier history carries no Earlier best", () => {
+    const g = groupRoster({ recipients, completed: [], progress: [] });
+    for (const row of g.notStarted) expect(row).not.toHaveProperty("earlierBestPercentage");
+  });
+});

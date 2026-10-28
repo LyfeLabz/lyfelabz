@@ -1452,6 +1452,7 @@ async function renderRosterPanel(
       submittedAt: c.submittedAt,
     })),
     progress: summary.studentProgress ?? [],
+    ...(summary.earlierBest === undefined ? {} : { earlierBest: summary.earlierBest }),
     sortOrder,
   });
 
@@ -1835,6 +1836,7 @@ function appendRosterGroup(
         readonly studentId: string;
         readonly studentDisplayName: string;
         readonly status?: string;
+        readonly earlierBestPercentage?: number;
       }
     | {
         readonly studentId: string;
@@ -1987,6 +1989,23 @@ function appendRosterGroup(
         );
         progress.textContent = progressText;
         li.appendChild(progress);
+      }
+      // Reassignment model: a Not Started student who completed an EARLIER
+      // occurrence of this lesson shows that best as quiet context. The
+      // student stays in Not Started and nothing is counted.
+      if (
+        "earlierBestPercentage" in row &&
+        typeof row.earlierBestPercentage === "number"
+      ) {
+        const earlier = doc.createElement("span");
+        earlier.className =
+          "shell-assignment-detail-roster-progress shell-assignment-detail-roster-earlier";
+        earlier.setAttribute(
+          "data-testid",
+          `assignment-detail-roster-earlier-${row.studentId}`,
+        );
+        earlier.textContent = `Earlier best: ${Math.round(row.earlierBestPercentage * 10) / 10}%`;
+        li.appendChild(earlier);
       }
       // Sprint 30A.2: render the grade-passback status line + Retry action
       // ONLY when there is something useful to show. A `synced` status

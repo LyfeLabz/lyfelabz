@@ -1664,7 +1664,7 @@ describe("My Science (28.6G) - status, results & ordering", () => {
     );
     // Cumulative performance and history remain visible and accessible.
     expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("95%");
-    expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe("1 attempt");
+    expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe("1 previous attempt");
     expect(card.querySelectorAll("[data-testid=my-science-attempt]")).toHaveLength(1);
     // The Current is still the one launchable, unfinished assignment.
     expect(card.querySelectorAll("[data-testid=assignments-launch]")).toHaveLength(1);
@@ -1680,6 +1680,67 @@ describe("My Science (28.6G) - status, results & ordering", () => {
     expect(card.getAttribute("data-complete")).toBe("true");
     expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("95%");
     expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe("2 attempts");
+  });
+
+  // Assignment history clarity: when every attempt behind the score is from
+  // an EARLIER occurrence, the card names it a previous attempt, labels the
+  // score as the best, and says the Current assignment is not started.
+  test("history only (no Current attempt): Best Score, previous attempt, and Current not started, with the launch kept", async () => {
+    const mount = await renderReassigned([
+      okAttempt({ attemptId: "h-A1", assignmentId: "a-ed-A", attemptNumber: 1, score: 4, maxScore: 10, percentage: 40, submittedAt: Date.UTC(2026, 8, 14, 13, 0) }),
+    ]);
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]")!;
+    expect(card.querySelector("[data-testid=my-science-card-status]")?.textContent).toContain("Ready to Begin");
+    expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toBe("Best Score: 40% · 4/10");
+    const toggle = card.querySelector("[data-testid=my-science-card-attempts]")!;
+    expect(toggle.textContent).toBe("1 previous attempt");
+    expect(toggle.getAttribute("aria-label")).toBe("1 previous attempt for Engineering Design");
+    expect(card.querySelector("[data-testid=my-science-card-current-note]")?.textContent).toBe(
+      "Current assignment not started",
+    );
+    expect(card.querySelectorAll("[data-testid=assignments-launch]")).toHaveLength(1);
+  });
+
+  test("history only, several earlier attempts: plural previous attempts with the cumulative best", async () => {
+    const mount = await renderReassigned([
+      okAttempt({ attemptId: "h-A1", assignmentId: "a-ed-A", attemptNumber: 1, score: 4, maxScore: 10, percentage: 40, submittedAt: Date.UTC(2026, 8, 14, 13, 0) }),
+      okAttempt({ attemptId: "h-A2", assignmentId: "a-ed-A", attemptNumber: 2, score: 6, maxScore: 10, percentage: 60, submittedAt: Date.UTC(2026, 8, 15, 13, 0) }),
+    ]);
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]")!;
+    expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe("2 previous attempts");
+    expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("Best Score: 60%");
+    expect(card.querySelector("[data-testid=my-science-card-current-note]")).not.toBeNull();
+  });
+
+  test("both earlier and Current attempts: ordinary Completed card, no previous-attempt wording", async () => {
+    const mount = await renderReassigned([
+      ...REASSIGN_HISTORY,
+      okAttempt({ attemptId: "h-B1", assignmentId: "a-ed-B", attemptNumber: 1, score: 16, maxScore: 20, percentage: 80, submittedAt: Date.UTC(2026, 8, 20, 13, 0) }),
+    ]);
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]")!;
+    expect(card.textContent).not.toContain("previous attempt");
+    expect(card.textContent).not.toContain("Best Score:");
+    expect(card.querySelector("[data-testid=my-science-card-current-note]")).toBeNull();
+  });
+
+  test("Current attempts only (no earlier occurrence): no history messaging", async () => {
+    const mount = await renderReassigned([
+      okAttempt({ attemptId: "h-B1", assignmentId: "a-ed-B", attemptNumber: 1, score: 7, maxScore: 10, percentage: 70, submittedAt: Date.UTC(2026, 8, 20, 13, 0) }),
+    ]);
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]")!;
+    expect(card.getAttribute("data-status")).toBe("completed");
+    expect(card.querySelector("[data-testid=my-science-card-score]")?.textContent).toBe("70% · 7/10");
+    expect(card.querySelector("[data-testid=my-science-card-attempts]")?.textContent).toBe("1 attempt");
+    expect(card.querySelector("[data-testid=my-science-card-current-note]")).toBeNull();
+  });
+
+  test("no attempts at all: Ready to Begin with no score and no history messaging", async () => {
+    const mount = await renderReassigned([]);
+    const card = mount.querySelector<HTMLElement>("[data-testid=my-science-card]")!;
+    expect(card.querySelector("[data-testid=my-science-card-status]")?.textContent).toContain("Ready to Begin");
+    expect(card.querySelector("[data-testid=my-science-card-score]")).toBeNull();
+    expect(card.querySelector("[data-testid=my-science-card-attempts]")).toBeNull();
+    expect(card.querySelector("[data-testid=my-science-card-current-note]")).toBeNull();
   });
 
   test("closed managed Current: no operational tile, no resurrected older copy; the group's completed work is ONE non-launchable history card", async () => {

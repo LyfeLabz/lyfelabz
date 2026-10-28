@@ -117,6 +117,21 @@ jest.mock("../shared", () => {
   };
 });
 
+// Canonical occurrence grouping, consumed only by the opt-in earlier-best
+// projection. Default: legacy/unresolved scope (no earlier context).
+const mockResolveCurrentOccurrenceGroup = jest.fn(
+  (): Promise<unknown> => Promise.resolve({ resolution: "unresolved" }),
+);
+jest.mock("../assignments/current-occurrence-group", () => ({
+  occurrenceScopeOf: (record: Record<string, unknown>) => ({
+    classId: record.classId,
+    lessonSlug: record.lessonSlug,
+    teacherId: record.teacherId,
+    schoolId: record.schoolId,
+  }),
+  resolveCurrentOccurrenceGroup: mockResolveCurrentOccurrenceGroup,
+}));
+
 import { PlatformError } from "../shared/errors/platform-error";
 import {
   __assessmentAssignmentSummaryHandler,
@@ -1559,5 +1574,96 @@ describe("assessmentAssignmentSummary - per-student quiz progress (opt-in)", () 
         makeRequest({ data: { assignmentId: ASSIGNMENT_ID, includeStudentProgress: "yes" } }),
       ),
     ).rejects.toMatchObject({ code: "assignments.invalidRequest" });
+  });
+});
+
+describe("assessmentAssignmentSummary - earlier-occurrence best (opt-in, display only)", () => {
+  const EARLIER_ID = "assign-earlier";
+  const OLDEST_ID = "assign-oldest";
+  const progressRequest = () =>
+    makeRequest({ data: { assignmentId: ASSIGNMENT_ID, includeStudentProgress: true } });
+  const occurrence = (assignmentId: string) => ({ assignmentId, record: {} });
+  const validGroup = (currentAssignmentId = ASSIGNMENT_ID) => ({
+    resolution: "valid",
+    currentAssignmentId,
+    current: occurrence(currentAssignmentId),
+    occurrences: [occurrence(OLDEST_ID), occurrence(EARLIER_ID), occurrence(ASSIGNMENT_ID)],
+  });
+
+  beforeEach(() => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
+    mockResolveCurrentOccurrenceGroup.mockReset();
+    mockResolveCurrentOccurrenceGroup.mockResolvedValue(validGroup());
+    attemptsFixture.length = 0;
+    sessionsFixture.length = 0;
+    recipientsFixture.length = 0;
+    revisionFixture.data = null;
+    seedOwnedActiveClass();
+    seedOwnedAssignment({ assessmentRevisionId: REVISION_ID });
+  });
+
+  it("reports the canonical best across earlier occurrences for a not-started student, without changing any count", async () => {
+    seedRecipient(STUDENT_A);
+    seedRecipient(STUDENT_B);
+    seedAttempt({ studentId: STUDENT_A, assignmentId: OLDEST_ID, score: 3, maxScore: 10, percentage: 30 });
+    seedAttempt({ studentId: STUDENT_A, assignmentId: EARLIER_ID, score: 4, maxScore: 10, percentage: 40 });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.earlierBest).toEqual([{ studentId: STUDENT_A, percentage: 40 }]);
+    expect(result.totalStudents).toBe(2);
+    expect(result.completedStudents).toBe(0);
+    expect(result.inProgressStudents).toBe(0);
+    expect(result.notStartedStudents).toBe(2);
+    expect(result.averagePercentage).toBeNull();
+  });
+
+  it("omits a student who has a completed attempt on the Current assignment", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A, assignmentId: EARLIER_ID, percentage: 90 });
+    seedAttempt({ studentId: STUDENT_A, assignmentId: ASSIGNMENT_ID, score: 1, maxScore: 2, percentage: 50 });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.earlierBest).toEqual([]);
+    expect(result.completedStudents).toBe(1);
+    expect(result.averagePercentage).toBe(50);
+  });
+
+  it("ignores earlier attempts outside the ownership scope or by non-recipients", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A, assignmentId: EARLIER_ID, classId: OTHER_CLASS_ID, percentage: 80 });
+    seedAttempt({ studentId: STUDENT_A, assignmentId: EARLIER_ID, districtId: OTHER_DISTRICT_ID, percentage: 70 });
+    seedAttempt({ studentId: OUTSIDE_STUDENT, assignmentId: EARLIER_ID, percentage: 60 });
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect(result.earlierBest).toEqual([]);
+  });
+
+  it("is absent when the viewed assignment is not the valid Current, or the scope is unresolved or inactive", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A, assignmentId: EARLIER_ID, percentage: 40 });
+    mockResolveCurrentOccurrenceGroup.mockResolvedValueOnce(validGroup(EARLIER_ID));
+    expect("earlierBest" in (await __assessmentAssignmentSummaryHandler(progressRequest()))).toBe(false);
+    mockResolveCurrentOccurrenceGroup.mockResolvedValueOnce({ resolution: "unresolved" });
+    expect("earlierBest" in (await __assessmentAssignmentSummaryHandler(progressRequest()))).toBe(false);
+    mockResolveCurrentOccurrenceGroup.mockResolvedValueOnce({
+      resolution: "inactive",
+      currentAssignmentId: ASSIGNMENT_ID,
+      occurrences: [],
+    });
+    expect("earlierBest" in (await __assessmentAssignmentSummaryHandler(progressRequest()))).toBe(false);
+  });
+
+  it("is absent without the opt-in and never resolves the group", async () => {
+    seedRecipient(STUDENT_A);
+    seedAttempt({ studentId: STUDENT_A, assignmentId: EARLIER_ID, percentage: 40 });
+    const result = await __assessmentAssignmentSummaryHandler(makeRequest());
+    expect("earlierBest" in result).toBe(false);
+    expect(mockResolveCurrentOccurrenceGroup).not.toHaveBeenCalled();
+  });
+
+  it("a grouping failure omits the field and never fails the summary", async () => {
+    seedRecipient(STUDENT_A);
+    mockResolveCurrentOccurrenceGroup.mockRejectedValueOnce(new Error("boom"));
+    const result = await __assessmentAssignmentSummaryHandler(progressRequest());
+    expect("earlierBest" in result).toBe(false);
+    expect(result.notStartedStudents).toBe(1);
   });
 });

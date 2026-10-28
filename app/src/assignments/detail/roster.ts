@@ -34,6 +34,13 @@ export type NamedRow = {
   readonly studentDisplayName: string;
 };
 
+// A Not Started row may carry display-only context from earlier occurrences
+// of the same lesson (reassignment model). It never moves the student out of
+// Not Started and never enters any count or score.
+export type NotStartedRow = NamedRow & {
+  readonly earlierBestPercentage?: number;
+};
+
 export type InProgressRow = NamedRow & {
   // "Started · 0/10", "In Progress · 4/10", or "Ready to Submit · 10/10".
   readonly status: string;
@@ -42,7 +49,7 @@ export type InProgressRow = NamedRow & {
 export type RosterGrouping = {
   readonly submitted: ReadonlyArray<SubmittedRow>;
   readonly inProgress: ReadonlyArray<InProgressRow>;
-  readonly notStarted: ReadonlyArray<NamedRow>;
+  readonly notStarted: ReadonlyArray<NotStartedRow>;
 };
 
 // Representative attempt selection per PDR-029a: the highest-percentage
@@ -113,6 +120,11 @@ export function groupRoster(input: {
   readonly recipients: ReadonlyArray<AssignmentRecipient>;
   readonly completed: ReadonlyArray<CompletedAttemptForRoster>;
   readonly progress: ReadonlyArray<RosterProgress>;
+  // Server-reported earlier-occurrence best per student (display only).
+  readonly earlierBest?: ReadonlyArray<{
+    readonly studentId: string;
+    readonly percentage: number;
+  }>;
   // Display order for every group (the teacher's roster sort preference).
   readonly sortOrder?: RosterSortOrder;
 }): RosterGrouping {
@@ -129,7 +141,11 @@ export function groupRoster(input: {
 
   const submittedRows: SubmittedRow[] = [];
   const inProgress: InProgressRow[] = [];
-  const notStarted: NamedRow[] = [];
+  const notStarted: NotStartedRow[] = [];
+  const earlierByStudent = new Map<string, number>();
+  for (const row of input.earlierBest ?? []) {
+    earlierByStudent.set(row.studentId, row.percentage);
+  }
   for (const recipient of input.recipients) {
     const attempt = rep.get(recipient.studentId);
     const progress = progressByStudent.get(recipient.studentId);
@@ -150,9 +166,11 @@ export function groupRoster(input: {
         status: formatProgressStatus({ ...progress, retake: false }),
       });
     } else {
+      const earlier = earlierByStudent.get(recipient.studentId);
       notStarted.push({
         studentId: recipient.studentId,
         studentDisplayName: recipient.studentDisplayName,
+        ...(earlier === undefined ? {} : { earlierBestPercentage: earlier }),
       });
     }
   }

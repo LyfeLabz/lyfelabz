@@ -29,6 +29,16 @@ export type AssignmentSummary = {
   // Quiz progress visibility (opt-in, Assignment Detail roster only): one
   // count row per student with a Live session. Absent unless requested.
   readonly studentProgress?: ReadonlyArray<AssignmentStudentProgress>;
+  // Reassignment model (opt-in with `includeStudentProgress`, display only):
+  // for a valid Current assignment, the best percentage a student without a
+  // completed attempt here earned on EARLIER occurrences of the same lesson
+  // in this class. Never part of any count or score metric above.
+  readonly earlierBest?: ReadonlyArray<AssignmentEarlierBest>;
+};
+
+export type AssignmentEarlierBest = {
+  readonly studentId: string;
+  readonly percentage: number;
 };
 
 // Per-student unsubmitted quiz progress from `assessmentAssignmentSummary`

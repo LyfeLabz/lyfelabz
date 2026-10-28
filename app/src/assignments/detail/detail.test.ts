@@ -4044,6 +4044,55 @@ describe("renderAssignmentDetail - quiz progress visibility", () => {
     expect(text("stu-1")).toBe("Retake In Progress · 7/10");
   });
 
+  test("Not Started student with earlier-occurrence history shows Earlier best; classification and counts unchanged", async () => {
+    const { mount, group } = await renderWith(
+      freezeSummary({
+        totalStudents: 5,
+        completedStudents: 1,
+        inProgressStudents: 0,
+        notStartedStudents: 4,
+        earlierBest: [{ studentId: "stu-2", percentage: 40 }],
+      }),
+      [mkAttempt({ attemptId: "att-1", studentId: "stu-1", percentage: 80 })],
+    );
+    const earlier = (id: string) =>
+      mount.querySelector(`[data-testid=assignment-detail-roster-earlier-${id}]`)?.textContent ?? null;
+    expect(group("submitted")).toEqual(["stu-1"]);
+    expect(group("not-started")).toContain("stu-2");
+    expect(earlier("stu-2")).toBe("Earlier best: 40%");
+    expect(
+      mount
+        .querySelector("[data-testid=assignment-detail-roster-row-stu-2]")
+        ?.querySelector("[data-testid^=assignment-detail-roster-summary]"),
+    ).toBeNull();
+    // Not Started students without earlier history show nothing extra.
+    expect(earlier("stu-3")).toBeNull();
+    expect(earlier("stu-1")).toBeNull();
+    // Header counts stay anchored to the summary; Completed keeps its score.
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-group-count-not-started]")?.textContent,
+    ).toBe("4");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-group-count-submitted]")?.textContent,
+    ).toBe("1");
+    expect(
+      mount.querySelector("[data-testid=assignment-detail-roster-summary-stu-1]")?.textContent,
+    ).toBe("80% 1 attempt");
+  });
+
+  test("no Earlier best appears when the summary carries no earlier history", async () => {
+    const { mount } = await renderWith(
+      freezeSummary({
+        totalStudents: 5,
+        completedStudents: 0,
+        inProgressStudents: 0,
+        notStartedStudents: 5,
+      }),
+      [],
+    );
+    expect(mount.querySelector("[data-testid^=assignment-detail-roster-earlier-]")).toBeNull();
+  });
+
   test("progress is never inferred from counts when no per-student rows arrive", async () => {
     const { group } = await renderWith(
       freezeSummary({

@@ -1754,6 +1754,11 @@ function renderMyScienceCard(
   // work, "Ready to Begin" for unfinished. The score below carries the actual
   // performance; no subjective judgment is shown.
   const status: MyScienceStatus = item.completed ? "completed" : "ready";
+  // Every attempt behind the score belongs to an EARLIER occurrence: the
+  // Current itself is not completed, yet a cumulative aggregate exists (only
+  // possible through `relatedAssignmentIds`; history-only cards are
+  // `completed`). Such a card says so plainly.
+  const previousOnly = !item.completed && item.aggregate !== null;
 
   // Status is carried by visible text (never color alone). In the degraded
   // state we know neither completion nor status, so no chip is shown rather
@@ -1773,6 +1778,7 @@ function renderMyScienceCard(
     // the student came for (prominent); the raw fraction is quiet context.
     const score = doc.createElement("p");
     score.setAttribute("data-testid", "my-science-card-score");
+    if (previousOnly) score.appendChild(doc.createTextNode("Best Score: "));
     const strong = doc.createElement("strong");
     strong.textContent = `${agg.bestPercentage}%`;
     score.appendChild(strong);
@@ -1788,8 +1794,9 @@ function renderMyScienceCard(
     // each attempt behind the aggregate). Same disclosure grammar as the
     // Resources control: a native button with aria-expanded/aria-controls
     // toggling an inline panel; the caret is decorative CSS.
+    const noun = previousOnly ? "previous attempt" : "attempt";
     const countLabel =
-      agg.attemptCount === 1 ? "1 attempt" : `${agg.attemptCount} attempts`;
+      agg.attemptCount === 1 ? `1 ${noun}` : `${agg.attemptCount} ${noun}s`;
     const panelId = `my-science-history-${item.assignmentId}`;
     const toggle = doc.createElement("button");
     toggle.type = "button";
@@ -1816,6 +1823,14 @@ function renderMyScienceCard(
       toggle.setAttribute("aria-expanded", open ? "false" : "true");
       history.hidden = open;
     });
+
+    if (previousOnly) {
+      const note = doc.createElement("p");
+      note.className = "my-science-card-current-note";
+      note.setAttribute("data-testid", "my-science-card-current-note");
+      note.textContent = "Current assignment not started";
+      li.appendChild(note);
+    }
   }
 
   // Launch action. Reuses the certified assignment launcher URL and the

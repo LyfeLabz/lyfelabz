@@ -2,6 +2,7 @@ import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 
 import type {
+  AssignmentEarlierBest,
   AssignmentStudentProgress,
   AssignmentSummary,
   AssignmentSummaryCallable,
@@ -64,6 +65,7 @@ function parseSummary(raw: CallableRecord): AssignmentSummary {
   }
 
   const studentProgress = parseStudentProgress(raw.studentProgress);
+  const earlierBest = parseEarlierBest(raw.earlierBest);
 
   return Object.freeze({
     assignmentId,
@@ -78,7 +80,24 @@ function parseSummary(raw: CallableRecord): AssignmentSummary {
     lowestPercentage,
     perfectScoreStudents,
     ...(studentProgress === undefined ? {} : { studentProgress }),
+    ...(earlierBest === undefined ? {} : { earlierBest }),
   });
+}
+
+// Opt-in earlier-occurrence best (display only). Unlike the counts above it
+// never fails the parse: a malformed value or row is dropped, so the roster
+// simply shows no earlier context.
+function parseEarlierBest(
+  raw: unknown,
+): ReadonlyArray<AssignmentEarlierBest> | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const rows: AssignmentEarlierBest[] = [];
+  for (const row of raw as unknown[]) {
+    const r = (row ?? {}) as CallableRecord;
+    if (!isString(r.studentId) || !isFiniteNumber(r.percentage)) continue;
+    rows.push(Object.freeze({ studentId: r.studentId, percentage: r.percentage }));
+  }
+  return Object.freeze(rows);
 }
 
 // Opt-in per-student progress. Each row is re-projected to exactly the four

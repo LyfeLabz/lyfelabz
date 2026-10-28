@@ -20,6 +20,10 @@ import {
 } from "../shared";
 
 import {
+  occurrenceScopeOf,
+  resolveCurrentOccurrenceGroup,
+} from "../assignments/current-occurrence-group";
+import {
   selectHighestCompletedAttempt,
   type SelectedCompletedAttempt,
 } from "./best-attempt";
@@ -74,6 +78,19 @@ export type AssessmentAssignmentSummaryResponse = {
   readonly lowestPercentage: number | null;
   readonly perfectScoreStudents: number;
   readonly studentProgress?: readonly AssessmentStudentProgress[];
+  // Opt-in with `includeStudentProgress` (reassignment model, display only).
+  // Present only when this assignment is the valid Current of its class +
+  // lesson. One row per recipient with NO completed attempt on this
+  // assignment but at least one on an earlier occurrence of the same
+  // canonical occurrence group: the canonical best
+  // (`selectHighestCompletedAttempt`) across those earlier attempts. Never
+  // part of any count or score metric above.
+  readonly earlierBest?: readonly AssessmentEarlierBest[];
+};
+
+export type AssessmentEarlierBest = {
+  readonly studentId: string;
+  readonly percentage: number;
 };
 
 const ASSIGNMENT_ID_PATTERN =
@@ -612,6 +629,22 @@ async function assessmentAssignmentSummaryHandler(
     );
   }
 
+  // Opt-in earlier-occurrence context for the roster. Best-effort: any
+  // failure omits the field and never fails the summary.
+  let earlierBest: AssessmentEarlierBest[] | undefined;
+  if (input.includeStudentProgress === true) {
+    try {
+      earlierBest = await loadEarlierBest(
+        input.assignmentId,
+        assignment,
+        actor,
+        [...population].filter((studentId) => !selectedByStudent.has(studentId)),
+      );
+    } catch {
+      earlierBest = undefined;
+    }
+  }
+
   safeLog(() =>
     log.info("assessmentAssignment.summarized", {
       actorUserId: actor.uid,
@@ -637,7 +670,68 @@ async function assessmentAssignmentSummaryHandler(
     lowestPercentage,
     perfectScoreStudents,
     ...(studentProgress === undefined ? {} : { studentProgress }),
+    ...(earlierBest === undefined ? {} : { earlierBest }),
   };
+}
+
+// Earlier-occurrence best for students with no completed attempt on this
+// assignment. Uses the canonical occurrence group (the same grouping the
+// student tile and grade passback use) and only when this assignment is the
+// valid Current; a legacy/unresolved or inactive scope, or a superseded
+// assignment, returns undefined. Reads: the canonical group resolution plus
+// one `assignmentId` equality query per earlier occurrence (never per
+// student). Attempts are admitted with the same ownership filters as above.
+async function loadEarlierBest(
+  assignmentId: string,
+  assignment: AssignmentRecord,
+  actor: { readonly uid: string; readonly schoolId: string; readonly districtId: string },
+  candidates: ReadonlyArray<string>,
+): Promise<AssessmentEarlierBest[] | undefined> {
+  const group = await resolveCurrentOccurrenceGroup(
+    occurrenceScopeOf(assignment),
+    actor.districtId,
+  );
+  if (group.resolution !== "valid" || group.currentAssignmentId !== assignmentId) {
+    return undefined;
+  }
+  const earlierIds = group.occurrences
+    .map((o) => o.assignmentId)
+    .filter((id) => id !== assignmentId);
+  const wanted = new Set(candidates);
+  if (earlierIds.length === 0 || wanted.size === 0) return [];
+
+  const snapshots = await Promise.all(
+    earlierIds.map((id) => attemptsCollectionRef().where("assignmentId", "==", id).get()),
+  );
+  const byStudent = new Map<string, Array<{ id: string; data: AssessmentAttemptRecord }>>();
+  snapshots.forEach((snapshot, index) => {
+    const occurrenceId = earlierIds[index];
+    for (const doc of snapshot.docs) {
+      const data = doc.data() as AssessmentAttemptRecord | undefined;
+      if (!data) continue;
+      if (data.assignmentId !== occurrenceId) continue;
+      if (data.classId !== assignment.classId) continue;
+      if (data.teacherId !== actor.uid) continue;
+      if (data.schoolId !== actor.schoolId) continue;
+      if (data.districtId !== actor.districtId) continue;
+      if (!isNonEmptyString(data.studentId)) continue;
+      if (!wanted.has(data.studentId)) continue;
+      const bucket = byStudent.get(data.studentId) ?? [];
+      bucket.push({ id: doc.id, data });
+      byStudent.set(data.studentId, bucket);
+    }
+  });
+
+  const out: AssessmentEarlierBest[] = [];
+  for (const [studentId, attempts] of byStudent) {
+    const selected = selectHighestCompletedAttempt(attempts);
+    if (selected === null) continue;
+    out.push({ studentId, percentage: roundPercentage(selected.percentage) });
+  }
+  out.sort((a, b) =>
+    a.studentId < b.studentId ? -1 : a.studentId > b.studentId ? 1 : 0,
+  );
+  return out;
 }
 
 // `Timestamp` is imported for the type-side dependency on
