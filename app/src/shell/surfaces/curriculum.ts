@@ -70,6 +70,12 @@ import {
 import type { AssignmentLmsPublicationState } from "../../assignments/detail/types";
 import type { AssignmentDetailClassSwitcher } from "../../assignments/detail/class-switcher";
 import type { CurrentForFamily } from "../../assignments/detail/grade-sync-context";
+import type { AssignmentRegistryReadiness } from "../../assignments/detail/hydration";
+import {
+  markAssignStateKnowledge,
+  renderRegistryStatusLine,
+  watchRegistryReadiness,
+} from "./shared/registryReadiness";
 
 // Sprint 13B remediation: narrow visible entry-point seam so an
 // authenticated teacher can reach the certified Assignment Detail
@@ -103,6 +109,11 @@ export type CurriculumAssignmentDetailSeam = {
   // the per-lesson mapping after a full page reload. When absent the
   // surface behaves exactly as Sprint 13B (session-only affordance).
   readonly list?: () => ReadonlyArray<AssignmentDetailMetadata>;
+  // Performance Operation 1: readiness of `list`. Registry hydration runs in
+  // the background, so `list` may be incomplete while this reads "pending";
+  // assignment-dependent regions show a loading state then and refresh in
+  // place when it settles. Absent (harnesses): `list` is complete.
+  readonly registryStatus?: AssignmentRegistryReadiness;
   // Sprint 16 Slice 1: stable per-tab seam allowing the Curriculum
   // surface to install (or clear) an invalidator that the entry point
   // invokes on every lifecycle registration. Absent-or-null keeps the
@@ -1101,6 +1112,9 @@ export function renderCurriculumSurface(
     readonly slug: string;
     readonly handle: LessonSummarySurfaceHandle;
   } | null = null;
+  // Performance Operation 1: identifies the newest class-row Results action
+  // so an older, still-waiting one can never navigate.
+  let resultsActionSeq = 0;
   const refreshOpenResults = (lessonSlug: string): void => {
     if (openResults !== null && openResults.slug === lessonSlug) {
       openResults.handle.refresh();
@@ -1124,6 +1138,32 @@ export function renderCurriculumSurface(
     status: HTMLElement,
   ): Promise<void> => {
     if (assignmentDetail === null) return;
+    // Performance Operation 1: this action can wait (registry hydration,
+    // then Current), so it is bound to the Results instance it started from
+    // and to being the newest Results action. After every wait, and right
+    // before navigating, it re-checks that this same Results view is still
+    // open and still in the document (leaving Curriculum, opening Detail, or
+    // a new bootstrap all detach it); otherwise it is dropped without
+    // touching history or the current screen.
+    const origin = openResults;
+    const action = ++resultsActionSeq;
+    const stillActive = (): boolean =>
+      action === resultsActionSeq &&
+      origin !== null &&
+      openResults === origin &&
+      origin.slug === lesson.slug &&
+      summaryHost.isConnected;
+    // Choose among the class's occurrences only once the background
+    // registry hydration has settled.
+    const readiness = assignmentDetail.registryStatus;
+    if (readiness !== undefined && readiness.status() === "pending") {
+      await readiness.settled();
+      if (!stillActive()) return;
+    }
+    if (readiness !== undefined && readiness.status() === "unavailable") {
+      showSuccess(status, "We could not load this class's assignments. Try again in a moment.");
+      return;
+    }
     const published: string[] = [];
     const closed: string[] = [];
     try {
@@ -1153,7 +1193,7 @@ export function renderCurriculumSurface(
         target = null;
       }
       // The teacher left this Results page while Current was resolving.
-      if (openResults === null || openResults.slug !== lesson.slug) return;
+      if (!stillActive()) return;
     } else if (published.length === 0 && closed.length === 1 && onlyClosed !== undefined) {
       target = onlyClosed;
     }
@@ -1161,6 +1201,7 @@ export function renderCurriculumSurface(
       showSuccess(status, `Open ${className} under Classes to choose which assignment to review.`);
       return;
     }
+    if (!stillActive()) return;
     // Without the shell seam (harness), Detail keeps its certified default
     // Back (the Curriculum remount). With it, Detail is a real drill-down:
     // the existing class-scoped Assignment Detail entry is pushed (browser
@@ -1597,6 +1638,7 @@ export function renderCurriculumSurface(
     grid.appendChild(card);
   }
   applyFilters();
+  installRegistryStatus(doc, session.uid, assignmentDetail, lessonsPanel, grid);
 
   // Prefetch classes and their LMS link status so the dialog opens
   // with the class list and the LMS-linked class row shape ready.
@@ -2094,6 +2136,68 @@ function applyAssignState(
   );
   btn.classList.toggle("shell-lesson-results-action", results);
   btn.classList.toggle("shell-lesson-assigned-action", assigned && !results);
+}
+
+// Performance Operation 1: the lesson cards' Assigned state reads the
+// assignment registry, which now hydrates in the background. While it is
+// pending the grid is marked busy with a polite loading line (a pending
+// registry is never presented as "nothing assigned" being final); when it
+// settles every card's Assign control is refreshed in place, so filters,
+// tab, scroll position, focus, and an open Results view are untouched. A
+// failed load says so and offers a retry; Assign itself always works.
+function installRegistryStatus(
+  doc: Document,
+  uid: string,
+  assignmentDetail: CurriculumAssignmentDetailSeam | null,
+  panel: HTMLElement,
+  grid: HTMLElement,
+): void {
+  const readiness = assignmentDetail?.registryStatus;
+  if (readiness === undefined || readiness.status() === "ready") return;
+
+  const statusId = "curriculum-assignment-status";
+  const line = renderRegistryStatusLine(doc, readiness, {
+    testId: "curriculum-assignment-status",
+    retryTestId: "curriculum-assignment-retry",
+    className: "shell-curriculum-assignment-status",
+    loadingText: "Loading assignment status…",
+    unavailableText: "We could not load which lessons are assigned.",
+    focusFallback: () => grid.querySelector<HTMLElement>("button"),
+  });
+  line.element.id = statusId;
+  panel.insertBefore(line.element, grid);
+
+  // Each card's control says whether its Assign state is known yet; a card
+  // that looks unassigned while the registry is pending or unavailable is
+  // "unknown", described by the status line, never definitively unassigned.
+  const markCards = (): void => {
+    const status = readiness.status();
+    grid.setAttribute("aria-busy", status === "pending" ? "true" : "false");
+    grid.setAttribute("data-assignment-status", status);
+    for (const lesson of LESSONS) {
+      const btn = grid.querySelector<HTMLButtonElement>(
+        `[data-testid=lesson-assign-${lesson.slug}]`,
+      );
+      if (btn !== null) markAssignStateKnowledge(btn, status, isAssigned(lesson.slug), statusId);
+    }
+  };
+  markCards();
+
+  watchRegistryReadiness(grid, readiness, (status) => {
+    if (status === "ready") {
+      hydratePersistedFromRegistry(uid, assignmentDetail);
+      for (const lesson of LESSONS) {
+        const card = grid.querySelector<HTMLElement>(
+          `[data-testid=lesson-card-${lesson.slug}]`,
+        );
+        if (card !== null) {
+          refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
+        }
+      }
+    }
+    line.update();
+    markCards();
+  });
 }
 
 function refreshAssignControl(

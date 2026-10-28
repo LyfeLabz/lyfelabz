@@ -17,6 +17,11 @@ import {
   type LessonResultsIntent,
 } from "./curriculum";
 import {
+  markAssignStateKnowledge,
+  renderRegistryStatusLine,
+  watchRegistryReadiness,
+} from "./shared/registryReadiness";
+import {
   renderTeacherUnitsPanel,
   teacherUnitsSurfaceEnabled,
   type UnitLessonActions,
@@ -149,6 +154,14 @@ export function renderMyUnitsSurface(
   const lessonsBySlug = new Map(getSurfaceableLessons().map((l) => [l.slug, l]));
   const resultsAvailable = lessonSummary !== null && openLessonResults !== null;
   const lessonListeners = new Set<() => void>();
+  // Performance Operation 1: the registry behind Assign vs Results hydrates
+  // in the background. While it is pending or unavailable, a lesson that
+  // looks unassigned is marked "unknown" (described by the status line
+  // below, which offers Try again on failure) rather than presented as
+  // definitively unassigned; controls re-derive in place when it is ready.
+  // Assign and Results stay usable throughout.
+  const registryReadiness = assignmentDetail?.registryStatus ?? null;
+  const registryStatusId = "units-assignment-status";
   const lessonActions: UnitLessonActions | null =
     listClasses === null
       ? null
@@ -163,6 +176,14 @@ export function renderMyUnitsSurface(
               isLessonAssigned(session.uid, assignmentDetail, slug),
               resultsAvailable,
             );
+            if (registryReadiness !== null) {
+              markAssignStateKnowledge(
+                control,
+                registryReadiness.status(),
+                isLessonAssigned(session.uid, assignmentDetail, slug),
+                registryStatusId,
+              );
+            }
           },
           activate: (control, slug, unit) => {
             const lesson = lessonsBySlug.get(slug);
@@ -320,6 +341,28 @@ export function renderMyUnitsSurface(
   });
   mount.appendChild(resultsHost);
   mount.querySelector("#units-heading")?.insertAdjacentElement("afterend", outcome);
+  if (
+    registryReadiness !== null &&
+    lessonActions !== null &&
+    registryReadiness.status() !== "ready"
+  ) {
+    const line = renderRegistryStatusLine(doc, registryReadiness, {
+      testId: "units-assignment-status",
+      retryTestId: "units-assignment-retry",
+      className: "shell-units-assignment-status",
+      loadingText: "Loading assignment status…",
+      unavailableText: "We could not load which lessons are assigned.",
+      focusFallback: () => mount.querySelector<HTMLElement>("#units-heading"),
+    });
+    line.element.id = registryStatusId;
+    outcome.insertAdjacentElement("afterend", line.element);
+    // `resultsHost` belongs to this mount only; the watch is disposed as
+    // soon as it leaves the document.
+    watchRegistryReadiness(resultsHost, registryReadiness, () => {
+      line.update();
+      for (const l of Array.from(lessonListeners)) l();
+    });
+  }
 
   // Restoring a Unit Results view (Back/Forward, a deep link, or returning
   // from a lesson's Results): shown once the authoritative list for the
