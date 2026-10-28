@@ -895,18 +895,22 @@ export function renderClassesSurface(
   // sees the section or a re-render.
   let sharedStudents: ReadonlyArray<SharedStudent> = [];
   let sharedStudentsLoad: Promise<void> | null = null;
+  // False until the first shared read settles (either way). Until then a
+  // zero-class teacher sees the existing "Loading classes" state rather than
+  // the zero-class "add or import" prompt, which would be wrong for a
+  // teacher who has shared students. Later re-reads (after leaving a shared
+  // student) keep showing the last known list, as before.
+  let sharedStudentsSettled = studentSupport === null;
   const loadSharedStudents = (): void => {
     if (studentSupport === null || sharedStudentsLoad !== null) return;
-    sharedStudentsLoad = studentSupport.listShared().then(
-      (students) => {
-        const changed = students.length > 0 || sharedStudents.length > 0;
-        sharedStudents = students;
-        if (changed && state.kind === "list") rerender();
-      },
-      () => {
-        sharedStudents = [];
-      },
-    );
+    const settle = (students: ReadonlyArray<SharedStudent>): void => {
+      const changed = students.length > 0 || sharedStudents.length > 0;
+      const wasHeld = !sharedStudentsSettled;
+      sharedStudents = students;
+      sharedStudentsSettled = true;
+      if (state.kind === "list" && (changed || (wasHeld && state.classes.length === 0))) rerender();
+    };
+    sharedStudentsLoad = studentSupport.listShared().then(settle, () => settle([]));
   };
 
   const rerender = (): void => {
@@ -921,6 +925,17 @@ export function renderClassesSurface(
         renderErrorState(doc, mount);
         return;
       case "list":
+        loadSharedStudents();
+        if (
+          !sharedStudentsSettled &&
+          s.classes.length === 0 &&
+          s.form === null &&
+          listAddMode === null &&
+          s.lastCreated === null
+        ) {
+          renderLoading(doc, mount);
+          return;
+        }
         renderListState(
           doc,
           mount,
@@ -950,8 +965,8 @@ export function renderClassesSurface(
           classOrderError,
           openClassSettings,
           classColors,
+          sharedStudents.length > 0,
         );
-        loadSharedStudents();
         if (sharedStudents.length > 0) {
           mount.appendChild(renderSharedStudentsSection(doc, sharedStudents, onOpenSharedStudent));
         }
@@ -2400,6 +2415,11 @@ function renderListState(
   // no color, render neutral).
   onOpenSettings: (classId: string) => void,
   classColors: Readonly<Record<string, ClassColorToken>>,
+  // Student Support Access (PDR-032): true when the teacher has Shared
+  // students. A zero-class teacher with shared students is already using
+  // LyfeLabz, so the zero-class "add or import" prompt is withheld and the
+  // Shared students section (appended by the caller) is the content.
+  hasSharedStudents = false,
 ): void {
   const hasClasses = classes.length > 0;
 
@@ -2555,6 +2575,10 @@ function renderListState(
 
   if (lastCreated !== null) {
     mount.appendChild(renderJoinCodePanel(doc, lastCreated, onDismissLastCreated));
+  }
+
+  if (!hasClasses && hasSharedStudents) {
+    return;
   }
 
   if (!hasClasses) {
@@ -4750,7 +4774,7 @@ function renderStudentDetailSurface(
       onBack();
     });
   } else if (studentDetailOrigin.kind === "shared") {
-    backBtn.textContent = "Back to Classes";
+    backBtn.textContent = "Back to Shared students";
     backBtn.addEventListener("click", () => {
       onBack();
     });

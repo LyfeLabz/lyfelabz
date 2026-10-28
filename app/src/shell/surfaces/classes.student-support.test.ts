@@ -7,7 +7,7 @@
  *     (never the owner-only class-wide list);
  *   - read-only Student Detail withholds the grade-update Undo but keeps the
  *     history, Show Your Thinking, and question review;
- *   - the owner's Class settings carry the "Support access" section;
+ *   - the owner's Class settings carry the "Share Student Progress" section;
  *   - owners get the same question review on their own Student Detail.
  */
 import type { Session } from "../../session/types";
@@ -23,6 +23,8 @@ import type { GradeImprovementsSeam } from "../../assignments/gradeImprovements/
 import { installGradeImprovementsSeam } from "../../assignments/gradeImprovements/session";
 import type { SharedStudent, StudentSupportSeam, SupportGrant } from "../../supportAccess/types";
 import { renderClassesSurface } from "./classes";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 const settle = async (): Promise<void> => {
   for (let i = 0; i < 8; i += 1) await new Promise((r) => setTimeout(r, 0));
@@ -233,7 +235,7 @@ describe("Shared students (support educator)", () => {
     q(mount, "[data-testid=classes-shared-student]")!.click();
     await settle();
     const back = q(mount, "[data-testid=student-detail-back]")!;
-    expect(back.textContent).toBe("Back to Classes");
+    expect(back.textContent).toBe("Back to Shared students");
     back.click();
     await settle();
     expect(q(mount, "[data-testid=student-detail]")).toBeNull();
@@ -274,7 +276,7 @@ describe("Owner Student Detail", () => {
   });
 });
 
-describe("Class settings > Support access (owner)", () => {
+describe("Class settings > Share Student Progress (owner)", () => {
   async function openSettings(h: ReturnType<typeof harness>) {
     const mount = await mountSurface(h);
     q(mount, `[data-testid=class-card-settings-${OWN_CLASS}]`)!.click();
@@ -286,14 +288,17 @@ describe("Class settings > Support access (owner)", () => {
     const h = harness();
     const section = await openSettings(h);
     const rows = qa(section, "[data-testid=classes-settings-support-grant-row]");
-    expect(rows.map((r) => r.textContent)).toEqual(["Ben Baker: Mr. Para (para@school.org)Remove"]);
+    expect(rows.map((r) => r.textContent)).toEqual(["Ben Baker - shared with Mr. Para (para@school.org)Remove"]);
     q(rows[0]!, "[data-testid=classes-settings-support-revoke]")!.click();
     await settle();
     expect(h.revokeCalls).toEqual(["g1"]);
     expect(q(section, "[data-testid=classes-settings-support-empty]")).not.toBeNull();
-    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe(
-      "Removed Mr. Para's access to Ben Baker.",
-    );
+    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe("");
+    const toast = q(section, "[data-testid=classes-settings-support-toast]")!;
+    expect(toast.hidden).toBe(false);
+    expect(toast.classList.contains("shell-curriculum-success-visible")).toBe(true);
+    expect(toast.getAttribute("role")).toBe("status");
+    expect(toast.textContent).toBe("Access removed for Mr. Para.");
     // Revoking never closes or saves Class settings.
     expect(q(document.body, "[data-testid=classes-settings-dialog]")).not.toBeNull();
   });
@@ -309,9 +314,10 @@ describe("Class settings > Support access (owner)", () => {
     email.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
     await settle();
     expect(h.grantCalls).toEqual([{ classId: OWN_CLASS, studentId: "s-cara", granteeEmail: "sped@school.org" }]);
-    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe(
-      "Ms. Sped can now view Cara Cole's results.",
+    expect(q(section, "[data-testid=classes-settings-support-toast]")!.textContent).toBe(
+      "Access shared with Ms. Sped.",
     );
+    expect(qa(section, "[data-testid=classes-settings-support-toast]")).toHaveLength(1);
     expect(qa(section, "[data-testid=classes-settings-support-grant-row]")).toHaveLength(2);
     expect(q(document.body, "[data-testid=classes-settings-dialog]")).not.toBeNull();
   });
@@ -332,5 +338,229 @@ describe("Class settings > Support access (owner)", () => {
     expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe(
       "No other active teacher at your school uses that email. Check the address and try again.",
     );
+    expect(q(section, "[data-testid=classes-settings-support-toast]")!.hidden).toBe(true);
+  });
+
+  it("uses the clearer sharing copy and a subdued Remove action", async () => {
+    const h = harness();
+    const section = await openSettings(h);
+    expect(q(section, ".shell-classes-settings-section-label")!.textContent).toBe("Share Student Progress");
+    expect(q(section, ".shell-classes-settings-support-help")!.textContent).toBe(
+      "Give another teacher at your school read-only access to a student's assignments and assessment results. You can remove access at any time.",
+    );
+    const labels = qa(section, "label").map((l) => l.firstChild!.textContent);
+    expect(labels).toEqual(["Student", "Teacher email"]);
+    expect(q(section, "[data-testid=classes-settings-support-grant]")!.textContent).toBe("Share Access");
+    const revoke = q(section, "[data-testid=classes-settings-support-revoke]")!;
+    expect(revoke.className).toBe("shell-classes-settings-support-revoke");
+    const css = readFileSync(join(__dirname, "../../../index.html"), "utf8");
+    const rule = css.match(/\.shell-classes-settings-support-revoke \{[^}]*\}/)![0];
+    expect(rule).toContain("color: var(--tw-callout-error-ink);");
+    expect(rule).not.toContain("--tw-primary");
+  });
+
+  it("shows grant success only after the server confirms, never on failure", async () => {
+    const h = harness();
+    let settleGrant!: (ok: boolean) => void;
+    const base = h.deps.studentSupport!;
+    (h.deps as { studentSupport: StudentSupportSeam }).studentSupport = {
+      ...base,
+      grant: (input) =>
+        new Promise((resolve, reject) => {
+          settleGrant = (ok) => (ok ? resolve(base.grant(input)) : reject(new Error("internal")));
+        }),
+    };
+    const section = await openSettings(h);
+    const toast = q(section, "[data-testid=classes-settings-support-toast]")!;
+    (q(section, "[data-testid=classes-settings-support-student]") as HTMLSelectElement).value = "s-cara";
+    (q(section, "[data-testid=classes-settings-support-email]") as HTMLInputElement).value = "sped@school.org";
+    q(section, "[data-testid=classes-settings-support-grant]")!.click();
+    await settle();
+    expect(toast.hidden).toBe(true);
+    expect(toast.textContent).toBe("");
+    settleGrant(false);
+    await settle();
+    expect(toast.hidden).toBe(true);
+    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe(
+      "We couldn't share access. Please try again.",
+    );
+    q(section, "[data-testid=classes-settings-support-grant]")!.click();
+    await settle();
+    expect(toast.hidden).toBe(true);
+    settleGrant(true);
+    await settle();
+    expect(toast.hidden).toBe(false);
+    expect(toast.textContent).toBe("Access shared with Ms. Sped.");
+    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe("");
+  });
+
+  it("shows revoke success only after the server confirms, never on failure", async () => {
+    const h = harness();
+    let settleRevoke!: (ok: boolean) => void;
+    (h.deps as { studentSupport: StudentSupportSeam }).studentSupport = {
+      ...h.deps.studentSupport!,
+      revoke: () =>
+        new Promise<void>((resolve, reject) => {
+          settleRevoke = (ok) => (ok ? resolve() : reject(new Error("internal")));
+        }),
+    };
+    const section = await openSettings(h);
+    const toast = q(section, "[data-testid=classes-settings-support-toast]")!;
+    q(section, "[data-testid=classes-settings-support-revoke]")!.click();
+    await settle();
+    expect(toast.hidden).toBe(true);
+    settleRevoke(false);
+    await settle();
+    expect(toast.hidden).toBe(true);
+    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe(
+      "We couldn't remove access. Please try again.",
+    );
+    expect(qa(section, "[data-testid=classes-settings-support-grant-row]")).toHaveLength(1);
+    q(section, "[data-testid=classes-settings-support-revoke]")!.click();
+    await settle();
+    settleRevoke(true);
+    await settle();
+    expect(toast.hidden).toBe(false);
+    expect(toast.textContent).toBe("Access removed for Mr. Para.");
+    expect(qa(section, "[data-testid=classes-settings-support-grant-row]")).toHaveLength(0);
+  });
+});
+
+describe("Classes landing with and without shared students", () => {
+  it("a teacher with no classes but shared students sees Shared students, not the add-a-class prompt", async () => {
+    const h = harness();
+    (h.deps as { listClasses: () => Promise<ReadonlyArray<ClassSummary>> }).listClasses = async () => [];
+    const mount = await mountSurface(h);
+    expect(q(mount, "[data-testid=classes-shared-students]")).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-empty]")).toBeNull();
+    expect(q(mount, "[data-testid=classes-go-to-settings]")).toBeNull();
+    expect(mount.textContent).not.toContain("No classes yet.");
+    expect(q(mount, "#surface-headline")!.textContent).toBe("Classes");
+  });
+
+  it("a teacher with classes and shared students sees both", async () => {
+    const h = harness();
+    const mount = await mountSurface(h);
+    expect(q(mount, `[data-testid=class-card-${OWN_CLASS}]`)).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-shared-students]")).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-status]")!.textContent).toBe("1 class");
+  });
+
+  function deferredShared(h: ReturnType<typeof harness>, ownedClasses: ReadonlyArray<ClassSummary>) {
+    let resolve!: (students: SharedStudent[]) => void;
+    let reject!: (err: Error) => void;
+    (h.deps as { listClasses: () => Promise<ReadonlyArray<ClassSummary>> }).listClasses = async () => ownedClasses;
+    (h.deps as { studentSupport: StudentSupportSeam }).studentSupport = {
+      ...h.deps.studentSupport!,
+      listShared: () =>
+        new Promise((res, rej) => {
+          resolve = res;
+          reject = rej;
+        }),
+    };
+    return { resolve: (s: SharedStudent[]) => resolve(s), reject: (e: Error) => reject(e) };
+  }
+
+  it("a zero-class teacher never sees the add-a-class prompt while shared students load", async () => {
+    const h = harness();
+    const shared = deferredShared(h, []);
+    const mount = await mountSurface(h);
+    expect(q(mount, "[data-testid=classes-status]")!.textContent).toBe("Loading classes");
+    expect(q(mount, "[data-testid=classes-empty]")).toBeNull();
+    expect(mount.textContent).not.toContain("No classes yet.");
+    shared.resolve([SHARED]);
+    await settle();
+    expect(q(mount, "[data-testid=classes-shared-students]")).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-empty]")).toBeNull();
+    expect(mount.textContent).not.toContain("No classes yet.");
+    expect(mount.textContent).not.toContain("Loading classes");
+  });
+
+  it("a zero-class teacher sees the empty state only once the shared read confirms none", async () => {
+    const h = harness();
+    const shared = deferredShared(h, []);
+    const mount = await mountSurface(h);
+    expect(q(mount, "[data-testid=classes-empty]")).toBeNull();
+    shared.resolve([]);
+    await settle();
+    expect(q(mount, "[data-testid=classes-status]")!.textContent).toBe("No classes yet.");
+    expect(q(mount, "[data-testid=classes-empty]")).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-shared-students]")).toBeNull();
+  });
+
+  it("a failed shared read leaves loading and shows the owned-class empty state without a shared section", async () => {
+    const h = harness();
+    const shared = deferredShared(h, []);
+    const mount = await mountSurface(h);
+    shared.reject(new Error("unavailable"));
+    await settle();
+    expect(mount.textContent).not.toContain("Loading classes");
+    expect(q(mount, "[data-testid=classes-status]")!.textContent).toBe("No classes yet.");
+    expect(q(mount, "[data-testid=classes-shared-students]")).toBeNull();
+  });
+
+  it("a teacher with classes sees them immediately, and shared students once loaded", async () => {
+    const h = harness();
+    const shared = deferredShared(h, ownClasses);
+    const mount = await mountSurface(h);
+    expect(q(mount, `[data-testid=class-card-${OWN_CLASS}]`)).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-status]")!.textContent).toBe("1 class");
+    shared.resolve([SHARED]);
+    await settle();
+    expect(q(mount, `[data-testid=class-card-${OWN_CLASS}]`)).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-shared-students]")).not.toBeNull();
+  });
+
+  it("a teacher with classes and nothing shared sees only the classes", async () => {
+    const h = harness();
+    const shared = deferredShared(h, ownClasses);
+    const mount = await mountSurface(h);
+    shared.resolve([]);
+    await settle();
+    expect(q(mount, `[data-testid=class-card-${OWN_CLASS}]`)).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-shared-students]")).toBeNull();
+  });
+
+  it("a teacher with neither keeps the existing zero-class empty state", async () => {
+    const h = harness();
+    (h.deps as { listClasses: () => Promise<ReadonlyArray<ClassSummary>> }).listClasses = async () => [];
+    (h.deps as { studentSupport: StudentSupportSeam }).studentSupport = {
+      ...h.deps.studentSupport!,
+      listShared: async () => [],
+    };
+    const mount = await mountSurface(h);
+    expect(q(mount, "[data-testid=classes-shared-students]")).toBeNull();
+    expect(q(mount, "[data-testid=classes-status]")!.textContent).toBe("No classes yet.");
+    expect(q(mount, "[data-testid=classes-empty]")!.textContent).toBe("Add or import a class in Settings.");
+  });
+});
+
+describe("Not started assignment cards", () => {
+  it("keep the Not started status, invent no metrics, and use the neutral style for owners and grantees", async () => {
+    const h = harness();
+    const expectedNotStarted: AssessmentStudentAssignmentsForClassCallable = async (input) => ({
+      classId: input.classId,
+      studentId: input.studentId,
+      assignments: [{ assignmentId: "a9", hasLiveSession: false }],
+    });
+    (h.deps as { loadExpectedAssignments: () => AssessmentStudentAssignmentsForClassCallable }).loadExpectedAssignments =
+      () => expectedNotStarted;
+    const mount = await mountSurface(h);
+    q(mount, "[data-testid=classes-shared-student]")!.click();
+    await settle();
+    const card = q(mount, '[data-testid=student-detail-assignments] > li[data-assignment-id="a9"]')!;
+    expect(card.getAttribute("data-assignment-status")).toBe("not-started");
+    expect(card.classList.contains("shell-student-detail-assignment-not-started")).toBe(true);
+    expect(q(card, ".shell-student-detail-assignment-status")!.textContent).toBe("Not started");
+    expect(q(card, "[data-testid=student-detail-metrics]")).toBeNull();
+    expect(q(card, "[data-testid=student-detail-review-toggle]")).toBeNull();
+
+    const css = readFileSync(join(__dirname, "../../../index.html"), "utf8");
+    const box = css.match(/\.shell-student-detail-assignment-not-started \{[^}]*\}/)![0];
+    expect(box).toContain("background: var(--tw-surface-alt);");
+    expect(box).toContain("border-color: var(--tw-hairline);");
+    const label = css.match(/\.shell-student-detail-assignment-not-started \.shell-student-detail-assignment-status \{[^}]*\}/)![0];
+    expect(label).toContain("color: var(--tw-ink-muted);");
+    expect(`${box}${label}`).not.toMatch(/220, 61, 61|153, 30, 30|#a33a3a/);
   });
 });

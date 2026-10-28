@@ -5,7 +5,7 @@
  * Opening a student from "Shared students" reuses the existing Student
  * Detail history entry; browser Back returns to the Classes list with the
  * Shared students section, Forward re-opens the same read-only Student
- * Detail, and the in-app "Back to Classes" replaces the entry instead of
+ * Detail, and the in-app "Back to Shared students" replaces the entry instead of
  * pushing. Exercised through the real shell with real history.back() /
  * forward(), like shell.navigation-history.test.ts.
  */
@@ -133,7 +133,7 @@ describe("Browser Back/Forward: Shared students -> read-only Student Detail", ()
     expect(q(mount, "[data-testid=student-detail-grade-update-undo-a1]")).toBeNull();
   });
 
-  test("the in-app Back to Classes replaces the entry rather than pushing", async () => {
+  test("the in-app Back to Shared students replaces the entry rather than pushing", async () => {
     const mount = await mountWithSharedList();
     q(mount, "[data-testid=classes-shared-student]")!.click();
     await settle();

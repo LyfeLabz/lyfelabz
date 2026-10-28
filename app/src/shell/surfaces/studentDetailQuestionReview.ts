@@ -202,6 +202,32 @@ function renderReview(
   host.appendChild(list);
 }
 
+// "Show incorrect only": a presentation filter over the review already
+// rendered for the selected attempt. It hides correct questions (keeping the
+// original numbering, answers and explanations of the rest) and never reads
+// or scores anything. "Incorrect" means the same set as "To review": any
+// question not answered correctly, including one left unanswered.
+function applyIncorrectOnly(doc: Document, host: HTMLElement, on: boolean): void {
+  host.querySelector("[data-testid=student-detail-review-all-correct]")?.remove();
+  const items = Array.from(
+    host.querySelectorAll<HTMLElement>(".shell-student-detail-review-item"),
+  );
+  if (items.length === 0) return;
+  let shown = 0;
+  for (const li of items) {
+    const hide = on && li.getAttribute("data-status") === "correct";
+    li.hidden = hide;
+    if (!hide) shown += 1;
+  }
+  if (on && shown === 0) {
+    const empty = doc.createElement("p");
+    empty.className = "shell-student-detail-thinking-muted";
+    empty.setAttribute("data-testid", "student-detail-review-all-correct");
+    empty.textContent = "Every question in this attempt was answered correctly.";
+    host.querySelector("[data-testid=student-detail-review-list]")?.before(empty);
+  }
+}
+
 // Appends the "Review questions" disclosure to a Student Detail card. Attempts
 // are listed oldest first with the same "Attempt N" numbering Show Your
 // Thinking uses (position in the card's chronological order); the latest
@@ -250,6 +276,20 @@ export function appendQuestionReview(
   body.className = "shell-student-detail-review-body";
   body.setAttribute("aria-live", "polite");
 
+  // One filter per card, default off. It stays as the teacher set it when
+  // they switch attempts and is re-applied to each newly rendered attempt,
+  // so the checkbox always describes what is shown.
+  const filterId = `${panelId}-incorrect-only`;
+  const filterLabel = doc.createElement("label");
+  filterLabel.className = "shell-student-detail-review-filter";
+  filterLabel.htmlFor = filterId;
+  const filter = doc.createElement("input");
+  filter.type = "checkbox";
+  filter.id = filterId;
+  filter.setAttribute("data-testid", "student-detail-review-incorrect-only");
+  filterLabel.append(filter, doc.createTextNode(" Show incorrect only"));
+  filter.addEventListener("change", () => applyIncorrectOnly(doc, body, filter.checked));
+
   const details = new Map<string, Promise<TeacherVisibleAttempt>>();
   const contents = new Map<string, Promise<AssessmentRevisionContent | null>>();
   let token = 0;
@@ -291,6 +331,7 @@ export function appendQuestionReview(
           if (mine !== token || !panel.isConnected) return;
           body.replaceChildren();
           renderReview(doc, body, review);
+          applyIncorrectOnly(doc, body, filter.checked);
         },
         () => {
           if (mine !== token || !panel.isConnected) return;
@@ -336,6 +377,7 @@ export function appendQuestionReview(
       only.textContent = label(0);
       panel.appendChild(only);
     }
+    panel.appendChild(filterLabel);
     panel.appendChild(body);
     show(latest);
   };

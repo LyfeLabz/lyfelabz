@@ -5379,8 +5379,22 @@
   /* Restrained, calm status tints mirroring the completed-assignment-card
      precedent (.shell-active-assignment-card-complete): a pale tint fill
      plus a matching-hue border, never a saturated banner or badge. Amber
-     for genuinely in-progress work; a deliberately lower-alpha, calmer red
-     for not-started so it reads as informational, not an error. */
+     for genuinely in-progress work. Not started is neutral (the plain
+     card surface and hairline, muted ink): not attempting yet is not an
+     error, and red stays reserved for incorrect answers and failures. */
+  /* Review questions > "Show incorrect only" (presentation filter). */
+  .shell-student-detail-review-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0.4rem 0;
+    font-size: 0.88rem;
+    cursor: pointer;
+    min-height: 28px;
+  }
+  @media (pointer: coarse) {
+    .shell-student-detail-review-filter { min-height: 44px; }
+  }
   .shell-student-detail-assignment-in-progress {
     background: rgba(255, 176, 32, 0.08);
     border-color: rgba(153, 105, 4, 0.3);
@@ -5389,11 +5403,11 @@
     color: #8a5a04;
   }
   .shell-student-detail-assignment-not-started {
-    background: rgba(220, 61, 61, 0.05);
-    border-color: rgba(153, 30, 30, 0.22);
+    background: var(--tw-surface-alt);
+    border-color: var(--tw-hairline);
   }
   .shell-student-detail-assignment-not-started .shell-student-detail-assignment-status {
-    color: #a33a3a;
+    color: var(--tw-ink-muted);
   }
   /* Student Detail metric boxes: a narrow mirror of the whole-class
      `.shell-assignment-summary-grid` / `-metric` / `-metric-label` /
@@ -5895,11 +5909,14 @@
     font-weight: 600;
     background: transparent;
     border: none;
-    color: var(--tw-primary-strong);
+    /* Removal reuses the calm destructive ink of .shell-btn-danger, never
+       the affirmative green of Share Access. */
+    color: var(--tw-callout-error-ink);
     cursor: pointer;
     min-height: 28px;
     padding: 0 0.2rem;
   }
+  .shell-classes-settings-support-revoke:hover { text-decoration: underline; }
   .shell-classes-settings-support-revoke:focus-visible {
     outline: none;
     box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));

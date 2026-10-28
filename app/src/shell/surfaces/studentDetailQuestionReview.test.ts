@@ -252,6 +252,87 @@ describe("appendQuestionReview", () => {
     expect(card.querySelector("[data-testid=student-detail-review-summary]")!.textContent).toBe("1 of 3 correct");
   });
 
+  describe("Show incorrect only", () => {
+    const allCorrect = (): TeacherVisibleAttempt =>
+      detail({
+        attemptId: "att-2",
+        attemptNumber: 2,
+        itemResults: detail().itemResults.map((r) => ({ ...r, isCorrect: true, studentResponse: r.correctOptionId })),
+      });
+    const visible = (card: HTMLElement): string[] =>
+      Array.from(card.querySelectorAll<HTMLElement>(".shell-student-detail-review-item"))
+        .filter((li) => !li.hidden)
+        .map((li) => li.getAttribute("data-testid")!);
+    const filterOf = (card: HTMLElement) =>
+      card.querySelector<HTMLInputElement>("[data-testid=student-detail-review-incorrect-only]")!;
+    const setFilter = (card: HTMLElement, on: boolean): void => {
+      const box = filterOf(card);
+      box.checked = on;
+      box.dispatchEvent(new Event("change"));
+    };
+
+    it("is a labelled checkbox, off by default, showing every question", async () => {
+      const { card } = setup({ "att-1": detail(), "att-2": detail({ attemptId: "att-2" }) });
+      card.querySelector<HTMLButtonElement>("[data-testid=student-detail-review-toggle]")!.click();
+      await flush();
+      const box = filterOf(card);
+      expect(box.type).toBe("checkbox");
+      expect(box.checked).toBe(false);
+      expect(card.querySelector(`label[for="${box.id}"]`)!.textContent).toBe(" Show incorrect only");
+      expect(visible(card)).toEqual([
+        "student-detail-review-item-1",
+        "student-detail-review-item-2",
+        "student-detail-review-item-3",
+      ]);
+    });
+
+    it("hides correct questions with original numbering and answers intact, and restores all when off", async () => {
+      const { card, calls } = setup({ "att-1": detail(), "att-2": detail({ attemptId: "att-2" }) });
+      card.querySelector<HTMLButtonElement>("[data-testid=student-detail-review-toggle]")!.click();
+      await flush();
+      setFilter(card, true);
+      expect(visible(card)).toEqual(["student-detail-review-item-1", "student-detail-review-item-3"]);
+      const q1 = card.querySelector<HTMLElement>("[data-testid=student-detail-review-item-1]")!;
+      expect(q1.querySelector("[data-testid=student-detail-review-status-1]")!.textContent).toBe("Incorrect");
+      expect(q1.querySelector("[data-testid=student-detail-review-student-answer]")!.textContent).toBe("A. Inner core");
+      expect(q1.querySelector("[data-testid=student-detail-review-correct-answer]")!.textContent).toBe("B. Outer core");
+      expect(q1.querySelector("[data-testid=student-detail-review-explanation]")!.textContent).toBe("The outer core is liquid iron.");
+      expect(card.querySelector("[data-testid=student-detail-review-summary]")!.textContent).toBe("1 of 3 correct");
+      setFilter(card, false);
+      expect(visible(card)).toHaveLength(3);
+      // A presentation filter only: no further reads.
+      expect(calls).toEqual(["att-2"]);
+    });
+
+    it("stays on across attempt switches and never shows the previous attempt's questions", async () => {
+      const { card } = setup({ "att-1": detail(), "att-2": allCorrect() });
+      card.querySelector<HTMLButtonElement>("[data-testid=student-detail-review-toggle]")!.click();
+      await flush();
+      setFilter(card, true);
+      // Latest attempt is all correct: a positive empty state, no items shown.
+      expect(visible(card)).toEqual([]);
+      expect(card.querySelector("[data-testid=student-detail-review-all-correct]")!.textContent).toBe(
+        "Every question in this attempt was answered correctly.",
+      );
+      const select = card.querySelector<HTMLSelectElement>("[data-testid=student-detail-review-select]")!;
+      select.value = "0";
+      select.dispatchEvent(new Event("change"));
+      await flush();
+      expect(filterOf(card).checked).toBe(true);
+      expect(card.querySelector("[data-testid=student-detail-review-all-correct]")).toBeNull();
+      expect(visible(card)).toEqual(["student-detail-review-item-1", "student-detail-review-item-3"]);
+      expect(card.querySelector("[data-testid=student-detail-review-summary]")!.textContent).toBe("1 of 3 correct");
+      select.value = "1";
+      select.dispatchEvent(new Event("change"));
+      await flush();
+      expect(visible(card)).toEqual([]);
+      expect(card.querySelectorAll("[data-testid=student-detail-review-all-correct]")).toHaveLength(1);
+      setFilter(card, false);
+      expect(card.querySelector("[data-testid=student-detail-review-all-correct]")).toBeNull();
+      expect(visible(card)).toHaveLength(3);
+    });
+  });
+
   it("renders nothing without attempts or without the attempt reader", () => {
     const card = document.createElement("li");
     appendQuestionReview(document, card, [], async () => detail(), null, String);

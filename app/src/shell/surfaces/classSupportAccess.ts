@@ -8,10 +8,14 @@ import {
 
 // Student Support Access (PDR-032, STUDENT_SUPPORT_ACCESS.md section 7).
 //
-// 1. `renderSupportAccessSection`: the class owner's "Support access" section
+// 1. `renderSupportAccessSection`: the class owner's "Share Student Progress" section
 //    inside Class settings. Choose a student, enter a support educator's
 //    school email, grant; see active grants; revoke. Every action is an
 //    independent, non-submit control: it never triggers the settings Save.
+//    A confirmed grant or revoke is announced through the existing fixed
+//    success toast (`.shell-curriculum-success-visible`, the Assign / My
+//    Units confirmation), so it is visible without scrolling the modal.
+//    Validation and failures stay on the inline status line.
 // 2. `renderSharedStudentsSection`: the support educator's "Shared students"
 //    list on the Classes surface. Choosing a student opens the existing
 //    Student Detail in read-only mode (wired by classes.ts).
@@ -47,19 +51,19 @@ export function renderSupportAccessSection(
 
   const sectionLabel = doc.createElement("span");
   sectionLabel.className = "shell-classes-settings-section-label";
-  sectionLabel.textContent = "Support access";
+  sectionLabel.textContent = "Share Student Progress";
   section.appendChild(sectionLabel);
 
   const help = doc.createElement("p");
   help.className = "shell-classes-settings-support-help";
   help.textContent =
-    "Let another teacher at your school view one student's results, read-only. You can remove access at any time.";
+    "Give another teacher at your school read-only access to a student's assignments and assessment results. You can remove access at any time.";
   section.appendChild(help);
 
   const list = doc.createElement("ul");
   list.className = "shell-classes-settings-support-list";
   list.setAttribute("data-testid", "classes-settings-support-list");
-  list.setAttribute("aria-label", "Teachers with support access");
+  list.setAttribute("aria-label", "Students shared with other teachers");
   section.appendChild(list);
 
   const studentLabel = doc.createElement("label");
@@ -75,7 +79,7 @@ export function renderSupportAccessSection(
   section.appendChild(studentLabel);
 
   const emailLabel = doc.createElement("label");
-  emailLabel.textContent = "Teacher's school email";
+  emailLabel.textContent = "Teacher email";
   const emailInput = doc.createElement("input");
   emailInput.type = "email";
   emailInput.autocomplete = "off";
@@ -88,7 +92,7 @@ export function renderSupportAccessSection(
   grantButton.type = "button";
   grantButton.className = "shell-class-rostersync-button";
   grantButton.setAttribute("data-testid", "classes-settings-support-grant");
-  grantButton.textContent = "Share access";
+  grantButton.textContent = "Share Access";
   section.appendChild(grantButton);
 
   const status = doc.createElement("p");
@@ -97,6 +101,30 @@ export function renderSupportAccessSection(
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
   section.appendChild(status);
+
+  // Success toast: shown only after the server confirms, then self-dismisses.
+  const toast = doc.createElement("p");
+  toast.className = "shell-curriculum-success";
+  toast.setAttribute("data-testid", "classes-settings-support-toast");
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+  toast.hidden = true;
+  section.appendChild(toast);
+  let toastTimer: number | undefined;
+  const showToast = (message: string): void => {
+    const win = doc.defaultView ?? window;
+    if (toastTimer !== undefined) win.clearTimeout(toastTimer);
+    status.textContent = "";
+    toast.textContent = message;
+    toast.hidden = false;
+    toast.classList.add("shell-curriculum-success-visible");
+    toastTimer = win.setTimeout(() => {
+      toast.hidden = true;
+      toast.textContent = "";
+      toast.classList.remove("shell-curriculum-success-visible");
+      toastTimer = undefined;
+    }, 4000);
+  };
 
   let grants: ReadonlyArray<SupportGrant> = [];
   let busy = false;
@@ -107,7 +135,7 @@ export function renderSupportAccessSection(
       const empty = doc.createElement("li");
       empty.className = "shell-classes-settings-support-empty";
       empty.setAttribute("data-testid", "classes-settings-support-empty");
-      empty.textContent = "No one else has access to students in this class.";
+      empty.textContent = "You haven't shared any students in this class.";
       list.appendChild(empty);
       return;
     }
@@ -118,7 +146,7 @@ export function renderSupportAccessSection(
       li.setAttribute("data-grant-id", grant.grantId);
       const text = doc.createElement("span");
       const who = grant.granteeEmail === null ? grant.granteeDisplayName : `${grant.granteeDisplayName} (${grant.granteeEmail})`;
-      text.textContent = `${grant.studentDisplayName}: ${who}`;
+      text.textContent = `${grant.studentDisplayName} - shared with ${who}`;
       li.appendChild(text);
       const revoke = doc.createElement("button");
       revoke.type = "button";
@@ -135,7 +163,7 @@ export function renderSupportAccessSection(
           () => {
             grants = grants.filter((g) => g.grantId !== grant.grantId);
             renderGrants();
-            status.textContent = `Removed ${grant.granteeDisplayName}'s access to ${grant.studentDisplayName}.`;
+            showToast(`Access removed for ${grant.granteeDisplayName}.`);
           },
           () => {
             revoke.disabled = false;
@@ -173,7 +201,7 @@ export function renderSupportAccessSection(
         );
         renderGrants();
         emailInput.value = "";
-        status.textContent = `${grant.granteeDisplayName} can now view ${grant.studentDisplayName}'s results.`;
+        showToast(`Access shared with ${grant.granteeDisplayName}.`);
       },
       (err: unknown) => {
         status.textContent = grantErrorMessage(err);
@@ -220,7 +248,7 @@ export function renderSupportAccessSection(
       renderGrants();
     },
     () => {
-      status.textContent = "We couldn't load support access. Close and reopen to try again.";
+      status.textContent = "We couldn't load shared students. Close and reopen to try again.";
     },
   );
 
