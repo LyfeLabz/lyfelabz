@@ -1,0 +1,63 @@
+{
+  "name": "projects/lyfelabz-staging/locations/us-central1/functions/optionBDeploymentProbe",
+  "buildConfig": {
+    "build": "projects/293337283840/locations/us-central1/builds/b582e6c6-7b0d-4805-bc9a-3cdfcc9630c9",
+    "runtime": "nodejs22",
+    "entryPoint": "optionBDeploymentProbe",
+    "source": {
+      "storageSource": {
+        "bucket": "gcf-v2-sources-293337283840-us-central1",
+        "object": "optionBDeploymentProbe/function-source.zip",
+        "generation": "1793060245557807"
+      }
+    },
+    "environmentVariables": {
+      "GOOGLE_NODE_RUN_SCRIPTS": ""
+    },
+    "dockerRepository": "projects/lyfelabz-staging/locations/us-central1/repositories/gcf-artifacts",
+    "sourceProvenance": {
+      "resolvedStorageSource": {
+        "bucket": "gcf-v2-sources-293337283840-us-central1",
+        "object": "optionBDeploymentProbe/function-source.zip",
+        "generation": "1793060245557807"
+      }
+    },
+    "dockerRegistry": "ARTIFACT_REGISTRY",
+    "serviceAccount": "projects/lyfelabz-staging/serviceAccounts/293337283840-compute@developer.gserviceaccount.com",
+    "automaticUpdatePolicy": {}
+  },
+  "serviceConfig": {
+    "service": "projects/lyfelabz-staging/locations/us-central1/services/optionbdeploymentprobe",
+    "timeoutSeconds": 60,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"lyfelabz-staging\",\"storageBucket\":\"lyfelabz-staging.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "lyfelabz-staging",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/lyfelabz-staging/locations/us-central1/services/optionBDeploymentProbe",
+      "FUNCTION_TARGET": "optionBDeploymentProbe",
+      "LOG_EXECUTION_ID": "true"
+    },
+    "maxInstanceCount": 20,
+    "ingressSettings": "ALLOW_ALL",
+    "uri": "https://optionbdeploymentprobe-36vxufx5ra-uc.a.run.app",
+    "serviceAccountEmail": "option-b-deployment-probe@lyfelabz-staging.iam.gserviceaccount.com",
+    "availableMemory": "512Mi",
+    "allTrafficOnLatestRevision": true,
+    "revision": "optionbdeploymentprobe-00001-bat",
+    "maxInstanceRequestConcurrency": 80,
+    "availableCpu": "1"
+  },
+  "state": "ACTIVE",
+  "updateTime": "2026-10-27T00:18:36.619574264Z",
+  "labels": {
+    "deployment-callable": "true",
+    "firebase-functions-codebase": "option-b-deployment-probe",
+    "firebase-functions-hash": "eb7b7f71a66b50076a82d2ea11e5cb9275dab40b",
+    "experiment": "option-b-deployment-probe",
+    "experiment-variant": "baseline-a",
+    "deployment-tool": "cli-firebase"
+  },
+  "environment": "GEN_2",
+  "url": "https://us-central1-lyfelabz-staging.cloudfunctions.net/optionBDeploymentProbe",
+  "createTime": "2026-10-27T00:17:25.894046626Z",
+  "satisfiesPzi": true
+}

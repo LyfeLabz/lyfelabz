@@ -1,0 +1,74 @@
+{
+  "kind": "b6b4c-offline-rejection-fixtures-v1",
+  "authority": "none",
+  "provenance": "Historical B6b-3R2 A0 response bytes. A0 is rejected, not a positive acceptance fixture. No current provider-state claim.",
+  "fixtures": [
+    {
+      "file": "function.json",
+      "sha256": "7ea949bb431292b400650e5e2a10f35e6ffdd5a9b66622aa1aaaa6e227675f48",
+      "original": "/private/tmp/lyfelabz-b6b3r2-run-20261026/A0/function.body.json",
+      "kind": "unaltered-historical-provider-response-body",
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/lyfelabz-staging/locations/us-central1/functions/optionBDeploymentProbe",
+      "status": 200,
+      "requestedAt": "2026-10-27T00:19:03.883328+00:00",
+      "completedAt": "2026-10-27T00:19:04.319953+00:00"
+    },
+    {
+      "file": "service.json",
+      "sha256": "84777e9187721adc6fe81596b4f46ed8fcb2b5027a353cb3bda4e7adedbf47d6",
+      "original": "/private/tmp/lyfelabz-b6b3r2-run-20261026/A0/service.body.json",
+      "kind": "unaltered-historical-provider-response-body",
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/lyfelabz-staging/locations/us-central1/services/optionbdeploymentprobe",
+      "status": 200,
+      "requestedAt": "2026-10-27T00:19:04.320987+00:00",
+      "completedAt": "2026-10-27T00:19:04.745386+00:00"
+    },
+    {
+      "file": "revision.json",
+      "sha256": "f194327f4e0370a8c33744b659d03f1942e4eb1992b7aca6eb0a2d2e41f79bdb",
+      "original": "/private/tmp/lyfelabz-b6b3r2-run-20261026/A0/revision.body.json",
+      "kind": "unaltered-historical-provider-response-body",
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/lyfelabz-staging/locations/us-central1/services/optionbdeploymentprobe/revisions/optionbdeploymentprobe-00001-bat",
+      "status": 200,
+      "requestedAt": "2026-10-27T00:19:04.747781+00:00",
+      "completedAt": "2026-10-27T00:19:06.396701+00:00"
+    },
+    {
+      "file": "build.json",
+      "sha256": "31687b7a8c0a8b5b73d88e0d7175f8442d447487416416a416e204a4083b4047",
+      "original": "/private/tmp/lyfelabz-b6b3r2-run-20261026/A0/build.body.json",
+      "kind": "unaltered-historical-provider-response-body",
+      "method": "GET",
+      "url": "https://cloudbuild.googleapis.com/v1/projects/293337283840/locations/us-central1/builds/b582e6c6-7b0d-4805-bc9a-3cdfcc9630c9",
+      "status": 200,
+      "requestedAt": "2026-10-27T00:19:08.712868+00:00",
+      "completedAt": "2026-10-27T00:19:08.939429+00:00"
+    },
+    {
+      "file": "image.json",
+      "sha256": "737d834f19f03215a5298ed9a9ef67af596cf52cf22292d84e21ede89893b8a4",
+      "original": "/private/tmp/lyfelabz-b6b3r2-run-20261026/A0/image-exact.body.json",
+      "kind": "unaltered-historical-provider-response-body",
+      "method": "GET",
+      "url": "https://artifactregistry.googleapis.com/v1/projects/lyfelabz-staging/locations/us-central1/repositories/gcf-artifacts/dockerImages/lyfelabz--staging__us--central1__option_b_deployment_probe@sha256:5317d17196d094288cc35424655ee4a2cd7c4f96ec1f27d4658882fc50d05f0d",
+      "status": 200,
+      "requestedAt": "2026-10-27T00:20:07.775341+00:00",
+      "completedAt": "2026-10-27T00:20:08.290211+00:00"
+    }
+  ],
+  "canonicalPacket": "/private/tmp/lyfelabz-b6b2-probe-20261026",
+  "canonicalReadDependencies": {
+    "tools/checkpoint.cjs": "ab318ee52e1e2c5657326f81a5996525b431f2b8d958920f9326c9a7c8048f39",
+    "tools/test-isolation.sb": "b7e4660d78bf40eb12d28ac5a4e938d802adb5e4f2d55a335a436e05171b08f9",
+    "tests/isolation.test.cjs": "1f817985822ad76ba0e392c08f73a1385f1ca6635d7ad0b000dbd6e138b9f9d8",
+    "evidence/remediation-before.json": "d75090563b4e3ddddf9fff1709075a44935bc09edbdb379f48b2352a406dab64"
+  },
+  "node": {
+    "path": "/Users/breezy/.nvm/versions/node/v22.23.3/bin/node",
+    "sha256": "68f4d07ca49e0500cc135c7e0a445093e228e42e126ac22306d045f0a8c2636b"
+  },
+  "productionObserverSha256": "8b25119da2c6b42c5bfef0c2684b2c32e5c8b7be61363f49ba96d526c2eb3513"
+}

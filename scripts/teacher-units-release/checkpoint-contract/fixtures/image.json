@@ -1,0 +1,13 @@
+{
+  "name": "projects/lyfelabz-staging/locations/us-central1/repositories/gcf-artifacts/dockerImages/lyfelabz--staging__us--central1__option_b_deployment_probe@sha256:5317d17196d094288cc35424655ee4a2cd7c4f96ec1f27d4658882fc50d05f0d",
+  "uri": "us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe@sha256:5317d17196d094288cc35424655ee4a2cd7c4f96ec1f27d4658882fc50d05f0d",
+  "tags": [
+    "latest",
+    "version_1"
+  ],
+  "imageSizeBytes": "16891628",
+  "uploadTime": "2026-10-27T00:18:11.842111Z",
+  "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+  "buildTime": "1980-01-01T00:00:01Z",
+  "updateTime": "2026-10-27T00:18:12.199983Z"
+}

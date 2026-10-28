@@ -1,0 +1,119 @@
+{
+  "name": "projects/lyfelabz-staging/locations/us-central1/services/optionbdeploymentprobe/revisions/optionbdeploymentprobe-00001-bat",
+  "uid": "df262f35-b409-4c08-b35a-3846e871af46",
+  "generation": "1",
+  "labels": {
+    "firebase-functions-hash": "eb7b7f71a66b50076a82d2ea11e5cb9275dab40b",
+    "firebase-functions-codebase": "option-b-deployment-probe",
+    "experiment": "option-b-deployment-probe",
+    "deployment-callable": "true",
+    "experiment-variant": "baseline-a",
+    "goog-managed-by": "cloudfunctions",
+    "goog-cloudfunctions-runtime": "nodejs22"
+  },
+  "annotations": {
+    "cloudfunctions.googleapis.com/trigger-type": "HTTP_TRIGGER"
+  },
+  "createTime": "2026-10-27T00:18:26.651601Z",
+  "updateTime": "2026-10-27T00:18:26.981268Z",
+  "launchStage": "GA",
+  "service": "optionbdeploymentprobe",
+  "scaling": {
+    "maxInstanceCount": 20
+  },
+  "timeout": "60s",
+  "serviceAccount": "option-b-deployment-probe@lyfelabz-staging.iam.gserviceaccount.com",
+  "containers": [
+    {
+      "name": "worker",
+      "image": "us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe@sha256:5317d17196d094288cc35424655ee4a2cd7c4f96ec1f27d4658882fc50d05f0d",
+      "env": [
+        {
+          "name": "FIREBASE_CONFIG",
+          "value": "{\"projectId\":\"lyfelabz-staging\",\"storageBucket\":\"lyfelabz-staging.firebasestorage.app\"}"
+        },
+        {
+          "name": "GCLOUD_PROJECT",
+          "value": "lyfelabz-staging"
+        },
+        {
+          "name": "EVENTARC_CLOUD_EVENT_SOURCE",
+          "value": "projects/lyfelabz-staging/locations/us-central1/services/optionBDeploymentProbe"
+        },
+        {
+          "name": "FUNCTION_TARGET",
+          "value": "optionBDeploymentProbe"
+        },
+        {
+          "name": "LOG_EXECUTION_ID",
+          "value": "true"
+        }
+      ],
+      "resources": {
+        "limits": {
+          "cpu": "1",
+          "memory": "512Mi"
+        },
+        "cpuIdle": true,
+        "startupCpuBoost": true
+      },
+      "ports": [
+        {
+          "name": "http1",
+          "containerPort": 8080
+        }
+      ],
+      "startupProbe": {
+        "timeoutSeconds": 240,
+        "periodSeconds": 240,
+        "failureThreshold": 1,
+        "tcpSocket": {
+          "port": 8080
+        }
+      },
+      "baseImageUri": "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/nodejs22",
+      "buildInfo": {
+        "functionTarget": "optionBDeploymentProbe",
+        "sourceLocation": "gs://gcf-v2-sources-293337283840-us-central1/optionBDeploymentProbe/function-source.zip#1793060245557807"
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "type": "Ready",
+      "state": "CONDITION_SUCCEEDED",
+      "message": "Deploying revision succeeded in 8.34s.",
+      "lastTransitionTime": "2026-10-27T00:18:34.991111Z"
+    },
+    {
+      "type": "Active",
+      "state": "CONDITION_SUCCEEDED",
+      "lastTransitionTime": "2026-10-27T00:18:35.138892Z",
+      "severity": "INFO"
+    },
+    {
+      "type": "ResourcesAvailable",
+      "state": "CONDITION_SUCCEEDED",
+      "message": "Provisioning imported containers completed in 1.61s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+      "lastTransitionTime": "2026-10-27T00:18:31.497783Z"
+    },
+    {
+      "type": "ContainerReady",
+      "state": "CONDITION_SUCCEEDED",
+      "message": "Container image import completed in 2.4s.",
+      "lastTransitionTime": "2026-10-27T00:18:29.885333Z"
+    },
+    {
+      "type": "ContainerHealthy",
+      "state": "CONDITION_SUCCEEDED",
+      "message": "Containers became healthy in 2.98s.",
+      "lastTransitionTime": "2026-10-27T00:18:34.928181Z"
+    }
+  ],
+  "observedGeneration": "1",
+  "logUri": "https://console.cloud.google.com/logs/viewer?project=lyfelabz-staging&resource=cloud_run_revision/service_name/optionbdeploymentprobe/revision_name/optionbdeploymentprobe-00001-bat&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22optionbdeploymentprobe%22%0Aresource.labels.revision_name%3D%22optionbdeploymentprobe-00001-bat%22",
+  "maxInstanceRequestConcurrency": 80,
+  "creator": "service-293337283840@gcf-admin-robot.iam.gserviceaccount.com",
+  "client": "cli-firebase",
+  "etag": "\"CNLb_9YGEKDs89MD/cHJvamVjdHMvbHlmZWxhYnotc3RhZ2luZy9sb2NhdGlvbnMvdXMtY2VudHJhbDEvc2VydmljZXMvb3B0aW9uYmRlcGxveW1lbnRwcm9iZS9yZXZpc2lvbnMvb3B0aW9uYmRlcGxveW1lbnRwcm9iZS0wMDAwMS1iYXQ\""
+}

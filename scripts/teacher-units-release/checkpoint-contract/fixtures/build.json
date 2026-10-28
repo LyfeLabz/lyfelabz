@@ -1,0 +1,187 @@
+{
+  "id": "b582e6c6-7b0d-4805-bc9a-3cdfcc9630c9",
+  "status": "SUCCESS",
+  "createTime": "2026-10-27T00:17:26.275656883Z",
+  "startTime": "2026-10-27T00:17:27.082932790Z",
+  "finishTime": "2026-10-27T00:18:25.540713Z",
+  "results": {
+    "buildStepImages": [
+      "sha256:2a0b875d5b008f08d91f746137f35e7ce187be1ffc34730f61146364b5814a77",
+      "sha256:e3671fbd95cd80f573a30991ee873e22587e2927647b66cf724e6ef15d2e103c",
+      "sha256:e3671fbd95cd80f573a30991ee873e22587e2927647b66cf724e6ef15d2e103c"
+    ],
+    "buildStepOutputs": [
+      "",
+      "",
+      "eyJtZXRyaWNzIjp7ImMiOnsiMjYiOjIsIjQiOjF9fSwiZXJyb3IiOnsiYnVpbGRwYWNrSWQiOiIiLCJidWlsZHBhY2tWZXJzaW9uIjoiIiwiZXJyb3JUeXBlIjoiT0siLCJjYW5vbmljYWxDb2RlIjoiT0siLCJlcnJvcklkIjoiIiwiZXJyb3JNZXNzYWdlIjoiIn0sIm1ldGFkYXRhIjp7Im0iOnsiMTAiOiJjb2xkIiwiOCI6Im5wbSJ9fSwic3RhdHMiOlt7ImJ1aWxkcGFja0lkIjoiZ29vZ2xlLm5vZGVqcy5ydW50aW1lIiwiYnVpbGRwYWNrVmVyc2lvbiI6IjEuMC4wIiwidG90YWxEdXJhdGlvbk1zIjoyMTk4LCJ1c2VyRHVyYXRpb25NcyI6MH0seyJidWlsZHBhY2tJZCI6Imdvb2dsZS51dGlscy5hcmNoaXZlLXNvdXJjZSIsImJ1aWxkcGFja1ZlcnNpb24iOiIwLjAuMSIsInRvdGFsRHVyYXRpb25NcyI6MjQsInVzZXJEdXJhdGlvbk1zIjoyNH0seyJidWlsZHBhY2tJZCI6Imdvb2dsZS5ub2RlanMubnBtIiwiYnVpbGRwYWNrVmVyc2lvbiI6IjEuMS4xIiwidG90YWxEdXJhdGlvbk1zIjo1OTAyLCJ1c2VyRHVyYXRpb25NcyI6NTcwMH0seyJidWlsZHBhY2tJZCI6Imdvb2dsZS5ub2RlanMuZnVuY3Rpb25zLWZyYW1ld29yayIsImJ1aWxkcGFja1ZlcnNpb24iOiIwLjkuNCIsInRvdGFsRHVyYXRpb25NcyI6MjgwNiwidXNlckR1cmF0aW9uTXMiOjI2NDh9LHsiYnVpbGRwYWNrSWQiOiJnb29nbGUuY29uZmlnLmVudHJ5cG9pbnQiLCJidWlsZHBhY2tWZXJzaW9uIjoiMC45LjAiLCJ0b3RhbER1cmF0aW9uTXMiOjAsInVzZXJEdXJhdGlvbk1zIjowfSx7ImJ1aWxkcGFja0lkIjoiZ29vZ2xlLnV0aWxzLmxhYmVsLWltYWdlIiwiYnVpbGRwYWNrVmVyc2lvbiI6IjAuMC4yIiwidG90YWxEdXJhdGlvbk1zIjowLCJ1c2VyRHVyYXRpb25NcyI6MH1dLCJ3YXJuaW5ncyI6bnVsbCwiY3VzdG9tSW1hZ2UiOmZhbHNlfQ=="
+    ],
+    "buildStepResults": {
+      "fetch": {},
+      "pre-buildpack": {},
+      "build": {}
+    }
+  },
+  "steps": [
+    {
+      "name": "us-central1-docker.pkg.dev/serverless-runtimes/utilities/gcs-fetcher:base_20260522_18_04_RC00",
+      "args": [
+        "--type=ZipArchive",
+        "--location=gs://gcf-v2-sources-293337283840-us-central1/optionBDeploymentProbe/function-source.zip",
+        "--dest_dir=/workspace",
+        "--timeout_gcs=false"
+      ],
+      "id": "fetch",
+      "timing": {
+        "startTime": "2026-10-27T00:17:30.682861435Z",
+        "endTime": "2026-10-27T00:17:33.945613864Z"
+      },
+      "status": "SUCCESS",
+      "pullTiming": {
+        "startTime": "2026-10-27T00:17:30.682861435Z",
+        "endTime": "2026-10-27T00:17:33.082943231Z"
+      }
+    },
+    {
+      "name": "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20261022_RC00",
+      "env": [
+        "GOOGLE_RUNTIME=nodejs22",
+        "GOOGLE_LABEL_BUILDER_VERSION=nodejs_20261022_RC00",
+        "GOOGLE_LABEL_BUILDER_IMAGE=us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20261022_RC00",
+        "GOOGLE_LABEL_RUN_IMAGE=us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/scratch/nodejs22:nodejs22_20261022_22_23_4_RC01",
+        "GOOGLE_LABEL_SOURCE=gs://gcf-v2-sources-293337283840-us-central1/optionBDeploymentProbe/function-source.zip#1793060245557807",
+        "GOOGLE_USE_SERVERLESS_RUNTIMES_TARBALLS=true",
+        "GOOGLE_RUNTIME_IMAGE_REGION=us-central1",
+        "GOOGLE_RUNTIME_VERSION=22.23.4",
+        "X_GOOGLE_SKIP_RUNTIME_LAUNCH=true",
+        "GOOGLE_BUILD_ENV=prod",
+        "GOOGLE_BUILD_UNIVERSE=gdu",
+        "GOOGLE_TPC_TARBALL_PROJECT=",
+        "GOOGLE_TPC_HOSTNAME=",
+        "GOOGLE_FUNCTION_TARGET=optionBDeploymentProbe",
+        "GOOGLE_FUNCTION_SIGNATURE_TYPE=http",
+        "X_GOOGLE_TARGET_PLATFORM=gcf",
+        "GOOGLE_LABEL_BUILD_ID=b582e6c6-7b0d-4805-bc9a-3cdfcc9630c9",
+        "GOOGLE_LABEL_BASE_IMAGE=us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/nodejs22",
+        "GOOGLE_LABEL_FUNCTION_TARGET=optionBDeploymentProbe",
+        "X_GOOGLE_SET_NODE_HEAP_SIZE=true",
+        "GOOGLE_NODE_RUN_SCRIPTS="
+      ],
+      "args": [
+        "--phase=pre",
+        "--app_image_unique=us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe:version_1",
+        "--app_image_stable=us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe:latest",
+        "--cache_image_unique=us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe/cache:b582e6c6-7b0d-4805-bc9a-3cdfcc9630c9",
+        "--cache_image_stable=us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe/cache:latest",
+        "--env_var_names=BUILDER_OUTPUT,GOOGLE_RUNTIME,GOOGLE_LABEL_BUILDER_VERSION,GOOGLE_LABEL_BUILDER_IMAGE,GOOGLE_LABEL_RUN_IMAGE,GOOGLE_LABEL_SOURCE,GOOGLE_USE_SERVERLESS_RUNTIMES_TARBALLS,GOOGLE_RUNTIME_IMAGE_REGION,GOOGLE_RUNTIME_VERSION,X_GOOGLE_SKIP_RUNTIME_LAUNCH,GOOGLE_BUILD_ENV,GOOGLE_BUILD_UNIVERSE,GOOGLE_TPC_TARBALL_PROJECT,GOOGLE_TPC_HOSTNAME,GOOGLE_FUNCTION_TARGET,GOOGLE_FUNCTION_SIGNATURE_TYPE,X_GOOGLE_TARGET_PLATFORM,GOOGLE_LABEL_BUILD_ID,GOOGLE_LABEL_BASE_IMAGE,GOOGLE_LABEL_FUNCTION_TARGET,X_GOOGLE_SET_NODE_HEAP_SIZE,GOOGLE_NODE_RUN_SCRIPTS",
+        "--experimental_skip_retag_cache"
+      ],
+      "id": "pre-buildpack",
+      "entrypoint": "/bin/shim",
+      "timing": {
+        "startTime": "2026-10-27T00:17:33.945810968Z",
+        "endTime": "2026-10-27T00:17:54.542474163Z"
+      },
+      "status": "SUCCESS",
+      "pullTiming": {
+        "startTime": "2026-10-27T00:17:33.945810968Z",
+        "endTime": "2026-10-27T00:17:53.583657165Z"
+      }
+    },
+    {
+      "name": "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20261022_RC00",
+      "env": [
+        "CNB_RUN_IMAGE=us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/scratch/nodejs22:nodejs22_20261022_22_23_4_RC01"
+      ],
+      "args": [
+        "--tag=us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe:latest",
+        "us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe:version_1"
+      ],
+      "id": "build",
+      "entrypoint": "/cnb/lifecycle/creator",
+      "timing": {
+        "startTime": "2026-10-27T00:17:54.542660376Z",
+        "endTime": "2026-10-27T00:18:25.172293003Z"
+      },
+      "status": "SUCCESS",
+      "pullTiming": {
+        "startTime": "2026-10-27T00:17:54.542660376Z",
+        "endTime": "2026-10-27T00:17:54.545248508Z"
+      }
+    }
+  ],
+  "timeout": "1800s",
+  "projectId": "lyfelabz-staging",
+  "sourceProvenance": {},
+  "options": {
+    "logStreamingOption": "STREAM_OFF",
+    "logging": "CLOUD_LOGGING_ONLY",
+    "env": [
+      "CNB_APP_DIR=/workspace",
+      "CNB_ANALYZED_PATH=/layers/analyzed.toml",
+      "CNB_BUILDPACKS_DIR=/cnb/buildpacks",
+      "CNB_GROUP_PATH=/layers/group.toml",
+      "CNB_LAYERS_DIR=/layers",
+      "CNB_PLAN_PATH=/layers/plan.toml",
+      "CNB_PLATFORM_DIR=/platform",
+      "CNB_PLATFORM_API=0.11",
+      "CNB_NO_COLOR=true",
+      "CNB_USER_ID=33",
+      "CNB_GROUP_ID=33",
+      "CNB_CACHE_IMAGE=us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe/cache:latest",
+      "CNB_PREVIOUS_IMAGE=us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe:latest"
+    ],
+    "volumes": [
+      {
+        "name": "layers",
+        "path": "/layers"
+      },
+      {
+        "name": "platform",
+        "path": "/platform"
+      }
+    ],
+    "pool": {},
+    "workerRelease": "legacy"
+  },
+  "logUrl": "https://console.cloud.google.com/cloud-build/builds;region=us-central1/b582e6c6-7b0d-4805-bc9a-3cdfcc9630c9?project=293337283840",
+  "substitutions": {
+    "_GOOGLE_RUNTIME_VERSION": "22.23.4",
+    "_GOOGLE_USE_SERVERLESS_RUNTIMES_TARBALLS": "true",
+    "_GOOGLE_LABEL_BASE_IMAGE": "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/nodejs22",
+    "_GOOGLE_LABEL_BUILDER_VERSION": "nodejs_20261022_RC00",
+    "_GOOGLE_RUNTIME": "nodejs22",
+    "_GOOGLE_LABEL_BUILDER_IMAGE": "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20261022_RC00",
+    "_GOOGLE_TPC_HOSTNAME": "",
+    "_X_GOOGLE_SKIP_RUNTIME_LAUNCH": "true",
+    "_GOOGLE_FUNCTION_SIGNATURE_TYPE": "http",
+    "_GOOGLE_TPC_TARBALL_PROJECT": "",
+    "_X_GOOGLE_TARGET_PLATFORM": "gcf",
+    "_GOOGLE_NODE_RUN_SCRIPTS": "",
+    "_GOOGLE_RUNTIME_IMAGE_REGION": "us-central1",
+    "_GOOGLE_BUILD_ENV": "prod",
+    "_GOOGLE_LABEL_FUNCTION_TARGET": "optionBDeploymentProbe",
+    "_GOOGLE_BUILD_UNIVERSE": "gdu",
+    "_X_GOOGLE_SET_NODE_HEAP_SIZE": "true",
+    "_GOOGLE_LABEL_SOURCE": "gs://gcf-v2-sources-293337283840-us-central1/optionBDeploymentProbe/function-source.zip#1793060245557807",
+    "_GOOGLE_LABEL_RUN_IMAGE": "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/scratch/nodejs22:nodejs22_20261022_22_23_4_RC01",
+    "_GOOGLE_FUNCTION_TARGET": "optionBDeploymentProbe"
+  },
+  "tags": [
+    "p-gcf",
+    "r-nodejs22",
+    "v-nodejs22_20261022_22_23_4_RC01",
+    "b-nodejs_20261022_RC00",
+    "t-function",
+    "bt-LIFECYCLE",
+    "service_optionbdeploymentprobe"
+  ],
+  "timing": {
+    "BUILD": {
+      "startTime": "2026-10-27T00:17:29.721337139Z",
+      "endTime": "2026-10-27T00:18:25.172469803Z"
+    }
+  },
+  "queueTtl": "360s",
+  "serviceAccount": "projects/lyfelabz-staging/serviceAccounts/293337283840-compute@developer.gserviceaccount.com",
+  "name": "projects/293337283840/locations/us-central1/builds/b582e6c6-7b0d-4805-bc9a-3cdfcc9630c9"
+}

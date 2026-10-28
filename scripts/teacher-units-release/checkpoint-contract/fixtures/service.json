@@ -1,0 +1,153 @@
+{
+  "name": "projects/lyfelabz-staging/locations/us-central1/services/optionbdeploymentprobe",
+  "uid": "a664ea9d-ecfe-4cc5-af92-24d3ab870eef",
+  "generation": "1",
+  "labels": {
+    "goog-drz-cloudfunctions-location": "us-central1",
+    "firebase-functions-hash": "eb7b7f71a66b50076a82d2ea11e5cb9275dab40b",
+    "experiment": "option-b-deployment-probe",
+    "experiment-variant": "baseline-a",
+    "goog-drz-cloudfunctions-id": "optionbdeploymentprobe",
+    "firebase-functions-codebase": "option-b-deployment-probe",
+    "deployment-callable": "true",
+    "goog-managed-by": "cloudfunctions",
+    "goog-cloudfunctions-runtime": "nodejs22"
+  },
+  "createTime": "2026-10-27T00:18:26.508324Z",
+  "updateTime": "2026-10-27T00:18:26.508324Z",
+  "creator": "service-293337283840@gcf-admin-robot.iam.gserviceaccount.com",
+  "lastModifier": "service-293337283840@gcf-admin-robot.iam.gserviceaccount.com",
+  "client": "cli-firebase",
+  "ingress": "INGRESS_TRAFFIC_ALL",
+  "launchStage": "GA",
+  "template": {
+    "revision": "optionbdeploymentprobe-00001-bat",
+    "labels": {
+      "firebase-functions-hash": "eb7b7f71a66b50076a82d2ea11e5cb9275dab40b",
+      "firebase-functions-codebase": "option-b-deployment-probe",
+      "experiment": "option-b-deployment-probe",
+      "deployment-callable": "true",
+      "experiment-variant": "baseline-a"
+    },
+    "annotations": {
+      "cloudfunctions.googleapis.com/trigger-type": "HTTP_TRIGGER"
+    },
+    "scaling": {
+      "maxInstanceCount": 20
+    },
+    "timeout": "60s",
+    "serviceAccount": "option-b-deployment-probe@lyfelabz-staging.iam.gserviceaccount.com",
+    "containers": [
+      {
+        "name": "worker",
+        "image": "us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe:version_1",
+        "env": [
+          {
+            "name": "FIREBASE_CONFIG",
+            "value": "{\"projectId\":\"lyfelabz-staging\",\"storageBucket\":\"lyfelabz-staging.firebasestorage.app\"}"
+          },
+          {
+            "name": "GCLOUD_PROJECT",
+            "value": "lyfelabz-staging"
+          },
+          {
+            "name": "EVENTARC_CLOUD_EVENT_SOURCE",
+            "value": "projects/lyfelabz-staging/locations/us-central1/services/optionBDeploymentProbe"
+          },
+          {
+            "name": "FUNCTION_TARGET",
+            "value": "optionBDeploymentProbe"
+          },
+          {
+            "name": "LOG_EXECUTION_ID",
+            "value": "true"
+          }
+        ],
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "512Mi"
+          },
+          "cpuIdle": true,
+          "startupCpuBoost": true
+        },
+        "ports": [
+          {
+            "name": "http1",
+            "containerPort": 8080
+          }
+        ],
+        "startupProbe": {
+          "timeoutSeconds": 240,
+          "periodSeconds": 240,
+          "failureThreshold": 1,
+          "tcpSocket": {
+            "port": 8080
+          }
+        },
+        "baseImageUri": "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/nodejs22"
+      }
+    ],
+    "maxInstanceRequestConcurrency": 80,
+    "client": "cli-firebase"
+  },
+  "traffic": [
+    {
+      "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST",
+      "percent": 100
+    }
+  ],
+  "scaling": {
+    "maxInstanceCount": 20
+  },
+  "urls": [
+    "https://optionbdeploymentprobe-293337283840.us-central1.run.app",
+    "https://us-central1-lyfelabz-staging.cloudfunctions.net/optionBDeploymentProbe",
+    "https://optionbdeploymentprobe-36vxufx5ra-uc.a.run.app"
+  ],
+  "sshEnabled": false,
+  "observedGeneration": "1",
+  "terminalCondition": {
+    "type": "Ready",
+    "state": "CONDITION_SUCCEEDED",
+    "lastTransitionTime": "2026-10-27T00:18:36.316048Z"
+  },
+  "conditions": [
+    {
+      "type": "RoutesReady",
+      "state": "CONDITION_SUCCEEDED",
+      "lastTransitionTime": "2026-10-27T00:18:36.277993Z"
+    },
+    {
+      "type": "ConfigurationsReady",
+      "state": "CONDITION_SUCCEEDED",
+      "lastTransitionTime": "2026-10-27T00:18:30.001985Z"
+    }
+  ],
+  "latestReadyRevision": "projects/lyfelabz-staging/locations/us-central1/services/optionbdeploymentprobe/revisions/optionbdeploymentprobe-00001-bat",
+  "latestCreatedRevision": "projects/lyfelabz-staging/locations/us-central1/services/optionbdeploymentprobe/revisions/optionbdeploymentprobe-00001-bat",
+  "trafficStatuses": [
+    {
+      "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST",
+      "revision": "optionbdeploymentprobe-00001-bat",
+      "percent": 100
+    }
+  ],
+  "uri": "https://optionbdeploymentprobe-36vxufx5ra-uc.a.run.app",
+  "customAudiences": [
+    "https://us-central1-lyfelabz-staging.cloudfunctions.net/optionBDeploymentProbe"
+  ],
+  "buildConfig": {
+    "name": "projects/293337283840/locations/us-central1/builds/b582e6c6-7b0d-4805-bc9a-3cdfcc9630c9",
+    "sourceLocation": "gs://gcf-v2-sources-293337283840-us-central1/optionBDeploymentProbe/function-source.zip#1793060245557807",
+    "functionTarget": "optionBDeploymentProbe",
+    "imageUri": "us-central1-docker.pkg.dev/lyfelabz-staging/gcf-artifacts/lyfelabz--staging__us--central1__option_b_deployment_probe:version_1",
+    "baseImage": "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/nodejs22",
+    "enableAutomaticUpdates": true,
+    "environmentVariables": {
+      "GOOGLE_NODE_RUN_SCRIPTS": ""
+    },
+    "serviceAccount": "projects/lyfelabz-staging/serviceAccounts/293337283840-compute@developer.gserviceaccount.com"
+  },
+  "etag": "\"CNLb_9YGEKDRsfIB/cHJvamVjdHMvbHlmZWxhYnotc3RhZ2luZy9sb2NhdGlvbnMvdXMtY2VudHJhbDEvc2VydmljZXMvb3B0aW9uYmRlcGxveW1lbnRwcm9iZQ\""
+}
