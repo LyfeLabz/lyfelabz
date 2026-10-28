@@ -123,7 +123,9 @@ Current certified integration. Google Classroom is the only supported external p
 - **Ownership drift / broken link:** publication and refresh detect when the caller is no longer the Classroom teacher-of-record (`ownership-drift` → link `stale`) or the upstream course is deleted (broken link). LyfeLabz never silently reassigns class ownership.
 - **Publication capability** (one-way): see Section 7.
 
-LyfeLabz **never** posts to the Classroom stream, comments, messages, grades/grade-backs, or reads other people's Classroom content. Every Classroom API call originates server-side under the owning teacher's OAuth grant; clients never call Classroom directly.
+- **Grade passback** (implemented): see Section 7.
+
+LyfeLabz **never** posts to the Classroom stream, comments, or messages, or reads other people's Classroom content. The only grade it writes is the grade passback in Section 7. Every Classroom API call originates server-side under the owning teacher's OAuth grant; clients never call Classroom directly.
 
 ---
 
@@ -155,7 +157,12 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
 - **Activation vs publication are separate.** Activation controls access inside LyfeLabz; publication sends the assignment into Google Classroom.
 - **Publication (`lmsAssignmentPublish`)** is a one-way, server-mediated write producing one Classroom coursework record per `(assignment, class)`, carrying a **single deep-link material** (Section 8) and the LyfeLabz title. It requires a `linked` class link and an active connection with the widened scope. Optional Classroom **topic** is supported. It writes `lmsAssignmentPublications/{publicationId}` and the optional `assignments/{id}.lmsPublicationRef`. Absence of `lmsPublicationRef` must never block an assessment operation.
 - **Retry / idempotency:** publication deduplicates on a client-supplied idempotency marker + a deterministic `publicationId`; retries are safe; 5xx/rate-limit retried within budget then `provider-unavailable`; 4xx not retried (`provider-refused`).
-- Refused for cross-district, cross-teacher (`caller.uid !== assignment.teacherId`), unlinked/stale/broken links, or revoked connections. **Never** pushes a score, completion, or grade into Classroom (grade-back is permanently out of scope).
+- Refused for cross-district, cross-teacher (`caller.uid !== assignment.teacherId`), unlinked/stale/broken links, or revoked connections. Publication itself never pushes a score, completion, or grade.
+- **Grade passback (implemented, `platform/functions/src/lms/grade-passback/`).** A server-side write of the student's LyfeLabz best score to the student's Classroom submission. Routes: automatic after `assessmentAttemptsFinalize`, teacher Retry (`lmsGradePassbacksRetry`), and teacher reconciliation (`lmsGradePassbacksPreview` / `lmsGradePassbacksApply`).
+  - **Destination is Current.** Under a valid `assignmentsCurrent` pointer the grade goes only to the Current occurrence's Classroom coursework; older coursework never receives a grade because of a newer Current. A Current with no grading or no succeeded publication sends nothing (no fallback to older coursework). With no authoritative pointer (legacy), the triggering assignment is the destination.
+  - **Best score spans related occurrences.** The target is the canonical best (`selectHighestCompletedAttempt`) over the student's attempts on every occurrence of the class + lesson group, recomputed in full on every evaluation.
+  - **Protection.** A live destination preflight (graded, published, matching maxPoints) runs before any write. The grade never decreases: an equal or higher Classroom grade is kept, a protected zero or a teacher's differing draft is not overwritten, and only a blank grade, a lower grade, or a narrow missing-work draft zero is replaced.
+  - **Production status.** Deployed, as supported by current production Function metadata and release records: `lmsGradePassbacksRetry`, `lmsGradePassbacksPreview` and `lmsGradePassbacksApply` deployed September 25, 2026, and `assessmentAttemptsFinalize` deployed September 29, 2026, all ACTIVE. The Classroom publisher (`lmsAssignmentsPublish`) already sends timezone-correct due dates (11:59 PM in the school's timezone). No fresh end-to-end production grading test was performed during this verification.
 
 ---
 
@@ -214,7 +221,7 @@ Invariants: one roster authority per class; imports and join-code redemptions ar
 7. **Answer-key confidentiality.** `assessmentAnswerKeys/*` is readable only by the scorer; refused for all client roles including `platformAdministrator`; never in a URL, response, or audit event.
 8. **Server-authoritative scoring and timestamps.** No client-authoritative score or academically-weighted timestamp is trusted.
 9. **OAuth tokens are server-only.** Never in client-readable Firestore, a callable response, or a URL; revocation → `revoked` + `stale` links + reconnect prompt.
-10. **Publication is one-way and server-mediated.** Cross-district and cross-teacher publication refused; no score/completion/PII is pushed into Classroom.
+10. **Publication is one-way and server-mediated.** Cross-district and cross-teacher publication refused; publication pushes no score/completion/PII into Classroom. The only score written to Classroom is server-side grade passback to the Current occurrence, which never lowers an existing grade (Section 7).
 11. **Join-code redemption is server-only**, authenticated, atomic, idempotent, and refused against linked classes.
 12. **`auditEvents` is append-only.** No rule or callable permits update/delete for any role, including `platformAdministrator`; privileged actions are audited.
 13. **Student PII protection.** Email is only a secondary match validator; PII is never placed in deep-link URLs; identity is not compiled across sources.
