@@ -16,7 +16,10 @@ jest.mock("firebase/functions", () => ({
   },
 }));
 
-import { createAttemptGetForTeacherCallable } from "./attempts-wire";
+import {
+  createAttemptGetForTeacherCallable,
+  createAttemptsListForStudentCallable,
+} from "./attempts-wire";
 
 const baseAttempt = {
   attemptId: "asg-1__s-1__a2",
@@ -60,5 +63,53 @@ describe("createAttemptGetForTeacherCallable", () => {
       attemptId: baseAttempt.attemptId,
     });
     expect(out.writtenResponse).toBeNull();
+  });
+});
+
+// Student Detail question review (PDR-032e): the frozen explanation and the
+// adapted-delivery flag reach the review; absent values degrade safely.
+describe("createAttemptGetForTeacherCallable question review fields", () => {
+  test("parses explanations and the canonical-content flag", async () => {
+    callableResponse = {
+      attempt: {
+        ...baseAttempt,
+        canonicalContent: false,
+        itemResults: [
+          { itemId: "q1", isCorrect: true, correctOptionId: "A", studentResponse: "A", explanation: "Because A." },
+          { itemId: "q2", isCorrect: false, correctOptionId: "B", studentResponse: null, explanation: "" },
+        ],
+      },
+    };
+    const out = await createAttemptGetForTeacherCallable({} as never)({ attemptId: baseAttempt.attemptId });
+    expect(out.canonicalContent).toBe(false);
+    expect(out.itemResults.map((r) => r.explanation)).toEqual(["Because A.", null]);
+  });
+
+  test("treats an absent flag (older server) as canonical content", async () => {
+    callableResponse = { attempt: baseAttempt };
+    const out = await createAttemptGetForTeacherCallable({} as never)({ attemptId: baseAttempt.attemptId });
+    expect(out.canonicalContent).toBe(true);
+    expect(out.itemResults[0]!.explanation).toBeNull();
+  });
+});
+
+// Student Support Access (PDR-032): the student-scoped list keeps only the
+// requested student's well-formed summaries.
+describe("createAttemptsListForStudentCallable", () => {
+  test("calls the student-scoped callable and drops any other student's rows", async () => {
+    const row = (attemptId: string, studentId: string) => ({
+      attemptId, studentId, studentDisplayName: "Ada", assignmentId: "asg-1",
+      attemptNumber: 1, score: 8, maxScore: 10, percentage: 80, submittedAt: 1000,
+    });
+    callableResponse = {
+      classId: "class-1",
+      studentId: "s-1",
+      attempts: [row("a1", "s-1"), row("a2", "s-2"), { attemptId: "broken" }],
+    };
+    const out = await createAttemptsListForStudentCallable({} as never)({ classId: "class-1", studentId: "s-1" });
+    expect(callableInvocations).toEqual([
+      { name: "assessmentAttemptsListForStudent", payload: { classId: "class-1", studentId: "s-1" } },
+    ]);
+    expect(out.attempts.map((a) => a.attemptId)).toEqual(["a1"]);
   });
 });

@@ -24,6 +24,10 @@ PDR-031 (Assessment Revision Binding) and `ASSESSMENT_IMPLEMENTATION_CONTRACT.md
 
 This notice modifies no stored data.
 
+## Student Support Access Reconciliation Notice (PDR-032)
+
+A new server-only collection, `studentSupportGrants/{grantId}`, holds read-only, student-specific support access grants. The id is `${classId}__${studentId}__${granteeUid}`; fields are `classId`, `studentId`, `ownerTeacherId`, `granteeUid`, `schoolId`, `districtId`, `status` (`active` | `revoked`), `grantedAt`, `grantedBy`, and, while revoked, `revokedAt` and `revokedBy`. Only the `supportAccess*` callables write it; there is no client access. The class model is unchanged: a class still has exactly one teacher owner, and the reserved `coTeacherIds` field remains absent. Two audit actions are added to §3.8: `supportAccess.granted` and `supportAccess.revoked` (target type `studentSupportGrant`). Canonical: `STUDENT_SUPPORT_ACCESS.md`. Not deployed. This notice modifies no stored data.
+
 ## U1A Reconciliation Notice
 
 A new server-owned collection, `teacherUnits/{unitId}`, holds teacher-defined instructional units (`TeacherUnit`, distinct from the client `CurriculumUnit` lesson-card type). Each unit is owned by one teacher in one school for one grade; `teacherId`, `schoolId`, and `grade` are immutable, ids are server-generated auto-ids, and every write is revision-checked in a transaction by the `teacherUnits*` callables. Units are created with `resourceIds: []` and `sortOrder: 0`; U1B `teacherUnitsSetResources` writes the ordered, RA-1-placeable `resourceIds`, and `teacherUnitsReorder` writes `sortOrder` across one teacher-grade organization. A second server-only collection, `teacherUnitCreateReceipts/{receiptId}`, holds one create retry receipt per created unit (`teacherId`, `schoolId`, `unitId`, `requestHash`, `createdAt`, `expiresAt`); no TTL policy is configured yet. Canonical: `TEACHER_UNITS.md`. Not deployed. This notice modifies no stored data.

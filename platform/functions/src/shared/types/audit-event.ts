@@ -307,6 +307,13 @@ export const AUDIT_ACTIONS = [
   // Classroom id, or credential material. Per-student writes are recorded
   // by `lms.gradePassbackSucceeded` / `lms.gradePassbackFailed`.
   "lms.gradeReconciliationApplied",
+  // Student Support Access (PDR-032). Emitted by `supportAccessGrant` and
+  // `supportAccessRevoke` in the same transaction as the grant change, only
+  // when the status actually changes (an idempotent repeat writes nothing).
+  // Target `studentSupportGrant`/{grantId}; payload `classId`, `studentId`,
+  // `granteeUid`.
+  "supportAccess.granted",
+  "supportAccess.revoked",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

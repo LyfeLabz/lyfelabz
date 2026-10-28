@@ -205,7 +205,7 @@ The exact callable names are set by the Schools Foundation sprint specification.
 
 **Deferred to future sprints.**
 
-- Co-teaching relationships.
+- Co-teaching relationships. (PDR-032 Reconciliation Note: co-teaching remains deferred. PDR-032 adds only a narrow, read-only, student-specific support grant between teachers at one school; it is not co-teaching and adds no shared class ownership. See `STUDENT_SUPPORT_ACCESS.md`.)
 - Teacher-to-teacher shared resources.
 - Professional learning community grouping.
 

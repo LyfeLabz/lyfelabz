@@ -297,7 +297,7 @@ Snapshot's future extensibility is bounded by the Class Snapshot Experience §8 
 - New Snapshot elements that would require a new cross-cutting client-side key, storage mechanism, or navigation convention are additions to `PLATFORM_CONTRACTS.md`, not additions to Snapshot alone.
 - New Snapshot elements that would require cross-class or longitudinal reads are Analytics-domain concerns, not Snapshot concerns.
 - A future teacher-home Snapshot (a cross-class preparation view) is deferred to its own architecture pass and remains subject to the seating-chart posture recorded in `CLASS_SNAPSHOT_EXPERIENCE.md` §9.
-- A future read-only Snapshot for co-teachers is deferred to the co-teaching architecture pass named in `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §3.3.
+- A future read-only Snapshot for co-teachers is deferred to the co-teaching architecture pass named in `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §3.3. (PDR-032 shares one student's Student Detail, read-only; it adds no Snapshot sharing.)
 - A future historical Snapshot is deferred to Analytics.
 - Snapshot never grows an export path. Export is a data-warehouse behavior and is out of scope.
 

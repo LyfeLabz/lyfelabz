@@ -236,6 +236,7 @@ describe("assessmentAttemptGetForTeacher", () => {
         "assignmentId",
         "attemptId",
         "attemptNumber",
+        "canonicalContent",
         "itemResults",
         "maxScore",
         "percentage",
@@ -263,6 +264,32 @@ describe("assessmentAttemptGetForTeacher", () => {
     seedAttempt();
     const result = await __assessmentAttemptGetForTeacherHandler(makeRequest());
     expect(result.attempt.writtenResponse).toBeNull();
+  });
+
+  // Student Detail question review (PDR-032e): adapted deliveries are
+  // flagged so canonical revision text is never paired with them.
+  it("marks canonical deliveries as canonical content", async () => {
+    seedAttempt();
+    const result = await __assessmentAttemptGetForTeacherHandler(makeRequest());
+    expect(result.attempt.canonicalContent).toBe(true);
+    seedAttempt({ deliveryOutcome: "canonicalFallback" });
+    const fallback = await __assessmentAttemptGetForTeacherHandler(makeRequest());
+    expect(fallback.attempt.canonicalContent).toBe(true);
+  });
+
+  it("marks an adapted delivery as non-canonical content without exposing its provenance", async () => {
+    seedAttempt({
+      deliveryOutcome: "differentiated",
+      variantKey: "reading-adapted",
+      presentationRevisionId: "pr1",
+      assessmentPresentationRevisionId: `ap${"0".repeat(64)}`,
+    });
+    const result = await __assessmentAttemptGetForTeacherHandler(makeRequest());
+    const projected = result.attempt as unknown as Record<string, unknown>;
+    expect(projected.canonicalContent).toBe(false);
+    for (const key of ["deliveryOutcome", "variantKey", "presentationRevisionId", "assessmentPresentationRevisionId"]) {
+      expect(projected).not.toHaveProperty(key);
+    }
   });
 
   it("never projects a malformed stored written response", async () => {

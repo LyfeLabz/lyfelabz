@@ -7,6 +7,7 @@ export {
   assessmentAttemptsFinalize,
   assessmentAttemptsList,
   assessmentAttemptsListForClass,
+  assessmentAttemptsListForStudent,
   assessmentSessionsAutosave,
   assessmentSessionsBegin,
   assessmentStudentAssignmentsForClass,
@@ -78,6 +79,12 @@ export {
   studentsCompleteOnboarding,
 } from "./students";
 export { submissionsCreate, submissionsFinalize } from "./submissions";
+export {
+  supportAccessGrant,
+  supportAccessListForClass,
+  supportAccessListMine,
+  supportAccessRevoke,
+} from "./supportAccess";
 export {
   teacherUnitsCapabilities,
   teacherUnitsArchive,

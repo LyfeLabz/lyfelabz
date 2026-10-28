@@ -16,6 +16,7 @@ import {
   type ClassRecord,
 } from "../shared";
 import { getAdminFirestore } from "../shared/firestore/admin";
+import { authorizeStudentScopedRead } from "../supportAccess/authorize";
 
 import {
   deriveEffectiveAcknowledgment,
@@ -337,7 +338,12 @@ async function listForStudentHandler(
   const payload = asPayload(request.data, [...OWNERSHIP_KEYS, "assignmentId"]);
   const classId = readId(payload, "classId");
   const studentId = readId(payload, "studentId");
-  await loadOwnedClass(classId, actor);
+  // Student Support Access (PDR-032c): the owner, or a grantee holding an
+  // active grant for exactly this (class, student). History only; every
+  // write path below stays owner-only. Rows are matched against the class
+  // OWNER, while `byCaller` attribution still compares to the caller.
+  const access = await authorizeStudentScopedRead(actor, classId, studentId);
+  const owner: Actor = { uid: access.ownerTeacherId, schoolId: actor.schoolId, districtId: actor.districtId };
 
   // Student-scoped read; every row is re-checked against the owned class.
   const recordsSnap = await getAdminFirestore()
@@ -348,7 +354,7 @@ async function listForStudentHandler(
   const records: GradeImprovementHistory[] = [];
   for (const doc of recordsSnap.docs) {
     const data = doc.data() as GradeImprovementAckRecord | undefined;
-    if (!recordMatches(data, { studentId, classId, actor })) continue;
+    if (!recordMatches(data, { studentId, classId, actor: owner })) continue;
     if (doc.id !== gradeImprovementRecordId(data.assignmentId, data.studentId)) continue;
     const eventsSnap = await eventsRef(doc.id).get();
     const events = admittedEvents(eventsSnap.docs, data);

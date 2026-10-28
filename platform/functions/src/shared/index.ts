@@ -180,6 +180,11 @@ export {
   externalIdentityRestorationDocRef,
   studentAccommodationDocRef,
   studentAccommodationCreationDocRef,
+  studentSupportGrantDocRef,
+  studentSupportGrantWriteDocRef,
+  studentSupportGrantRevokeDocRef,
+  studentSupportGrantsCollectionRef,
+  usersByEmailQuery,
   studentAccommodationUpdateDocRef,
   studentAccommodationHistoryDocRef,
   studentLabReportDocRef,
@@ -525,3 +530,11 @@ export {
   type UserRecord,
   type UserStatus,
 } from "./types/user";
+export {
+  STUDENT_SUPPORT_GRANTS_COLLECTION,
+  studentSupportGrantIdFor,
+  type StudentSupportGrantRecord,
+  type StudentSupportGrantRevokeWrite,
+  type StudentSupportGrantStatus,
+  type StudentSupportGrantWrite,
+} from "./types/student-support-grant";

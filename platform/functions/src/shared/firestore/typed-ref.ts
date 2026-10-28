@@ -175,6 +175,12 @@ import {
   type ExternalIdentityRestorationWrite,
   type ExternalIdentityRevocationWrite,
 } from "../types/external-identity";
+import {
+  STUDENT_SUPPORT_GRANTS_COLLECTION,
+  type StudentSupportGrantRecord,
+  type StudentSupportGrantRevokeWrite,
+  type StudentSupportGrantWrite,
+} from "../types/student-support-grant";
 import { getAdminFirestore } from "./admin";
 
 export function userDocRef(uid: string): DocumentReference<UserProvisioningWrite> {
@@ -1460,4 +1466,44 @@ export function externalIdentityRestorationDocRef(
   return getAdminFirestore()
     .collection(EXTERNAL_IDENTITIES_COLLECTION)
     .doc(externalIdentityId) as DocumentReference<ExternalIdentityRestorationWrite>;
+}
+
+// Student Support Access (PDR-032). Read typed reference for the server-only
+// `studentSupportGrants/{grantId}` record; the id is
+// `studentSupportGrantIdFor(classId, studentId, granteeUid)`.
+export function studentSupportGrantDocRef(
+  grantId: string,
+): DocumentReference<StudentSupportGrantRecord> {
+  return getAdminFirestore()
+    .collection(STUDENT_SUPPORT_GRANTS_COLLECTION)
+    .doc(grantId) as DocumentReference<StudentSupportGrantRecord>;
+}
+
+// Write typed references for grant (create or reactivate) and revoke, so the
+// FieldValue-safe write shapes are preserved at the write boundary.
+export function studentSupportGrantWriteDocRef(
+  grantId: string,
+): DocumentReference<StudentSupportGrantWrite> {
+  return studentSupportGrantDocRef(grantId) as unknown as DocumentReference<StudentSupportGrantWrite>;
+}
+
+export function studentSupportGrantRevokeDocRef(
+  grantId: string,
+): DocumentReference<StudentSupportGrantRevokeWrite> {
+  return studentSupportGrantDocRef(grantId) as unknown as DocumentReference<StudentSupportGrantRevokeWrite>;
+}
+
+export function studentSupportGrantsCollectionRef(): CollectionReference<StudentSupportGrantRecord> {
+  return getAdminFirestore().collection(
+    STUDENT_SUPPORT_GRANTS_COLLECTION,
+  ) as CollectionReference<StudentSupportGrantRecord>;
+}
+
+// Equality lookup of canonical user records by stored email (single-field
+// index; no composite index). Used only by `supportAccessGrant`'s same-school
+// teacher lookup, which re-checks every returned record.
+export function usersByEmailQuery(email: string): Query<UserRecord> {
+  return (
+    getAdminFirestore().collection(USERS_COLLECTION) as CollectionReference<UserRecord>
+  ).where("email", "==", email);
 }

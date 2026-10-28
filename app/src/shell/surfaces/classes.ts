@@ -101,6 +101,15 @@ import { createRosterSortPreference } from "../../teacherPreferences/rosterSortS
 import { decorateStudentDetailGradeHistory } from "../../assignments/gradeImprovements/student-history";
 import { readGradeImprovementsSeam } from "../../assignments/gradeImprovements/session";
 import type { GradeImprovementsSeam } from "../../assignments/gradeImprovements/types";
+import type { AssessmentRevisionContentReader } from "../../assignments/detail/question-summary";
+import { readStudentSupportSeam } from "../../supportAccess/session";
+import type { SharedStudent, StudentSupportSeam } from "../../supportAccess/types";
+import { appendQuestionReview } from "./studentDetailQuestionReview";
+import {
+  renderSharedStudentsSection,
+  renderSupportAccessSection,
+  type SupportAccessSectionDeps,
+} from "./classSupportAccess";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
 // the authenticated teacher. See SPRINT_6B_SPECIFICATION.md §6.
@@ -387,6 +396,12 @@ export type ClassesSurfaceDeps = {
   // that do not exercise browser-history behavior, in which case Student
   // Detail open/close behaves exactly as before this feature.
   readonly studentDetailHistory?: StudentDetailHistorySeam | null;
+  // Student Support Access (PDR-032): the session-installed seam for the
+  // owner's Class settings "Support access" section, the grantee's "Shared
+  // students" list and read-only Student Detail, and the question-review
+  // revision text. Absent: read from the session holder; null there renders
+  // none of those additions.
+  readonly studentSupport?: StudentSupportSeam | null;
 };
 
 // Sprint 28.6H (Finding 2): the class-card status label map was removed with
@@ -453,6 +468,13 @@ type ClassesState =
       readonly studentDetailOrigin?:
         | "roster"
         | { readonly kind: "assignment"; readonly assignmentId: string };
+    }
+  // Student Support Access (PDR-032): a support educator viewing one shared
+  // student's read-only Student Detail, entered from "Shared students".
+  | {
+      readonly kind: "shared";
+      readonly classes: ReadonlyArray<ClassSummary>;
+      readonly student: SharedStudent;
     };
 
 // Grade/block always begin empty; the teacher must choose explicitly for
@@ -501,6 +523,8 @@ export function renderClassesSurface(
   const assignmentSummary = deps.assignmentSummary ?? null;
   const navigateToSurface = deps.navigateToSurface ?? null;
   const studentDetailHistory = deps.studentDetailHistory ?? null;
+  const studentSupport =
+    deps.studentSupport !== undefined ? deps.studentSupport : readStudentSupportSeam();
   const getClassesReturn = deps.getClassesReturn ?? null;
   const setClassesReturn = deps.setClassesReturn ?? null;
   const getClassesStudentIntent = deps.getClassesStudentIntent ?? null;
@@ -864,6 +888,27 @@ export function renderClassesSurface(
   // it while it's open.
   let settingsOverlay: HTMLElement | null = null;
 
+  // Student Support Access (PDR-032): students other teachers shared with
+  // this teacher, read once per visit to the Classes list (and again after
+  // leaving a shared student, so a revocation is reflected). Best-effort: a
+  // failed read shows nothing, and a teacher with no shared students never
+  // sees the section or a re-render.
+  let sharedStudents: ReadonlyArray<SharedStudent> = [];
+  let sharedStudentsLoad: Promise<void> | null = null;
+  const loadSharedStudents = (): void => {
+    if (studentSupport === null || sharedStudentsLoad !== null) return;
+    sharedStudentsLoad = studentSupport.listShared().then(
+      (students) => {
+        const changed = students.length > 0 || sharedStudents.length > 0;
+        sharedStudents = students;
+        if (changed && state.kind === "list") rerender();
+      },
+      () => {
+        sharedStudents = [];
+      },
+    );
+  };
+
   const rerender = (): void => {
     if (!mount.isConnected) return;
     mount.textContent = "";
@@ -906,7 +951,55 @@ export function renderClassesSurface(
           openClassSettings,
           classColors,
         );
+        loadSharedStudents();
+        if (sharedStudents.length > 0) {
+          mount.appendChild(renderSharedStudentsSection(doc, sharedStudents, onOpenSharedStudent));
+        }
         return;
+      case "shared": {
+        // The SAME Student Detail renderer, read-only, wired to the
+        // student-scoped attempts read (never the owner-only class-wide
+        // list). No roster, so no Previous/Next; no assignment registry.
+        const seam = studentSupport;
+        if (seam === null) {
+          onBackFromSharedStudent();
+          return;
+        }
+        const { student } = s;
+        let sharedAttempts: Promise<ReadonlyArray<CompletedAttemptSummary>> | null = null;
+        renderStudentDetailSurface(
+          doc,
+          mount,
+          student.classId,
+          student.studentId,
+          student.studentDisplayName,
+          null,
+          { kind: "shared" },
+          onBackFromSharedStudent,
+          () => undefined,
+          () => undefined,
+          () =>
+            (sharedAttempts ??= seam
+              .listAttemptsForStudent({ classId: student.classId, studentId: student.studentId })
+              .then((result) => result.attempts)),
+          loadExpectedAssignments,
+          () => [],
+          loadAttemptDetail,
+          null,
+          readGradeImprovementsSeam(),
+          true,
+          seam.revisionContent,
+        );
+        const heading = mount.querySelector("[data-testid=student-detail-name]");
+        if (heading !== null) {
+          const context = doc.createElement("p");
+          context.className = "shell-student-detail-shared-context";
+          context.setAttribute("data-testid", "student-detail-shared-context");
+          context.textContent = `${student.classTitle} · Shared by ${student.ownerDisplayName} · View only`;
+          heading.after(context);
+        }
+        return;
+      }
       case "workspace": {
         const summary = s.classes.find((c) => c.id === s.selectedId);
         if (!summary) {
@@ -972,6 +1065,7 @@ export function renderClassesSurface(
           listAllAssignments,
           loadAttemptDetail,
           rosterSort,
+          studentSupport?.revisionContent ?? null,
         );
         return;
       }
@@ -1087,6 +1181,20 @@ export function renderClassesSurface(
       onRosterRefreshed: () => {
         if (currentRoster?.classId === classId) currentRoster = null;
       },
+      // Student Support Access (PDR-032): owner-only grant management. The
+      // student choices are this class's active roster.
+      supportAccess:
+        studentSupport !== null && loadRoster !== null
+          ? {
+              classId,
+              seam: studentSupport,
+              loadRoster: async () => {
+                const read = loadRoster();
+                if (read === null) throw new Error("roster unavailable");
+                return (await read({ classId })).students;
+              },
+            }
+          : null,
       onCancel: closeClassSettings,
       // Resolving closes the modal (handled here, not by the modal
       // itself, since only this closure can update `state`/`classColors`
@@ -1599,6 +1707,47 @@ export function renderClassesSurface(
     studentDetailHistory?.notify({ kind: "exit-detail" });
   };
 
+  // Browser Back/Forward: a shared student reuses the existing Student
+  // Detail history entry (`enter-detail` pushes it, keyed by stable ids
+  // only). Its one-level-up is the Classes list, so the in-app Back replaces
+  // the entry with that list exactly as leaving a class workspace does
+  // (`exit-workspace`); browser Back pops to the same list entry, and the
+  // controller below restores either depth.
+  const openSharedStudent = (student: SharedStudent): void => {
+    if (state.kind !== "list" && state.kind !== "shared") return;
+    state = { kind: "shared", classes: state.classes, student };
+    rerender();
+  };
+
+  const onOpenSharedStudent = (student: SharedStudent): void => {
+    if (state.kind !== "list") return;
+    openSharedStudent(student);
+    studentDetailHistory?.notify({
+      kind: "enter-detail",
+      classId: student.classId,
+      studentId: student.studentId,
+    });
+  };
+
+  const closeSharedStudent = (): void => {
+    if (state.kind !== "shared") return;
+    sharedStudentsLoad = null;
+    state = {
+      kind: "list",
+      classes: state.classes,
+      form: null,
+      lastCreated: null,
+      importState: idleImportState(),
+    };
+    rerender();
+  };
+
+  const onBackFromSharedStudent = (): void => {
+    if (state.kind !== "shared") return;
+    closeSharedStudent();
+    studentDetailHistory?.notify({ kind: "exit-workspace" });
+  };
+
   const onBackToList = (): void => {
     if (state.kind !== "workspace") return;
     // Returning to the operational Classes landing leaves any class-source task.
@@ -1636,7 +1785,9 @@ export function renderClassesSurface(
     // per-section history. A needsSetup class can only show Setup; an
     // active class never restores into Setup.
     restoreWorkspace: (classId, section = "roster") => {
-      if (state.kind !== "list" && state.kind !== "workspace") return false;
+      if (state.kind !== "list" && state.kind !== "workspace" && state.kind !== "shared") {
+        return false;
+      }
       const classes = state.classes;
       const summary = classes.find((c) => c.id === classId);
       if (!summary) return false;
@@ -1677,6 +1828,10 @@ export function renderClassesSurface(
       return true;
     },
     restoreToTopList: () => {
+      if (state.kind === "shared") {
+        closeSharedStudent();
+        return;
+      }
       if (state.kind !== "workspace") return;
       listAddMode = null;
       currentRoster = null;
@@ -1691,6 +1846,16 @@ export function renderClassesSurface(
       rerender();
     },
     restoreDetail: (classId, studentId) => {
+      // A shared student (Forward to its entry): only one already listed by
+      // the server-authorized Shared students read; fails closed otherwise.
+      if (state.kind === "list" || state.kind === "shared") {
+        const shared = sharedStudents.find(
+          (s) => s.classId === classId && s.studentId === studentId,
+        );
+        if (shared === undefined) return false;
+        openSharedStudent(shared);
+        return true;
+      }
       if (state.kind !== "workspace") return false;
       if (state.selectedId !== classId) return false;
       const match = (state.rosterSnapshot ?? []).find(
@@ -3227,6 +3392,8 @@ type ClassSettingsModalDeps = {
   // (not a Classroom-linked class, or not wired).
   readonly refreshRoster: (() => Promise<RefreshRosterResult>) | null;
   readonly onRosterRefreshed: () => void;
+  // Student Support Access (PDR-032). Null hides the section.
+  readonly supportAccess: SupportAccessSectionDeps | null;
   readonly onCancel: () => void;
   // Resolving closes the modal (the caller is responsible for actually
   // removing it, since only the caller can update its own state);
@@ -3549,6 +3716,10 @@ function renderClassSettingsModal(
     formEl.appendChild(section);
   }
 
+  if (deps.supportAccess !== null) {
+    formEl.appendChild(renderSupportAccessSection(doc, deps.supportAccess));
+  }
+
   const errorMessage = doc.createElement("p");
   errorMessage.className = "shell-classes-create-error";
   errorMessage.setAttribute("data-testid", "classes-settings-error");
@@ -3715,6 +3886,7 @@ function renderClassWorkspaceState(
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
   loadAttemptDetail: (() => AttemptGetForTeacherCallable | null) | null,
   rosterSort: RosterSortPreference,
+  revisionContent: AssessmentRevisionContentReader | null = null,
 ): void {
   const workspace = doc.createElement("div");
   workspace.className = "shell-class-workspace";
@@ -3816,6 +3988,9 @@ function renderClassWorkspaceState(
         listAssignments,
         loadAttemptDetail,
         rosterSort,
+        readGradeImprovementsSeam(),
+        false,
+        revisionContent,
       );
     } else {
       renderRosterSurface(doc, surfaceMount, rosterView, onSelectStudent, rosterSort);
@@ -4531,7 +4706,8 @@ function renderStudentDetailSurface(
   }> | null,
   studentDetailOrigin:
     | "roster"
-    | { readonly kind: "assignment"; readonly assignmentId: string },
+    | { readonly kind: "assignment"; readonly assignmentId: string }
+    | { readonly kind: "shared" },
   onBack: () => void,
   onNavigateToNeighbor: (studentId: string, displayName: string) => void,
   onOpenOriginatingAssignment: (assignmentId: string) => void,
@@ -4544,6 +4720,12 @@ function renderStudentDetailSurface(
   rosterSort: RosterSortPreference | null = null,
   // Grade Improvements V1: the session-installed seam (null renders nothing).
   gradeImprovements: GradeImprovementsSeam | null = readGradeImprovementsSeam(),
+  // Student Support Access (PDR-032): read-only mode for a support educator.
+  // The SAME renderer, cards, metrics and ordering; only editing controls
+  // (the grade-update Undo) are withheld. The server refuses them anyway.
+  readOnly = false,
+  // Question review text source (owners and grantees alike).
+  revisionContent: AssessmentRevisionContentReader | null = null,
 ): void {
   const detail = doc.createElement("div");
   detail.className = "shell-student-detail";
@@ -4564,6 +4746,11 @@ function renderStudentDetailSurface(
   backBtn.setAttribute("data-testid", "student-detail-back");
   if (studentDetailOrigin === "roster") {
     backBtn.textContent = "Back to Students";
+    backBtn.addEventListener("click", () => {
+      onBack();
+    });
+  } else if (studentDetailOrigin.kind === "shared") {
+    backBtn.textContent = "Back to Classes";
     backBtn.addEventListener("click", () => {
       onBack();
     });
@@ -4721,6 +4908,7 @@ function renderStudentDetailSurface(
                 expected.groups,
                 registry,
                 attemptDetail,
+                revisionContent,
               )
             : buildPerAssignmentStudentDetailList(
                 doc,
@@ -4728,6 +4916,7 @@ function renderStudentDetailSurface(
                 expected.assignments,
                 registry,
                 attemptDetail,
+                revisionContent,
               );
         if (list === null) {
           appendStudentDetailEmpty(doc, body);
@@ -4747,6 +4936,7 @@ function renderStudentDetailSurface(
             classId,
             studentId,
             seam: gradeImprovements,
+            readOnly,
             occurrencesForCard: (cardId) => occurrencesByCard.get(cardId) ?? [cardId],
             occurrenceLabel: (assignmentId) => {
               const ms = registryPublishedAt(registry, assignmentId);
@@ -4881,6 +5071,7 @@ function buildPerAssignmentStudentDetailList(
   expectedAssignments: ReadonlyArray<StudentExpectedAssignment>,
   registry: ReadonlyArray<AssignmentDetailMetadata>,
   attemptDetail: AttemptGetForTeacherCallable | null = null,
+  revisionContent: AssessmentRevisionContentReader | null = null,
 ): HTMLElement | null {
   // Group completed attempts by assignmentId: the sole source of
   // "completed" and of Best/First/Latest/Growth/Attempts/Latest Date.
@@ -4917,7 +5108,7 @@ function buildPerAssignmentStudentDetailList(
 
   for (const [assignmentId, attempts] of byAssignment) {
     const card = buildCompletedAssignmentCard(doc, assignmentId, attempts, resolveTitle(assignmentId), registry);
-    appendWrittenResponses(doc, card, attempts, attemptDetail);
+    appendAttemptDisclosures(doc, card, attempts, attemptDetail, revisionContent);
     addEntry(assignmentId, card);
   }
 
@@ -4990,6 +5181,7 @@ function buildGroupedStudentDetailList(
   groups: ReadonlyArray<StudentAssignmentGroup>,
   registry: ReadonlyArray<AssignmentDetailMetadata>,
   attemptDetail: AttemptGetForTeacherCallable | null = null,
+  revisionContent: AssessmentRevisionContentReader | null = null,
 ): HTMLElement | null {
   const list = doc.createElement("ul");
   list.className = "shell-student-detail-assignments";
@@ -5006,7 +5198,7 @@ function buildGroupedStudentDetailList(
     const attempts = studentAttempts.filter((a) => ids.has(a.assignmentId));
     const card = buildGroupCard(doc, group, attempts, registry);
     if (card !== null) {
-      appendWrittenResponses(doc, card, attempts, attemptDetail);
+      appendAttemptDisclosures(doc, card, attempts, attemptDetail, revisionContent);
       entries.push({
         card,
         assignmentId: group.operationalAssignmentId ?? group.assignmentIds[0]!,
@@ -5031,7 +5223,7 @@ function buildGroupedStudentDetailList(
       registryTitle(registry, assignmentId) ?? "Assignment",
       registry,
     );
-    appendWrittenResponses(doc, card, attempts, attemptDetail);
+    appendAttemptDisclosures(doc, card, attempts, attemptDetail, revisionContent);
     entries.push({ card, assignmentId, publishedAt: registryPublishedAt(registry, assignmentId) });
   }
 
@@ -5125,6 +5317,19 @@ function buildGroupCard(
     if (grid !== null && statusEl !== null) li.insertBefore(statusEl, grid);
   }
   return li;
+}
+
+// The per-attempt disclosures under a Student Detail card with attempts: the
+// existing Show Your Thinking, then the shared question review (PDR-032e).
+function appendAttemptDisclosures(
+  doc: Document,
+  card: HTMLElement,
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+  attemptDetail: AttemptGetForTeacherCallable | null,
+  revisionContent: AssessmentRevisionContentReader | null,
+): void {
+  appendWrittenResponses(doc, card, attempts, attemptDetail);
+  appendQuestionReview(doc, card, attempts, attemptDetail, revisionContent, formatAttemptDate);
 }
 
 // Sprint 30 Show Your Thinking. A disclosure listing each of the card's

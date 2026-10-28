@@ -57,7 +57,7 @@ It does not govern:
 - District enforcement. Every callable named here also complies with `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`; the district rules are not restated in full below.
 - The assessment session and attempt pipeline. Attempts carry stable internal references, not display names, per `ASSESSMENT_PIPELINE_SPECIFICATION.md` §466 and `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`.
 - The Google Classroom publication and deep-link paths. Those remain owned by `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`; a display-name change never propagates through the deep-link URL or a Classroom coursework record.
-- The parent, districtAdministrator, schoolAdministrator, and future co-teacher roles. Reserved by `LYFELABZ_FIRESTORE_DATA_MODEL.md` §3.1 and out of scope until authorized by a superseding PDR.
+- The parent, districtAdministrator, schoolAdministrator, and future co-teacher roles. Reserved by `LYFELABZ_FIRESTORE_DATA_MODEL.md` §3.1 and out of scope until authorized by a superseding PDR. (PDR-032 Reconciliation Note: PDR-032d supersedes this reservation for one surface only. A support educator holding an active `studentSupportGrants` grant reads each granted student's name through the canonical resolver in this contract, plus the class title and owner's display name, and the owning teacher reads grantee names and emails for grants on their own class. No co-teacher role exists and no other co-teacher name surface is authorized. See `STUDENT_SUPPORT_ACCESS.md`.)
 
 ## 3. Authority and Precedence
 

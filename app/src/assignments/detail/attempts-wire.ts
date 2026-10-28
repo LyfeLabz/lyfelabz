@@ -31,6 +31,9 @@ export type TeacherVisibleItemResult = {
   readonly isCorrect: boolean;
   readonly correctOptionId: string;
   readonly studentResponse: string | null;
+  // Student Detail question review: the explanation frozen on the attempt
+  // (the permitted answer-key subset), or null when absent or empty.
+  readonly explanation?: string | null;
 };
 
 export type TeacherVisibleAttempt = {
@@ -49,6 +52,10 @@ export type TeacherVisibleAttempt = {
   // Sprint 30 Show Your Thinking: the written response frozen on this
   // attempt, or null when it carries none (or predates the field).
   readonly writtenResponse?: string | null;
+  // Student Detail question review (PDR-032e): false when the attempt was
+  // delivered with an adapted presentation, so revision question text must
+  // not be paired with it. Absent (older server) is treated as true.
+  readonly canonicalContent?: boolean;
 };
 
 export type AttemptGetForTeacherCallable = (input: {
@@ -61,6 +68,42 @@ const isString = (v: unknown): v is string =>
 const isNumber = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v);
 
+// Strict per-entry parse shared by the class-wide and student-scoped attempt
+// lists: a malformed entry is dropped, never repaired.
+function parseCompletedAttemptSummaries(raw: unknown): CompletedAttemptSummary[] {
+  const rawList = Array.isArray(raw) ? raw : [];
+  const parsed: CompletedAttemptSummary[] = [];
+  for (const entry of rawList) {
+    if (entry === null || typeof entry !== "object") continue;
+    const r = entry as CallableRecord;
+    if (
+      !isString(r.attemptId) ||
+      !isString(r.studentId) ||
+      !isString(r.studentDisplayName) ||
+      !isString(r.assignmentId) ||
+      !isNumber(r.attemptNumber) ||
+      !isNumber(r.score) ||
+      !isNumber(r.maxScore) ||
+      !isNumber(r.percentage) ||
+      !isNumber(r.submittedAt)
+    ) {
+      continue;
+    }
+    parsed.push({
+      attemptId: r.attemptId,
+      studentId: r.studentId,
+      studentDisplayName: r.studentDisplayName,
+      assignmentId: r.assignmentId,
+      attemptNumber: r.attemptNumber,
+      score: r.score,
+      maxScore: r.maxScore,
+      percentage: r.percentage,
+      submittedAt: r.submittedAt,
+    });
+  }
+  return parsed;
+}
+
 export function createAttemptsListForClassCallable(
   functions: Functions,
 ): AttemptsListForClassCallable {
@@ -68,36 +111,7 @@ export function createAttemptsListForClassCallable(
   return async (input) => {
     const res = await callable({ classId: input.classId });
     const data = (res.data ?? {}) as CallableRecord;
-    const rawList = Array.isArray(data.attempts) ? data.attempts : [];
-    const parsed: CompletedAttemptSummary[] = [];
-    for (const raw of rawList) {
-      if (raw === null || typeof raw !== "object") continue;
-      const r = raw as CallableRecord;
-      if (
-        !isString(r.attemptId) ||
-        !isString(r.studentId) ||
-        !isString(r.studentDisplayName) ||
-        !isString(r.assignmentId) ||
-        !isNumber(r.attemptNumber) ||
-        !isNumber(r.score) ||
-        !isNumber(r.maxScore) ||
-        !isNumber(r.percentage) ||
-        !isNumber(r.submittedAt)
-      ) {
-        continue;
-      }
-      parsed.push({
-        attemptId: r.attemptId,
-        studentId: r.studentId,
-        studentDisplayName: r.studentDisplayName,
-        assignmentId: r.assignmentId,
-        attemptNumber: r.attemptNumber,
-        score: r.score,
-        maxScore: r.maxScore,
-        percentage: r.percentage,
-        submittedAt: r.submittedAt,
-      });
-    }
+    const parsed = parseCompletedAttemptSummaries(data.attempts);
     return {
       classId: isString(data.classId) ? data.classId : input.classId,
       attempts: parsed,
@@ -133,6 +147,7 @@ export function createAttemptGetForTeacherCallable(
         correctOptionId: r.correctOptionId,
         studentResponse:
           typeof r.studentResponse === "string" ? r.studentResponse : null,
+        explanation: isString(r.explanation) ? r.explanation : null,
       });
     }
     return {
@@ -150,6 +165,36 @@ export function createAttemptGetForTeacherCallable(
       writtenResponse: isString(attempt.writtenResponse)
         ? attempt.writtenResponse
         : null,
+      canonicalContent: attempt.canonicalContent !== false,
+    };
+  };
+}
+
+// Student Support Access (PDR-032): wire for the student-scoped
+// `assessmentAttemptsListForStudent`. Same summary shape and parsing as the
+// class-wide list, but the server returns only the one authorized student.
+export type AttemptsListForStudentCallable = (input: {
+  readonly classId: string;
+  readonly studentId: string;
+}) => Promise<{
+  readonly classId: string;
+  readonly studentId: string;
+  readonly attempts: ReadonlyArray<CompletedAttemptSummary>;
+}>;
+
+export function createAttemptsListForStudentCallable(
+  functions: Functions,
+): AttemptsListForStudentCallable {
+  const callable = httpsCallable(functions, "assessmentAttemptsListForStudent");
+  return async (input) => {
+    const res = await callable({ classId: input.classId, studentId: input.studentId });
+    const data = (res.data ?? {}) as CallableRecord;
+    return {
+      classId: isString(data.classId) ? data.classId : input.classId,
+      studentId: isString(data.studentId) ? data.studentId : input.studentId,
+      attempts: parseCompletedAttemptSummaries(data.attempts).filter(
+        (a) => a.studentId === input.studentId,
+      ),
     };
   };
 }

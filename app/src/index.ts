@@ -22,6 +22,8 @@ import {
 import { createReadGradePassbackStatuses } from "./lms/gradePassbackStatuses";
 import { createFirebaseGradePassbackRetry } from "./lms/gradePassbackRetry";
 import { installGradeImprovementsSeam } from "./assignments/gradeImprovements/session";
+import { installStudentSupportSeam } from "./supportAccess/session";
+import { createStudentSupportSeam } from "./supportAccess/wire";
 import { createGradeImprovementsCallables } from "./assignments/gradeImprovements/wire";
 import {
   createFirebaseCreateClass,
@@ -803,6 +805,11 @@ async function run(): Promise<void> {
         createAssessmentStudentAssignmentsForClassCallable(functions);
       attemptGetForTeacher = createAttemptGetForTeacherCallable(functions);
       installGradeImprovementsSeam(createGradeImprovementsCallables(functions));
+      // Student Support Access (PDR-032): grant management, shared students,
+      // the student-scoped attempts read, and question-review revision text.
+      installStudentSupportSeam(
+        createStudentSupportSeam(functions, createFirestoreAssessmentRevisionContentReader(db)),
+      );
       createClass = createFirebaseCreateClass(functions);
       lmsCreateClass = createFirebaseLmsCreateClass(functions);
       activateClass = createFirebaseActivateClass(functions);
@@ -882,6 +889,7 @@ async function run(): Promise<void> {
       studentAssignmentsForClass = null;
       attemptGetForTeacher = null;
       installGradeImprovementsSeam(null);
+      installStudentSupportSeam(null);
       createClass = null;
       lmsCreateClass = null;
       activateClass = null;
@@ -906,6 +914,7 @@ async function run(): Promise<void> {
       studentAssignmentsForClass = null;
       attemptGetForTeacher = null;
       installGradeImprovementsSeam(null);
+      installStudentSupportSeam(null);
       createClass = null;
       lmsCreateClass = null;
       activateClass = null;

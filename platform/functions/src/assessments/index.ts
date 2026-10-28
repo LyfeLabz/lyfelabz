@@ -59,6 +59,11 @@ export {
   type TeacherClassAttemptSummary,
 } from "./assessment-attempts-list-for-class";
 export {
+  assessmentAttemptsListForStudent,
+  type AssessmentAttemptsListForStudentRequest,
+  type AssessmentAttemptsListForStudentResponse,
+} from "./assessment-attempts-list-for-student";
+export {
   assessmentIdFor,
   deployAssessmentRevision,
   parseRevisionOrdinalFromId,

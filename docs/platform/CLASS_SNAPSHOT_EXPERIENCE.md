@@ -261,7 +261,7 @@ The following possibilities are named so they are not silently invented later. E
 
 **Same-lesson stuck signal.** A signal that shows when many students in the class are stuck on the same idea inside the same lesson. Currently answered as an individual right-now question ("who is stuck?"). If the same-idea aggregation becomes valuable, it must remain glanceable and remain free of analytics vocabulary.
 
-**Read-only Snapshot for coaches or co-teachers.** A future co-teaching model may benefit from a shared Snapshot. This is deferred to the Teachers domain and to a future co-teaching architecture pass. It requires its own decision record.
+**Read-only Snapshot for coaches or co-teachers.** A future co-teaching model may benefit from a shared Snapshot. This is deferred to the Teachers domain and to a future co-teaching architecture pass. It requires its own decision record. (PDR-032 Reconciliation Note: still deferred. PDR-032 shares only one student's Student Detail, read-only, never a class Snapshot.)
 
 **Historical Snapshot.** A Snapshot as it looked yesterday, or last week. This edges into analytics vocabulary and is deferred to the Analytics phase. If Snapshot ever gains a "yesterday" view, that view must remain a preparation surface for a teacher walking into today, not a performance report for a teacher looking backward.
 

@@ -11,6 +11,10 @@
 - ASSESSMENT_PIPELINE_SPECIFICATION.md
 - IDENTITY_AND_ONBOARDING_SPECIFICATION.md
 
+## Student Support Access Reconciliation Notice (PDR-032)
+
+`studentSupportGrants/{grantId}` has no Rules block; the terminal default-deny refuses every client role every operation (tests: `platform/firebase/tests/student-support-grants.rules.test.ts`). A grant confers no direct document access: the grantee is still refused the owner's `classes`, `enrollments`, and `attempts` documents. Read-only access to one granted student flows only through server callables that call the shared `authorizeStudentScopedRead` check on every request (owner, or active grant with active class, active enrollment, and an active owner at the same school and district). Class-wide reads and every write remain owner-only. Revocation denies the next server read; it does not erase what an open browser tab already rendered. No existing rule is changed. Canonical: `STUDENT_SUPPORT_ACCESS.md`. Not deployed.
+
 ## U1A Reconciliation Notice
 
 `teacherUnits/{unitId}` (teacher-defined units) is readable (`get`, `list`) only by the owning teacher while their canonical `users/{uid}` is an active `teacher` and the unit's `schoolId` is their current canonical school; a client list must filter by both `teacherId` and `schoolId`. Every direct client write is denied; the `teacherUnits*` callables are the sole writers, and each re-verifies the caller's canonical user, school, and district inside the transaction that reads or writes unit data. The server-only `teacherUnitCreateReceipts/{receiptId}` (create retry receipts) denies all client access. No existing rule is broadened. Canonical: `TEACHER_UNITS.md`; tests: `platform/firebase/tests/teacher-units.rules.test.ts`. Not deployed.

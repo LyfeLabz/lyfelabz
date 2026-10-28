@@ -16,6 +16,7 @@ import {
   type ResolvedRosterDisplayName,
 } from "../enrollments/resolve-roster-display-name";
 import type { AssessmentSessionResponse } from "../shared/types/assessment-session";
+import { authorizeStudentScopedReadForLoadedClass } from "../supportAccess/authorize";
 
 // Client-supplied request payload for assessmentAttemptGetForTeacher.
 // The attempt identifier is the only accepted field; the loaded attempt
@@ -79,6 +80,12 @@ export type TeacherVisibleAttemptDetail = {
   // this attempt, or `null` when the attempt carries none (no response
   // written, or finalized before written responses were persisted).
   readonly writtenResponse: string | null;
+  // Student Detail question review (PDR-032e): true when the attempt was
+  // delivered with the canonical revision content, so the revision's item
+  // and option text may be paired with these results. False for an attempt
+  // that froze an adapted presentation; the review then shows results
+  // without question or choice text. Carries no accommodation detail.
+  readonly canonicalContent: boolean;
 };
 
 export type AssessmentAttemptGetForTeacherResponse = {
@@ -255,6 +262,10 @@ export function projectTeacherAttemptDetail(
       attempt.writtenResponse.length > 0
         ? attempt.writtenResponse
         : null,
+    canonicalContent:
+      attempt.deliveryOutcome !== "differentiated" &&
+      attempt.assessmentPresentationRevisionId === undefined &&
+      attempt.presentationRevisionId === undefined,
   };
 }
 
@@ -374,15 +385,15 @@ async function assessmentAttemptGetForTeacherHandler(
 
   const classRecord = await loadClass(attempt.classId);
 
-  if (
-    classRecord.teacherId !== actor.uid ||
-    classRecord.schoolId !== actor.schoolId
-  ) {
-    throw new PlatformError(
-      "classes.forbidden",
-      "Caller does not own the class that owns this attempt.",
-    );
-  }
+  // Student Support Access (PDR-032c): the class owner, or a grantee holding
+  // an active grant for exactly this attempt's frozen (classId, studentId).
+  // Refusal is `classes.forbidden` either way.
+  const access = await authorizeStudentScopedReadForLoadedClass(
+    actor,
+    attempt.classId,
+    attempt.studentId,
+    classRecord,
+  );
 
   if (
     attempt.teacherId !== classRecord.teacherId ||
@@ -405,6 +416,7 @@ async function assessmentAttemptGetForTeacherHandler(
     log.info("assessmentAttempts.retrievedForTeacher", {
       actorUserId: actor.uid,
       attemptId: input.attemptId,
+      via: access.via,
     }),
   );
 

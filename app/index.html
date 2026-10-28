@@ -5441,7 +5441,8 @@
      Student Detail card. A narrow mirror of the existing disclosure grammar
      (.shell-lesson-resources-toggle: native button, aria-expanded, rotating
      decorative caret) and the metric cell surface, not a new visual system. */
-  .shell-student-detail-thinking-toggle {
+  .shell-student-detail-thinking-toggle,
+  .shell-student-detail-review-toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -5457,21 +5458,26 @@
     cursor: pointer;
     min-height: 28px;
   }
-  .shell-student-detail-thinking-toggle::after {
+  .shell-student-detail-thinking-toggle::after,
+  .shell-student-detail-review-toggle::after {
     content: "\203A";
     font-size: 1rem;
     line-height: 1;
     color: var(--tw-ink-muted, #566472);
     transition: transform 0.15s ease;
   }
-  .shell-student-detail-thinking-toggle[aria-expanded="true"]::after {
+  .shell-student-detail-thinking-toggle[aria-expanded="true"]::after,
+  .shell-student-detail-review-toggle[aria-expanded="true"]::after {
     transform: rotate(90deg);
   }
   .shell-student-detail-thinking-toggle:hover,
-  .shell-student-detail-thinking-toggle:focus-visible {
+  .shell-student-detail-thinking-toggle:focus-visible,
+  .shell-student-detail-review-toggle:hover,
+  .shell-student-detail-review-toggle:focus-visible {
     color: var(--tw-ink, #1c2733);
   }
-  .shell-student-detail-thinking-toggle:focus-visible {
+  .shell-student-detail-thinking-toggle:focus-visible,
+  .shell-student-detail-review-toggle:focus-visible {
     outline: none;
     box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
   }
@@ -5508,6 +5514,116 @@
   }
   .shell-student-detail-thinking-muted {
     margin: 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.9rem;
+  }
+  /* Student Detail question review (PDR-032e): one attempt at a time, per
+     question. Mirrors the Show Your Thinking disclosure and metric cell
+     surface. Status is always visible text; the left rule only reinforces
+     it, so meaning never depends on color alone. */
+  .shell-student-detail-review-toggle { margin-left: 1rem; }
+  .shell-student-detail-review[hidden] { display: none; }
+  .shell-student-detail-review { margin: 0.4rem 0 0 0; }
+  .shell-student-detail-review-attempt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 0.4rem 0;
+    font-size: 0.85rem;
+    color: var(--tw-ink-soft);
+  }
+  .shell-student-detail-review-select {
+    font: inherit;
+    min-height: 32px;
+    max-width: 100%;
+  }
+  .shell-student-detail-review-summary {
+    margin: 0;
+    font-weight: 600;
+    color: var(--tw-ink);
+  }
+  .shell-student-detail-review-missed {
+    margin: 0.1rem 0 0.4rem 0;
+    color: var(--tw-ink-soft);
+    font-size: 0.88rem;
+  }
+  .shell-student-detail-review-list {
+    list-style: none;
+    margin: 0.4rem 0 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .shell-student-detail-review-item {
+    padding: 0.55rem 0.7rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-left-width: 4px;
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-student-detail-review-correct { border-left-color: var(--tw-primary); }
+  .shell-student-detail-review-incorrect,
+  .shell-student-detail-review-unanswered { border-left-color: rgba(153, 30, 30, 0.55); }
+  .shell-student-detail-review-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0 0 0.25rem 0;
+  }
+  .shell-student-detail-review-number {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tw-ink-muted);
+  }
+  .shell-student-detail-review-status {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--tw-ink);
+  }
+  .shell-student-detail-review-incorrect .shell-student-detail-review-status,
+  .shell-student-detail-review-unanswered .shell-student-detail-review-status {
+    color: #a33a3a;
+  }
+  .shell-student-detail-review-correct .shell-student-detail-review-status {
+    color: var(--tw-primary-strong);
+  }
+  .shell-student-detail-review-stem {
+    margin: 0 0 0.35rem 0;
+    color: var(--tw-ink);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .shell-student-detail-review-answers {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.2rem 0.75rem;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .shell-student-detail-review-answers dt {
+    font-weight: 600;
+    color: var(--tw-ink-soft);
+  }
+  .shell-student-detail-review-answers dd {
+    margin: 0;
+    color: var(--tw-ink);
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 480px) {
+    .shell-student-detail-review-answers { grid-template-columns: minmax(0, 1fr); }
+    .shell-student-detail-review-answers dd { margin: 0 0 0.3rem 0; }
+  }
+  @media (pointer: coarse) {
+    .shell-student-detail-review-toggle,
+    .shell-student-detail-review-select { min-height: 44px; }
+  }
+  .shell-student-detail-shared-context {
+    margin: 0.1rem 0 0.6rem 0;
     color: var(--tw-ink-muted);
     font-size: 0.9rem;
   }
@@ -5748,6 +5864,88 @@
   .shell-classes-settings-roster {
     margin: 0.2rem 0 0.4rem 0;
   }
+  /* Class settings > Support access (PDR-032): owner-only grant
+     management in the same quiet section grammar as the roster action. */
+  .shell-classes-settings-support { margin: 0.2rem 0 0.4rem 0; }
+  .shell-classes-settings-support-help {
+    margin: 0 0 0.4rem 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.85rem;
+  }
+  .shell-classes-settings-support-list {
+    list-style: none;
+    margin: 0 0 0.5rem 0;
+    padding: 0;
+    font-size: 0.88rem;
+  }
+  .shell-classes-settings-support-grant {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--tw-hairline);
+    overflow-wrap: anywhere;
+  }
+  .shell-classes-settings-support-empty { color: var(--tw-ink-muted); }
+  .shell-classes-settings-support-revoke {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: transparent;
+    border: none;
+    color: var(--tw-primary-strong);
+    cursor: pointer;
+    min-height: 28px;
+    padding: 0 0.2rem;
+  }
+  .shell-classes-settings-support-revoke:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  @media (pointer: coarse) {
+    .shell-classes-settings-support-revoke { min-height: 44px; }
+  }
+  /* Classes > Shared students (PDR-032): students other teachers shared,
+     view only. Plain list buttons on the existing card surface. */
+  .shell-classes-shared { margin: 1.5rem 0 0 0; }
+  .shell-classes-shared-heading { margin: 0 0 0.2rem 0; font-size: 1.05rem; }
+  .shell-classes-shared-help {
+    margin: 0 0 0.6rem 0;
+    color: var(--tw-ink-muted);
+    font-size: 0.9rem;
+  }
+  .shell-classes-shared-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.6rem;
+  }
+  .shell-classes-shared-student {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.6rem 0.8rem;
+    font: inherit;
+    text-align: left;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-radius: var(--tw-radius-control);
+    cursor: pointer;
+  }
+  .shell-classes-shared-student:hover { border-color: var(--tw-ink-muted); }
+  .shell-classes-shared-student:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-classes-shared-name { font-weight: 600; color: var(--tw-ink); }
+  .shell-classes-shared-meta { font-size: 0.85rem; color: var(--tw-ink-muted); }
   /* Curated palette swatches, never a free-form picker. Each swatch is
      a small filled circle in its own token color; "None" is an outlined
      neutral circle. A selected swatch gets a visible ring, not just a

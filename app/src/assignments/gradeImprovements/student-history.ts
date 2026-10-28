@@ -17,6 +17,9 @@ export type StudentGradeHistoryOptions = {
   readonly classId: string;
   readonly studentId: string;
   readonly seam: GradeImprovementsSeam;
+  // Student Support Access (PDR-032): a support educator's read-only Student
+  // Detail shows status and history but never the Undo control.
+  readonly readOnly?: boolean;
   // The assignment occurrences a card covers (one, or a whole Current
   // occurrence group). Keyed by the card's `data-assignment-id`.
   readonly occurrencesForCard: (cardAssignmentId: string) => ReadonlyArray<string>;
@@ -131,7 +134,7 @@ function renderBlock(
   controls.appendChild(toggle);
 
   const effective = history.effective;
-  if (effective !== null) {
+  if (effective !== null && opts.readOnly !== true) {
     const undo = doc.createElement("button");
     undo.type = "button";
     undo.className = "shell-student-detail-grade-update-undo";

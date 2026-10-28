@@ -6,19 +6,18 @@ import {
   assignmentDocRef,
   assignmentRecipientsCollectionGroupRef,
   assessmentSessionsCollectionRef,
-  classDocRef,
   log,
   requireDistrictContext,
   type AssessmentSessionRecord,
   type AssignmentRecipientRecord,
   type AssignmentRecord,
-  type ClassRecord,
 } from "../shared";
 import {
   createClassAssignmentsLoader,
   occurrenceScopeOf,
   resolveCurrentOccurrenceGroup,
 } from "../assignments/current-occurrence-group";
+import { authorizeStudentScopedRead } from "../supportAccess/authorize";
 
 // Student Progress & Assignment Membership, Phase A Slice 4: certified
 // enumeration of the assignment instances one specific, teacher-owned
@@ -52,6 +51,11 @@ import {
 // `assignmentsRecipientAdd` and `assignmentsRecipientCandidatesList` already
 // do. A `studentId` outside this teacher's class yields an empty result,
 // never an error, so no cross-owner existence information leaks.
+//
+// Student Support Access (PDR-032c): class access is decided by the shared
+// `authorizeStudentScopedRead`, which also admits a grantee holding an
+// active grant for exactly this (class, student). Row filters always use the
+// class owner's uid it returns.
 //
 // Query shape: a single collection-group query on `recipients` filtered by
 // `studentId`, reusing the collection-group index already declared in
@@ -210,28 +214,6 @@ function validateRequest(
     );
   }
   return { classId, studentId };
-}
-
-async function loadOwnedClass(
-  classId: string,
-  actor: { readonly uid: string; readonly schoolId: string },
-): Promise<ClassRecord> {
-  const snapshot = await classDocRef(classId).get();
-  if (!snapshot.exists) {
-    throw new PlatformError("classes.forbidden", "Class was not found.");
-  }
-  const data = snapshot.data();
-  if (
-    !data ||
-    data.teacherId !== actor.uid ||
-    data.schoolId !== actor.schoolId
-  ) {
-    throw new PlatformError(
-      "classes.forbidden",
-      "Caller does not own this class.",
-    );
-  }
-  return data;
 }
 
 // A minimal internal projection of the recipient record used to gate the
@@ -404,7 +386,20 @@ async function assessmentStudentAssignmentsForClassHandler(
   const actor = await assertActiveTeacherInDistrict(request);
   const input = validateRequest(request.data);
 
-  await loadOwnedClass(input.classId, actor);
+  // Student Support Access (PDR-032c): the owner, or a grantee holding an
+  // active grant for exactly this class and student. Every row filter below
+  // compares frozen ownership against the class OWNER (`owner.uid`), so a
+  // grantee sees exactly what the owner sees for this one student.
+  const access = await authorizeStudentScopedRead(
+    actor,
+    input.classId,
+    input.studentId,
+  );
+  const owner = {
+    uid: access.ownerTeacherId,
+    schoolId: actor.schoolId,
+    districtId: actor.districtId,
+  };
 
   // Canonical query: enumerate every recipient document for the requested
   // student across every assignment, scoped to this class and this
@@ -426,14 +421,14 @@ async function assessmentStudentAssignmentsForClassHandler(
   const candidateAssignmentIds = new Set<string>();
   for (const doc of recipientSnapshot.docs) {
     const data = doc.data() as AssignmentRecipientRecord | undefined;
-    if (!isVisibleRecipient(doc, data, input, actor)) continue;
+    if (!isVisibleRecipient(doc, data, input, owner)) continue;
     candidateAssignmentIds.add(data.assignmentId);
   }
 
   const verifiedRecords = new Map<string, AssignmentRecord>();
   await Promise.all(
     Array.from(candidateAssignmentIds).map(async (assignmentId) => {
-      const record = await loadAssignmentIfStillOwned(assignmentId, input, actor);
+      const record = await loadAssignmentIfStillOwned(assignmentId, input, owner);
       if (record !== null) verifiedRecords.set(assignmentId, record);
     }),
   );
@@ -453,7 +448,7 @@ async function assessmentStudentAssignmentsForClassHandler(
     if (data.status !== "live") continue;
     if (data.studentId !== input.studentId) continue;
     if (data.classId !== input.classId) continue;
-    if (data.teacherId !== actor.uid) continue;
+    if (data.teacherId !== owner.uid) continue;
     if (data.schoolId !== actor.schoolId) continue;
     if (data.districtId !== actor.districtId) continue;
     if (!isNonEmptyString(data.assignmentId)) continue;
@@ -480,6 +475,7 @@ async function assessmentStudentAssignmentsForClassHandler(
       actorUserId: actor.uid,
       classId: input.classId,
       studentId: input.studentId,
+      via: access.via,
       count: assignments.length,
       groups: groups.length,
     }),
