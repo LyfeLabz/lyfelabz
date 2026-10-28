@@ -102,7 +102,7 @@ import { renderDeepLinkArrival } from "./assignments/deepLink/arrival";
 import { createAssignmentDetailRegistry } from "./assignments/detail/registry";
 import { createAssignmentDetailMetadataReader } from "./assignments/detail/wire";
 import { renderAssignmentDetail } from "./assignments/detail/detail";
-import { hydrateAssignmentDetailRegistry } from "./assignments/detail/hydrate";
+import { createAssignmentRegistryHydration } from "./assignments/detail/hydration";
 import {
   createDetailLmsRetrySeam,
   clearLmsPublicationRetryContexts,
@@ -342,6 +342,14 @@ async function run(): Promise<void> {
   // Rebuilt per active-teacher session so cross-session state cannot
   // leak.
   const assignmentDetailRegistry = createAssignmentDetailRegistry();
+  // Performance Operation 1: background hydration of the registry above,
+  // bound to each bootstrap generation. Every registry write (lifecycle or
+  // enumeration) and every clear goes through this controller so a late
+  // enumeration response can never overwrite newer lifecycle metadata or
+  // land in another teacher's or school's context.
+  const assignmentHydration = createAssignmentRegistryHydration(
+    assignmentDetailRegistry,
+  );
   // Sprint 16 Slice 1: hoisted references used by the lighter Back path
   // from Assignment Detail. `lastActiveTeacher` records the most-recent
   // successful active-teacher session (set at the end of `rerun` on the
@@ -415,6 +423,10 @@ async function run(): Promise<void> {
     options?: AssignmentDetailOpenOptions,
   ): void => {
     if (assignmentSummary === null) return;
+    // Performance Operation 1: Detail's lifecycle writes (reopen, draft
+    // update, publish) are bound to the bootstrap context Detail opened in,
+    // captured before any of that asynchronous work can begin.
+    const writeLifecycle = assignmentHydration.writer();
     // Capture the narrowed callable so the deferred `renderDetailInto`
     // closure below keeps the non-null type (TS re-widens `assignmentSummary`
     // inside a closure that could run later).
@@ -441,6 +453,7 @@ async function run(): Promise<void> {
       assignmentId,
       loadMetadata: createAssignmentDetailMetadataReader(
         assignmentDetailRegistry,
+        assignmentHydration.readiness,
       ),
       summaryCallable: summaryCallable,
       onBack: () => {
@@ -586,7 +599,9 @@ async function run(): Promise<void> {
           ? createRosterSortPreference(lastActiveTeacher.uid)
           : undefined,
       onStatusChange: (metadata) => {
-        assignmentDetailRegistry.register(metadata);
+        // A completion from an older context writes nothing and refreshes
+        // nothing in the current one.
+        if (!writeLifecycle(metadata)) return;
         // Sprint 16 Slice 1: when Curriculum owns the mount, refresh the
         // affected dashboard card. The invalidator is null while any
         // non-Curriculum surface (including Assignment Detail) is
@@ -604,27 +619,31 @@ async function run(): Promise<void> {
       renderDetailInto(target);
     }
   };
-  // Sprint 13B remediation. Stable per-tab seam consumed by the
-  // Curriculum surface. `register` records teacher-owned metadata into
-  // the session-scoped registry after a successful publish; `open`
-  // invokes the entry-point Assignment Detail opener. The seam is
-  // stable across reruns; the underlying registry is cleared on any
-  // non-teacher bootstrap outcome, so `open` is a safe no-op after
-  // sign-out (the registry lookup returns null and the detail surface
-  // renders its empty state).
-  const assignmentDetailSeam = Object.freeze({
-    register: (metadata: Parameters<typeof assignmentDetailRegistry.register>[0]) => {
-      assignmentDetailRegistry.register(metadata);
-    },
-    open: (assignmentId: string, options?: AssignmentDetailOpenOptions) => {
-      openAssignmentDetail(assignmentId, options);
-    },
+  // Sprint 13B remediation. Seam consumed by the Curriculum and Classes
+  // surfaces. `register` records teacher-owned metadata into the
+  // session-scoped registry after a successful publish; `open` invokes the
+  // entry-point Assignment Detail opener. The underlying registry is
+  // cleared on any non-teacher bootstrap outcome.
+  //
+  // Performance Operation 1: the seam is rebuilt for every bootstrap
+  // generation (`createAssignmentDetailSeam` below, called from `rerun`), and
+  // surfaces receive it at dispatch. Its `register` is a lifecycle writer
+  // bound to the generation the seam was built in, so a publish that began
+  // under teacher/school A and completes after a switch to B writes nothing
+  // into B's registry. Its `open` is a no-op once a newer generation has
+  // replaced it, so a deferred navigation from a torn-down context can never
+  // open Detail in the current one.
+  const assignmentDetailSeamBase = Object.freeze({
     // Sprint 13C: expose the current registry contents so the Curriculum
     // surface can restore its per-lesson mapping after a full page
     // reload. Returns only teacher-owned metadata (title, className,
     // status, lessonSlug, classId); never student, recipient, attempt,
     // or session identifiers.
     list: () => assignmentDetailRegistry.list(),
+    // Performance Operation 1: whether `list` is complete yet. Surfaces show
+    // a loading state while pending and never read a pending registry as an
+    // empty assignment list.
+    registryStatus: assignmentHydration.readiness,
     // Sprint 16 Slice 1: Curriculum installs a per-assignment
     // invalidator on mount and clears it on unmount. The entry point
     // holds the mutable slot so a lifecycle status change routed
@@ -667,6 +686,21 @@ async function run(): Promise<void> {
       };
     },
   });
+  const createAssignmentDetailSeam = () => {
+    const register = assignmentHydration.writer();
+    const seam = Object.freeze({
+      ...assignmentDetailSeamBase,
+      register: (metadata: Parameters<typeof assignmentDetailRegistry.register>[0]) => {
+        register(metadata);
+      },
+      open: (assignmentId: string, options?: AssignmentDetailOpenOptions) => {
+        if (assignmentDetailSeam !== seam) return;
+        openAssignmentDetail(assignmentId, options);
+      },
+    });
+    return seam;
+  };
+  let assignmentDetailSeam = createAssignmentDetailSeam();
   // Firebase Functions instance for this page, with the local-emulator
   // override applied exactly as each session branch has always done.
   const loadAppFunctions = async () => {
@@ -722,9 +756,16 @@ async function run(): Promise<void> {
     );
     if (runToken !== currentRunToken) return;
     if (session.kind === "activeTeacher") {
-      const { getFunctions, connectFunctionsEmulator } = await import(
-        "firebase/functions"
-      );
+      // Performance Operation 1: the Functions import is this branch's only
+      // await before it installs shared dependencies, records the active
+      // teacher, starts hydration, rebuilds the seam, and dispatches. The
+      // live token is checked here, in this continuation, immediately after
+      // the import resumes: a run superseded at any point before this line
+      // runs (including between the import settling and this resumption)
+      // stops here, touching none of that.
+      const { getFunctions, connectFunctionsEmulator } =
+        await import("firebase/functions");
+      if (runToken !== currentRunToken) return;
       const functions = getFunctions(auth.app, "us-central1");
       const emulators = getEmulatorEndpoints();
       if (emulators !== null) {
@@ -834,18 +875,24 @@ async function run(): Promise<void> {
         listClassLinks: integrations.listClassLinks ?? null,
       });
       // Sprint 13C: hydrate the session-scoped assignment-detail registry
-      // from the certified `assignmentsTeacherList` retrieval path. The
-      // hydration runs once per active-teacher session and is calm on
-      // failure so a callable outage never blocks the workspace. Newly
+      // from the certified `assignmentsTeacherList` retrieval path. Newly
       // published assignments in the current session still register
       // through the Sprint 13B publish path; deduplication is by canonical
       // assignmentId inside the registry.
-      const teacherList = createAssignmentsTeacherListCallable(functions);
-      await hydrateAssignmentDetailRegistry(
-        assignmentDetailRegistry,
-        teacherList,
+      //
+      // Performance Operation 1: hydration is started, NOT awaited, so the
+      // authorized Teacher Workspace (and its Classes list) mounts without
+      // waiting for enumeration. It runs once per bootstrap generation and a
+      // response is applied only while this run is still current.
+      assignmentHydration.start(
+        {
+          uid: session.uid,
+          schoolId: session.schoolId,
+          generation: runToken,
+          isCurrent: () => runToken === currentRunToken,
+        },
+        createAssignmentsTeacherListCallable(functions),
       );
-      if (runToken !== currentRunToken) return;
       lastActiveTeacher = session;
       studentAssignmentsList = null;
       studentResultsList = null;
@@ -895,7 +942,7 @@ async function run(): Promise<void> {
       activateClass = null;
       syncRoster = null;
       importFromClassroom = null;
-      assignmentDetailRegistry.clear();
+      assignmentHydration.reset();
       clearLmsPublicationRetryContexts();
       lastActiveTeacher = null;
     } else {
@@ -920,13 +967,17 @@ async function run(): Promise<void> {
       activateClass = null;
       syncRoster = null;
       importFromClassroom = null;
-      assignmentDetailRegistry.clear();
+      assignmentHydration.reset();
       clearLmsPublicationRetryContexts();
       lastActiveTeacher = null;
       studentAssignmentsList = null;
       studentResultsList = null;
       studentDeepLinkResolve = null;
     }
+    // Performance Operation 1: a fresh seam for this generation, built after
+    // the controller started (teacher) or reset (everyone else), so its
+    // lifecycle writer is bound to this generation's context.
+    assignmentDetailSeam = createAssignmentDetailSeam();
     activeAssignmentsInvalidator = null;
     // Sprint 28.5D (D2A): drop the shell outlet controller on every bootstrap
     // transition, mirroring the invalidator above. A teacher shell re-registers

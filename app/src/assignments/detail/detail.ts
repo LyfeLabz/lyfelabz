@@ -2896,10 +2896,11 @@ function appendClassIdentity(
   label.setAttribute("data-testid", "assignment-detail-class-value");
   label.textContent = metadata.className;
   identity.appendChild(label);
-  if (switcher === undefined || options !== null || switcher.ready === undefined) {
-    return;
-  }
-  void switcher.ready.then(
+  if (switcher === undefined || options !== null) return;
+  const ready =
+    switcher.waitUntilReady !== undefined ? switcher.waitUntilReady(label) : switcher.ready;
+  if (ready === undefined) return;
+  void ready.then(
     () => {
       if (!label.isConnected) return;
       const later = readOptions();

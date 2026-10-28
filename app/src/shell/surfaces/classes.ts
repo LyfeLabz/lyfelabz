@@ -70,6 +70,8 @@ import {
   formatLocalDate,
 } from "./shared/activeAssignments";
 import type { AssignmentDetailMetadata } from "../../assignments/detail/types";
+import type { AssignmentRegistryReadiness } from "../../assignments/detail/hydration";
+import { watchRegistryReadiness } from "./shared/registryReadiness";
 import {
   chooseCurrentTarget,
   listClassSwitchOptions,
@@ -240,6 +242,9 @@ type ClassAssignmentsView = {
   readonly open: (classId: string, assignmentId: string) => void;
   readonly summaryCallable: AssignmentSummaryCallable | null;
   readonly onGoToCurriculum: (() => void) | null;
+  // Performance Operation 1: whether `listRegistry` is complete yet. Null
+  // (harnesses without the seam field) means it is.
+  readonly readiness: AssignmentRegistryReadiness | null;
 };
 
 // Optional snapshot preview data. When null (production default), the
@@ -536,11 +541,14 @@ export function renderClassesSurface(
   const updateClassColor = deps.updateClassColor ?? null;
   const readClassColors = deps.readClassColors ?? null;
 
-  // Sprint 28.6C: the whole-teacher assignment registry, already hydrated once
+  // Sprint 28.6C: the whole-teacher assignment registry, hydrated once
   // from `assignmentsTeacherList` (which carries `classId`). Reading it is a
   // pure in-memory grouping - never a per-class call, never an N+1 read.
+  // Performance Operation 1: hydration runs in the background, so readers
+  // consult `registryReadiness` before treating the list as complete.
   const listAllAssignments = (): ReadonlyArray<AssignmentDetailMetadata> =>
     assignmentDetail?.list?.() ?? [];
+  const registryReadiness = assignmentDetail?.registryStatus ?? null;
 
   // Sprint 28.6C: the count shown on a class card is exactly the set of
   // assignments reachable through that class's Assignments section - published
@@ -617,10 +625,32 @@ export function renderClassesSurface(
     openClassAssignmentsList(option.classId);
   };
 
+  // Performance Operation 1: the switcher's options read BOTH the class list
+  // and the assignment registry, so they are complete only once both are.
+  // Until then `options` reports "not ready" (null) and Detail shows the
+  // static class label. `waitUntilReady` settles when both are known,
+  // including a registry that recovers through Try again after a failure.
+  // Its registry watch is owned by the Detail element that waits (never the
+  // Classes mount, which detaches while Detail is open), so it is released
+  // when that Detail closes or the registry is ready; repeated Detail
+  // visits never accumulate listeners.
+  const waitUntilSwitcherReady = (owner: HTMLElement): Promise<void> => {
+    const readiness = registryReadiness;
+    if (readiness === null || readiness.status() === "ready") return classesKnown;
+    const registryReady = new Promise<void>((resolve) => {
+      watchRegistryReadiness(owner, readiness, (status) => {
+        if (status === "ready") resolve();
+      });
+    });
+    return Promise.all([classesKnown, registryReady]).then(() => undefined);
+  };
   const classSwitcher: AssignmentDetailClassSwitcher = {
     options: (metadata) => {
       const classes = currentClassList();
       if (classes === null) return null;
+      if (registryReadiness !== null && registryReadiness.status() !== "ready") {
+        return null;
+      }
       return listClassSwitchOptions({
         source: metadata,
         classes,
@@ -628,6 +658,7 @@ export function renderClassesSurface(
       });
     },
     ready: classesKnown,
+    waitUntilReady: waitUntilSwitcherReady,
     select: switchClassAssignment,
   };
 
@@ -681,6 +712,7 @@ export function renderClassesSurface(
     summaryCallable: assignmentSummary,
     onGoToCurriculum:
       navigateToSurface !== null ? () => navigateToSurface("curriculum") : null,
+    readiness: registryReadiness,
   };
 
   // Sprint 24B Phase 2B.8. Per-class roster-sync UI state. Ephemeral to
@@ -1776,6 +1808,125 @@ export function renderClassesSurface(
   // false, changes nothing) if the requested class is not the one
   // currently open or the student cannot be found in the last-loaded
   // roster. `restoreList` is a safe no-op unless Detail is actually open.
+  // Performance Operation 1: a Back/Forward restore of a class's Assignment
+  // Detail can arrive while the assignment registry is still hydrating, from
+  // any Classes view (the list, another class, a Students section). Rather
+  // than failing closed for good, the restore establishes the target class's
+  // Assignments section (its loading state, matching the destination) and
+  // holds an explicit intent that does not depend on the visible section.
+  // Once the registry and class list are known it re-validates and opens
+  // Detail exactly as the synchronous restore would. It is canceled by any
+  // newer history restore, any click inside Classes, the surface leaving
+  // the document (another surface, Detail, or a new bootstrap), or a
+  // registry failure (the section then shows its Try again). Nothing here
+  // notifies history, so no entry is added.
+  type PendingAssignmentRestore = {
+    readonly classId: string;
+    readonly assignmentId: string;
+    readonly stopWatching: () => void;
+  };
+  let pendingAssignmentRestore: PendingAssignmentRestore | null = null;
+  const cancelPendingAssignmentRestore = (): void => {
+    const pending = pendingAssignmentRestore;
+    if (pending === null) return;
+    pendingAssignmentRestore = null;
+    pending.stopWatching();
+    mount.removeEventListener("click", cancelPendingAssignmentRestore, true);
+  };
+  const tryRestoreAssignmentDetail = (classId: string, assignmentId: string): boolean => {
+    const meta = listAllAssignments().find((m) => m.assignmentId === assignmentId);
+    if (meta === undefined || meta.classId !== classId || !isRenderableCard(meta)) {
+      return false;
+    }
+    openClassAssignment(classId, assignmentId, { fromHistory: true });
+    return true;
+  };
+  const completePendingAssignmentRestore = (pending: PendingAssignmentRestore): void => {
+    // Still the newest intent and Classes still mounted (newer navigation
+    // cancels the intent; leaving Classes detaches the mount).
+    if (pendingAssignmentRestore !== pending || !mount.isConnected) return;
+    cancelPendingAssignmentRestore();
+    // Authorization/eligibility: the class must be one this teacher's
+    // loaded class list holds (the same posture as `restoreWorkspace`).
+    const classes = currentClassList();
+    if (classes === null || !classes.some((c) => c.id === pending.classId)) return;
+    // A genuinely missing (or no longer listable) assignment stays on the
+    // class's Assignments section, exactly as the synchronous path does.
+    tryRestoreAssignmentDetail(pending.classId, pending.assignmentId);
+  };
+  const deferAssignmentRestore = (classId: string, assignmentId: string): void => {
+    if (registryReadiness === null) return;
+    const readiness = registryReadiness;
+    const pending: PendingAssignmentRestore = {
+      classId,
+      assignmentId,
+      stopWatching: watchRegistryReadiness(mount, readiness, (status) => {
+        if (pendingAssignmentRestore !== pending) return;
+        if (status === "unavailable") {
+          cancelPendingAssignmentRestore();
+          return;
+        }
+        if (status !== "ready") return;
+        void classesKnown.then(() => {
+          completePendingAssignmentRestore(pending);
+        });
+      }),
+    };
+    pendingAssignmentRestore = pending;
+    mount.addEventListener("click", cancelPendingAssignmentRestore, true);
+  };
+
+  // The workspace half of `restoreWorkspace` (below), shared with the
+  // deferred Assignment Detail restore so both establish a class section the
+  // same way: fails closed for a class the loaded list does not hold, and
+  // never notifies history (a restore re-lands on an existing entry).
+  const restoreWorkspaceState = (
+    classId: string,
+    section: ClassWorkspaceSection,
+  ): boolean => {
+    if (state.kind !== "list" && state.kind !== "workspace" && state.kind !== "shared") {
+      return false;
+    }
+    const classes = state.classes;
+    const summary = classes.find((c) => c.id === classId);
+    if (!summary) return false;
+    const tab: ClassWorkspaceTab =
+      summary.status === "needsSetup"
+        ? "setup"
+        : section === "setup"
+          ? "assignments"
+          : section;
+    if (
+      state.kind === "workspace" &&
+      state.selectedId === classId &&
+      state.tab === tab &&
+      state.selectedStudentId === null
+    ) {
+      return true; // Already exactly here; avoid a redundant re-render/refetch.
+    }
+    listAddMode = null;
+    state = {
+      kind: "workspace",
+      classes,
+      selectedId: classId,
+      tab,
+      setupForm:
+        tab === "setup"
+          ? (state.kind === "workspace" && state.selectedId === classId
+              ? state.setupForm
+              : null) ?? emptySetupForm()
+          : null,
+      selectedStudentId: null,
+      selectedStudentDisplayName: null,
+      rosterSnapshot:
+        state.kind === "workspace" && state.selectedId === classId
+          ? state.rosterSnapshot
+          : undefined,
+    };
+    rerender();
+    return true;
+  };
+
   studentDetailHistory?.registerController({
     // Fails closed (returns false, changes nothing) if the requested
     // class is not one the roster list knows about - the same
@@ -1785,49 +1936,11 @@ export function renderClassesSurface(
     // per-section history. A needsSetup class can only show Setup; an
     // active class never restores into Setup.
     restoreWorkspace: (classId, section = "roster") => {
-      if (state.kind !== "list" && state.kind !== "workspace" && state.kind !== "shared") {
-        return false;
-      }
-      const classes = state.classes;
-      const summary = classes.find((c) => c.id === classId);
-      if (!summary) return false;
-      const tab: ClassWorkspaceTab =
-        summary.status === "needsSetup"
-          ? "setup"
-          : section === "setup"
-            ? "assignments"
-            : section;
-      if (
-        state.kind === "workspace" &&
-        state.selectedId === classId &&
-        state.tab === tab &&
-        state.selectedStudentId === null
-      ) {
-        return true; // Already exactly here; avoid a redundant re-render/refetch.
-      }
-      listAddMode = null;
-      state = {
-        kind: "workspace",
-        classes,
-        selectedId: classId,
-        tab,
-        setupForm:
-          tab === "setup"
-            ? (state.kind === "workspace" && state.selectedId === classId
-                ? state.setupForm
-                : null) ?? emptySetupForm()
-            : null,
-        selectedStudentId: null,
-        selectedStudentDisplayName: null,
-        rosterSnapshot:
-          state.kind === "workspace" && state.selectedId === classId
-            ? state.rosterSnapshot
-            : undefined,
-      };
-      rerender();
-      return true;
+      cancelPendingAssignmentRestore();
+      return restoreWorkspaceState(classId, section);
     },
     restoreToTopList: () => {
+      cancelPendingAssignmentRestore();
       if (state.kind === "shared") {
         closeSharedStudent();
         return;
@@ -1846,6 +1959,7 @@ export function renderClassesSurface(
       rerender();
     },
     restoreDetail: (classId, studentId) => {
+      cancelPendingAssignmentRestore();
       // A shared student (Forward to its entry): only one already listed by
       // the server-authorized Shared students read; fails closed otherwise.
       if (state.kind === "list" || state.kind === "shared") {
@@ -1877,6 +1991,7 @@ export function renderClassesSurface(
       return true;
     },
     restoreList: () => {
+      cancelPendingAssignmentRestore();
       if (state.kind !== "workspace" || state.selectedStudentId === null) {
         return;
       }
@@ -1888,12 +2003,17 @@ export function renderClassesSurface(
     // Assignments section itself would list. The Summary surface then loads
     // its data through its own authorized callables exactly as on a click.
     restoreAssignmentDetail: (classId, assignmentId) => {
-      const meta = listAllAssignments().find((m) => m.assignmentId === assignmentId);
-      if (meta === undefined || meta.classId !== classId || !isRenderableCard(meta)) {
-        return false;
+      cancelPendingAssignmentRestore();
+      if (tryRestoreAssignmentDetail(classId, assignmentId)) return true;
+      // Registry still hydrating: land on the target class's Assignments
+      // section (when the class list is loaded; otherwise the shell's
+      // `classesReturn` lands there) and hold the intent instead of failing
+      // closed for good (see `deferAssignmentRestore`).
+      if (registryReadiness !== null && registryReadiness.status() === "pending") {
+        restoreWorkspaceState(classId, "assignments");
+        deferAssignmentRestore(classId, assignmentId);
       }
-      openClassAssignment(classId, assignmentId, { fromHistory: true });
-      return true;
+      return false;
     },
   });
 
@@ -3991,6 +4111,7 @@ function renderClassWorkspaceState(
         readGradeImprovementsSeam(),
         false,
         revisionContent,
+        assignmentsView.readiness,
       );
     } else {
       renderRosterSurface(doc, surfaceMount, rosterView, onSelectStudent, rosterSort);
@@ -4045,6 +4166,89 @@ function renderClassAssignmentsSurface(
   // have given this class.") is removed - the "Assignments" heading is
   // self-explanatory and flows directly into the assignment cards.
 
+  // Performance Operation 1: the region below the heading follows registry
+  // readiness. While enumeration is pending it shows a loading status (never
+  // the "No assignments yet." empty state); when it settles only this region
+  // is refilled, so the headline, tab, scroll position, and focus elsewhere
+  // in the workspace are untouched. The watch is disposed as soon as the
+  // region leaves the document.
+  const region = doc.createElement("div");
+  region.className = "shell-class-assignments-region";
+  region.setAttribute("data-testid", "class-assignments-region");
+  mount.appendChild(region);
+
+  const readiness = assignmentsView.enabled ? assignmentsView.readiness : null;
+  const fill = (): void => {
+    const hadFocus = region.contains(doc.activeElement);
+    region.replaceChildren();
+    const status = readiness === null ? "ready" : readiness.status();
+    if (status === "pending") {
+      renderClassAssignmentsLoading(doc, region);
+    } else if (status === "unavailable" && readiness !== null) {
+      renderClassAssignmentsUnavailable(doc, region, readiness);
+    } else {
+      renderClassAssignmentsList(doc, region, summary, assignmentsView);
+    }
+    // Keep keyboard focus inside the section when the control that held it
+    // (for example Try again) is replaced.
+    if (hadFocus && !region.contains(doc.activeElement)) {
+      try {
+        headline.focus({ preventScroll: true });
+      } catch {
+        // ignored
+      }
+    }
+  };
+  fill();
+  if (readiness !== null) watchRegistryReadiness(region, readiness, fill);
+}
+
+function renderClassAssignmentsLoading(doc: Document, region: HTMLElement): void {
+  const loading = doc.createElement("p");
+  loading.className = "shell-status shell-class-assignments-loading";
+  loading.setAttribute("data-testid", "class-assignments-loading");
+  loading.setAttribute("role", "status");
+  loading.setAttribute("aria-live", "polite");
+  loading.textContent = "Loading assignments…";
+  region.appendChild(loading);
+}
+
+// Enumeration failed: say so plainly (never "No assignments yet.") and offer a
+// retry. The rest of the workspace stays usable.
+function renderClassAssignmentsUnavailable(
+  doc: Document,
+  region: HTMLElement,
+  readiness: AssignmentRegistryReadiness,
+): void {
+  const wrap = doc.createElement("div");
+  wrap.className = "shell-class-assignments-unavailable";
+  wrap.setAttribute("data-testid", "class-assignments-unavailable");
+  wrap.setAttribute("role", "status");
+
+  const message = doc.createElement("p");
+  message.className = "shell-status";
+  message.textContent = "We could not load assignments. Try again in a moment.";
+  wrap.appendChild(message);
+
+  const retry = doc.createElement("button");
+  retry.type = "button";
+  retry.className = "shell-classes-import-retry";
+  retry.setAttribute("data-testid", "class-assignments-retry");
+  retry.textContent = "Try again";
+  retry.addEventListener("click", () => {
+    readiness.retry();
+  });
+  wrap.appendChild(retry);
+
+  region.appendChild(wrap);
+}
+
+function renderClassAssignmentsList(
+  doc: Document,
+  mount: HTMLElement,
+  summary: ClassSummary,
+  assignmentsView: ClassAssignmentsView,
+): void {
   // Count using the same predicate as the class card so the two never
   // disagree. When there is nothing to show, render the calm empty state.
   const hasAny =
@@ -4726,6 +4930,14 @@ function renderStudentDetailSurface(
   readOnly = false,
   // Question review text source (owners and grantees alike).
   revisionContent: AssessmentRevisionContentReader | null = null,
+  // Performance Operation 1: readiness of the background assignment
+  // registry. Student work never waits for it (the server's grouped
+  // response is authoritative for titles, dates, and grouping); when it
+  // becomes ready and holds metadata for an assignment shown here that it
+  // lacked at first render, the list re-renders once to enrich it. Null:
+  // the registry is complete (or this is the shared-student path, which
+  // never reads class-wide assignment metadata).
+  assignmentsReadiness: AssignmentRegistryReadiness | null = null,
 ): void {
   const detail = doc.createElement("div");
   detail.className = "shell-student-detail";
@@ -4893,7 +5105,10 @@ function renderStudentDetailSurface(
 
   void Promise.all([attemptsPromise, expectedPromise])
     .then(([classAttemptsList, expected]) => {
-      applyIfLive(() => {
+      // The teacher left this Student Detail while its work was loading: a
+      // stale response renders nothing and installs no enrichment watch.
+      if (!body.isConnected) return;
+      const renderWork = (): void => {
         const studentAttempts = classAttemptsList.filter(
           (a) => a.studentId === studentId,
         );
@@ -4939,12 +5154,27 @@ function renderStudentDetailSurface(
             readOnly,
             occurrencesForCard: (cardId) => occurrencesByCard.get(cardId) ?? [cardId],
             occurrenceLabel: (assignmentId) => {
-              const ms = registryPublishedAt(registry, assignmentId);
+              // Read live: the registry may have hydrated since this render.
+              const ms = registryPublishedAt(listAssignments(), assignmentId);
               return ms === null ? null : `Assigned ${formatAttemptDate(ms)}`;
             },
           });
         }
-      });
+      };
+      applyIfLive(renderWork);
+      // Late enrichment: only when the registry was not ready at first
+      // render. When it becomes ready, the registry-derived title and date
+      // of each card are updated in place (never a rebuild), so an active
+      // review, its selected attempt, and focus all survive. The watch is
+      // owned by `body`, so a detached Student Detail is never updated.
+      if (assignmentsReadiness !== null && assignmentsReadiness.status() !== "ready") {
+        watchRegistryReadiness(body, assignmentsReadiness, (status) => {
+          if (status !== "ready" || !body.isConnected) return;
+          const list = body.querySelector<HTMLElement>("[data-testid=student-detail-assignments]");
+          if (list === null) return;
+          enrichStudentDetailFromRegistry(doc, list, listAssignments());
+        });
+      }
     })
     .catch(() => {
       applyIfLive(() => {
@@ -5489,19 +5719,62 @@ function appendAssignmentCardTitle(
   const titleEl = doc.createElement("div");
   titleEl.className = "shell-student-detail-assignment-title";
   titleEl.setAttribute("data-testid", "student-detail-assignment-title");
+  // Performance Operation 1: marks a title (and its date line) as derived
+  // from the assignment registry, so late registry hydration can enrich it
+  // in place (`enrichStudentDetailFromRegistry`).
+  titleEl.setAttribute("data-registry-title", "true");
   titleEl.textContent = title;
   li.appendChild(titleEl);
 
   const meta = registry.find((a) => a.assignmentId === assignmentId);
   if (meta === undefined || typeof meta.publishedAt !== "number") return;
+  li.appendChild(buildRegistryMetaLine(doc, assignmentId, meta.status, meta.publishedAt));
+}
+
+function buildRegistryMetaLine(
+  doc: Document,
+  assignmentId: string,
+  status: string,
+  publishedAt: number,
+): HTMLElement {
   const dateEl = doc.createElement("p");
   dateEl.className = "shell-student-detail-assignment-meta";
   dateEl.setAttribute(
     "data-testid",
     `student-detail-assignment-meta-${assignmentId}`,
   );
-  dateEl.textContent = `${assignmentStatusLabel(meta.status)} ${formatLocalDate(new Date(meta.publishedAt))}`;
-  li.appendChild(dateEl);
+  dateEl.textContent = `${assignmentStatusLabel(status)} ${formatLocalDate(new Date(publishedAt))}`;
+  return dateEl;
+}
+
+// Performance Operation 1: late registry metadata for an already-rendered
+// Student Detail list. Only the registry-derived parts of each card change,
+// in place: its title text and its status/date line. Nothing else is
+// rebuilt, so an open Show Your Thinking or question review, the selected
+// review attempt, its loaded content, and keyboard focus are untouched.
+// Server-titled cards (grouped Current cards) do not read the registry and
+// are left alone. Card order stays as first rendered so cards never move
+// under an active review; the next render uses the registry's order.
+function enrichStudentDetailFromRegistry(
+  doc: Document,
+  list: HTMLElement,
+  registry: ReadonlyArray<AssignmentDetailMetadata>,
+): void {
+  for (const card of Array.from(list.children)) {
+    if (!(card instanceof HTMLElement)) continue;
+    const assignmentId = card.getAttribute("data-assignment-id");
+    if (assignmentId === null) continue;
+    const titleEl = card.querySelector<HTMLElement>(":scope > [data-registry-title]");
+    if (titleEl === null) continue;
+    const meta = registry.find((a) => a.assignmentId === assignmentId);
+    if (meta === undefined) continue;
+    if (titleEl.textContent !== meta.title) titleEl.textContent = meta.title;
+    if (typeof meta.publishedAt !== "number") continue;
+    const line = buildRegistryMetaLine(doc, assignmentId, meta.status, meta.publishedAt);
+    const existing = card.querySelector<HTMLElement>(":scope > .shell-student-detail-assignment-meta");
+    if (existing === null) titleEl.after(line);
+    else if (existing.textContent !== line.textContent) existing.textContent = line.textContent;
+  }
 }
 
 function appendStudentDetailEmpty(doc: Document, container: HTMLElement): void {
