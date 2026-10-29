@@ -128,6 +128,12 @@ const addEmail = (root: ParentNode, text: string): void => {
   q<HTMLButtonElement>(root, tid("ss-share-add-recipient"))!.click();
 };
 
+const typeEmail = (root: ParentNode, text: string): void => {
+  const input = q<HTMLInputElement>(root, tid("ss-share-email"))!;
+  input.value = text;
+  input.dispatchEvent(new Event("input"));
+};
+
 const recipients = (root: ParentNode): string[] =>
   qa(root, tid("ss-share-recipient")).map((li) => li.querySelector("span")!.textContent ?? "");
 
@@ -206,15 +212,29 @@ describe("Share Student Progress: recipients", () => {
 });
 
 describe("Share Student Progress: sharing", () => {
-  it("requires students and recipients before calling the server", async () => {
+  it("Share Access is a primary button, disabled until a student and a valid teacher are chosen", async () => {
     const fake = fakeSeam();
     const root = mountSection(fake);
     await flush();
-    q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
-    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Choose at least one student.");
+    const submit = q<HTMLButtonElement>(root, tid("ss-share-submit"))!;
+    expect(submit.className).toContain("shell-btn-primary");
+    expect(submit.getAttribute("aria-describedby")).toBe("ss-share-student-count ss-share-recipient-count");
+    expect(submit.disabled).toBe(true);
+    submit.click();
+    expect(fake.grantManyCalls).toEqual([]);
     check(root, "s-ada");
-    q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
-    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Add at least one teacher email.");
+    expect(submit.disabled).toBe(true);
+    // A typed but invalid email does not enable it; a valid one does.
+    typeEmail(root, "para@school");
+    expect(submit.disabled).toBe(true);
+    typeEmail(root, "para@school.org");
+    expect(submit.disabled).toBe(false);
+    typeEmail(root, "");
+    expect(submit.disabled).toBe(true);
+    addEmail(root, "para@school.org");
+    expect(submit.disabled).toBe(false);
+    check(root, "s-ada");
+    expect(submit.disabled).toBe(true);
     expect(fake.grantManyCalls).toEqual([]);
   });
 
@@ -243,7 +263,7 @@ describe("Share Student Progress: sharing", () => {
     const root = mountSection(fake);
     await flush();
     check(root, "s-ada");
-    q<HTMLInputElement>(root, tid("ss-share-email"))!.value = "para@school.org";
+    typeEmail(root, "para@school.org");
     q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
     await flush();
     expect(fake.grantManyCalls[0]!.granteeEmails).toEqual(["para@school.org"]);
@@ -340,8 +360,10 @@ describe("Share Student Progress: sharing", () => {
     expect(calls).toHaveLength(1);
     resolve([{ studentId: "s-ada", granteeEmail: "para@school.org", outcome: "alreadyShared", reason: null }]);
     await flush();
-    expect(submit.disabled).toBe(false);
+    expect(submit.getAttribute("aria-busy")).toBeNull();
     expect(q(root, tid("ss-share-status"))!.textContent).toBe("Shared 0. Already shared 1.");
+    // Nothing failed, so the selections cleared; Share Access waits for new ones.
+    expect(submit.disabled).toBe(true);
   });
 });
 
@@ -351,6 +373,49 @@ describe("Share Student Progress: existing grants and removal", () => {
     grant("g2", "s-ben", "Ben Baker", "para@school.org"),
     grant("g3", "s-cara", "Cara Cole", "sped@school.org"),
   ];
+
+  it("keeps existing shared access in a collapsed disclosure with the count in its header", async () => {
+    const fake = fakeSeam({}, initial);
+    const root = mountSection(fake);
+    const toggle = q<HTMLButtonElement>(root, tid("ss-share-grants-toggle"))!;
+    const body = q(root, tid("ss-share-grants-body"))!;
+    expect(toggle.textContent).toBe("Shared access");
+    await flush();
+    expect(toggle.textContent).toBe("Shared access (3)");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-controls")).toBe("ss-share-grants-body");
+    expect(body.id).toBe("ss-share-grants-body");
+    expect(body.hidden).toBe(true);
+    toggle.click();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(body.hidden).toBe(false);
+    expect(qa(body, tid("ss-share-grant-row"))).toHaveLength(3);
+    // Removing one updates the count from the refreshed server list and the
+    // disclosure stays open; the result is announced outside the body.
+    q<HTMLButtonElement>(qa(body, tid("ss-share-grant-row"))[0]!, tid("ss-share-grant-remove"))!.click();
+    await flush();
+    expect(toggle.textContent).toBe("Shared access (2)");
+    expect(body.hidden).toBe(false);
+    expect(body.contains(q(root, tid("ss-share-grant-status")))).toBe(false);
+    toggle.click();
+    expect(body.hidden).toBe(true);
+  });
+
+  it("a new share updates the existing-access count; a failed read says so in the header", async () => {
+    const fake = fakeSeam();
+    const root = mountSection(fake);
+    await flush();
+    expect(q(root, tid("ss-share-grants-toggle"))!.textContent).toBe("Shared access (0)");
+    check(root, "s-ada");
+    addEmail(root, "para@school.org");
+    q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
+    await flush();
+    expect(q(root, tid("ss-share-grants-toggle"))!.textContent).toBe("Shared access (1)");
+    document.body.replaceChildren();
+    const failing = mountSection(fakeSeam({ listForClass: () => Promise.reject(new Error("x")) }));
+    await flush();
+    expect(q(failing, tid("ss-share-grants-toggle"))!.textContent).toBe("Shared access (couldn't load)");
+  });
 
   it("shows loading, then compact rows with student, recipient, status, and Remove", async () => {
     const fake = fakeSeam({}, initial);
@@ -502,45 +567,129 @@ describe("Settings > Student Services integration", () => {
     return mount;
   };
 
-  it("adds Share Student Progress below Reading Accessibility, which keeps working", async () => {
+  const toggleOf = (root: ParentNode, key: "share" | "ra"): HTMLButtonElement =>
+    q<HTMLButtonElement>(root, tid(`ss-${key}-toggle`))!;
+  const bodyOf = (root: ParentNode, key: "share" | "ra"): HTMLElement => q(root, tid(`ss-${key}-body`))!;
+
+  it("orders the class selector, Share Student Progress, then Reading Accessibility", async () => {
     const fake = fakeSeam();
     const d = deps(fake);
     const mount = await open(d, "cls-1");
     const panel = q(mount, tid("settings-panel-student-services"))!;
-    const ra = q(panel, tid("ss-student-list-section"))!;
-    const share = q(panel, tid("ss-share-section"))!;
-    expect(ra.compareDocumentPosition(share) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const picker = q(panel, tid("ss-class-picker"))!;
+    const share = q(panel, tid("ss-share-disclosure"))!;
+    const ra = q(panel, tid("ss-ra-disclosure"))!;
+    expect(picker.compareDocumentPosition(share) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(share.compareDocumentPosition(ra) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(q(panel, "#ss-share-heading")!.textContent).toBe("Share Student Progress");
+    expect(q(panel, "#ss-ra-heading")!.textContent).toBe("Reading Accessibility");
+    expect(share.getAttribute("aria-labelledby")).toBe("ss-share-heading");
+    expect(ra.getAttribute("aria-labelledby")).toBe("ss-ra-heading");
+    // One heading each: the share section carries no duplicate heading.
+    expect(qa(panel, "h3").map((h) => h.textContent)).toEqual(["Share Student Progress", "Reading Accessibility"]);
+    expect(q(share, tid("ss-share-section"))).not.toBeNull();
+    expect(q(ra, tid("ss-student-list-section"))).not.toBeNull();
     expect(d.listStudents).toHaveBeenCalledTimes(1);
     expect(q(share, tid("ss-share-submit"))!.textContent).toBe("Share Access");
     expect(panel.textContent).not.toContain("Save");
-    // Reading Accessibility still opens a student's card.
-    q<HTMLButtonElement>(panel, tid("ss-student-btn-s-ada"))!.click();
-    await flush();
-    expect(q(mount, tid("ss-student-detail"))).not.toBeNull();
-    expect(d.getAccommodation).toHaveBeenCalledWith({ studentId: "s-ada", classId: "cls-1" });
   });
 
-  it("keeps selections across Reading Accessibility redraws and resets them on class switch", async () => {
+  it("opens Share Student Progress and collapses Reading Accessibility by default", async () => {
+    const mount = await open(deps(fakeSeam()), "cls-1");
+    expect(toggleOf(mount, "share").getAttribute("aria-expanded")).toBe("true");
+    expect(bodyOf(mount, "share").hidden).toBe(false);
+    expect(toggleOf(mount, "ra").getAttribute("aria-expanded")).toBe("false");
+    expect(bodyOf(mount, "ra").hidden).toBe(true);
+  });
+
+  it("disclosure headers are keyboard-operable buttons that control their bodies and keep focus", async () => {
+    const mount = await open(deps(fakeSeam()), "cls-1");
+    for (const key of ["share", "ra"] as const) {
+      const toggle = toggleOf(mount, key);
+      expect(toggle.tagName).toBe("BUTTON");
+      expect(toggle.type).toBe("button");
+      expect(toggle.getAttribute("aria-controls")).toBe(`ss-${key}-body`);
+      expect(q(mount, `#ss-${key}-body`)).toBe(bodyOf(mount, key));
+      expect(toggle.closest("h3")).not.toBeNull();
+    }
+    // Toggling flips the body in place, so the same button keeps focus.
+    const ra = toggleOf(mount, "ra");
+    ra.focus();
+    ra.click();
+    expect(document.activeElement).toBe(ra);
+    expect(toggleOf(mount, "ra")).toBe(ra);
+    expect(ra.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("toggles each section independently without losing the class or share selections", async () => {
+    const mount = await open(deps(fakeSeam()), "cls-1");
+    check(mount, "s-ben");
+    toggleOf(mount, "ra").click();
+    expect(bodyOf(mount, "ra").hidden).toBe(false);
+    expect(bodyOf(mount, "share").hidden).toBe(false);
+    toggleOf(mount, "share").click();
+    expect(bodyOf(mount, "share").hidden).toBe(true);
+    expect(bodyOf(mount, "ra").hidden).toBe(false);
+    toggleOf(mount, "ra").click();
+    expect(bodyOf(mount, "ra").hidden).toBe(true);
+    expect(bodyOf(mount, "share").hidden).toBe(true);
+    toggleOf(mount, "share").click();
+    expect(bodyOf(mount, "share").hidden).toBe(false);
+    expect(q<HTMLSelectElement>(mount, tid("ss-class-select"))!.value).toBe("cls-1");
+    expect(q(mount, tid("ss-share-student-count"))!.textContent).toBe("1 student selected");
+    expect(q<HTMLInputElement>(mount, tid("ss-share-student-s-ben"))!.checked).toBe(true);
+  });
+
+  it("Reading Accessibility keeps working inside its section, with Share Student Progress kept above", async () => {
+    const fake = fakeSeam();
+    const d = deps(fake);
+    const mount = await open(d, "cls-1");
+    check(mount, "s-ben");
+    toggleOf(mount, "ra").click();
+    q<HTMLButtonElement>(mount, tid("ss-student-btn-s-ada"))!.click();
+    await flush();
+    expect(d.getAccommodation).toHaveBeenCalledWith({ studentId: "s-ada", classId: "cls-1" });
+    const detail = q(bodyOf(mount, "ra"), tid("ss-student-detail"))!;
+    expect(detail).not.toBeNull();
+    expect(q(detail, tid("ss-ra-action"))!.textContent).toBe("Activate");
+    // The redraw keeps both disclosure states and the share selections.
+    expect(bodyOf(mount, "ra").hidden).toBe(false);
+    expect(bodyOf(mount, "share").hidden).toBe(false);
+    expect(q(mount, tid("ss-share-student-count"))!.textContent).toBe("1 student selected");
+    q<HTMLButtonElement>(mount, ".shell-ss-back-btn")!.click();
+    await flush();
+    expect(q(bodyOf(mount, "ra"), tid("ss-student-list"))).not.toBeNull();
+  });
+
+  it("class switching keeps disclosure states and resets share selections", async () => {
     const fake = fakeSeam();
     const mount = await open(deps(fake), "cls-1");
     check(mount, "s-ben");
-    q<HTMLButtonElement>(mount, tid("ss-student-btn-s-ada"))!.click();
-    await flush();
-    expect(q(mount, tid("ss-share-section"))).toBeNull();
-    q<HTMLButtonElement>(mount, ".shell-ss-back-btn")!.click();
-    await flush();
-    const share = q(mount, tid("ss-share-section"))!;
-    expect(q(share, tid("ss-share-student-count"))!.textContent).toBe("1 student selected");
+    toggleOf(mount, "ra").click();
+    toggleOf(mount, "share").click();
     const select = q<HTMLSelectElement>(mount, tid("ss-class-select"))!;
     select.value = "cls-2";
     select.dispatchEvent(new Event("change"));
     await flush();
+    expect(q<HTMLSelectElement>(mount, tid("ss-class-select"))!.value).toBe("cls-2");
+    expect(toggleOf(mount, "share").getAttribute("aria-expanded")).toBe("false");
+    expect(toggleOf(mount, "ra").getAttribute("aria-expanded")).toBe("true");
     const next = q(mount, tid("ss-share-section"))!;
     expect(q(next, tid("ss-share-student-count"))!.textContent).toBe("0 students selected");
     expect(q(next, tid("ss-share-student-s-dan"))).not.toBeNull();
     expect(q(next, tid("ss-share-student-s-ada"))).toBeNull();
+    expect(q(mount, tid("ss-student-btn-s-dan"))).not.toBeNull();
     expect(fake.listCalls).toEqual(["cls-1", "cls-2"]);
+  });
+
+  it("shows the roster loading state once, without either section", async () => {
+    const listStudents = jest.fn<Promise<{ classId: string; students: typeof STUDENTS }>, [{ classId: string }]>(
+      () => new Promise(() => undefined),
+    );
+    const mount = await open(deps(fakeSeam(), listStudents), "cls-1");
+    expect(qa(mount, tid("ss-students-loading"))).toHaveLength(1);
+    expect(q(mount, tid("ss-share-disclosure"))).toBeNull();
+    expect(q(mount, tid("ss-ra-disclosure"))).toBeNull();
   });
 
   it("ignores a late roster response for a class that is no longer selected", async () => {
@@ -569,7 +718,9 @@ describe("Settings > Student Services integration", () => {
   it("hides the section without the support seam or with an empty roster", async () => {
     const without = await open(deps(null), "cls-1");
     expect(q(without, tid("ss-share-section"))).toBeNull();
+    expect(q(without, tid("ss-share-disclosure"))).toBeNull();
     expect(q(without, tid("ss-student-list"))).not.toBeNull();
+    expect(q(without, tid("ss-ra-disclosure"))).not.toBeNull();
     document.body.replaceChildren();
     const empty = await open(deps(fakeSeam(), jest.fn(async ({ classId }: { classId: string }) => ({ classId, students: [] }))), "cls-1");
     expect(q(empty, tid("ss-students-empty"))).not.toBeNull();

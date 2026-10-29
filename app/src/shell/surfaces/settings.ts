@@ -197,6 +197,9 @@ export function renderSettingsSurface(
   // The Share Student Progress section keeps its own selections and results,
   // so it is built once per chosen class and re-attached on every redraw.
   let shareSection: { readonly classId: string; readonly el: HTMLElement } | null = null;
+  // P5F-UX: Student Services disclosure states, kept across redraws and class
+  // switches for this Settings mount.
+  const ssExpanded: { share: boolean; ra: boolean } = { share: true, ra: false };
 
   const draw = (): void => {
     container.textContent = "";
@@ -577,78 +580,123 @@ export function renderSettingsSurface(
     if (ssSelectedClassId === null) {
       return panel;
     }
+    const classId = ssSelectedClassId;
 
-    // --- Student list / detail area ---
-    if (ssSelectedStudentId !== null) {
-      // Detail view
-      panel.appendChild(renderStudentDetail(ssSelectedClassId, ssSelectedStudentId));
+    // Both sections work from the class roster, so its loading, error, and
+    // empty states are shown once, above them.
+    ensureStudentsLoaded(classId);
+    if (studentsState.kind !== "loaded" || studentsState.students.length === 0) {
+      panel.appendChild(renderRosterStatus(classId));
       return panel;
     }
 
-    // Student list for the selected class
-    panel.appendChild(renderStudentList(ssSelectedClassId));
-    if (studentSupport !== null && studentsState.kind === "loaded" && studentsState.students.length > 0) {
-      if (shareSection?.classId !== ssSelectedClassId) {
+    // P5F-UX: Share Student Progress (the primary workflow) comes first and
+    // opens expanded; Reading Accessibility follows, collapsed.
+    if (studentSupport !== null) {
+      if (shareSection?.classId !== classId) {
         shareSection = {
-          classId: ssSelectedClassId,
+          classId,
           el: renderShareStudentProgressSection(doc, {
-            classId: ssSelectedClassId,
+            classId,
             seam: studentSupport,
             students: studentsState.students,
             isConnected: () => mount.isConnected,
           }),
         };
       }
-      panel.appendChild(shareSection.el);
+      panel.appendChild(
+        renderDisclosure("share", "Share Student Progress", shareSection.el),
+      );
     }
-    return panel;
-  };
 
-  const renderStudentList = (classId: string): HTMLElement => {
-    const section = doc.createElement("section");
-    section.className = "shell-ss-student-list-section";
-    section.setAttribute("data-testid", "ss-student-list-section");
-    section.setAttribute("aria-labelledby", "ss-ra-heading");
-
-    const heading = doc.createElement("h3");
-    heading.id = "ss-ra-heading";
-    heading.className = "shell-settings-section-heading";
-    heading.setAttribute("data-testid", "ss-ra-heading");
-    heading.textContent = "Reading Accessibility";
-    section.appendChild(heading);
-
+    const raBody = doc.createElement("div");
+    raBody.className = "shell-ss-ra-body";
     const desc = doc.createElement("p");
     desc.className = "shell-ss-section-desc";
     desc.setAttribute("data-testid", "ss-ra-desc");
     desc.textContent =
       "Provides accessible reading materials for students who need additional support.";
-    section.appendChild(desc);
+    raBody.appendChild(desc);
+    raBody.appendChild(
+      ssSelectedStudentId !== null
+        ? renderStudentDetail(classId, ssSelectedStudentId)
+        : renderStudentList(classId),
+    );
+    panel.appendChild(renderDisclosure("ra", "Reading Accessibility", raBody));
+    return panel;
+  };
 
-    if (studentsState.kind === "idle") {
-      studentsState = { kind: "loading" };
-      void listStudents!({ classId })
-        .then((res) => {
-          // A late response for a class no longer selected is ignored.
-          if (!mount.isConnected || ssSelectedClassId !== classId) return;
-          studentsState = { kind: "loaded", students: res.students };
-          draw();
-        })
-        .catch(() => {
-          if (!mount.isConnected || ssSelectedClassId !== classId) return;
-          studentsState = { kind: "error" };
-          draw();
-        });
-    }
+  // P5F-UX: a Student Services section with a disclosure header. Toggling
+  // flips the body in place (no redraw), so focus stays on the header button
+  // and the selected class, share selections, and open student are kept.
+  const renderDisclosure = (
+    key: "share" | "ra",
+    title: string,
+    content: HTMLElement,
+  ): HTMLElement => {
+    const headingId = `ss-${key}-heading`;
+    const bodyId = `ss-${key}-body`;
+    const section = doc.createElement("section");
+    section.className = "shell-ss-disclosure";
+    section.setAttribute("data-testid", `ss-${key}-disclosure`);
+    section.setAttribute("aria-labelledby", headingId);
 
-    if (studentsState.kind === "loading") {
-      const loading = doc.createElement("p");
-      loading.className = "shell-status";
-      loading.setAttribute("data-testid", "ss-students-loading");
-      loading.setAttribute("role", "status");
-      loading.textContent = "Loading students…";
-      section.appendChild(loading);
-      return section;
-    }
+    const heading = doc.createElement("h3");
+    heading.id = headingId;
+    heading.className = "shell-ss-disclosure-heading";
+    heading.setAttribute("data-testid", headingId);
+    const toggle = doc.createElement("button");
+    toggle.type = "button";
+    toggle.className = "shell-ss-disclosure-toggle";
+    toggle.setAttribute("data-testid", `ss-${key}-toggle`);
+    toggle.setAttribute("aria-controls", bodyId);
+    toggle.textContent = title;
+    heading.appendChild(toggle);
+    section.appendChild(heading);
+
+    const body = doc.createElement("div");
+    body.id = bodyId;
+    body.className = "shell-ss-disclosure-body";
+    body.setAttribute("data-testid", bodyId);
+    body.appendChild(content);
+    section.appendChild(body);
+
+    const apply = (): void => {
+      const open = ssExpanded[key];
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      body.hidden = !open;
+    };
+    toggle.addEventListener("click", () => {
+      ssExpanded[key] = !ssExpanded[key];
+      apply();
+    });
+    apply();
+    return section;
+  };
+
+  // Starts the roster read for the chosen class; `idle` makes the next draw
+  // fetch (initial selection, class switch, and Try again).
+  const ensureStudentsLoaded = (classId: string): void => {
+    if (studentsState.kind !== "idle") return;
+    studentsState = { kind: "loading" };
+    void listStudents!({ classId })
+      .then((res) => {
+        // A late response for a class no longer selected is ignored.
+        if (!mount.isConnected || ssSelectedClassId !== classId) return;
+        studentsState = { kind: "loaded", students: res.students };
+        draw();
+      })
+      .catch(() => {
+        if (!mount.isConnected || ssSelectedClassId !== classId) return;
+        studentsState = { kind: "error" };
+        draw();
+      });
+  };
+
+  const renderRosterStatus = (classId: string): HTMLElement => {
+    const wrap = doc.createElement("div");
+    wrap.className = "shell-ss-roster-status";
+    wrap.setAttribute("data-testid", "ss-roster-status");
 
     if (studentsState.kind === "error") {
       const err = doc.createElement("p");
@@ -656,7 +704,7 @@ export function renderSettingsSurface(
       err.setAttribute("data-testid", "ss-students-error");
       err.setAttribute("role", "status");
       err.textContent = "Could not load students.";
-      section.appendChild(err);
+      wrap.appendChild(err);
       // Retry re-runs the same roster read: `idle` makes the next draw fetch.
       const retry = doc.createElement("button");
       retry.type = "button";
@@ -668,21 +716,30 @@ export function renderSettingsSurface(
         studentsState = { kind: "idle" };
         draw();
       });
-      section.appendChild(retry);
-      return section;
+      wrap.appendChild(retry);
+      return wrap;
     }
+
+    const msg = doc.createElement("p");
+    msg.className = "shell-status";
+    msg.setAttribute("role", "status");
+    if (studentsState.kind === "loaded") {
+      msg.setAttribute("data-testid", "ss-students-empty");
+      msg.textContent = "No enrolled students found in this class.";
+    } else {
+      msg.setAttribute("data-testid", "ss-students-loading");
+      msg.textContent = "Loading students…";
+    }
+    wrap.appendChild(msg);
+    return wrap;
+  };
+
+  const renderStudentList = (classId: string): HTMLElement => {
+    const section = doc.createElement("div");
+    section.className = "shell-ss-student-list-section";
+    section.setAttribute("data-testid", "ss-student-list-section");
 
     const students = studentsState.kind === "loaded" ? studentsState.students : [];
-
-    if (students.length === 0) {
-      const empty = doc.createElement("p");
-      empty.className = "shell-status";
-      empty.setAttribute("data-testid", "ss-students-empty");
-      empty.setAttribute("role", "status");
-      empty.textContent = "No enrolled students found in this class.";
-      section.appendChild(empty);
-      return section;
-    }
 
     const list = doc.createElement("ul");
     list.className = "shell-ss-student-list";

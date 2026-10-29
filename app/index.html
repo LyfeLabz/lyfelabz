@@ -1456,14 +1456,16 @@
     overflow-wrap: anywhere;
   }
   /* Slice 7: Student Services panel */
+  /* P5F-UX: label and select share one row. */
   .shell-ss-picker {
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
     max-width: 28rem;
   }
   .shell-ss-picker-row {
     display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.6rem;
   }
   .shell-ss-picker-label {
     font-size: 0.9rem;
@@ -1478,38 +1480,40 @@
     border-radius: 4px;
     color: var(--tw-ink, #1c2733);
     background: #fff;
-    width: 100%;
+    flex: 1 1 12rem;
+    min-width: 0;
     max-width: 22rem;
   }
   .shell-ss-class-select:focus-visible {
     outline: none;
     box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
   }
-  .shell-ss-student-list-section,
   .shell-ss-detail { max-width: 34rem; }
   .shell-ss-section-desc {
     margin: 0 0 0.75rem 0;
     font-size: 0.9rem;
     color: var(--tw-ink-soft, #3a4653);
   }
-  /* list-style: none removes the bullet marker from each student row. */
+  /* list-style: none removes the bullet marker from each student row.
+     P5F-UX: rows flow into as many columns as fit, so a large class stays
+     short; a phone gets one column. */
   .shell-ss-student-list {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .shell-ss-student-item {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+    column-gap: 1.25rem;
     border-top: 1px solid var(--tw-hairline-soft, rgba(28,39,51,0.08));
   }
-  .shell-ss-student-item:last-child {
+  .shell-ss-student-item {
+    min-width: 0;
     border-bottom: 1px solid var(--tw-hairline-soft, rgba(28,39,51,0.08));
   }
   .shell-ss-student-btn {
     display: block;
     width: 100%;
-    padding: 0.55rem 0;
+    padding: 0.4rem 0;
     background: transparent;
     border: none;
     margin: 0;
@@ -1589,11 +1593,90 @@
     border: 1px solid rgba(192,57,43,0.18);
   }
   .shell-ss-conflict-msg { font-size: 0.88rem; color: #8a5a12; }
+  /* P5F-UX: Student Services sections are disclosures. The header is a
+     full-width text button; the chevron (closed / open) is generated
+     content with empty alt text, so the accessible name stays the title. */
+  .shell-ss-disclosure {
+    max-width: 48rem;
+    border-top: 1px solid var(--tw-hairline);
+  }
+  .shell-ss-disclosure:last-child { border-bottom: 1px solid var(--tw-hairline); }
+  .shell-ss-disclosure-heading,
+  .shell-ss-share-subheading { margin: 0; }
+  .shell-ss-disclosure-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.6rem 0.1rem;
+    min-height: 40px;
+    background: transparent;
+    border: none;
+    font: inherit;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #222;
+    text-align: left;
+    cursor: pointer;
+  }
+  .shell-ss-disclosure-toggle::after {
+    content: "\25BE";
+    content: "\25BE" / "";
+    flex: none;
+    font-size: 1.1em;
+    line-height: 1;
+    color: var(--tw-ink-muted, #566472);
+  }
+  .shell-ss-disclosure-toggle[aria-expanded="true"]::after {
+    content: "\25B4";
+    content: "\25B4" / "";
+  }
+  .shell-ss-disclosure-toggle:hover { text-decoration: underline; }
+  .shell-ss-disclosure-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-ss-disclosure-toggle--sub {
+    font-size: 0.92rem;
+    font-weight: 600;
+    min-height: 36px;
+    padding: 0.4rem 0.1rem;
+  }
+  .shell-ss-disclosure-body { padding: 0 0 0.9rem 0; }
+  .shell-ss-disclosure-body .shell-ss-section-desc { margin-bottom: 0.6rem; }
   /* Student Services > Share Student Progress (PDR-032) */
-  .shell-ss-share { max-width: 34rem; margin-top: 1.75rem; }
+  .shell-ss-share-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 0.75rem 1.5rem;
+    align-items: start;
+  }
+  .shell-ss-share-send { min-width: 0; }
+  .shell-ss-share-submit { margin: 0.25rem 0 0 0; }
+  /* A disabled primary keeps legible contrast instead of faded green
+     (same treatment as My Units). */
+  .shell-ss-share-submit:disabled,
+  .shell-ss-share-submit[aria-busy="true"] {
+    color: var(--tw-ink-muted);
+    background: var(--tw-surface-alt);
+    border-color: var(--tw-hairline);
+    box-shadow: none;
+    opacity: 1;
+  }
+  /* The email label sits on its own line; the field and Add share a row. */
+  .shell-ss-share-email-row .shell-ss-picker-label { flex: 1 1 100%; }
+  .shell-ss-share-tools .shell-ss-ra-action {
+    margin: 0;
+    padding: 0.25rem 0.7rem;
+    min-height: 32px;
+    font-size: 0.88rem;
+  }
+  .shell-ss-share-existing { margin-top: 0.75rem; border-top: 1px solid var(--tw-hairline-soft, rgba(28,39,51,0.08)); }
   .shell-ss-share-group {
     border: none;
-    margin: 0 0 0.9rem 0;
+    margin: 0;
     padding: 0;
     min-width: 0;
   }
@@ -1610,7 +1693,7 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    max-height: 16rem;
+    max-height: 15rem;
     overflow-y: auto;
     border-top: 1px solid var(--tw-hairline);
   }
@@ -1620,7 +1703,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    min-height: 36px;
+    min-height: 32px;
     cursor: pointer;
   }
   .shell-ss-share-email {
@@ -1652,12 +1735,13 @@
   .shell-ss-share-status { font-size: 0.88rem; margin: 0.5rem 0; }
   .shell-ss-share-status p { margin: 0; }
   .shell-ss-share-status ul { margin: 0.25rem 0 0 1.1rem; padding: 0; }
-  .shell-ss-share-subheading { margin: 1.25rem 0 0.4rem 0; font-size: 0.95rem; }
   .shell-ss-share-grant-label { flex: 1 1 auto; min-width: 0; }
   .shell-ss-share-grant-status { font-size: 0.8rem; color: var(--tw-ink-muted, #566472); }
   @media (pointer: coarse) {
     .shell-ss-share-students label,
-    .shell-ss-share-grant-label { min-height: 44px; }
+    .shell-ss-share-grant-label,
+    .shell-ss-disclosure-toggle,
+    .shell-ss-share-tools .shell-ss-ra-action { min-height: 44px; }
   }
   @media (pointer: coarse) {
     .shell-ss-student-btn,
@@ -6002,6 +6086,8 @@
   }
   .shell-classes-settings-support-empty { color: var(--tw-ink-muted); }
   .shell-classes-settings-support-revoke {
+    /* margin: 0 zeroes the global button's 1rem top-margin. */
+    margin: 0;
     font: inherit;
     font-size: 0.85rem;
     font-weight: 600;

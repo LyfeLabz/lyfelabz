@@ -74,22 +74,22 @@ export function renderShareStudentProgressSection(
   doc: Document,
   deps: ShareStudentProgressDeps,
 ): HTMLElement {
-  const section = doc.createElement("section");
+  // The "Share Student Progress" heading (a disclosure) belongs to Settings.
+  const section = doc.createElement("div");
   section.className = "shell-ss-share";
   section.setAttribute("data-testid", "ss-share-section");
-  section.setAttribute("aria-labelledby", "ss-share-heading");
-
-  const heading = doc.createElement("h3");
-  heading.id = "ss-share-heading";
-  heading.className = "shell-settings-section-heading";
-  heading.textContent = "Share Student Progress";
-  section.appendChild(heading);
 
   const desc = doc.createElement("p");
   desc.className = "shell-ss-section-desc";
   desc.textContent =
-    "Give other teachers at your school read-only access to students' assignments and assessment results. Changes take effect right away.";
+    "Give other teachers at your school read-only access to students' assignments and assessment results.";
   section.appendChild(desc);
+
+  // Students (left) and recipients + Share Access (right) sit side by side
+  // when there is room and stack otherwise.
+  const form = doc.createElement("div");
+  form.className = "shell-ss-share-form";
+  section.appendChild(form);
 
   const selected = new Set<string>();
   let recipients: string[] = [];
@@ -120,6 +120,7 @@ export function renderShareStudentProgressSection(
   clearAll.setAttribute("data-testid", "ss-share-clear-all");
   clearAll.textContent = "Clear all";
   const studentCount = doc.createElement("span");
+  studentCount.id = "ss-share-student-count";
   studentCount.className = "shell-ss-share-count";
   studentCount.setAttribute("data-testid", "ss-share-student-count");
   studentCount.setAttribute("aria-live", "polite");
@@ -148,7 +149,7 @@ export function renderShareStudentProgressSection(
     studentList.appendChild(li);
   }
   studentsGroup.appendChild(studentList);
-  section.appendChild(studentsGroup);
+  form.appendChild(studentsGroup);
 
   const syncCheckboxes = (): void => {
     for (const box of checkboxes) box.checked = selected.has(box.value);
@@ -172,7 +173,7 @@ export function renderShareStudentProgressSection(
   recipientsGroup.appendChild(recipientsLegend);
 
   const emailRow = doc.createElement("div");
-  emailRow.className = "shell-ss-share-tools";
+  emailRow.className = "shell-ss-share-tools shell-ss-share-email-row";
   const emailLabel = doc.createElement("label");
   emailLabel.htmlFor = "ss-share-email";
   emailLabel.className = "shell-ss-picker-label";
@@ -199,48 +200,78 @@ export function renderShareStudentProgressSection(
   recipientsGroup.appendChild(recipientList);
 
   const recipientCount = doc.createElement("span");
+  recipientCount.id = "ss-share-recipient-count";
   recipientCount.className = "shell-ss-share-count";
   recipientCount.setAttribute("data-testid", "ss-share-recipient-count");
   recipientCount.setAttribute("aria-live", "polite");
   recipientsGroup.appendChild(recipientCount);
-  section.appendChild(recipientsGroup);
 
+  const sendColumn = doc.createElement("div");
+  sendColumn.className = "shell-ss-share-send";
+  sendColumn.appendChild(recipientsGroup);
+  form.appendChild(sendColumn);
+
+  // Disabled until at least one student is checked and at least one valid
+  // email is listed or typed; the counts say what is still missing.
   const shareButton = doc.createElement("button");
   shareButton.type = "button";
-  shareButton.className = "shell-class-rostersync-button";
+  shareButton.className = "shell-btn shell-btn-primary shell-ss-share-submit";
   shareButton.setAttribute("data-testid", "ss-share-submit");
+  shareButton.setAttribute("aria-describedby", "ss-share-student-count ss-share-recipient-count");
   shareButton.textContent = "Share Access";
-  section.appendChild(shareButton);
+  sendColumn.appendChild(shareButton);
 
   const shareStatus = doc.createElement("div");
   shareStatus.className = "shell-ss-share-status";
   shareStatus.setAttribute("data-testid", "ss-share-status");
   shareStatus.setAttribute("role", "status");
   shareStatus.setAttribute("aria-live", "polite");
-  section.appendChild(shareStatus);
+  sendColumn.appendChild(shareStatus);
 
-  // --- Existing grants ---
+  // --- Existing grants: a disclosure, collapsed, with the count in its header ---
+  const grantsDisclosure = doc.createElement("div");
+  grantsDisclosure.className = "shell-ss-share-existing";
+  section.appendChild(grantsDisclosure);
+
   const grantsHeading = doc.createElement("h4");
   grantsHeading.className = "shell-ss-share-subheading";
-  grantsHeading.textContent = "Shared access";
-  section.appendChild(grantsHeading);
+  const grantsToggle = doc.createElement("button");
+  grantsToggle.type = "button";
+  grantsToggle.className = "shell-ss-disclosure-toggle shell-ss-disclosure-toggle--sub";
+  grantsToggle.setAttribute("data-testid", "ss-share-grants-toggle");
+  grantsToggle.setAttribute("aria-controls", "ss-share-grants-body");
+  grantsToggle.setAttribute("aria-expanded", "false");
+  grantsHeading.appendChild(grantsToggle);
+  grantsDisclosure.appendChild(grantsHeading);
+
+  const grantsBody = doc.createElement("div");
+  grantsBody.id = "ss-share-grants-body";
+  grantsBody.setAttribute("data-testid", "ss-share-grants-body");
+  grantsBody.hidden = true;
+  grantsDisclosure.appendChild(grantsBody);
+  grantsToggle.addEventListener("click", () => {
+    const open = grantsToggle.getAttribute("aria-expanded") !== "true";
+    grantsToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    grantsBody.hidden = !open;
+  });
 
   const grantTools = doc.createElement("div");
   grantTools.className = "shell-ss-share-tools";
-  section.appendChild(grantTools);
+  grantsBody.appendChild(grantTools);
 
   const grantList = doc.createElement("ul");
   grantList.className = "shell-classes-settings-support-list";
   grantList.setAttribute("data-testid", "ss-share-grants");
   grantList.setAttribute("aria-label", "Students shared with other teachers");
-  section.appendChild(grantList);
+  grantsBody.appendChild(grantList);
 
+  // Outside the collapsed body so removal results are always announced.
   const grantStatus = doc.createElement("div");
   grantStatus.className = "shell-ss-share-status";
   grantStatus.setAttribute("data-testid", "ss-share-grant-status");
   grantStatus.setAttribute("role", "status");
   grantStatus.setAttribute("aria-live", "polite");
-  section.appendChild(grantStatus);
+  grantsDisclosure.appendChild(grantStatus);
 
   const setStatus = (el: HTMLElement, summary: string, details: ReadonlyArray<string> = []): void => {
     el.replaceChildren();
@@ -310,6 +341,7 @@ export function renderShareStudentProgressSection(
   addRecipient.addEventListener("click", () => {
     addFromInput();
   });
+  emailInput.addEventListener("input", () => updateCounts());
   emailInput.addEventListener("keydown", (ev) => {
     if (ev.key === "Enter" || ev.key === ",") {
       ev.preventDefault();
@@ -322,7 +354,14 @@ export function renderShareStudentProgressSection(
     recipientCount.textContent = plural(recipients.length, "teacher", "teachers");
     selectAll.disabled = busy || deps.students.length === 0;
     clearAll.disabled = busy || selected.size === 0;
-    shareButton.disabled = busy;
+    shareButton.disabled = busy || selected.size === 0 || (recipients.length === 0 && !typedEmailsValid());
+  };
+
+  // True when the email field holds one or more entries and all are valid
+  // (Share Access adds them, as Add would).
+  const typedEmailsValid = (): boolean => {
+    const entries = emailInput.value.split(/[\s,;]+/).map(normalizeRecipientEmail).filter((e) => e !== "");
+    return entries.length > 0 && entries.every(isValidRecipientEmail);
   };
 
   const refreshGrants = (): Promise<void> =>
@@ -453,6 +492,12 @@ export function renderShareStudentProgressSection(
   };
 
   const renderGrants = (): void => {
+    grantsToggle.textContent =
+      grantsState === "loaded"
+        ? `Shared access (${grants.length})`
+        : grantsState === "error"
+          ? "Shared access (couldn't load)"
+          : "Shared access";
     grantTools.replaceChildren();
     grantList.replaceChildren();
     if (grantsState === "loading" || grantsState === "error") {
