@@ -39,6 +39,10 @@ import {
 import { dismissOpenModals } from "./openModals";
 import { mountWorkspaceOutlet } from "./surfaces/workspace";
 import { teacherUnitsSurfaceEnabled } from "./surfaces/teacherUnitsPanel";
+import { readStudentSupportSeam } from "../supportAccess/session";
+import { isSupportOnlyTeacher } from "./supportWorkspace";
+import type { ClassSummary } from "../classes/types";
+import type { SharedStudent } from "../supportAccess/types";
 import type { SnapshotPreview } from "./surfaces/snapshot";
 import type {
   ClassManagementIntent,
@@ -291,6 +295,22 @@ export function mountTeacherShell(
   let openUnitIntent: MyUnitsOpenUnitIntent | null = null;
   // One-shot: the next Curriculum mount opens this lesson's Results.
   let lessonResultsIntent: LessonResultsIntent | null = null;
+  // Student Support Workspace (V2 P3, supportWorkspace.ts): true once this
+  // shell has proven the teacher owns zero classes and has shared students.
+  // Never persisted; a fresh shell always starts false. While true, Classes
+  // is the only destination (navigation, intra-shell seams, and Back/Forward
+  // all refuse the teaching-only surfaces).
+  let supportOnly = false;
+  // True while a fresh direct link to a teaching-only surface waits for the
+  // support-only condition to resolve (see `mountInitial` below).
+  let resolvingWorkspace = false;
+  // True while Classes shows the unresolved workspace (see
+  // SupportWorkspaceSeam.setUnresolved): no navigation, Classes only.
+  let workspaceUnresolved = false;
+  // One-shot results of the shell's own resolution reads, consumed by the
+  // first surface read that would otherwise repeat them.
+  let primedClasses: Promise<ReadonlyArray<ClassSummary>> | null = null;
+  let primedShared: Promise<ReadonlyArray<SharedStudent>> | null = null;
 
   // Browser Back/Forward: the single push/replace path for every history
   // state, so each entry's URL is derived by the one mapping in
@@ -303,7 +323,11 @@ export function mountTeacherShell(
   };
 
   const workspaceDeps = {
-    listClasses: deps.listClasses,
+    listClasses: (uid: string): Promise<ReadonlyArray<ClassSummary>> => {
+      const primed = primedClasses;
+      primedClasses = null;
+      return primed ?? deps.listClasses(uid);
+    },
     onLaunchPresentMode: deps.onLaunchPresentMode,
     snapshotPreview: deps.snapshotPreview ?? null,
     integrations: deps.integrations ?? null,
@@ -556,6 +580,40 @@ export function mountTeacherShell(
     setClassManagementIntent: (intent: ClassManagementIntent | null): void => {
       classManagementIntent = intent;
     },
+    supportWorkspace: {
+      isSupportOnly: (): boolean => supportOnly,
+      setUnresolved: (unresolved: boolean): void => {
+        if (workspaceUnresolved === unresolved) return;
+        workspaceUnresolved = unresolved;
+        renderNav();
+      },
+      takePrimedShared: (): Promise<ReadonlyArray<SharedStudent>> | null => {
+        const primed = primedShared;
+        primedShared = null;
+        return primed;
+      },
+      enterSupportOnly: (): void => {
+        enterSupportOnly();
+      },
+    },
+  };
+
+  // Enters the support-only presentation. Leaves any teaching-only surface
+  // (or Assignment Detail overlay) for the Student Support landing, replacing
+  // the current entry so Back never returns to the refused page.
+  const enterSupportOnly = (): void => {
+    if (supportOnly) return;
+    supportOnly = true;
+    classManagementIntent = null;
+    archivedUnitsIntent = false;
+    openUnitIntent = null;
+    lessonResultsIntent = null;
+    if (activeKey !== "classes" || showingDetail) {
+      navigateTo("classes", { fromPopstate: true });
+      replaceShellState({ kind: "shell-surface", surface: "classes" });
+      return;
+    }
+    renderNav();
   };
 
   // Sprint 28.5D (D2A) / Sprint 28.6C: the single navigation transition, shared
@@ -571,6 +629,8 @@ export function mountTeacherShell(
   ): void => {
     // Fails closed: My Units is never a destination unless it is enabled.
     if (next === "units" && !unitsEnabled) return;
+    // A support-only teacher has no teaching-only destinations.
+    if ((supportOnly || workspaceUnresolved) && next !== "classes") return;
     if (next === activeKey && !showingDetail) {
       // Selecting Curriculum while already in Curriculum (on a resource tab
       // or in Lesson Summary) returns to its landing view, Lessons. That is a
@@ -623,9 +683,12 @@ export function mountTeacherShell(
 
   const renderNav = (): void => {
     navMount.textContent = "";
+    // Unresolved workspace: no navigation at all (Sign out is in the header).
+    if (workspaceUnresolved) return;
     renderNavigation(navMount, {
       activeKey,
       unitsEnabled,
+      supportOnly,
       onSelect: (next) => {
         navigateTo(next);
       },
@@ -683,40 +746,107 @@ export function mountTeacherShell(
   }
   activeKey = initialState.surface;
 
-  renderNav();
-  mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
+  // Mounts the chosen initial surface, restores its nested destination, and
+  // canonicalizes the current history entry.
+  const mountInitial = (): void => {
+    renderNav();
+    mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
 
-  // Nested destinations restore through the controllers the surface just
-  // registered; one that cannot be restored stays on its surface. (Assigned
-  // in callbacks during the mount, so widen past TypeScript's narrowing.)
-  const mountedCurriculum = curriculumController as CurriculumHistoryController | null;
-  const mountedSettings = settingsController as SettingsHistoryController | null;
-  if (initialState.kind === "shell-lesson-summary") {
-    if (mountedCurriculum?.restoreLessonSummary(initialState.lessonSlug) !== true) {
-      initialState = { kind: "shell-surface", surface: "curriculum" };
+    // Nested destinations restore through the controllers the surface just
+    // registered; one that cannot be restored stays on its surface. (Assigned
+    // in callbacks during the mount, so widen past TypeScript's narrowing.)
+    const mountedCurriculum = curriculumController as CurriculumHistoryController | null;
+    const mountedSettings = settingsController as SettingsHistoryController | null;
+    if (initialState.kind === "shell-lesson-summary") {
+      if (mountedCurriculum?.restoreLessonSummary(initialState.lessonSlug) !== true) {
+        initialState = { kind: "shell-surface", surface: "curriculum" };
+      }
+    } else if (initialState.kind === "shell-curriculum-tab") {
+      if (mountedCurriculum?.restoreTab(initialState.tab) !== true) {
+        initialState = { kind: "shell-surface", surface: "curriculum" };
+      }
+    } else if (initialState.kind === "shell-settings-integrations") {
+      if (mountedSettings?.restoreIntegrations() !== true) {
+        initialState = { kind: "shell-surface", surface: "settings" };
+      }
     }
-  } else if (initialState.kind === "shell-curriculum-tab") {
-    if (mountedCurriculum?.restoreTab(initialState.tab) !== true) {
-      initialState = { kind: "shell-surface", surface: "curriculum" };
-    }
-  } else if (initialState.kind === "shell-settings-integrations") {
-    if (mountedSettings?.restoreIntegrations() !== true) {
-      initialState = { kind: "shell-surface", surface: "settings" };
-    }
-  }
 
-  // Browser Back/Forward support: canonicalize the URL/history-state for
-  // the surface actually chosen above (whether that came from a restored
-  // hash or the default). This is state restoration, not a user-initiated
-  // navigation, so it replaces the current entry rather than pushing one -
-  // otherwise every shell mount (including a session `rerun`) would grow
-  // the history stack with a redundant entry.
-  if (win) {
-    win.history.replaceState(
-      initialState,
-      "",
-      urlWithHash(win.location.pathname, hashForState(initialState)),
+    // Browser Back/Forward support: canonicalize the URL/history-state for
+    // the surface actually chosen above (whether that came from a restored
+    // hash or the default). This is state restoration, not a user-initiated
+    // navigation, so it replaces the current entry rather than pushing one -
+    // otherwise every shell mount (including a session `rerun`) would grow
+    // the history stack with a redundant entry.
+    if (win) {
+      win.history.replaceState(
+        initialState,
+        "",
+        urlWithHash(win.location.pathname, hashForState(initialState)),
+      );
+    }
+  };
+
+  // Student Support Workspace (V2 P3): Classes (the default landing) proves
+  // the support-only condition from its own reads. A fresh load that asks
+  // for a teaching-only surface must not paint it until the condition is
+  // resolved, so the shell reads the owned classes first: any owned class
+  // mounts the request at once (no wait on the shared read); zero classes
+  // waits for the shared read. Both results are handed to the surface that
+  // mounts next (`primedClasses` / `primedShared`), so neither is fetched
+  // twice. Until then the outlet shows a neutral loading status and no
+  // navigation. Without the support seam nothing changes.
+  const supportSeam = readStudentSupportSeam();
+  if (supportSeam !== null && activeKey !== "classes") {
+    resolvingWorkspace = true;
+    const pending = doc.createElement("p");
+    pending.className = "shell-status";
+    pending.setAttribute("role", "status");
+    pending.setAttribute("aria-live", "polite");
+    pending.setAttribute("data-testid", "shell-workspace-resolving");
+    pending.textContent = "Loading your workspace";
+    outletHost.appendChild(pending);
+    const resolve = (supportOnlyResult: boolean | null, sharedFailed: boolean): void => {
+      if (!body.isConnected || !resolvingWorkspace) return;
+      resolvingWorkspace = false;
+      outletHost.textContent = "";
+      if (supportOnlyResult === true) supportOnly = true;
+      // Support-only, or zero classes with an unresolved (failed) shared
+      // read: Classes, which shows the landing or the neutral retry state.
+      if (supportOnlyResult === true || sharedFailed) {
+        initialState = { kind: "shell-surface", surface: "classes" };
+        activeKey = "classes";
+      }
+      mountInitial();
+      // A primed read not consumed by the surface just mounted is dropped,
+      // so a later visit never receives a stale page-load result. (Classes
+      // consumes the shared read only after its own class list arrives.)
+      primedClasses = null;
+      if (activeKey !== "classes") primedShared = null;
+    };
+    const owned = deps.listClasses(session.uid);
+    primedClasses = owned;
+    owned.then(
+      (classes) => {
+        if (classes.length > 0) {
+          resolve(false, false);
+          return;
+        }
+        const shared = supportSeam.listShared();
+        primedShared = shared;
+        shared.then(
+          (students) => resolve(isSupportOnlyTeacher(0, students.length), false),
+          () => resolve(null, true),
+        );
+      },
+      // The class list itself failed: mount the request, which reports its
+      // own load failure.
+      () => {
+        primedClasses = null;
+        resolve(null, false);
+      },
     );
+  } else {
+    mountInitial();
   }
 
   renderFooter(mount);
@@ -799,9 +929,23 @@ export function mountTeacherShell(
 
     const handlePopstate = (event: PopStateEvent): void => {
       const parsed = parseShellHistoryState(event.state);
-      if (parsed === null) return;
+      if (parsed === null || resolvingWorkspace) return;
       // A dialog is never left open over the page Back/Forward restores.
       dismissOpenModals();
+      // Support-only: only the Student Support landing and a shared
+      // student's Student Detail are restorable. Any other entry (recorded
+      // before this shell entered support-only) lands on Student Support and
+      // is replaced, so it cannot be reached again by Back/Forward.
+      if (
+        (supportOnly || workspaceUnresolved) &&
+        !(parsed.kind === "shell-surface" && parsed.surface === "classes") &&
+        parsed.kind !== "shell-student-detail"
+      ) {
+        navigateTo("classes", { fromPopstate: true });
+        classesDetailController?.restoreToTopList();
+        replaceShellState({ kind: "shell-surface", surface: "classes" });
+        return;
+      }
       switch (parsed.kind) {
         case "shell-surface": {
           navigateTo(parsed.surface, { fromPopstate: true });

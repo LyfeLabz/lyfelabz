@@ -3,6 +3,7 @@ import {
   type StudentSupportSeam,
   type SupportGrant,
   type SupportGrantFailureReason,
+  sharedStudentContextLabel,
 } from "../../supportAccess/types";
 
 // Student Support Access (PDR-032, STUDENT_SUPPORT_ACCESS.md section 7).
@@ -607,7 +608,7 @@ export function renderSharedStudentsSection(
     name.textContent = student.studentDisplayName;
     const meta = doc.createElement("span");
     meta.className = "shell-classes-shared-meta";
-    meta.textContent = `${student.classTitle} · ${student.ownerDisplayName}`;
+    meta.textContent = sharedStudentContextLabel(student);
     button.append(name, meta);
     button.addEventListener("click", () => onOpen(student));
     li.appendChild(button);
@@ -615,4 +616,84 @@ export function renderSharedStudentsSection(
   }
   section.appendChild(list);
   return section;
+}
+
+// Shared students read failed (V2 P3): said plainly, with a working retry,
+// rather than shown as "nobody shared anything with you".
+export function renderSharedStudentsError(doc: Document, onRetry: () => void): HTMLElement {
+  const region = doc.createElement("div");
+  region.className = "shell-classes-shared";
+  region.setAttribute("data-testid", "shared-students-error");
+  const msg = doc.createElement("p");
+  msg.className = "shell-status";
+  msg.setAttribute("role", "status");
+  msg.textContent = "We could not load students shared with you.";
+  const retry = doc.createElement("button");
+  retry.type = "button";
+  retry.className = "shell-btn";
+  retry.setAttribute("data-testid", "shared-students-retry");
+  retry.textContent = "Try again";
+  retry.addEventListener("click", () => onRetry());
+  region.append(msg, retry);
+  return region;
+}
+
+export type StudentSupportLandingInput = {
+  readonly students: ReadonlyArray<SharedStudent>;
+  // `loaded` with no students: every grant was revoked during this visit.
+  readonly status: "loading" | "loaded" | "error";
+  readonly onOpen: (student: SharedStudent) => void;
+  readonly onRetry: () => void;
+};
+
+// Student Support Workspace (V2 P3): a support-only teacher's landing page,
+// in the Classes outlet. The same shared-student list (and Student Detail
+// behind it) as the Classes section; only the framing differs.
+export function renderStudentSupportLanding(
+  doc: Document,
+  mount: HTMLElement,
+  input: StudentSupportLandingInput,
+): void {
+  const headline = doc.createElement("h2");
+  headline.id = "surface-headline";
+  headline.className = "shell-welcome";
+  headline.tabIndex = -1;
+  headline.setAttribute("data-testid", "surface-headline");
+  headline.textContent = "Student Support";
+  mount.appendChild(headline);
+
+  const status = doc.createElement("p");
+  status.className = "shell-status";
+  status.setAttribute("data-testid", "support-status");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  mount.appendChild(status);
+
+  if (input.status === "error") {
+    status.textContent = "";
+    mount.appendChild(renderSharedStudentsError(doc, input.onRetry));
+    return;
+  }
+  if (input.status === "loading" && input.students.length === 0) {
+    status.textContent = "Loading students";
+    return;
+  }
+  if (input.students.length === 0) {
+    status.textContent = "No students are shared with you right now.";
+    const help = doc.createElement("p");
+    help.className = "shell-classes-shared-help";
+    help.setAttribute("data-testid", "support-empty");
+    help.textContent = "When a classroom teacher shares a student with you, the student appears here.";
+    mount.appendChild(help);
+    return;
+  }
+  status.textContent = input.students.length === 1 ? "1 student" : `${input.students.length} students`;
+  const section = renderSharedStudentsSection(doc, input.students, input.onOpen);
+  section.setAttribute("data-testid", "support-students");
+  // The page headline already names the list.
+  section.removeAttribute("aria-labelledby");
+  section.setAttribute("aria-label", "Shared students");
+  section.querySelector(".shell-classes-shared-heading")?.remove();
+  section.querySelector(".shell-classes-shared-help")?.remove();
+  mount.appendChild(section);
 }

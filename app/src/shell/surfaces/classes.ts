@@ -105,9 +105,15 @@ import { readGradeImprovementsSeam } from "../../assignments/gradeImprovements/s
 import type { GradeImprovementsSeam } from "../../assignments/gradeImprovements/types";
 import type { AssessmentRevisionContentReader } from "../../assignments/detail/question-summary";
 import { readStudentSupportSeam } from "../../supportAccess/session";
+import { sharedStudentContextLabel } from "../../supportAccess/types";
+import { isSupportOnlyTeacher, type SupportWorkspaceSeam } from "../supportWorkspace";
 import type { SharedStudent, StudentSupportSeam } from "../../supportAccess/types";
 import { appendQuestionReview } from "./studentDetailQuestionReview";
-import { renderSharedStudentsSection } from "./classSupportAccess";
+import {
+  renderSharedStudentsError,
+  renderSharedStudentsSection,
+  renderStudentSupportLanding,
+} from "./classSupportAccess";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
 // the authenticated teacher. See SPRINT_6B_SPECIFICATION.md §6.
@@ -403,6 +409,10 @@ export type ClassesSurfaceDeps = {
   // revision text. Absent: read from the session holder; null there renders
   // none of those additions.
   readonly studentSupport?: StudentSupportSeam | null;
+  // Student Support Workspace (V2 P3): the shell's support-only seam. When
+  // it reports support-only, the Classes list is the Student Support
+  // landing. Null in harnesses without a shell.
+  readonly supportWorkspace?: SupportWorkspaceSeam | null;
 };
 
 // Sprint 28.6H (Finding 2): the class-card status label map was removed with
@@ -526,6 +536,8 @@ export function renderClassesSurface(
   const studentDetailHistory = deps.studentDetailHistory ?? null;
   const studentSupport =
     deps.studentSupport !== undefined ? deps.studentSupport : readStudentSupportSeam();
+  const supportWorkspace = deps.supportWorkspace ?? null;
+  const supportOnly = (): boolean => supportWorkspace?.isSupportOnly() === true;
   const getClassesReturn = deps.getClassesReturn ?? null;
   const setClassesReturn = deps.setClassesReturn ?? null;
   const getClassesStudentIntent = deps.getClassesStudentIntent ?? null;
@@ -929,16 +941,41 @@ export function renderClassesSurface(
   // teacher who has shared students. Later re-reads (after leaving a shared
   // student) keep showing the last known list, as before.
   let sharedStudentsSettled = studentSupport === null;
+  // True when the latest shared read failed (V2 P3): shown as an error with
+  // Try again instead of silently as "no shared students".
+  let sharedStudentsFailed = false;
+  // True while a Try again re-read after a failure is in flight; the
+  // workspace stays unresolved (no navigation) until it settles.
+  let sharedRetryPending = false;
   const loadSharedStudents = (): void => {
     if (studentSupport === null || sharedStudentsLoad !== null) return;
-    const settle = (students: ReadonlyArray<SharedStudent>): void => {
-      const changed = students.length > 0 || sharedStudents.length > 0;
+    const settle = (students: ReadonlyArray<SharedStudent>, failed: boolean): void => {
+      const changed =
+        students.length > 0 || sharedStudents.length > 0 || failed !== sharedStudentsFailed;
       const wasHeld = !sharedStudentsSettled;
       sharedStudents = students;
+      sharedStudentsFailed = failed;
       sharedStudentsSettled = true;
-      if (state.kind === "list" && (changed || (wasHeld && state.classes.length === 0))) rerender();
+      sharedRetryPending = false;
+      if (
+        state.kind === "list" &&
+        (changed || (wasHeld && (state.classes.length === 0 || supportOnly())))
+      ) {
+        rerender();
+      }
     };
-    sharedStudentsLoad = studentSupport.listShared().then(settle, () => settle([]));
+    sharedStudentsLoad = (supportWorkspace?.takePrimedShared?.() ?? studentSupport.listShared()).then(
+      (students) => settle(students, false),
+      () => settle([], true),
+    );
+  };
+  const retrySharedStudents = (): void => {
+    if (state.kind !== "list") return;
+    sharedStudentsLoad = null;
+    sharedRetryPending = sharedStudentsFailed;
+    sharedStudentsFailed = false;
+    sharedStudentsSettled = false;
+    rerender();
   };
 
   const rerender = (): void => {
@@ -947,13 +984,45 @@ export function renderClassesSurface(
     const s: ClassesState = state;
     switch (s.kind) {
       case "loading":
-        renderLoading(doc, mount);
+        renderLoading(doc, mount, supportOnly() ? "Student Support" : "Classes");
         return;
       case "error":
-        renderErrorState(doc, mount);
+        renderErrorState(doc, mount, supportOnly() ? "Student Support" : "Classes");
         return;
-      case "list":
+      case "list": {
         loadSharedStudents();
+        // Both authoritative reads (owned classes of every status, and the
+        // server-authorized shared list) prove the support-only condition.
+        if (isSupportOnlyTeacher(s.classes.length, sharedStudents.length)) {
+          supportWorkspace?.enterSupportOnly();
+        }
+        // Zero owned classes and a failed (or retrying) shared read: the
+        // workspace type is unknown, so the shell shows no navigation.
+        const unresolvedNav =
+          !supportOnly() &&
+          (sharedStudentsFailed || sharedRetryPending) &&
+          s.classes.length === 0 &&
+          s.form === null &&
+          listAddMode === null &&
+          s.lastCreated === null;
+        supportWorkspace?.setUnresolved?.(unresolvedNav);
+        const unresolved = unresolvedNav && sharedStudentsFailed;
+        if (supportOnly()) {
+          renderStudentSupportLanding(doc, mount, {
+            students: sharedStudents,
+            status: sharedStudentsFailed ? "error" : sharedStudentsSettled ? "loaded" : "loading",
+            onOpen: onOpenSharedStudent,
+            onRetry: retrySharedStudents,
+          });
+          return;
+        }
+        // Zero owned classes and a failed shared read: whether this is a
+        // new teacher or a support educator is unknown, so neither
+        // onboarding nor Student Support is shown, only a neutral retry.
+        if (unresolved) {
+          renderWorkspaceUnresolved(doc, mount, retrySharedStudents);
+          return;
+        }
         if (
           !sharedStudentsSettled &&
           s.classes.length === 0 &&
@@ -997,8 +1066,11 @@ export function renderClassesSurface(
         );
         if (sharedStudents.length > 0) {
           mount.appendChild(renderSharedStudentsSection(doc, sharedStudents, onOpenSharedStudent));
+        } else if (sharedStudentsFailed) {
+          mount.appendChild(renderSharedStudentsError(doc, retrySharedStudents));
         }
         return;
+      }
       case "shared": {
         // The SAME Student Detail renderer, read-only, wired to the
         // student-scoped attempts read (never the owner-only class-wide
@@ -1038,8 +1110,12 @@ export function renderClassesSurface(
           const context = doc.createElement("p");
           context.className = "shell-student-detail-shared-context";
           context.setAttribute("data-testid", "student-detail-shared-context");
-          context.textContent = `${student.classTitle} · Shared by ${student.ownerDisplayName} · View only`;
+          context.textContent = sharedStudentContextLabel(student);
           heading.after(context);
+        }
+        if (supportOnly()) {
+          const back = mount.querySelector("[data-testid=student-detail-back]");
+          if (back !== null) back.textContent = "Back to Student Support";
         }
         return;
       }
@@ -2439,8 +2515,8 @@ function describeCreateError(err: unknown): string {
   return "We could not create the class. Try again in a moment.";
 }
 
-function renderLoading(doc: Document, mount: HTMLElement): void {
-  appendHeadline(doc, mount, "Classes");
+function renderLoading(doc: Document, mount: HTMLElement, headline = "Classes"): void {
+  appendHeadline(doc, mount, headline);
 
   const status = doc.createElement("p");
   status.className = "shell-status";
@@ -2456,8 +2532,28 @@ function renderLoading(doc: Document, mount: HTMLElement): void {
   mount.appendChild(region);
 }
 
-function renderErrorState(doc: Document, mount: HTMLElement): void {
-  appendHeadline(doc, mount, "Classes");
+// Zero owned classes with a failed shared-students read (V2 P3): a neutral,
+// recoverable state that claims nothing about the teacher's workspace.
+function renderWorkspaceUnresolved(doc: Document, mount: HTMLElement, onRetry: () => void): void {
+  appendHeadline(doc, mount, "Welcome");
+  const status = doc.createElement("p");
+  status.className = "shell-status";
+  status.setAttribute("data-testid", "workspace-unresolved");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.textContent = "We could not finish loading your workspace.";
+  mount.appendChild(status);
+  const retry = doc.createElement("button");
+  retry.type = "button";
+  retry.className = "shell-btn";
+  retry.setAttribute("data-testid", "workspace-unresolved-retry");
+  retry.textContent = "Try again";
+  retry.addEventListener("click", () => onRetry());
+  mount.appendChild(retry);
+}
+
+function renderErrorState(doc: Document, mount: HTMLElement, headline = "Classes"): void {
+  appendHeadline(doc, mount, headline);
 
   const status = doc.createElement("p");
   status.className = "shell-status";

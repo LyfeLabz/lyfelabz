@@ -655,8 +655,20 @@ export function renderSettingsSurface(
       err.className = "shell-status";
       err.setAttribute("data-testid", "ss-students-error");
       err.setAttribute("role", "status");
-      err.textContent = "Could not load students. Try selecting the class again.";
+      err.textContent = "Could not load students.";
       section.appendChild(err);
+      // Retry re-runs the same roster read: `idle` makes the next draw fetch.
+      const retry = doc.createElement("button");
+      retry.type = "button";
+      retry.className = "shell-btn";
+      retry.setAttribute("data-testid", "ss-students-retry");
+      retry.textContent = "Try again";
+      retry.addEventListener("click", () => {
+        if (ssSelectedClassId !== classId) return;
+        studentsState = { kind: "idle" };
+        draw();
+      });
+      section.appendChild(retry);
       return section;
     }
 

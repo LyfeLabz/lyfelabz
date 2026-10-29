@@ -1,6 +1,7 @@
 import type { Session } from "../../session/types";
 import type { TeacherUnitsSurfaceSeam } from "../../teacherUnits/unitsController";
 import type { ListClasses } from "../../classes/listClasses";
+import type { SupportWorkspaceSeam } from "../supportWorkspace";
 import type { MyUnitsOpenUnitIntent } from "./myUnits";
 import type {
   UpdateTeacherClassOrder,
@@ -111,6 +112,8 @@ export type WorkspaceDeps = {
   readonly updateClassMetadata?: UpdateClassMetadata | null;
   readonly updateClassColor?: UpdateClassColor | null;
   readonly readClassColors?: ReadTeacherClassColors | null;
+  // Student Support Workspace (V2 P3): the shell's support-only seam.
+  readonly supportWorkspace?: SupportWorkspaceSeam | null;
   // Sprint 13B remediation: entry-point seam that lets the Curriculum
   // surface register published assignment metadata and open the
   // certified Assignment Detail surface via the entry-point opener.
@@ -335,6 +338,7 @@ export const WORKSPACE_SURFACES: Readonly<
         updateClassMetadata: deps.updateClassMetadata ?? null,
         updateClassColor: deps.updateClassColor ?? null,
         readClassColors: deps.readClassColors ?? null,
+        supportWorkspace: deps.supportWorkspace ?? null,
       }),
   }),
   settings: Object.freeze({

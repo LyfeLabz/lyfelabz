@@ -12,7 +12,32 @@ export type SharedStudent = {
   readonly studentId: string;
   readonly studentDisplayName: string;
   readonly ownerDisplayName: string;
+  // The class record's `block`, read by the server at list time (null when
+  // absent, or from a server that predates the field).
+  readonly classBlock: string | null;
 };
+
+// "Mr. Brown · Science 7 · B Block": classroom teacher, class, block. The
+// block is omitted when absent or when the class name already carries it
+// ("Science 7B", "Science B Block", "Block B Science"), so it never repeats.
+export function sharedStudentContextLabel(student: SharedStudent): string {
+  const parts = [student.ownerDisplayName, student.classTitle];
+  // A block stored as "Block B" or "B Block" is the block "B".
+  const block = (student.classBlock ?? "").trim().replace(/^block\s+|\s+block$/i, "").trim();
+  if (block.length > 0 && !classTitleIncludesBlock(student.classTitle, block)) {
+    parts.push(`${block} Block`);
+  }
+  return parts.join(" · ");
+}
+
+export function classTitleIncludesBlock(title: string, block: string): boolean {
+  const b = block.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (
+    new RegExp(`(^|[^A-Za-z0-9])(block\\s*${b}|${b}\\s*block)([^A-Za-z0-9]|$)`, "i").test(title) ||
+    new RegExp(`(^|[^A-Za-z0-9])${b}([^A-Za-z0-9]|$)`).test(title) ||
+    new RegExp(`[0-9]${b}([^A-Za-z0-9]|$)`).test(title)
+  );
+}
 
 export type SupportGrant = {
   readonly grantId: string;

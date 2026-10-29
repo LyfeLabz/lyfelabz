@@ -204,7 +204,29 @@ active, or the owner is not an active teacher at that school.
 - Classes surface: a "Shared students" section lists `supportAccessListMine`
   results. Choosing a student opens the existing Student Detail renderer
   (`renderStudentDetailSurface`) in read-only mode, wired to
-  `assessmentAttemptsListForStudent`.
+  `assessmentAttemptsListForStudent`. Each student shows the classroom
+  teacher, class, and block (`Mr. Brown · Science 7 · B Block`, from
+  `ownerDisplayName`, `classTitle`, `classBlock`); the block is omitted when
+  absent or already in the class name. A failed read shows an error with
+  Try again, never an empty list.
+- Student Support Workspace (V2 P3, `app/src/shell/supportWorkspace.ts`): a
+  teacher whose owned-class list (every status) is empty and whose shared
+  list is not sees the same shell with Classes presented as the "Student
+  Support" landing, navigation reduced to Student Support, and Curriculum,
+  My Units, and Settings refused through navigation, intra-shell seams,
+  direct URLs (a fresh load that asks for another surface shows a neutral
+  "Loading your workspace" status, with no navigation, until the owned-class
+  read, and for zero classes the shared read, resolves; the results are
+  handed to the mounted surface, not re-fetched), and Back/Forward (a teaching-only entry lands on Student
+  Support and is replaced). It is a presentation of the two reads, not a
+  role: nothing is persisted. It lasts for that page life, so revoking the
+  last grant shows "No students are shared with you right now."; the next
+  load, with no classes and no shares, shows the existing onboarding. No
+  existing account state identifies a former support educator, and none is
+  added. Teachers who own a class keep the full workspace with the Shared
+  students section. With zero owned classes and a failed shared read the
+  workspace is unresolved: a neutral "We could not finish loading your
+  workspace." with Try again, never onboarding or "no shared students".
 - Read-only mode hides the grade-update Undo. The server already refuses it.
 - Settings > Student Services (V2): a "Share Student Progress" section,
   below Reading Accessibility for the chosen class, lets the owner check

@@ -122,9 +122,26 @@ export const MY_UNITS_NAVIGATION_ITEM: NavigationItem = Object.freeze({
   variant: "item" as const,
 });
 
+// Student Support Workspace (V2 P3): a support-only teacher's navigation.
+// The Classes surface is presented as the Student Support landing; every
+// teaching-only item (Curriculum, My Units, Settings) is absent. Sign out
+// stays in the header.
+export const SUPPORT_NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = Object.freeze([
+  NAVIGATION_ITEMS[0]!,
+  Object.freeze({
+    key: "classes" as const,
+    label: "Student Support",
+    available: true,
+    targetSurface: "classes" as const,
+    variant: "item" as const,
+  }),
+]);
+
 export function navigationItemsFor(
   unitsEnabled: boolean,
+  supportOnly = false,
 ): ReadonlyArray<NavigationItem> {
+  if (supportOnly) return SUPPORT_NAVIGATION_ITEMS;
   if (!unitsEnabled) return NAVIGATION_ITEMS;
   const items: NavigationItem[] = [];
   for (const item of NAVIGATION_ITEMS) {
@@ -139,6 +156,8 @@ export type NavigationRenderInput = {
   readonly onSelect: (surface: WorkspaceSurfaceKey) => void;
   // True only when the shell holds an enabled Teacher Units seam.
   readonly unitsEnabled?: boolean;
+  // True for a support-only teacher (see supportWorkspace.ts).
+  readonly supportOnly?: boolean;
 };
 
 export function renderNavigation(
@@ -157,7 +176,7 @@ export function renderNavigation(
   const list = doc.createElement("ul");
   list.className = "shell-nav-list";
 
-  for (const item of navigationItemsFor(input.unitsEnabled === true)) {
+  for (const item of navigationItemsFor(input.unitsEnabled === true, input.supportOnly === true)) {
     const li = doc.createElement("li");
     li.className = "shell-nav-item";
     const btn = doc.createElement("button");

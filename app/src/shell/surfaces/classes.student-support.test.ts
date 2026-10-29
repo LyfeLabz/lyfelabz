@@ -50,6 +50,7 @@ const SHARED: SharedStudent = {
   studentId: "s-ada",
   studentDisplayName: "Ada Lovelace",
   ownerDisplayName: "Ms. Owner",
+  classBlock: "B",
 };
 
 const REV = "assessment_earths-layers__r1";
@@ -188,7 +189,7 @@ describe("Shared students (support educator)", () => {
     expect(section.textContent).toContain("Shared students");
     const button = q(section, "[data-testid=classes-shared-student]")!;
     expect(button.textContent).toContain("Ada Lovelace");
-    expect(button.textContent).toContain("Science 7B · Ms. Owner");
+    expect(button.textContent).toContain("Ms. Owner · Science 7B");
     expect(q(mount, `[data-testid=class-card-${OWN_CLASS}]`)).not.toBeNull();
   });
 
@@ -201,7 +202,7 @@ describe("Shared students (support educator)", () => {
     expect(q(mount, "[data-testid=student-detail]")).not.toBeNull();
     expect(q(mount, "[data-testid=student-detail-name]")!.textContent).toBe("Ada Lovelace");
     expect(q(mount, "[data-testid=student-detail-shared-context]")!.textContent).toBe(
-      "Science 7B · Shared by Ms. Owner · View only",
+      "Ms. Owner · Science 7B",
     );
     expect(h.studentScopedCalls).toEqual([{ classId: SHARED_CLASS, studentId: "s-ada" }]);
     expect(h.classWideCalls).toEqual([]);
@@ -355,14 +356,15 @@ describe("Classes landing with and without shared students", () => {
     expect(q(mount, "[data-testid=classes-shared-students]")).toBeNull();
   });
 
-  it("a failed shared read leaves loading and shows the owned-class empty state without a shared section", async () => {
+  it("a failed shared read leaves loading for a neutral retry, not the zero-class onboarding", async () => {
     const h = harness();
     const shared = deferredShared(h, []);
     const mount = await mountSurface(h);
     shared.reject(new Error("unavailable"));
     await settle();
     expect(mount.textContent).not.toContain("Loading classes");
-    expect(q(mount, "[data-testid=classes-status]")!.textContent).toBe("No classes yet.");
+    expect(q(mount, "[data-testid=workspace-unresolved]")).not.toBeNull();
+    expect(q(mount, "[data-testid=classes-empty]")).toBeNull();
     expect(q(mount, "[data-testid=classes-shared-students]")).toBeNull();
   });
 

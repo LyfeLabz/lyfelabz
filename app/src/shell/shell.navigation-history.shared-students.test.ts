@@ -22,6 +22,7 @@ const SHARED: SharedStudent = Object.freeze({
   studentId: "s-ada",
   studentDisplayName: "Ada Student",
   ownerDisplayName: "Ms. Owner",
+  classBlock: null,
 });
 
 const seam: StudentSupportSeam = {

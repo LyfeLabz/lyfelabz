@@ -42,6 +42,7 @@ function parseSharedStudent(raw: unknown): SharedStudent | null {
     studentId: r.studentId,
     studentDisplayName: r.studentDisplayName,
     ownerDisplayName: isString(r.ownerDisplayName) ? r.ownerDisplayName : "Teacher",
+    classBlock: isString(r.classBlock) ? r.classBlock : null,
   };
 }
 

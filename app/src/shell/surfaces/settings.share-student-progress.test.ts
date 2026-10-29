@@ -581,4 +581,23 @@ describe("Settings > Student Services integration", () => {
     expect(q(mount, tid("ss-students-error"))).not.toBeNull();
     expect(q(mount, tid("ss-share-section"))).toBeNull();
   });
+
+  it("explains a failed roster load without asking to reselect the class, and Try again re-reads it", async () => {
+    let fail = true;
+    const listStudents = jest.fn(async ({ classId }: { classId: string }) => {
+      if (fail) throw new Error(classId);
+      return { classId, students: STUDENTS };
+    });
+    const mount = await open(deps(fakeSeam(), listStudents), "cls-1");
+    const err = q(mount, tid("ss-students-error"))!;
+    expect(err.textContent).toBe("Could not load students.");
+    expect(err.textContent).not.toMatch(/select/i);
+    fail = false;
+    q(mount, tid("ss-students-retry"))!.click();
+    await flush();
+    expect(listStudents).toHaveBeenCalledTimes(2);
+    expect(listStudents.mock.calls[1]![0]).toEqual({ classId: "cls-1" });
+    expect(q(mount, tid("ss-students-error"))).toBeNull();
+    expect(q(mount, tid("ss-student-btn-s-ada"))).not.toBeNull();
+  });
 });
