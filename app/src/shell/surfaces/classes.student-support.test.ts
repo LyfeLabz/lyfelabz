@@ -103,15 +103,17 @@ function harness() {
   const seam: StudentSupportSeam = {
     listShared: async () => [SHARED],
     listForClass: async () => grants,
-    grant: async (input) => {
+    grantMany: async (input) => {
       grantCalls.push(input);
-      const g: SupportGrant = { grantId: "g2", classId: input.classId, studentId: input.studentId, studentDisplayName: "Cara Cole", granteeDisplayName: "Ms. Sped", granteeEmail: input.granteeEmail };
-      grants = [...grants, g];
-      return g;
+      return [];
     },
     revoke: async (grantId) => {
       revokeCalls.push(grantId);
       grants = grants.filter((g) => g.grantId !== grantId);
+    },
+    revokeMany: async (grantIds) => {
+      revokeCalls.push(...grantIds);
+      return [];
     },
     listAttemptsForStudent: async (input) => {
       studentScopedCalls.push(input);
@@ -276,153 +278,18 @@ describe("Owner Student Detail", () => {
   });
 });
 
-describe("Class settings > Share Student Progress (owner)", () => {
-  async function openSettings(h: ReturnType<typeof harness>) {
+describe("Class settings (owner)", () => {
+  it("no longer hosts Share Student Progress; sharing lives in Settings > Student Services", async () => {
+    const h = harness();
     const mount = await mountSurface(h);
     q(mount, `[data-testid=class-card-settings-${OWN_CLASS}]`)!.click();
     await settle();
-    return q(document.body, "[data-testid=classes-settings-support]")!;
-  }
-
-  it("lists active grants and revokes one", async () => {
-    const h = harness();
-    const section = await openSettings(h);
-    const rows = qa(section, "[data-testid=classes-settings-support-grant-row]");
-    expect(rows.map((r) => r.textContent)).toEqual(["Ben Baker - shared with Mr. Para (para@school.org)Remove"]);
-    q(rows[0]!, "[data-testid=classes-settings-support-revoke]")!.click();
-    await settle();
-    expect(h.revokeCalls).toEqual(["g1"]);
-    expect(q(section, "[data-testid=classes-settings-support-empty]")).not.toBeNull();
-    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe("");
-    const toast = q(section, "[data-testid=classes-settings-support-toast]")!;
-    expect(toast.hidden).toBe(false);
-    expect(toast.classList.contains("shell-curriculum-success-visible")).toBe(true);
-    expect(toast.getAttribute("role")).toBe("status");
-    expect(toast.textContent).toBe("Access removed for Mr. Para.");
-    // Revoking never closes or saves Class settings.
-    expect(q(document.body, "[data-testid=classes-settings-dialog]")).not.toBeNull();
-  });
-
-  it("grants access to a chosen roster student by email, and Enter never saves the settings form", async () => {
-    const h = harness();
-    const section = await openSettings(h);
-    const select = q(section, "[data-testid=classes-settings-support-student]") as HTMLSelectElement;
-    expect(Array.from(select.options).map((o) => o.textContent)).toEqual(["Choose a student", "Ben Baker", "Cara Cole"]);
-    select.value = "s-cara";
-    const email = q(section, "[data-testid=classes-settings-support-email]") as HTMLInputElement;
-    email.value = "sped@school.org";
-    email.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
-    await settle();
-    expect(h.grantCalls).toEqual([{ classId: OWN_CLASS, studentId: "s-cara", granteeEmail: "sped@school.org" }]);
-    expect(q(section, "[data-testid=classes-settings-support-toast]")!.textContent).toBe(
-      "Access shared with Ms. Sped.",
-    );
-    expect(qa(section, "[data-testid=classes-settings-support-toast]")).toHaveLength(1);
-    expect(qa(section, "[data-testid=classes-settings-support-grant-row]")).toHaveLength(2);
-    expect(q(document.body, "[data-testid=classes-settings-dialog]")).not.toBeNull();
-  });
-
-  it("explains the uniform refusal for an email that is not an active teacher at the school", async () => {
-    const h = harness();
-    (h.deps as { studentSupport: StudentSupportSeam }).studentSupport = {
-      ...h.deps.studentSupport!,
-      grant: async () => {
-        throw Object.assign(new Error("not-found"), { details: { code: "supportAccess.granteeUnavailable" } });
-      },
-    };
-    const section = await openSettings(h);
-    (q(section, "[data-testid=classes-settings-support-student]") as HTMLSelectElement).value = "s-ben";
-    (q(section, "[data-testid=classes-settings-support-email]") as HTMLInputElement).value = "someone@else.org";
-    q(section, "[data-testid=classes-settings-support-grant]")!.click();
-    await settle();
-    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe(
-      "No other active teacher at your school uses that email. Check the address and try again.",
-    );
-    expect(q(section, "[data-testid=classes-settings-support-toast]")!.hidden).toBe(true);
-  });
-
-  it("uses the clearer sharing copy and a subdued Remove action", async () => {
-    const h = harness();
-    const section = await openSettings(h);
-    expect(q(section, ".shell-classes-settings-section-label")!.textContent).toBe("Share Student Progress");
-    expect(q(section, ".shell-classes-settings-support-help")!.textContent).toBe(
-      "Give another teacher at your school read-only access to a student's assignments and assessment results. You can remove access at any time.",
-    );
-    const labels = qa(section, "label").map((l) => l.firstChild!.textContent);
-    expect(labels).toEqual(["Student", "Teacher email"]);
-    expect(q(section, "[data-testid=classes-settings-support-grant]")!.textContent).toBe("Share Access");
-    const revoke = q(section, "[data-testid=classes-settings-support-revoke]")!;
-    expect(revoke.className).toBe("shell-classes-settings-support-revoke");
-    const css = readFileSync(join(__dirname, "../../../index.html"), "utf8");
-    const rule = css.match(/\.shell-classes-settings-support-revoke \{[^}]*\}/)![0];
-    expect(rule).toContain("color: var(--tw-callout-error-ink);");
-    expect(rule).not.toContain("--tw-primary");
-  });
-
-  it("shows grant success only after the server confirms, never on failure", async () => {
-    const h = harness();
-    let settleGrant!: (ok: boolean) => void;
-    const base = h.deps.studentSupport!;
-    (h.deps as { studentSupport: StudentSupportSeam }).studentSupport = {
-      ...base,
-      grant: (input) =>
-        new Promise((resolve, reject) => {
-          settleGrant = (ok) => (ok ? resolve(base.grant(input)) : reject(new Error("internal")));
-        }),
-    };
-    const section = await openSettings(h);
-    const toast = q(section, "[data-testid=classes-settings-support-toast]")!;
-    (q(section, "[data-testid=classes-settings-support-student]") as HTMLSelectElement).value = "s-cara";
-    (q(section, "[data-testid=classes-settings-support-email]") as HTMLInputElement).value = "sped@school.org";
-    q(section, "[data-testid=classes-settings-support-grant]")!.click();
-    await settle();
-    expect(toast.hidden).toBe(true);
-    expect(toast.textContent).toBe("");
-    settleGrant(false);
-    await settle();
-    expect(toast.hidden).toBe(true);
-    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe(
-      "We couldn't share access. Please try again.",
-    );
-    q(section, "[data-testid=classes-settings-support-grant]")!.click();
-    await settle();
-    expect(toast.hidden).toBe(true);
-    settleGrant(true);
-    await settle();
-    expect(toast.hidden).toBe(false);
-    expect(toast.textContent).toBe("Access shared with Ms. Sped.");
-    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe("");
-  });
-
-  it("shows revoke success only after the server confirms, never on failure", async () => {
-    const h = harness();
-    let settleRevoke!: (ok: boolean) => void;
-    (h.deps as { studentSupport: StudentSupportSeam }).studentSupport = {
-      ...h.deps.studentSupport!,
-      revoke: () =>
-        new Promise<void>((resolve, reject) => {
-          settleRevoke = (ok) => (ok ? resolve() : reject(new Error("internal")));
-        }),
-    };
-    const section = await openSettings(h);
-    const toast = q(section, "[data-testid=classes-settings-support-toast]")!;
-    q(section, "[data-testid=classes-settings-support-revoke]")!.click();
-    await settle();
-    expect(toast.hidden).toBe(true);
-    settleRevoke(false);
-    await settle();
-    expect(toast.hidden).toBe(true);
-    expect(q(section, "[data-testid=classes-settings-support-status]")!.textContent).toBe(
-      "We couldn't remove access. Please try again.",
-    );
-    expect(qa(section, "[data-testid=classes-settings-support-grant-row]")).toHaveLength(1);
-    q(section, "[data-testid=classes-settings-support-revoke]")!.click();
-    await settle();
-    settleRevoke(true);
-    await settle();
-    expect(toast.hidden).toBe(false);
-    expect(toast.textContent).toBe("Access removed for Mr. Para.");
-    expect(qa(section, "[data-testid=classes-settings-support-grant-row]")).toHaveLength(0);
+    const dialog = q(document.body, "[data-testid=classes-settings-dialog]")!;
+    expect(q(dialog, "[data-testid=classes-settings-title-input]")).not.toBeNull();
+    expect(q(dialog, "[data-testid=classes-settings-grade]")).not.toBeNull();
+    expect(q(dialog, "[data-testid=classes-settings-support]")).toBeNull();
+    expect(dialog.textContent ?? "").not.toContain("Share Student Progress");
+    expect(h.grantCalls).toEqual([]);
   });
 });
 

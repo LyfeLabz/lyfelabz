@@ -3,7 +3,14 @@ import { httpsCallable } from "firebase/functions";
 
 import { createAttemptsListForStudentCallable } from "../assignments/detail/attempts-wire";
 import type { AssessmentRevisionContentReader } from "../assignments/detail/question-summary";
-import type { SharedStudent, StudentSupportSeam, SupportGrant } from "./types";
+import type {
+  SharedStudent,
+  StudentSupportSeam,
+  SupportGrant,
+  SupportGrantFailureReason,
+  SupportGrantManyResult,
+  SupportRevokeManyResult,
+} from "./types";
 
 export type { SharedStudent, StudentSupportSeam, SupportGrant } from "./types";
 export { supportAccessErrorCode } from "./types";
@@ -59,14 +66,39 @@ function parseGrant(raw: unknown): SupportGrant | null {
   };
 }
 
+const GRANT_OUTCOMES = new Set(["shared", "alreadyShared", "failed"]);
+const REVOKE_OUTCOMES = new Set(["revoked", "alreadyRevoked", "failed"]);
+
+function parseGrantManyResult(raw: unknown): SupportGrantManyResult | null {
+  if (raw === null || typeof raw !== "object") return null;
+  const r = raw as CallableRecord;
+  if (!isString(r.studentId) || !isString(r.granteeEmail) || !isString(r.outcome) || !GRANT_OUTCOMES.has(r.outcome)) {
+    return null;
+  }
+  return {
+    studentId: r.studentId,
+    granteeEmail: r.granteeEmail,
+    outcome: r.outcome as SupportGrantManyResult["outcome"],
+    reason: isString(r.reason) ? (r.reason as SupportGrantFailureReason) : null,
+  };
+}
+
+function parseRevokeManyResult(raw: unknown): SupportRevokeManyResult | null {
+  if (raw === null || typeof raw !== "object") return null;
+  const r = raw as CallableRecord;
+  if (!isString(r.grantId) || !isString(r.outcome) || !REVOKE_OUTCOMES.has(r.outcome)) return null;
+  return { grantId: r.grantId, outcome: r.outcome as SupportRevokeManyResult["outcome"] };
+}
+
 export function createStudentSupportSeam(
   functions: Functions,
   revisionContent: AssessmentRevisionContentReader | null,
 ): StudentSupportSeam {
   const listMine = httpsCallable(functions, "supportAccessListMine");
   const listForClass = httpsCallable(functions, "supportAccessListForClass");
-  const grant = httpsCallable(functions, "supportAccessGrant");
+  const grantMany = httpsCallable(functions, "supportAccessGrantMany");
   const revoke = httpsCallable(functions, "supportAccessRevoke");
+  const revokeMany = httpsCallable(functions, "supportAccessRevokeMany");
   return {
     listShared: async () => {
       const res = await listMine({});
@@ -80,19 +112,24 @@ export function createStudentSupportSeam(
       const list = Array.isArray(data.grants) ? data.grants : [];
       return list.map(parseGrant).filter((g): g is SupportGrant => g !== null);
     },
-    grant: async (input) => {
-      const res = await grant({
+    grantMany: async (input) => {
+      const res = await grantMany({
         classId: input.classId,
-        studentId: input.studentId,
-        granteeEmail: input.granteeEmail,
+        studentIds: [...input.studentIds],
+        granteeEmails: [...input.granteeEmails],
       });
       const data = (res.data ?? {}) as CallableRecord;
-      const parsed = parseGrant(data.grant);
-      if (parsed === null) throw new Error("supportAccess.malformedResponse");
-      return parsed;
+      if (!Array.isArray(data.results)) throw new Error("supportAccess.malformedResponse");
+      return data.results.map(parseGrantManyResult).filter((r): r is SupportGrantManyResult => r !== null);
     },
     revoke: async (grantId) => {
       await revoke({ grantId });
+    },
+    revokeMany: async (grantIds) => {
+      const res = await revokeMany({ grantIds: [...grantIds] });
+      const data = (res.data ?? {}) as CallableRecord;
+      if (!Array.isArray(data.results)) throw new Error("supportAccess.malformedResponse");
+      return data.results.map(parseRevokeManyResult).filter((r): r is SupportRevokeManyResult => r !== null);
     },
     listAttemptsForStudent: createAttemptsListForStudentCallable(functions),
     revisionContent,

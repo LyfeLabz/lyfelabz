@@ -27,8 +27,9 @@ const SHARED: SharedStudent = Object.freeze({
 const seam: StudentSupportSeam = {
   listShared: () => Promise.resolve([SHARED]),
   listForClass: () => Promise.resolve([]),
-  grant: () => Promise.reject(new Error("unused")),
+  grantMany: () => Promise.reject(new Error("unused")),
   revoke: () => Promise.resolve(),
+  revokeMany: () => Promise.reject(new Error("unused")),
   listAttemptsForStudent: (input) =>
     Promise.resolve({ classId: input.classId, studentId: input.studentId, attempts: [] }),
   revisionContent: null,

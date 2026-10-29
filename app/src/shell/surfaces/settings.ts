@@ -7,6 +7,9 @@ import type {
 } from "../navigationHistory";
 import type { ClassManagementIntent } from "./classes";
 import { compactGradeBlock } from "./classes";
+import { renderShareStudentProgressSection } from "./classSupportAccess";
+import { readStudentSupportSeam } from "../../supportAccess/session";
+import type { StudentSupportSeam } from "../../supportAccess/types";
 import type { ListClasses } from "../../classes/listClasses";
 import type { ClassSummary } from "../../classes/types";
 import type {
@@ -95,6 +98,9 @@ export type SettingsDeps = {
   // Teacher Units UX Milestone 1: opens My Units on its archived view.
   // Present only when My Units is enabled; the Units tab renders only then.
   readonly openArchivedUnits?: (() => void) | null;
+  // Student Support Access (PDR-032): owner grant management in Student
+  // Services. Undefined reads the session holder (as Classes does).
+  readonly studentSupport?: StudentSupportSeam | null;
 };
 
 export function renderSettingsSurface(
@@ -128,6 +134,8 @@ export function renderSettingsSurface(
   const listStudents = deps.listStudents ?? null;
   const getAccommodation = deps.getAccommodation ?? null;
   const setAccommodation = deps.setAccommodation ?? null;
+  const studentSupport =
+    deps.studentSupport !== undefined ? deps.studentSupport : readStudentSupportSeam();
 
   const doc = mount.ownerDocument;
   const container = doc.createElement("div");
@@ -186,6 +194,9 @@ export function renderSettingsSurface(
   let studentsState: StudentsState = { kind: "idle" };
   let ssSelectedStudentId: string | null = null;
   let studentDetailState: StudentDetailState | null = null;
+  // The Share Student Progress section keeps its own selections and results,
+  // so it is built once per chosen class and re-attached on every redraw.
+  let shareSection: { readonly classId: string; readonly el: HTMLElement } | null = null;
 
   const draw = (): void => {
     container.textContent = "";
@@ -576,6 +587,20 @@ export function renderSettingsSurface(
 
     // Student list for the selected class
     panel.appendChild(renderStudentList(ssSelectedClassId));
+    if (studentSupport !== null && studentsState.kind === "loaded" && studentsState.students.length > 0) {
+      if (shareSection?.classId !== ssSelectedClassId) {
+        shareSection = {
+          classId: ssSelectedClassId,
+          el: renderShareStudentProgressSection(doc, {
+            classId: ssSelectedClassId,
+            seam: studentSupport,
+            students: studentsState.students,
+            isConnected: () => mount.isConnected,
+          }),
+        };
+      }
+      panel.appendChild(shareSection.el);
+    }
     return panel;
   };
 
@@ -603,12 +628,13 @@ export function renderSettingsSurface(
       studentsState = { kind: "loading" };
       void listStudents!({ classId })
         .then((res) => {
-          if (!mount.isConnected) return;
+          // A late response for a class no longer selected is ignored.
+          if (!mount.isConnected || ssSelectedClassId !== classId) return;
           studentsState = { kind: "loaded", students: res.students };
           draw();
         })
         .catch(() => {
-          if (!mount.isConnected) return;
+          if (!mount.isConnected || ssSelectedClassId !== classId) return;
           studentsState = { kind: "error" };
           draw();
         });

@@ -23,17 +23,42 @@ export type SupportGrant = {
   readonly granteeEmail: string | null;
 };
 
+export type SupportGrantFailureReason =
+  | "invalidEmail"
+  | "granteeUnavailable"
+  | "studentNotEnrolled"
+  | "recordInconsistent"
+  | "writeConflict"
+  | "unavailable";
+
+// One entry per (student, recipient) pair of `supportAccessGrantMany`
+// (STUDENT_SUPPORT_ACCESS.md section 3.1).
+export type SupportGrantManyResult = {
+  readonly studentId: string;
+  readonly granteeEmail: string;
+  readonly outcome: "shared" | "alreadyShared" | "failed";
+  readonly reason: SupportGrantFailureReason | null;
+};
+
+export type SupportRevokeManyResult = {
+  readonly grantId: string;
+  readonly outcome: "revoked" | "alreadyRevoked" | "failed";
+};
+
 export type StudentSupportSeam = {
   // Grantee: students shared with the signed-in teacher.
   readonly listShared: () => Promise<ReadonlyArray<SharedStudent>>;
   // Owner: active grants on one owned class.
   readonly listForClass: (classId: string) => Promise<ReadonlyArray<SupportGrant>>;
-  readonly grant: (input: {
+  // Owner: share each student with each recipient. Per-pair results;
+  // partial success is normal.
+  readonly grantMany: (input: {
     readonly classId: string;
-    readonly studentId: string;
-    readonly granteeEmail: string;
-  }) => Promise<SupportGrant>;
+    readonly studentIds: ReadonlyArray<string>;
+    readonly granteeEmails: ReadonlyArray<string>;
+  }) => Promise<ReadonlyArray<SupportGrantManyResult>>;
   readonly revoke: (grantId: string) => Promise<void>;
+  readonly revokeMany: (grantIds: ReadonlyArray<string>) => Promise<ReadonlyArray<SupportRevokeManyResult>>;
   // Student-scoped attempts (owner or grantee); the grantee's Student Detail
   // source in place of the owner-only class-wide list.
   readonly listAttemptsForStudent: AttemptsListForStudentCallable;

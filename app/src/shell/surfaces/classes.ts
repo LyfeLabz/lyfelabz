@@ -107,11 +107,7 @@ import type { AssessmentRevisionContentReader } from "../../assignments/detail/q
 import { readStudentSupportSeam } from "../../supportAccess/session";
 import type { SharedStudent, StudentSupportSeam } from "../../supportAccess/types";
 import { appendQuestionReview } from "./studentDetailQuestionReview";
-import {
-  renderSharedStudentsSection,
-  renderSupportAccessSection,
-  type SupportAccessSectionDeps,
-} from "./classSupportAccess";
+import { renderSharedStudentsSection } from "./classSupportAccess";
 
 // Classroom Workspace surface. Renders read-only classroom cards for
 // the authenticated teacher. See SPRINT_6B_SPECIFICATION.md §6.
@@ -1228,20 +1224,6 @@ export function renderClassesSurface(
       onRosterRefreshed: () => {
         if (currentRoster?.classId === classId) currentRoster = null;
       },
-      // Student Support Access (PDR-032): owner-only grant management. The
-      // student choices are this class's active roster.
-      supportAccess:
-        studentSupport !== null && loadRoster !== null
-          ? {
-              classId,
-              seam: studentSupport,
-              loadRoster: async () => {
-                const read = loadRoster();
-                if (read === null) throw new Error("roster unavailable");
-                return (await read({ classId })).students;
-              },
-            }
-          : null,
       onCancel: closeClassSettings,
       // Resolving closes the modal (handled here, not by the modal
       // itself, since only this closure can update `state`/`classColors`
@@ -3536,8 +3518,6 @@ type ClassSettingsModalDeps = {
   // (not a Classroom-linked class, or not wired).
   readonly refreshRoster: (() => Promise<RefreshRosterResult>) | null;
   readonly onRosterRefreshed: () => void;
-  // Student Support Access (PDR-032). Null hides the section.
-  readonly supportAccess: SupportAccessSectionDeps | null;
   readonly onCancel: () => void;
   // Resolving closes the modal (the caller is responsible for actually
   // removing it, since only the caller can update its own state);
@@ -3858,10 +3838,6 @@ function renderClassSettingsModal(
     });
 
     formEl.appendChild(section);
-  }
-
-  if (deps.supportAccess !== null) {
-    formEl.appendChild(renderSupportAccessSection(doc, deps.supportAccess));
   }
 
   const errorMessage = doc.createElement("p");

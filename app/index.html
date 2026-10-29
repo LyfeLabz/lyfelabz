@@ -1589,6 +1589,76 @@
     border: 1px solid rgba(192,57,43,0.18);
   }
   .shell-ss-conflict-msg { font-size: 0.88rem; color: #8a5a12; }
+  /* Student Services > Share Student Progress (PDR-032) */
+  .shell-ss-share { max-width: 34rem; margin-top: 1.75rem; }
+  .shell-ss-share-group {
+    border: none;
+    margin: 0 0 0.9rem 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .shell-ss-share-group legend { font-weight: 600; padding: 0; margin-bottom: 0.35rem; }
+  .shell-ss-share-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .shell-ss-share-count { font-size: 0.85rem; color: var(--tw-ink-muted, #566472); }
+  .shell-ss-share-students {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 16rem;
+    overflow-y: auto;
+    border-top: 1px solid var(--tw-hairline);
+  }
+  .shell-ss-share-students li { border-bottom: 1px solid var(--tw-hairline); }
+  .shell-ss-share-students label,
+  .shell-ss-share-grant-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 36px;
+    cursor: pointer;
+  }
+  .shell-ss-share-email {
+    flex: 1 1 12rem;
+    min-width: 0;
+    font: inherit;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 5px;
+  }
+  .shell-ss-share-recipients {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0 0 0.35rem 0;
+    padding: 0;
+  }
+  .shell-ss-share-recipient {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0 0 0.5rem;
+    border: 1px solid var(--tw-hairline);
+    border-radius: 999px;
+    font-size: 0.88rem;
+    overflow-wrap: anywhere;
+  }
+  .shell-ss-share-status { font-size: 0.88rem; margin: 0.5rem 0; }
+  .shell-ss-share-status p { margin: 0; }
+  .shell-ss-share-status ul { margin: 0.25rem 0 0 1.1rem; padding: 0; }
+  .shell-ss-share-subheading { margin: 1.25rem 0 0.4rem 0; font-size: 0.95rem; }
+  .shell-ss-share-grant-label { flex: 1 1 auto; min-width: 0; }
+  .shell-ss-share-grant-status { font-size: 0.8rem; color: var(--tw-ink-muted, #566472); }
+  @media (pointer: coarse) {
+    .shell-ss-share-students label,
+    .shell-ss-share-grant-label { min-height: 44px; }
+  }
   @media (pointer: coarse) {
     .shell-ss-student-btn,
     .shell-ss-ra-action { min-height: 44px; }
@@ -5878,14 +5948,8 @@
   .shell-classes-settings-roster {
     margin: 0.2rem 0 0.4rem 0;
   }
-  /* Class settings > Support access (PDR-032): owner-only grant
-     management in the same quiet section grammar as the roster action. */
-  .shell-classes-settings-support { margin: 0.2rem 0 0.4rem 0; }
-  .shell-classes-settings-support-help {
-    margin: 0 0 0.4rem 0;
-    color: var(--tw-ink-muted);
-    font-size: 0.85rem;
-  }
+  /* Shared-access rows (PDR-032), used by Settings > Student Services >
+     Share Student Progress. */
   .shell-classes-settings-support-list {
     list-style: none;
     margin: 0 0 0.5rem 0;
