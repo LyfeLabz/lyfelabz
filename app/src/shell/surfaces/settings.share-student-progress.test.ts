@@ -3,8 +3,11 @@
  */
 import { renderSettingsSurface, type SettingsDeps } from "./settings";
 import {
+  MAX_REVOKE_GRANTS,
+  groupGrantsByTeacher,
   isValidRecipientEmail,
   normalizeRecipientEmail,
+  recipientTeacherKey,
   renderShareStudentProgressSection,
 } from "./classSupportAccess";
 import type { Session } from "../../session/types";
@@ -18,8 +21,9 @@ import type {
 
 // Student Support Workspace V2 (P2): Share Student Progress lives in
 // Settings > Student Services. Multi-student, multi-recipient sharing through
-// `supportAccessGrantMany`; individual and confirmed bulk removal; every
-// outcome reported, including partial failures.
+// `supportAccessGrantMany`; access listed by recipient teacher, with
+// confirmed teacher-level and per-student removal (P5H); every outcome
+// reported, including partial failures.
 
 type ActiveTeacher = Extract<Session, { kind: "activeTeacher" }>;
 const teacher: ActiveTeacher = Object.freeze({
@@ -251,7 +255,8 @@ describe("Share Student Progress: sharing", () => {
       { classId: "cls-1", studentIds: ["s-ada", "s-cara"], granteeEmails: ["para@school.org", "sped@school.org"] },
     ]);
     expect(q(root, tid("ss-share-status"))!.textContent).toBe("Shared 4. Already shared 0.");
-    expect(qa(root, tid("ss-share-grant-row"))).toHaveLength(4);
+    expect(qa(root, tid("ss-access-student"))).toHaveLength(4);
+    expect(q(root, tid("ss-share-grants-toggle"))!.textContent).toBe("Teachers with access (2)");
     expect(fake.listCalls).toEqual(["cls-1", "cls-1"]);
     // Fully successful: selections clear.
     expect(recipients(root)).toEqual([]);
@@ -367,172 +372,430 @@ describe("Share Student Progress: sharing", () => {
   });
 });
 
-describe("Share Student Progress: existing grants and removal", () => {
-  const initial = [
-    grant("g1", "s-ada", "Ada Avery", "para@school.org"),
-    grant("g2", "s-ben", "Ben Baker", "para@school.org"),
-    grant("g3", "s-cara", "Cara Cole", "sped@school.org"),
-  ];
-
-  it("keeps existing shared access in a collapsed disclosure with the count in its header", async () => {
-    const fake = fakeSeam({}, initial);
-    const root = mountSection(fake);
-    const toggle = q<HTMLButtonElement>(root, tid("ss-share-grants-toggle"))!;
-    const body = q(root, tid("ss-share-grants-body"))!;
-    expect(toggle.textContent).toBe("Shared access");
-    await flush();
-    expect(toggle.textContent).toBe("Shared access (3)");
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(toggle.getAttribute("aria-controls")).toBe("ss-share-grants-body");
-    expect(body.id).toBe("ss-share-grants-body");
-    expect(body.hidden).toBe(true);
-    toggle.click();
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(body.hidden).toBe(false);
-    expect(qa(body, tid("ss-share-grant-row"))).toHaveLength(3);
-    // Removing one updates the count from the refreshed server list and the
-    // disclosure stays open; the result is announced outside the body.
-    q<HTMLButtonElement>(qa(body, tid("ss-share-grant-row"))[0]!, tid("ss-share-grant-remove"))!.click();
-    await flush();
-    expect(toggle.textContent).toBe("Shared access (2)");
-    expect(body.hidden).toBe(false);
-    expect(body.contains(q(root, tid("ss-share-grant-status")))).toBe(false);
-    toggle.click();
-    expect(body.hidden).toBe(true);
+// P5H: Teachers with access. Active grants are grouped by recipient teacher
+// (stable uid from the grant id, never the display name). Remove teacher
+// revokes every grant that teacher holds in this class; Remove access revokes
+// one student's grant. Both confirm first and use `supportAccessRevokeMany`.
+describe("Teachers with access: grouping", () => {
+  // Grant ids follow studentSupportGrantIdFor: `${classId}__${studentId}__${granteeUid}`.
+  const sg = (classId: string, studentId: string, name: string, uid: string, teacher: string, email: string | null): SupportGrant => ({
+    grantId: `${classId}__${studentId}__${uid}`,
+    classId,
+    studentId,
+    studentDisplayName: name,
+    granteeDisplayName: teacher,
+    granteeEmail: email,
   });
 
-  it("a new share updates the existing-access count; a failed read says so in the header", async () => {
-    const fake = fakeSeam();
-    const root = mountSection(fake);
-    await flush();
-    expect(q(root, tid("ss-share-grants-toggle"))!.textContent).toBe("Shared access (0)");
-    check(root, "s-ada");
-    addEmail(root, "para@school.org");
-    q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
-    await flush();
-    expect(q(root, tid("ss-share-grants-toggle"))!.textContent).toBe("Shared access (1)");
-    document.body.replaceChildren();
-    const failing = mountSection(fakeSeam({ listForClass: () => Promise.reject(new Error("x")) }));
-    await flush();
-    expect(q(failing, tid("ss-share-grants-toggle"))!.textContent).toBe("Shared access (couldn't load)");
+  it("keys a teacher by the uid in the grant id, falling back to email, then the grant", () => {
+    expect(recipientTeacherKey(sg("cls-1", "s-ada", "Ada", "uidPat", "Pat", "pat@school.org"))).toBe("uid:uidPat");
+    // Underscores in class or student ids do not confuse the split.
+    expect(recipientTeacherKey(sg("cls__1", "s__ada", "Ada", "uid_P", "Pat", null))).toBe("uid:uid_P");
+    expect(recipientTeacherKey(grant("odd-id", "s-ada", "Ada", "pat@school.org"))).toBe("email:pat@school.org");
+    expect(recipientTeacherKey({ ...grant("odd-id", "s-ada", "Ada", "x@y.z"), granteeEmail: null })).toBe("grant:odd-id");
   });
 
-  it("shows loading, then compact rows with student, recipient, status, and Remove", async () => {
-    const fake = fakeSeam({}, initial);
+  it("groups by stable identity, counts students per teacher, and ignores other classes", () => {
+    const teachers = groupGrantsByTeacher("cls-1", [
+      sg("cls-1", "s-ben", "Ben Baker", "uidPat", "Pat Para", "pat@school.org"),
+      sg("cls-1", "s-ada", "Ada Avery", "uidPat", "Pat Para", "pat@school.org"),
+      // Same display name, different teacher: a separate entry.
+      sg("cls-1", "s-ada", "Ada Avery", "uidPat2", "Pat Para", "pat.p@school.org"),
+      // A missing email on one grant does not split the teacher.
+      sg("cls-1", "s-cara", "Cara Cole", "uidSam", "Sam Sped", null),
+      sg("cls-1", "s-ada", "Ada Avery", "uidSam", "Sam Sped", "sam@school.org"),
+      sg("cls-2", "s-dan", "Dan Diaz", "uidPat", "Pat Para", "pat@school.org"),
+    ]);
+    expect(teachers.map((t) => [t.key, t.displayName, t.email, t.grants.map((g) => g.studentDisplayName)])).toEqual([
+      ["uid:uidPat2", "Pat Para", "pat.p@school.org", ["Ada Avery"]],
+      ["uid:uidPat", "Pat Para", "pat@school.org", ["Ada Avery", "Ben Baker"]],
+      ["uid:uidSam", "Sam Sped", "sam@school.org", ["Ada Avery", "Cara Cole"]],
+    ]);
+  });
+});
+
+describe("Teachers with access: display and removal", () => {
+  const sg = (studentId: string, name: string, uid: string, teacher: string, email: string, classId = "cls-1"): SupportGrant => ({
+    grantId: `${classId}__${studentId}__${uid}`,
+    classId,
+    studentId,
+    studentDisplayName: name,
+    granteeDisplayName: teacher,
+    granteeEmail: email,
+  });
+  const PAT_ADA = sg("s-ada", "Ada Avery", "uidPat", "Pat Para", "pat@school.org");
+  const PAT_BEN = sg("s-ben", "Ben Baker", "uidPat", "Pat Para", "pat@school.org");
+  const SAM_CARA = sg("s-cara", "Cara Cole", "uidSam", "Sam Sped", "sam@school.org");
+  const initial = (): SupportGrant[] => [PAT_ADA, PAT_BEN, SAM_CARA];
+
+  const teacherRows = (root: ParentNode): HTMLElement[] => qa(root, tid("ss-access-teacher"));
+  const teacherRow = (root: ParentNode, uid: string): HTMLElement =>
+    teacherRows(root).find((el) => el.getAttribute("data-teacher-key") === `uid:${uid}`)!;
+  const studentRow = (root: ParentNode, grantId: string): HTMLElement =>
+    qa(root, tid("ss-access-student")).find((el) => el.getAttribute("data-grant-id") === grantId)!;
+  const summary = (root: ParentNode): string[] =>
+    teacherRows(root).map(
+      (row) =>
+        `${q(row, tid("ss-access-teacher-name"))!.textContent} | ${q(row, tid("ss-access-teacher-email"))?.textContent ?? ""} | ${q(row, tid("ss-access-teacher-count"))!.textContent}`,
+    );
+  const header = (root: ParentNode): string => q(root, tid("ss-share-grants-toggle"))!.textContent ?? "";
+  const grantStatus = (root: ParentNode): HTMLElement => q(root, tid("ss-share-grant-status"))!;
+  const revokeManyFake = (fake: Fake, outcome: (id: string) => SupportRevokeManyResult["outcome"] = () => "revoked") =>
+    async (grantIds: ReadonlyArray<string>): Promise<ReadonlyArray<SupportRevokeManyResult>> => {
+      fake.revokeManyCalls.push(grantIds);
+      const results = grantIds.map((grantId) => ({ grantId, outcome: outcome(grantId) }));
+      const gone = new Set(results.filter((r) => r.outcome !== "failed").map((r) => r.grantId));
+      fake.grants = fake.grants.filter((g) => !gone.has(g.grantId));
+      return results;
+    };
+
+  it("heads the list with the number of distinct teachers, collapsed, and keeps loading, empty, and error states", async () => {
+    const fake = fakeSeam({}, initial());
     const root = mountSection(fake);
+    expect(header(root)).toBe("Teachers with access");
     expect(q(root, tid("ss-share-grants-loading"))).not.toBeNull();
     await flush();
-    const rows = qa(root, tid("ss-share-grant-row"));
-    expect(rows).toHaveLength(3);
-    expect(rows[0]!.textContent).toContain("Ada Avery - para (para@school.org)");
-    expect(rows[0]!.textContent).toContain("Active");
-    expect(q(rows[0]!, tid("ss-share-grant-remove"))!.textContent).toBe("Remove");
-  });
-
-  it("shows an empty state and an error state", async () => {
+    // Three grants, two teachers.
+    expect(header(root)).toBe("Teachers with access (2)");
+    const toggle = q<HTMLButtonElement>(root, tid("ss-share-grants-toggle"))!;
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(q(root, tid("ss-share-grants-body"))!.hidden).toBe(true);
+    toggle.click();
+    expect(q(root, tid("ss-share-grants-body"))!.hidden).toBe(false);
+    expect(summary(root)).toEqual(["Pat Para | pat@school.org | 2 students", "Sam Sped | sam@school.org | 1 student"]);
+    document.body.replaceChildren();
     const empty = mountSection(fakeSeam());
     await flush();
+    expect(header(empty)).toBe("Teachers with access (0)");
     expect(q(empty, tid("ss-share-grants-empty"))).not.toBeNull();
     document.body.replaceChildren();
     const failing = mountSection(fakeSeam({ listForClass: () => Promise.reject(new Error("x")) }));
     await flush();
+    expect(header(failing)).toBe("Teachers with access (couldn't load)");
     expect(q(failing, tid("ss-share-grants-error"))).not.toBeNull();
   });
 
-  it("a failed grant-list read can be retried in place", async () => {
+  it("a failed list read can be retried in place", async () => {
     let fail = true;
-    const fake = fakeSeam({}, initial);
+    const fake = fakeSeam({}, initial());
     const list = fake.seam.listForClass;
     fake.seam = { ...fake.seam, listForClass: (id) => (fail ? Promise.reject(new Error("x")) : list(id)) };
     const root = mountSection(fake);
     await flush();
-    expect(q(root, tid("ss-share-grants-error"))).not.toBeNull();
     fail = false;
     q<HTMLButtonElement>(root, tid("ss-share-grants-retry"))!.click();
     await flush();
-    expect(qa(root, tid("ss-share-grant-row"))).toHaveLength(3);
+    expect(teacherRows(root)).toHaveLength(2);
   });
 
-  it("individual Remove revokes one grant and refreshes from the server", async () => {
-    const fake = fakeSeam({}, initial);
+  it("shows only the selected class's grants", async () => {
+    const fake = fakeSeam({}, initial());
+    // A response that wrongly included another class's grant is not shown.
+    fake.seam = { ...fake.seam, listForClass: async () => [...initial(), sg("s-dan", "Dan Diaz", "uidZoe", "Zoe Z", "zoe@school.org", "cls-2")] };
     const root = mountSection(fake);
     await flush();
-    q<HTMLButtonElement>(qa(root, tid("ss-share-grant-row"))[1]!, tid("ss-share-grant-remove"))!.click();
+    expect(header(root)).toBe("Teachers with access (2)");
+    expect(root.textContent).not.toContain("Dan Diaz");
+    expect(root.textContent).not.toContain("Zoe Z");
+  });
+
+  it("expands and collapses a teacher's students with button semantics", async () => {
+    const root = mountSection(fakeSeam({}, initial()));
     await flush();
-    expect(fake.revokeCalls).toEqual(["g2"]);
+    const pat = teacherRow(root, "uidPat");
+    const toggle = q<HTMLButtonElement>(pat, tid("ss-access-teacher-toggle"))!;
+    const list = q(pat, tid("ss-access-students"))!;
+    expect(toggle.tagName).toBe("BUTTON");
+    expect(toggle.type).toBe("button");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-controls")).toBe(list.id);
+    expect(list.hidden).toBe(true);
+    expect(list.getAttribute("aria-label")).toBe("Students shared with Pat Para");
+    toggle.focus();
+    toggle.click();
+    const patOpen = teacherRow(root, "uidPat");
+    const toggleOpen = q<HTMLButtonElement>(patOpen, tid("ss-access-teacher-toggle"))!;
+    expect(toggleOpen.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement).toBe(toggleOpen);
+    const openList = q(patOpen, tid("ss-access-students"))!;
+    expect(openList.hidden).toBe(false);
+    expect(qa(openList, tid("ss-access-student")).map((li) => li.querySelector("span")!.textContent)).toEqual(["Ada Avery", "Ben Baker"]);
+    // Only this teacher opened.
+    expect(q(teacherRow(root, "uidSam"), tid("ss-access-students"))!.hidden).toBe(true);
+    toggleOpen.click();
+    expect(q(teacherRow(root, "uidPat"), tid("ss-access-students"))!.hidden).toBe(true);
+  });
+
+  it("labels the removal controls for screen readers", async () => {
+    const root = mountSection(fakeSeam({}, initial()));
+    await flush();
+    const pat = teacherRow(root, "uidPat");
+    const removeTeacher = q<HTMLButtonElement>(pat, tid("ss-access-remove-teacher"))!;
+    expect(removeTeacher.textContent).toBe("Remove teacher");
+    expect(removeTeacher.getAttribute("aria-label")).toBe("Remove teacher Pat Para (pat@school.org)");
+    const removeStudent = q<HTMLButtonElement>(studentRow(root, PAT_ADA.grantId), tid("ss-access-remove-student"))!;
+    expect(removeStudent.textContent).toBe("Remove access");
+    expect(removeStudent.getAttribute("aria-label")).toBe("Remove Pat Para's access to Ada Avery");
+  });
+
+  it("has no grant checkboxes and no Remove selected", async () => {
+    const root = mountSection(fakeSeam({}, initial()));
+    await flush();
+    const body = q(root, tid("ss-share-grants-body"))!;
+    expect(body.querySelectorAll('input[type="checkbox"]')).toHaveLength(0);
+    expect(q(root, tid("ss-share-revoke-selected"))).toBeNull();
+    expect(q(root, tid("ss-share-grant-check"))).toBeNull();
+    expect(root.textContent).not.toContain("Remove selected");
+  });
+
+  it("Remove teacher asks first, naming the teacher, email, and student count; Cancel changes nothing", async () => {
+    const fake = fakeSeam({}, initial());
+    fake.seam = { ...fake.seam, revokeMany: revokeManyFake(fake) };
+    const root = mountSection(fake);
+    await flush();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
+    const confirm = q(teacherRow(root, "uidPat"), tid("ss-access-teacher-confirm"))!;
+    expect(confirm.getAttribute("role")).toBe("alertdialog");
+    expect(confirm.getAttribute("aria-labelledby")).toBe(q(confirm, "p")!.id);
+    const text = q(confirm, "p")!.textContent!;
+    expect(text).toContain("Pat Para (pat@school.org)");
+    expect(text).toContain("access to 2 students in this class will be removed");
+    expect(text).toContain("The students stay in your class");
+    expect(q(confirm, tid("ss-access-teacher-confirm-yes"))!.textContent).toBe("Remove teacher");
+    // Focus starts on the safe choice.
+    expect(document.activeElement).toBe(q(confirm, tid("ss-access-teacher-confirm-cancel")));
     expect(fake.revokeManyCalls).toEqual([]);
-    expect(qa(root, tid("ss-share-grant-row")).map((r) => r.getAttribute("data-grant-id"))).toEqual(["g1", "g3"]);
-    expect(q(root, tid("ss-share-grant-status"))!.textContent).toBe("Removed 1.");
+    expect(fake.revokeCalls).toEqual([]);
+    q<HTMLButtonElement>(confirm, tid("ss-access-teacher-confirm-cancel"))!.click();
+    await flush();
+    expect(q(root, tid("ss-access-teacher-confirm"))).toBeNull();
+    expect(document.activeElement).toBe(q(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher")));
+    expect(fake.revokeManyCalls).toEqual([]);
+    expect(fake.revokeCalls).toEqual([]);
+    expect(summary(root)).toEqual(["Pat Para | pat@school.org | 2 students", "Sam Sped | sam@school.org | 1 student"]);
   });
 
-  it("a failed individual Remove keeps the row and says nothing changed", async () => {
-    const fake = fakeSeam({ revoke: () => Promise.reject(new Error("x")) }, initial);
-    const root = mountSection(fake);
+  it("words the Remove teacher confirmation for a single student", async () => {
+    const root = mountSection(fakeSeam({}, initial()));
     await flush();
-    q<HTMLButtonElement>(qa(root, tid("ss-share-grant-row"))[0]!, tid("ss-share-grant-remove"))!.click();
-    await flush();
-    expect(qa(root, tid("ss-share-grant-row"))).toHaveLength(3);
-    expect(q(root, tid("ss-share-grant-status"))!.textContent).toBe(
-      "We couldn't remove access. Nothing was changed. Please try again.",
+    q<HTMLButtonElement>(teacherRow(root, "uidSam"), tid("ss-access-remove-teacher"))!.click();
+    expect(q(root, tid("ss-access-teacher-confirm") + " p")!.textContent).toBe(
+      "Remove Sam Sped (sam@school.org)? Their access to 1 student in this class will be removed, and they will no longer see this student's assignments or assessment results. The student stays in your class, and the teacher's account is not changed.",
     );
   });
 
-  const selectGrants = (root: ParentNode, ids: string[]): void => {
-    for (const id of ids) {
-      const box = q<HTMLInputElement>(root, `[data-grant-id="${id}"] ${tid("ss-share-grant-check")}`)!;
-      box.checked = true;
-      box.dispatchEvent(new Event("change"));
-    }
-  };
-
-  it("bulk removal requires confirmation; Cancel writes nothing", async () => {
-    const fake = fakeSeam({}, initial);
+  it("confirmed Remove teacher revokes only that teacher's grants in this class", async () => {
+    const fake = fakeSeam({}, initial());
+    fake.seam = { ...fake.seam, revokeMany: revokeManyFake(fake) };
     const root = mountSection(fake);
     await flush();
-    expect(q<HTMLButtonElement>(root, tid("ss-share-revoke-selected"))!.disabled).toBe(true);
-    selectGrants(root, ["g1", "g3"]);
-    const bulk = q<HTMLButtonElement>(root, tid("ss-share-revoke-selected"))!;
-    expect(bulk.textContent).toBe("Remove selected (2)");
-    bulk.click();
-    expect(q(root, tid("ss-share-revoke-confirm"))).not.toBeNull();
-    expect(fake.revokeManyCalls).toEqual([]);
-    q<HTMLButtonElement>(root, tid("ss-share-revoke-confirm-cancel"))!.click();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-yes"))!.click();
     await flush();
-    expect(q(root, tid("ss-share-revoke-confirm"))).toBeNull();
-    expect(fake.revokeManyCalls).toEqual([]);
-    expect(qa(root, tid("ss-share-grant-row"))).toHaveLength(3);
+    expect(fake.revokeManyCalls).toEqual([[PAT_ADA.grantId, PAT_BEN.grantId]]);
+    expect(fake.revokeCalls).toEqual([]);
+    expect(grantStatus(root).textContent).toBe("Removed Pat Para's access to 2 students.");
+    expect(header(root)).toBe("Teachers with access (1)");
+    expect(summary(root)).toEqual(["Sam Sped | sam@school.org | 1 student"]);
+    expect(fake.grants).toEqual([SAM_CARA]);
+    // The removed row is gone; focus returns to the list header.
+    expect(document.activeElement).toBe(q(root, tid("ss-share-grants-toggle")));
   });
 
-  it("confirmed bulk removal calls supportAccessRevokeMany and reports partial results", async () => {
-    const fake = fakeSeam({}, initial);
+  it("revokes a large teacher in batches within the server cap", async () => {
+    const many = Array.from({ length: MAX_REVOKE_GRANTS + 1 }, (_, i) => sg(`s-${i}`, `Student ${i}`, "uidPat", "Pat Para", "pat@school.org"));
+    const fake = fakeSeam({}, many);
+    fake.seam = { ...fake.seam, revokeMany: revokeManyFake(fake) };
+    const root = mountSection(fake);
+    await flush();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-yes"))!.click();
+    await flush();
+    await flush();
+    await flush();
+    expect(fake.revokeManyCalls.map((c) => c.length)).toEqual([MAX_REVOKE_GRANTS, 1]);
+    expect(grantStatus(root).textContent).toBe(`Removed Pat Para's access to ${MAX_REVOKE_GRANTS + 1} students.`);
+    expect(header(root)).toBe("Teachers with access (0)");
+  });
+
+  it("partial success keeps what failed, names it, and Try again retries only that", async () => {
+    const fake = fakeSeam({}, initial());
+    let failBen = true;
     fake.seam = {
       ...fake.seam,
-      revokeMany: async (grantIds) => {
-        fake.revokeManyCalls.push(grantIds);
-        fake.grants = fake.grants.filter((g) => g.grantId !== "g1");
-        return [
-          { grantId: "g1", outcome: "revoked" },
-          { grantId: "g2", outcome: "alreadyRevoked" },
-          { grantId: "g3", outcome: "failed" },
-        ];
+      revokeMany: revokeManyFake(fake, (id) => (id === PAT_BEN.grantId && failBen ? "failed" : "revoked")),
+    };
+    const root = mountSection(fake);
+    await flush();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-yes"))!.click();
+    await flush();
+    expect(q(grantStatus(root), "p")!.textContent).toBe("Removed Pat Para's access to 1 of 2 students. Pat Para still has access to:");
+    expect(qa(root, tid("ss-share-grant-status-failures") + " li").map((li) => li.textContent)).toEqual(["Ben Baker"]);
+    expect(summary(root)).toEqual(["Pat Para | pat@school.org | 1 student", "Sam Sped | sam@school.org | 1 student"]);
+    expect(document.activeElement).toBe(q(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher")));
+    failBen = false;
+    q<HTMLButtonElement>(root, tid("ss-access-retry"))!.click();
+    await flush();
+    expect(fake.revokeManyCalls).toEqual([[PAT_ADA.grantId, PAT_BEN.grantId], [PAT_BEN.grantId]]);
+    expect(grantStatus(root).textContent).toBe("Removed Pat Para's access to 1 student.");
+    expect(summary(root)).toEqual(["Sam Sped | sam@school.org | 1 student"]);
+  });
+
+  it("when every removal fails, nothing changes and Try again works", async () => {
+    const fake = fakeSeam({}, initial());
+    let reject = true;
+    const ok = revokeManyFake(fake);
+    fake.seam = {
+      ...fake.seam,
+      revokeMany: (ids) => {
+        if (!reject) return ok(ids);
+        fake.revokeManyCalls.push(ids);
+        return Promise.reject(new Error("unavailable"));
       },
     };
     const root = mountSection(fake);
     await flush();
-    selectGrants(root, ["g1", "g2", "g3"]);
-    q<HTMLButtonElement>(root, tid("ss-share-revoke-selected"))!.click();
-    q<HTMLButtonElement>(root, tid("ss-share-revoke-confirm-yes"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-share-grants-toggle"))!.click();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-teacher-toggle"))!.click();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-yes"))!.click();
     await flush();
-    expect(fake.revokeManyCalls).toEqual([["g1", "g2", "g3"]]);
+    expect(q(grantStatus(root), "p")!.textContent).toBe("We couldn't remove Pat Para's access. Nothing was changed. Please try again.");
+    // The display is preserved, including the open teacher.
+    expect(summary(root)).toEqual(["Pat Para | pat@school.org | 2 students", "Sam Sped | sam@school.org | 1 student"]);
+    expect(q(teacherRow(root, "uidPat"), tid("ss-access-students"))!.hidden).toBe(false);
+    expect(q(root, tid("ss-access-teacher-confirm"))).toBeNull();
+    reject = false;
+    q<HTMLButtonElement>(root, tid("ss-access-retry"))!.click();
+    await flush();
+    expect(fake.revokeManyCalls).toEqual([[PAT_ADA.grantId, PAT_BEN.grantId], [PAT_ADA.grantId, PAT_BEN.grantId]]);
+    expect(grantStatus(root).textContent).toBe("Removed Pat Para's access to 2 students.");
+  });
+
+  it("per-grant failures for every grant are reported as nothing changed", async () => {
+    const fake = fakeSeam({}, initial());
+    fake.seam = { ...fake.seam, revokeMany: revokeManyFake(fake, () => "failed") };
+    const root = mountSection(fake);
+    await flush();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-yes"))!.click();
+    await flush();
+    expect(q(grantStatus(root), "p")!.textContent).toBe("We couldn't remove Pat Para's access. Nothing was changed. Please try again.");
+    expect(summary(root)).toEqual(["Pat Para | pat@school.org | 2 students", "Sam Sped | sam@school.org | 1 student"]);
+  });
+
+  it("blocks duplicate submission while a removal is pending", async () => {
+    const fake = fakeSeam({}, initial());
+    let resolve!: () => void;
+    const ok = revokeManyFake(fake);
+    fake.seam = {
+      ...fake.seam,
+      revokeMany: (ids) =>
+        new Promise((r) => {
+          resolve = () => r(ok(ids));
+        }),
+    };
+    const root = mountSection(fake);
+    await flush();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
+    const yes = q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-yes"))!;
+    yes.click();
+    const pending = q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-yes"))!;
+    expect(pending.disabled).toBe(true);
+    expect(pending.getAttribute("aria-busy")).toBe("true");
+    expect(pending.textContent).toBe("Removing…");
+    expect(q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-cancel"))!.disabled).toBe(true);
+    expect(qa(root, tid("ss-access-remove-teacher")).every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
+    expect(qa(root, tid("ss-access-remove-student")).every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
+    yes.click();
+    pending.click();
+    pending.dispatchEvent(new MouseEvent("click"));
+    q<HTMLButtonElement>(teacherRow(root, "uidSam"), tid("ss-access-remove-teacher"))!.dispatchEvent(new MouseEvent("click"));
+    expect(grantStatus(root).textContent).toBe("Removing access…");
+    await flush();
+    resolve();
+    await flush();
+    await flush();
+    expect(fake.revokeManyCalls).toHaveLength(1);
     expect(fake.revokeCalls).toEqual([]);
-    const status = q(root, tid("ss-share-grant-status"))!;
-    expect(status.querySelector("p")!.textContent).toBe("Removed 1. Already removed 1. Failed 1.");
-    expect(qa(root, tid("ss-share-grant-status-failures") + " li").map((li) => li.textContent)).toEqual([
-      "Cara Cole - sped: couldn't be removed",
-    ]);
-    // Refreshed from the server; the failed grant stays selected for retry.
-    expect(qa(root, tid("ss-share-grant-row")).map((r) => r.getAttribute("data-grant-id"))).toEqual(["g2", "g3"]);
-    expect(q(root, tid("ss-share-revoke-selected"))!.textContent).toBe("Remove selected (1)");
+    // Controls come back enabled after the request settles.
+    expect(qa(root, tid("ss-access-remove-teacher")).every((b) => !(b as HTMLButtonElement).disabled)).toBe(true);
+  });
+
+  it("Remove access revokes one student's grant after confirming, and updates the count", async () => {
+    const fake = fakeSeam({}, initial());
+    fake.seam = { ...fake.seam, revokeMany: revokeManyFake(fake) };
+    const root = mountSection(fake);
+    await flush();
+    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-teacher-toggle"))!.click();
+    q<HTMLButtonElement>(studentRow(root, PAT_BEN.grantId), tid("ss-access-remove-student"))!.click();
+    const confirm = q(studentRow(root, PAT_BEN.grantId), tid("ss-access-student-confirm"))!;
+    const text = q(confirm, "p")!.textContent!;
+    expect(text).toBe(
+      "Remove access to Ben Baker for Pat Para (pat@school.org)? Only this student's shared access is removed. Ben Baker stays in your class, and Pat Para keeps access to any other students you shared.",
+    );
+    expect(text).not.toMatch(/remove Ben Baker from/i);
+    expect(document.activeElement).toBe(q(confirm, tid("ss-access-student-confirm-cancel")));
+    // Cancel changes nothing.
+    q<HTMLButtonElement>(confirm, tid("ss-access-student-confirm-cancel"))!.click();
+    expect(q(root, tid("ss-access-student-confirm"))).toBeNull();
+    expect(document.activeElement).toBe(q(studentRow(root, PAT_BEN.grantId), tid("ss-access-remove-student")));
+    expect(fake.revokeManyCalls).toEqual([]);
+    q<HTMLButtonElement>(studentRow(root, PAT_BEN.grantId), tid("ss-access-remove-student"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-access-student-confirm-yes"))!.click();
+    await flush();
+    expect(fake.revokeManyCalls).toEqual([[PAT_BEN.grantId]]);
+    expect(fake.revokeCalls).toEqual([]);
+    expect(grantStatus(root).textContent).toBe("Removed Pat Para's access to Ben Baker.");
+    expect(summary(root)).toEqual(["Pat Para | pat@school.org | 1 student", "Sam Sped | sam@school.org | 1 student"]);
+    expect(header(root)).toBe("Teachers with access (2)");
+    // Still open, other grants intact.
+    expect(qa(teacherRow(root, "uidPat"), tid("ss-access-student")).map((li) => li.getAttribute("data-grant-id"))).toEqual([PAT_ADA.grantId]);
+    expect(fake.grants).toEqual([PAT_ADA, SAM_CARA]);
+  });
+
+  it("a failed Remove access keeps the student and says nothing changed", async () => {
+    const fake = fakeSeam({ revokeMany: () => Promise.reject(new Error("x")) }, initial());
+    const root = mountSection(fake);
+    await flush();
+    q<HTMLButtonElement>(studentRow(root, PAT_ADA.grantId), tid("ss-access-remove-student"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-access-student-confirm-yes"))!.click();
+    await flush();
+    expect(q(grantStatus(root), "p")!.textContent).toBe(
+      "We couldn't remove Pat Para's access to Ada Avery. Nothing was changed. Please try again.",
+    );
+    expect(summary(root)).toEqual(["Pat Para | pat@school.org | 2 students", "Sam Sped | sam@school.org | 1 student"]);
+  });
+
+  it("P5H regression: after a successful share, removal controls are enabled and reach the server", async () => {
+    // Staging: the owner shared two students, then Remove did nothing. The
+    // share left `busy` set while the refreshed rows were drawn, so every
+    // Remove stayed disabled and no revoke request was ever sent.
+    const fake = fakeSeam({}, []);
+    fake.seam = { ...fake.seam, revokeMany: revokeManyFake(fake) };
+    const root = mountSection(fake);
+    await flush();
+    check(root, "s-ada");
+    check(root, "s-ben");
+    addEmail(root, "para@school.org");
+    q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
+    await flush();
+    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Shared 2. Already shared 0.");
+    expect(header(root)).toBe("Teachers with access (1)");
+    const controls = [
+      ...qa(root, tid("ss-access-remove-teacher")),
+      ...qa(root, tid("ss-access-remove-student")),
+      ...qa(root, tid("ss-access-teacher-toggle")),
+    ] as HTMLButtonElement[];
+    expect(controls).toHaveLength(4);
+    expect(controls.every((b) => !b.disabled)).toBe(true);
+    const [first] = qa(root, tid("ss-access-student"));
+    q<HTMLButtonElement>(first!, tid("ss-access-remove-student"))!.click();
+    q<HTMLButtonElement>(root, tid("ss-access-student-confirm-yes"))!.click();
+    await flush();
+    expect(fake.revokeManyCalls).toEqual([["s-ada-para@school.org"]]);
+    expect(summary(root)).toEqual(["para | para@school.org | 1 student"]);
   });
 });
 

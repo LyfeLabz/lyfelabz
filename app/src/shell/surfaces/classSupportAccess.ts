@@ -3,6 +3,7 @@ import {
   type StudentSupportSeam,
   type SupportGrant,
   type SupportGrantFailureReason,
+  type SupportRevokeManyResult,
   sharedStudentContextLabel,
 } from "../../supportAccess/types";
 
@@ -11,11 +12,13 @@ import {
 // 1. `renderShareStudentProgressSection`: the class owner's "Share Student
 //    Progress" section in Settings > Student Services, for the class chosen
 //    there. Check students, add one or more support teachers' emails, and
-//    share in one `supportAccessGrantMany` call; review active grants and
-//    remove one (`supportAccessRevoke`) or several (`supportAccessRevokeMany`,
-//    after confirmation). Every change takes effect when the server confirms
-//    it; there is no Save. Results report each outcome, including partial
-//    failures, and the grant list is re-read from the server afterwards.
+//    share in one `supportAccessGrantMany` call. Active grants are listed by
+//    recipient teacher ("Teachers with access"); after confirmation, Remove
+//    teacher revokes all of that teacher's grants in this class, and Remove
+//    access revokes one student's grant (both `supportAccessRevokeMany`).
+//    Every change takes effect when the server confirms it; there is no
+//    Save. Results report each outcome, including partial failures, and the
+//    grant list is re-read from the server afterwards.
 // 2. `renderSharedStudentsSection`: the support educator's "Shared students"
 //    list on the Classes surface. Choosing a student opens the existing
 //    Student Detail in read-only mode (wired by classes.ts).
@@ -70,6 +73,63 @@ function failureMessage(reason: SupportGrantFailureReason | null): string {
 
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 
+// A recipient teacher's stable identity. Grant ids are
+// `${classId}__${studentId}__${granteeUid}` (studentSupportGrantIdFor), so
+// the uid is the remainder after the known class and student prefix. Names
+// are never an identity; a grant id of another shape keys on its email, or
+// stands alone.
+export function recipientTeacherKey(grant: SupportGrant): string {
+  const prefix = `${grant.classId}__${grant.studentId}__`;
+  if (grant.grantId.startsWith(prefix) && grant.grantId.length > prefix.length) {
+    return `uid:${grant.grantId.slice(prefix.length)}`;
+  }
+  return grant.granteeEmail !== null ? `email:${grant.granteeEmail}` : `grant:${grant.grantId}`;
+}
+
+export type RecipientTeacher = {
+  readonly key: string;
+  readonly displayName: string;
+  readonly email: string | null;
+  // This class's active grants to the teacher, by student name.
+  readonly grants: ReadonlyArray<SupportGrant>;
+};
+
+// Groups one class's active grants by recipient teacher, ordered by name,
+// then email, then key. Grants from any other class are ignored.
+export function groupGrantsByTeacher(
+  classId: string,
+  grants: ReadonlyArray<SupportGrant>,
+): ReadonlyArray<RecipientTeacher> {
+  const byKey = new Map<string, SupportGrant[]>();
+  for (const grant of grants) {
+    if (grant.classId !== classId) continue;
+    const key = recipientTeacherKey(grant);
+    const list = byKey.get(key);
+    if (list === undefined) byKey.set(key, [grant]);
+    else list.push(grant);
+  }
+  const teachers: RecipientTeacher[] = [];
+  for (const [key, list] of byKey) {
+    list.sort((a, b) => a.studentDisplayName.localeCompare(b.studentDisplayName) || (a.grantId < b.grantId ? -1 : 1));
+    const first = list[0]!;
+    teachers.push({
+      key,
+      displayName: first.granteeDisplayName,
+      email: list.find((g) => g.granteeEmail !== null)?.granteeEmail ?? null,
+      grants: list,
+    });
+  }
+  teachers.sort(
+    (a, b) =>
+      a.displayName.localeCompare(b.displayName) ||
+      (a.email ?? "").localeCompare(b.email ?? "") ||
+      (a.key < b.key ? -1 : a.key > b.key ? 1 : 0),
+  );
+  return teachers;
+}
+
+const teacherLabel = (t: RecipientTeacher): string => (t.email === null ? t.displayName : `${t.displayName} (${t.email})`);
+
 export function renderShareStudentProgressSection(
   doc: Document,
   deps: ShareStudentProgressDeps,
@@ -95,8 +155,13 @@ export function renderShareStudentProgressSection(
   let recipients: string[] = [];
   let grants: ReadonlyArray<SupportGrant> = [];
   let grantsState: "loading" | "error" | "loaded" = "loading";
-  const selectedGrants = new Set<string>();
-  let confirmingBulk = false;
+  // Teachers whose student list is open, and the one pending confirmation
+  // (a whole teacher, or one student's grant).
+  const expandedTeachers = new Set<string>();
+  let confirming: { readonly kind: "teacher"; readonly key: string } | { readonly kind: "student"; readonly grantId: string } | null = null;
+  // One flag for every request. Any change goes through `setBusy`, which
+  // redraws the access list, so its buttons never keep a stale disabled
+  // state (P5H: after a share, every Remove stayed disabled).
   let busy = false;
   const nameOf = new Map(deps.students.map((s) => [s.studentId, s.studentDisplayName]));
 
@@ -228,7 +293,8 @@ export function renderShareStudentProgressSection(
   shareStatus.setAttribute("aria-live", "polite");
   sendColumn.appendChild(shareStatus);
 
-  // --- Existing grants: a disclosure, collapsed, with the count in its header ---
+  // --- Teachers with access: a disclosure, collapsed, with the number of
+  // recipient teachers in its header ---
   const grantsDisclosure = doc.createElement("div");
   grantsDisclosure.className = "shell-ss-share-existing";
   section.appendChild(grantsDisclosure);
@@ -255,14 +321,10 @@ export function renderShareStudentProgressSection(
     grantsBody.hidden = !open;
   });
 
-  const grantTools = doc.createElement("div");
-  grantTools.className = "shell-ss-share-tools";
-  grantsBody.appendChild(grantTools);
-
   const grantList = doc.createElement("ul");
-  grantList.className = "shell-classes-settings-support-list";
-  grantList.setAttribute("data-testid", "ss-share-grants");
-  grantList.setAttribute("aria-label", "Students shared with other teachers");
+  grantList.className = "shell-classes-settings-support-list shell-ss-access-teachers";
+  grantList.setAttribute("data-testid", "ss-access-teachers");
+  grantList.setAttribute("aria-label", "Teachers with access");
   grantsBody.appendChild(grantList);
 
   // Outside the collapsed body so removal results are always announced.
@@ -367,11 +429,8 @@ export function renderShareStudentProgressSection(
   const refreshGrants = (): Promise<void> =>
     deps.seam.listForClass(deps.classId).then(
       (loaded) => {
-        grants = loaded;
+        grants = loaded.filter((g) => g.classId === deps.classId);
         grantsState = "loaded";
-        for (const id of [...selectedGrants]) {
-          if (!grants.some((g) => g.grantId === id)) selectedGrants.delete(id);
-        }
         renderGrants();
       },
       () => {
@@ -397,9 +456,8 @@ export function renderShareStudentProgressSection(
     }
     const studentIds = deps.students.map((s) => s.studentId).filter((id) => selected.has(id));
     const granteeEmails = [...recipients];
-    busy = true;
     shareButton.setAttribute("aria-busy", "true");
-    updateCounts();
+    setBusy(true);
     setStatus(shareStatus, "Sharing…");
     deps.seam
       .grantMany({ classId: deps.classId, studentIds, granteeEmails })
@@ -443,62 +501,316 @@ export function renderShareStudentProgressSection(
         },
       )
       .finally(() => {
-        busy = false;
         shareButton.removeAttribute("aria-busy");
-        updateCounts();
+        setBusy(false);
       });
   };
   shareButton.addEventListener("click", submitShare);
 
-  const runRevoke = (grantIds: ReadonlyArray<string>): void => {
-    if (busy || grantIds.length === 0) return;
-    busy = true;
-    confirmingBulk = false;
-    renderGrants();
+  const setBusy = (next: boolean): void => {
+    busy = next;
     updateCounts();
-    setStatus(grantStatus, "Removing…");
-    const call =
-      grantIds.length === 1
-        ? deps.seam.revoke(grantIds[0]!).then(() => [{ grantId: grantIds[0]!, outcome: "revoked" as const }])
-        : deps.seam.revokeMany(grantIds);
-    call
+    renderGrants();
+  };
+
+  // Moves focus to an access-list control after a redraw replaced it: the
+  // control `testId` inside the element whose `attr` is `value`, else the
+  // list header.
+  const focusIn = (testId: string, attr?: "data-teacher-key" | "data-grant-id", value?: string): void => {
+    const scope =
+      attr === undefined
+        ? grantList
+        : Array.from(grantList.querySelectorAll<HTMLElement>(`[${attr}]`)).find((el) => el.getAttribute(attr) === value);
+    const el = scope?.querySelector<HTMLElement>(`[data-testid="${testId}"]`) ?? null;
+    if (el !== null) el.focus();
+    else grantsToggle.focus();
+  };
+
+  type RevokeTarget = {
+    readonly teacher: RecipientTeacher;
+    // One student's grant (Remove access), or null for the whole teacher.
+    readonly grant: SupportGrant | null;
+  };
+
+  // Revokes the given grants (all belong to `target.teacher` in this class)
+  // through `supportAccessRevokeMany`, which authorizes each grant on the
+  // server. Batches stay within the server cap. Each outcome is reported;
+  // what failed keeps its access and can be tried again.
+  const runRevoke = (target: RevokeTarget, grantIds: ReadonlyArray<string>): void => {
+    if (busy || grantIds.length === 0) return;
+    const name = target.teacher.displayName;
+    const studentName = (id: string): string =>
+      grants.find((g) => g.grantId === id)?.studentDisplayName ??
+      target.teacher.grants.find((g) => g.grantId === id)?.studentDisplayName ??
+      "Student";
+    setStatus(grantStatus, "Removing access…");
+    setBusy(true);
+    const batches: string[][] = [];
+    for (let i = 0; i < grantIds.length; i += MAX_REVOKE_GRANTS) batches.push(grantIds.slice(i, i + MAX_REVOKE_GRANTS));
+    const results: SupportRevokeManyResult[] = [];
+    let chain: Promise<void> = Promise.resolve();
+    for (const batch of batches) {
+      chain = chain.then(() =>
+        deps.seam.revokeMany(batch).then(
+          (r) => {
+            results.push(...r);
+          },
+          (err: unknown) => {
+            // A batch the server never answered: none of it is known removed.
+            if (results.length === 0) throw err;
+            for (const grantId of batch) results.push({ grantId, outcome: "failed" });
+          },
+        ),
+      );
+    }
+    chain
       .then(
-        (results) => {
+        () => {
           if (!deps.isConnected()) return undefined;
-          const revoked = results.filter((r) => r.outcome === "revoked").length;
-          const already = results.filter((r) => r.outcome === "alreadyRevoked").length;
-          const failed = results.filter((r) => r.outcome === "failed");
-          const parts = [`Removed ${revoked}.`];
-          if (already > 0) parts.push(`Already removed ${already}.`);
-          if (failed.length > 0) parts.push(`Failed ${failed.length}.`);
-          const labelOf = (id: string): string => {
-            const g = grants.find((x) => x.grantId === id);
-            return g === undefined ? "Shared access" : `${g.studentDisplayName} - ${g.granteeDisplayName}`;
-          };
-          setStatus(grantStatus, parts.join(" "), failed.map((r) => `${labelOf(r.grantId)}: couldn't be removed`));
-          for (const r of results) if (r.outcome !== "failed") selectedGrants.delete(r.grantId);
+          confirming = null;
+          const answered = new Set(results.map((r) => r.grantId));
+          const failed = [
+            ...results.filter((r) => r.outcome === "failed").map((r) => r.grantId),
+            // A grant the response left out was not confirmed removed.
+            ...grantIds.filter((id) => !answered.has(id)),
+          ];
+          const removed = grantIds.length - failed.length;
+          if (failed.length === 0) {
+            setStatus(
+              grantStatus,
+              target.grant === null
+                ? `Removed ${name}'s access to ${plural(removed, "student", "students")}.`
+                : `Removed ${name}'s access to ${target.grant.studentDisplayName}.`,
+            );
+          } else if (removed === 0) {
+            setStatus(
+              grantStatus,
+              target.grant === null
+                ? `We couldn't remove ${name}'s access. Nothing was changed. Please try again.`
+                : `We couldn't remove ${name}'s access to ${target.grant.studentDisplayName}. Nothing was changed. Please try again.`,
+            );
+            appendRetry(target, failed);
+          } else {
+            setStatus(
+              grantStatus,
+              `Removed ${name}'s access to ${removed} of ${plural(grantIds.length, "student", "students")}. ${name} still has access to:`,
+              failed.map(studentName),
+            );
+            appendRetry(target, failed);
+          }
           return refreshGrants();
         },
         () => {
           if (!deps.isConnected()) return;
-          setStatus(grantStatus, "We couldn't remove access. Nothing was changed. Please try again.");
+          confirming = null;
+          setStatus(
+            grantStatus,
+            target.grant === null
+              ? `We couldn't remove ${name}'s access. Nothing was changed. Please try again.`
+              : `We couldn't remove ${name}'s access to ${target.grant.studentDisplayName}. Nothing was changed. Please try again.`,
+          );
+          appendRetry(target, grantIds);
         },
       )
       .finally(() => {
-        busy = false;
-        renderGrants();
-        updateCounts();
+        setBusy(false);
+        if (!deps.isConnected()) return;
+        // The teacher's row, if any access remains; else the list header.
+        focusIn(target.grant === null ? "ss-access-remove-teacher" : "ss-access-teacher-toggle", "data-teacher-key", target.teacher.key);
       });
   };
 
+  // "Try again" for removals that did not happen. The teacher already
+  // confirmed, so it re-runs the same removal for what is left.
+  const appendRetry = (target: RevokeTarget, grantIds: ReadonlyArray<string>): void => {
+    const retry = doc.createElement("button");
+    retry.type = "button";
+    retry.className = "shell-ss-ra-action";
+    retry.setAttribute("data-testid", "ss-access-retry");
+    retry.textContent = "Try again";
+    retry.addEventListener("click", () => {
+      const live = new Set(grants.map((g) => g.grantId));
+      runRevoke(target, grantsState === "loaded" ? grantIds.filter((id) => live.has(id)) : grantIds);
+    });
+    grantStatus.appendChild(retry);
+  };
+
+  const confirmBox = (
+    testId: string,
+    message: string,
+    confirmLabel: string,
+    onConfirm: () => void,
+    onCancel: () => void,
+  ): HTMLElement => {
+    const box = doc.createElement("div");
+    box.className = "shell-ss-confirm shell-ss-access-confirm";
+    box.setAttribute("data-testid", testId);
+    box.setAttribute("role", "alertdialog");
+    const msgId = `${testId}-msg`;
+    box.setAttribute("aria-labelledby", msgId);
+    const msg = doc.createElement("p");
+    msg.id = msgId;
+    msg.textContent = message;
+    const actions = doc.createElement("div");
+    actions.className = "shell-ss-access-confirm-actions";
+    const yes = doc.createElement("button");
+    yes.type = "button";
+    yes.className = "shell-ss-ra-action shell-ss-ra-action--confirm";
+    yes.setAttribute("data-testid", `${testId}-yes`);
+    yes.textContent = busy ? "Removing…" : confirmLabel;
+    yes.disabled = busy;
+    if (busy) yes.setAttribute("aria-busy", "true");
+    yes.addEventListener("click", onConfirm);
+    const no = doc.createElement("button");
+    no.type = "button";
+    no.className = "shell-ss-ra-action";
+    no.setAttribute("data-testid", `${testId}-cancel`);
+    no.textContent = "Cancel";
+    no.disabled = busy;
+    no.addEventListener("click", onCancel);
+    actions.append(yes, no);
+    box.append(msg, actions);
+    return box;
+  };
+
+  const renderTeacher = (teacher: RecipientTeacher, index: number): HTMLElement => {
+    const li = doc.createElement("li");
+    li.className = "shell-ss-access-teacher";
+    li.setAttribute("data-testid", "ss-access-teacher");
+    li.setAttribute("data-teacher-key", teacher.key);
+    const expanded = expandedTeachers.has(teacher.key);
+    const listId = `ss-access-students-${index}`;
+    const count = plural(teacher.grants.length, "student", "students");
+
+    const row = doc.createElement("div");
+    row.className = "shell-ss-access-teacher-row";
+    const toggle = doc.createElement("button");
+    toggle.type = "button";
+    toggle.className = "shell-ss-access-toggle";
+    toggle.setAttribute("data-testid", "ss-access-teacher-toggle");
+    toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+    toggle.setAttribute("aria-controls", listId);
+    const nameEl = doc.createElement("span");
+    nameEl.className = "shell-ss-access-name";
+    nameEl.setAttribute("data-testid", "ss-access-teacher-name");
+    nameEl.textContent = teacher.displayName;
+    const meta = doc.createElement("span");
+    meta.className = "shell-ss-access-meta";
+    if (teacher.email !== null) {
+      const email = doc.createElement("span");
+      email.className = "shell-ss-access-email";
+      email.setAttribute("data-testid", "ss-access-teacher-email");
+      email.textContent = teacher.email;
+      meta.appendChild(email);
+    }
+    const countEl = doc.createElement("span");
+    countEl.className = "shell-ss-access-count";
+    countEl.setAttribute("data-testid", "ss-access-teacher-count");
+    countEl.textContent = count;
+    meta.appendChild(countEl);
+    toggle.append(nameEl, meta);
+    toggle.addEventListener("click", () => {
+      if (expandedTeachers.has(teacher.key)) expandedTeachers.delete(teacher.key);
+      else expandedTeachers.add(teacher.key);
+      renderGrants();
+      focusIn("ss-access-teacher-toggle", "data-teacher-key", teacher.key);
+    });
+
+    const removeTeacher = doc.createElement("button");
+    removeTeacher.type = "button";
+    removeTeacher.className = "shell-classes-settings-support-revoke";
+    removeTeacher.setAttribute("data-testid", "ss-access-remove-teacher");
+    removeTeacher.setAttribute("aria-label", `Remove teacher ${teacherLabel(teacher)}`);
+    removeTeacher.textContent = "Remove teacher";
+    removeTeacher.disabled = busy;
+    removeTeacher.addEventListener("click", () => {
+      if (busy) return;
+      confirming = { kind: "teacher", key: teacher.key };
+      renderGrants();
+      focusIn("ss-access-teacher-confirm-cancel");
+    });
+    row.append(toggle, removeTeacher);
+    li.appendChild(row);
+
+    if (confirming?.kind === "teacher" && confirming.key === teacher.key) {
+      const target: RevokeTarget = { teacher, grant: null };
+      li.appendChild(
+        confirmBox(
+          "ss-access-teacher-confirm",
+          teacher.grants.length === 1
+            ? `Remove ${teacherLabel(teacher)}? Their access to 1 student in this class will be removed, and they will no longer see this student's assignments or assessment results. The student stays in your class, and the teacher's account is not changed.`
+            : `Remove ${teacherLabel(teacher)}? Their access to ${count} in this class will be removed, and they will no longer see these students' assignments or assessment results. The students stay in your class, and the teacher's account is not changed.`,
+          "Remove teacher",
+          () => runRevoke(target, teacher.grants.map((g) => g.grantId)),
+          () => {
+            if (busy) return;
+            confirming = null;
+            renderGrants();
+            focusIn("ss-access-remove-teacher", "data-teacher-key", teacher.key);
+          },
+        ),
+      );
+    }
+
+    const students = doc.createElement("ul");
+    students.id = listId;
+    students.className = "shell-ss-access-students";
+    students.setAttribute("data-testid", "ss-access-students");
+    students.setAttribute("aria-label", `Students shared with ${teacher.displayName}`);
+    students.hidden = !expanded;
+    for (const grant of teacher.grants) {
+      const sli = doc.createElement("li");
+      sli.className = "shell-ss-access-student";
+      sli.setAttribute("data-testid", "ss-access-student");
+      sli.setAttribute("data-grant-id", grant.grantId);
+      const sname = doc.createElement("span");
+      sname.className = "shell-ss-access-student-name";
+      sname.textContent = grant.studentDisplayName;
+      const remove = doc.createElement("button");
+      remove.type = "button";
+      remove.className = "shell-classes-settings-support-revoke";
+      remove.setAttribute("data-testid", "ss-access-remove-student");
+      remove.setAttribute("aria-label", `Remove ${teacher.displayName}'s access to ${grant.studentDisplayName}`);
+      remove.textContent = "Remove access";
+      remove.disabled = busy;
+      remove.addEventListener("click", () => {
+        if (busy) return;
+        confirming = { kind: "student", grantId: grant.grantId };
+        renderGrants();
+        focusIn("ss-access-student-confirm-cancel");
+      });
+      sli.append(sname, remove);
+      if (confirming?.kind === "student" && confirming.grantId === grant.grantId) {
+        const target: RevokeTarget = { teacher, grant };
+        sli.appendChild(
+          confirmBox(
+            "ss-access-student-confirm",
+            `Remove access to ${grant.studentDisplayName} for ${teacherLabel(teacher)}? Only this student's shared access is removed. ${grant.studentDisplayName} stays in your class, and ${teacher.displayName} keeps access to any other students you shared.`,
+            "Remove access",
+            () => runRevoke(target, [grant.grantId]),
+            () => {
+              if (busy) return;
+              confirming = null;
+              renderGrants();
+              focusIn("ss-access-remove-student", "data-grant-id", grant.grantId);
+            },
+          ),
+        );
+      }
+      students.appendChild(sli);
+    }
+    li.appendChild(students);
+    return li;
+  };
+
   const renderGrants = (): void => {
+    const teachers = groupGrantsByTeacher(deps.classId, grants);
     grantsToggle.textContent =
       grantsState === "loaded"
-        ? `Shared access (${grants.length})`
+        ? `Teachers with access (${teachers.length})`
         : grantsState === "error"
-          ? "Shared access (couldn't load)"
-          : "Shared access";
-    grantTools.replaceChildren();
+          ? "Teachers with access (couldn't load)"
+          : "Teachers with access";
     grantList.replaceChildren();
     if (grantsState === "loading" || grantsState === "error") {
       const li = doc.createElement("li");
@@ -511,7 +823,9 @@ export function renderShareStudentProgressSection(
         retry.className = "shell-ss-ra-action";
         retry.setAttribute("data-testid", "ss-share-grants-retry");
         retry.textContent = "Try again";
+        retry.disabled = busy;
         retry.addEventListener("click", () => {
+          if (busy) return;
           grantsState = "loading";
           renderGrants();
           void refreshGrants();
@@ -521,7 +835,7 @@ export function renderShareStudentProgressSection(
       grantList.appendChild(li);
       return;
     }
-    if (grants.length === 0) {
+    if (teachers.length === 0) {
       const empty = doc.createElement("li");
       empty.className = "shell-classes-settings-support-empty";
       empty.setAttribute("data-testid", "ss-share-grants-empty");
@@ -529,87 +843,14 @@ export function renderShareStudentProgressSection(
       grantList.appendChild(empty);
       return;
     }
-
-    if (confirmingBulk) {
-      const confirm = doc.createElement("div");
-      confirm.className = "shell-ss-confirm";
-      confirm.setAttribute("data-testid", "ss-share-revoke-confirm");
-      confirm.setAttribute("role", "alertdialog");
-      const msg = doc.createElement("p");
-      msg.textContent = `Remove access for ${selectedGrants.size} selected? Those teachers lose access right away.`;
-      const yes = doc.createElement("button");
-      yes.type = "button";
-      yes.className = "shell-ss-ra-action shell-ss-ra-action--confirm";
-      yes.setAttribute("data-testid", "ss-share-revoke-confirm-yes");
-      yes.textContent = "Remove";
-      yes.addEventListener("click", () => runRevoke(grants.map((g) => g.grantId).filter((id) => selectedGrants.has(id))));
-      const no = doc.createElement("button");
-      no.type = "button";
-      no.className = "shell-ss-ra-action";
-      no.setAttribute("data-testid", "ss-share-revoke-confirm-cancel");
-      no.textContent = "Cancel";
-      no.addEventListener("click", () => {
-        confirmingBulk = false;
-        renderGrants();
-      });
-      confirm.append(msg, yes, no);
-      grantTools.appendChild(confirm);
-    } else {
-      const bulk = doc.createElement("button");
-      bulk.type = "button";
-      bulk.className = "shell-ss-ra-action";
-      bulk.setAttribute("data-testid", "ss-share-revoke-selected");
-      bulk.textContent = `Remove selected (${selectedGrants.size})`;
-      bulk.disabled = busy || selectedGrants.size === 0;
-      bulk.addEventListener("click", () => {
-        if (busy || selectedGrants.size === 0) return;
-        if (selectedGrants.size > MAX_REVOKE_GRANTS) {
-          setStatus(grantStatus, `Remove up to ${MAX_REVOKE_GRANTS} at a time.`);
-          return;
-        }
-        confirmingBulk = true;
-        renderGrants();
-      });
-      grantTools.appendChild(bulk);
+    // A teacher or grant that is gone after a refresh drops its open state.
+    const keys = new Set(teachers.map((t) => t.key));
+    for (const key of [...expandedTeachers]) if (!keys.has(key)) expandedTeachers.delete(key);
+    const pending = confirming;
+    if (pending !== null && (pending.kind === "teacher" ? !keys.has(pending.key) : !grants.some((g) => g.grantId === pending.grantId))) {
+      confirming = null;
     }
-
-    for (const grant of grants) {
-      const li = doc.createElement("li");
-      li.className = "shell-classes-settings-support-grant";
-      li.setAttribute("data-testid", "ss-share-grant-row");
-      li.setAttribute("data-grant-id", grant.grantId);
-      const label = doc.createElement("label");
-      label.className = "shell-ss-share-grant-label";
-      const box = doc.createElement("input");
-      box.type = "checkbox";
-      box.checked = selectedGrants.has(grant.grantId);
-      box.disabled = busy;
-      box.setAttribute("data-testid", "ss-share-grant-check");
-      box.addEventListener("change", () => {
-        if (box.checked) selectedGrants.add(grant.grantId);
-        else selectedGrants.delete(grant.grantId);
-        confirmingBulk = false;
-        renderGrants();
-      });
-      const who = grant.granteeEmail === null ? grant.granteeDisplayName : `${grant.granteeDisplayName} (${grant.granteeEmail})`;
-      const text = doc.createElement("span");
-      text.textContent = `${grant.studentDisplayName} - ${who}`;
-      const status = doc.createElement("span");
-      status.className = "shell-ss-share-grant-status";
-      status.textContent = "Active";
-      label.append(box, text, status);
-      li.appendChild(label);
-      const remove = doc.createElement("button");
-      remove.type = "button";
-      remove.className = "shell-classes-settings-support-revoke";
-      remove.setAttribute("data-testid", "ss-share-grant-remove");
-      remove.setAttribute("aria-label", `Remove ${grant.granteeDisplayName}'s access to ${grant.studentDisplayName}`);
-      remove.textContent = "Remove";
-      remove.disabled = busy;
-      remove.addEventListener("click", () => runRevoke([grant.grantId]));
-      li.appendChild(remove);
-      grantList.appendChild(li);
-    }
+    teachers.forEach((teacher, i) => grantList.appendChild(renderTeacher(teacher, i)));
   };
 
   updateCounts();

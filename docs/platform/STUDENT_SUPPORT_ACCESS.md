@@ -234,11 +234,19 @@ active, or the owner is not an active teacher at that school.
   (syntax-checked, normalized, de-duplicated), and share in one
   `supportAccessGrantMany` call. Results show shared, already shared, and
   each failed pair; failed students and emails stay selected for correction.
-  Active grants (`supportAccessListForClass`) can be removed one at a time
-  (`supportAccessRevoke`) or, after confirmation, in bulk
-  (`supportAccessRevokeMany`); the list is re-read after every change. There
-  is no Save: each change takes effect when the server confirms it. Class
-  settings no longer hosts sharing.
+  Active grants (`supportAccessListForClass`) are listed by recipient teacher
+  under "Teachers with access (N)", N being distinct teachers in the chosen
+  class. A teacher is identified by the grantee uid at the end of the grant
+  id (`{classId}__{studentId}__{granteeUid}`), never by display name. Each
+  teacher shows name, email, and student count, and expands to the shared
+  students. "Remove teacher" revokes every active grant that teacher holds
+  in the chosen class; "Remove access" revokes one student's grant. Both ask
+  for confirmation first, call `supportAccessRevokeMany` (batched within its
+  cap), report partial failures by student, and offer Try again. Neither
+  touches the teacher's account, the class roster, other classes, or other
+  teachers. The list is re-read after every change. There is no Save: each
+  change takes effect when the server confirms it. Class settings no longer
+  hosts sharing.
 - Wiring uses the session-installed holder pattern
   (`app/src/supportAccess/session.ts`), like Grade Improvements.
 - The owner's Student Detail keeps its existing class-wide attempts read; the
