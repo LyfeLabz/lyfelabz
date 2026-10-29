@@ -13,6 +13,10 @@ type Data = Record<string, unknown>;
 const store = new Map<string, Data>();
 const audits: Data[] = [];
 let mockContext: { uid: string; role: string; schoolId: string; districtId: string } | null = null;
+// Transaction instrumentation: every call is counted, and `failOn` makes the
+// Nth call (1-based) reject with `error` before anything commits.
+const mockLog = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+const mockTx: { calls: number; failOn: number | null; error: Error | null } = { calls: 0, failOn: null, error: null };
 
 type Snap = { id: string; exists: boolean; data: () => Data | undefined };
 const snapOf = (path: string): Snap => {
@@ -48,12 +52,12 @@ jest.mock("../shared", () => {
     PlatformError,
     normalizeEmail,
     platformCallable: (handler: unknown) => handler,
-    log: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    log: mockLog,
     requireDistrictContext: () =>
       mockContext === null
         ? Promise.reject(new PlatformError("unauthenticated", "no caller") as Error)
         : Promise.resolve(mockContext),
-    isTransactionContention: () => false,
+    isTransactionContention: (err: unknown) => (err as { code?: unknown } | null)?.code === "aborted",
     classDocRef: docRef("classes"),
     enrollmentDocRef: docRef("enrollments"),
     userRecordDocRef: docRef("users"),
@@ -72,20 +76,25 @@ jest.mock("../shared", () => {
     assignmentsCollectionRef: () => queryOver(topLevel("assignments")),
     assignmentsCurrentDocRef: (classId: string, slug: string) => docRef(`classes/${classId}/assignmentsCurrent`)(slug),
     runFirestoreTransaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+      mockTx.calls += 1;
       const writes: Array<() => void> = [];
+      const pendingAudits: Data[] = [];
       const tx = {
         get: async (ref: { path?: string; get: () => Promise<Snap> }) => ref.get(),
         set: (ref: { path: string }, data: Data) => writes.push(() => store.set(ref.path, { ...data })),
         update: (ref: { path: string }, data: Data) =>
           writes.push(() => store.set(ref.path, { ...(store.get(ref.path) ?? {}), ...data })),
       };
-      const result = await fn(tx);
+      const result = await fn({ ...tx, pendingAudits });
+      if (mockTx.failOn === mockTx.calls) throw mockTx.error ?? new Error("transaction failed");
       writes.forEach((w) => w());
+      audits.push(...pendingAudits);
       return result;
     },
-    writeAuditEventInTransaction: (_tx: unknown, input: Data) => {
-      audits.push(input);
-      return { eventId: `audit-${audits.length}`, record: input };
+    // Audit events commit with their transaction, as in production.
+    writeAuditEventInTransaction: (tx: { pendingAudits: Data[] }, input: Data) => {
+      tx.pendingAudits.push(input);
+      return { eventId: `audit-${audits.length + tx.pendingAudits.length}`, record: input };
     },
   };
 });
@@ -177,6 +186,9 @@ function seed(): void {
   audits.length = 0;
   authLookups.length = 0;
   authFailure = null;
+  mockTx.calls = 0;
+  mockTx.failOn = null;
+  mockTx.error = null;
   store.set(`users/${OWNER}`, teacher(OWNER));
   store.set(`users/${GRANTEE}`, teacher(GRANTEE));
   store.set(`users/${OTHER_TEACHER}`, teacher(OTHER_TEACHER));
@@ -215,6 +227,7 @@ const listForStudent = (classId: string, studentId: string) =>
 beforeEach(() => {
   seed();
   mockContext = null;
+  mockLog.error.mockClear();
 });
 
 describe("assessmentAttemptsListForStudent", () => {
@@ -471,9 +484,411 @@ describe("supportAccessListForClass / supportAccessListMine", () => {
     as(GRANTEE);
     const result = await __supportAccessHandlers.listMine(req({}));
     expect(result.students).toEqual([
-      { grantId: GRANT_ID, classId: CLASS, classTitle: "Science 7B", studentId: STUDENT, studentDisplayName: "Ada Student", ownerDisplayName: `Teacher ${OWNER}` },
+      { grantId: GRANT_ID, classId: CLASS, classTitle: "Science 7B", studentId: STUDENT, studentDisplayName: "Ada Student", ownerDisplayName: `Teacher ${OWNER}`, classBlock: "B" },
     ]);
     as(OWNER);
     await expect(__supportAccessHandlers.listMine(req({}))).resolves.toEqual({ students: [] });
+  });
+});
+
+describe("supportAccessGrant outcome (V2, additive)", () => {
+  it("reports shared, then alreadyShared, and keeps the V1 grant view", async () => {
+    as(OWNER);
+    const first = await __supportAccessHandlers.grant(req({ classId: CLASS, studentId: STUDENT, granteeEmail: `${GRANTEE}@school.org` }));
+    expect(first.outcome).toBe("shared");
+    expect(first.grant).toEqual({
+      grantId: GRANT_ID,
+      classId: CLASS,
+      studentId: STUDENT,
+      studentDisplayName: "Ada Student",
+      granteeDisplayName: `Teacher ${GRANTEE}`,
+      granteeEmail: `${GRANTEE}@school.org`,
+      grantedAt: null,
+    });
+    const second = await __supportAccessHandlers.grant(req({ classId: CLASS, studentId: STUDENT, granteeEmail: `${GRANTEE}@school.org` }));
+    expect(second.outcome).toBe("alreadyShared");
+    expect(second.grant.grantId).toBe(GRANT_ID);
+    expect(audits).toHaveLength(1);
+  });
+
+  it("still refuses an inconsistent stored record with supportAccess.notFound", async () => {
+    store.set(`studentSupportGrants/${GRANT_ID}`, activeGrant({ ownerTeacherId: OTHER_TEACHER, status: "revoked" }));
+    as(OWNER);
+    await expectCode(
+      __supportAccessHandlers.grant(req({ classId: CLASS, studentId: STUDENT, granteeEmail: `${GRANTEE}@school.org` })),
+      "supportAccess.notFound",
+    );
+    expect(store.get(`studentSupportGrants/${GRANT_ID}`)!.ownerTeacherId).toBe(OTHER_TEACHER);
+    expect(audits).toHaveLength(0);
+  });
+});
+
+describe("supportAccessGrantMany", () => {
+  const grantMany = (data: Data) => __supportAccessHandlers.grantMany(req(data));
+  const THIRD = "student-3";
+  const idFor = (studentId: string, granteeUid: string) => `${CLASS}__${studentId}__${granteeUid}`;
+
+  beforeEach(() => {
+    store.set(`users/${THIRD}`, { authUid: THIRD, status: "active", role: "student", schoolId: SCHOOL, displayName: "Cy Student" });
+    store.set(`enrollments/${CLASS}__${THIRD}`, { studentId: THIRD, classId: CLASS, schoolId: SCHOOL, status: "active", enrolledAt: ts(1) });
+  });
+
+  it("creates one independent student-level grant and one audit event per student and recipient", async () => {
+    as(OWNER);
+    const result = await grantMany({
+      classId: CLASS,
+      studentIds: [STUDENT, CLASSMATE],
+      granteeEmails: [`${GRANTEE}@school.org`, `${OTHER_TEACHER}@school.org`],
+    });
+    expect(result.classId).toBe(CLASS);
+    expect(result.summary).toEqual({ shared: 4, alreadyShared: 0, failed: 0 });
+    expect(result.results).toEqual([
+      { studentId: STUDENT, granteeEmail: `${GRANTEE}@school.org`, outcome: "shared", grantId: idFor(STUDENT, GRANTEE), granteeDisplayName: `Teacher ${GRANTEE}`, reason: null },
+      { studentId: STUDENT, granteeEmail: `${OTHER_TEACHER}@school.org`, outcome: "shared", grantId: idFor(STUDENT, OTHER_TEACHER), granteeDisplayName: `Teacher ${OTHER_TEACHER}`, reason: null },
+      { studentId: CLASSMATE, granteeEmail: `${GRANTEE}@school.org`, outcome: "shared", grantId: idFor(CLASSMATE, GRANTEE), granteeDisplayName: `Teacher ${GRANTEE}`, reason: null },
+      { studentId: CLASSMATE, granteeEmail: `${OTHER_TEACHER}@school.org`, outcome: "shared", grantId: idFor(CLASSMATE, OTHER_TEACHER), granteeDisplayName: `Teacher ${OTHER_TEACHER}`, reason: null },
+    ]);
+    for (const [studentId, granteeUid] of [[STUDENT, GRANTEE], [STUDENT, OTHER_TEACHER], [CLASSMATE, GRANTEE], [CLASSMATE, OTHER_TEACHER]] as const) {
+      // Exactly the single-grant record shape: no class or teacher metadata copied in.
+      const record = store.get(`studentSupportGrants/${idFor(studentId, granteeUid)}`)!;
+      expect(Object.keys(record).sort()).toEqual(
+        ["classId", "districtId", "grantedAt", "grantedBy", "granteeUid", "ownerTeacherId", "schoolId", "status", "studentId"],
+      );
+      expect(record).toEqual(expect.objectContaining({ classId: CLASS, studentId, granteeUid, ownerTeacherId: OWNER, schoolId: SCHOOL, districtId: DISTRICT, status: "active", grantedBy: OWNER }));
+    }
+    expect(audits).toHaveLength(4);
+    expect(audits.every((a) => a.action === "supportAccess.granted" && a.targetType === "studentSupportGrant" && a.actorUserId === OWNER)).toBe(true);
+    expect(audits.map((a) => a.targetId).sort()).toEqual(
+      [idFor(STUDENT, GRANTEE), idFor(STUDENT, OTHER_TEACHER), idFor(CLASSMATE, GRANTEE), idFor(CLASSMATE, OTHER_TEACHER)].sort(),
+    );
+    // One transaction per student.
+    expect(mockTx.calls).toBe(2);
+
+    // Each grant authorizes exactly its own student for its own grantee.
+    as(GRANTEE);
+    await expect(listForStudent(CLASS, CLASSMATE)).resolves.toBeDefined();
+    await expect(__supportAccessHandlers.listMine(req({}))).resolves.toEqual({
+      students: [
+        expect.objectContaining({ studentId: STUDENT, classBlock: "B" }),
+        expect.objectContaining({ studentId: CLASSMATE, classBlock: "B" }),
+      ],
+    });
+  });
+
+  it("collapses duplicate student ids and equivalent emails into one pair, one record, one event", async () => {
+    as(OWNER);
+    const result = await grantMany({
+      classId: CLASS,
+      studentIds: [STUDENT, STUDENT],
+      granteeEmails: [`${GRANTEE}@school.org`, ` ${GRANTEE.toUpperCase()}@School.ORG `],
+    });
+    expect(result.results).toEqual([
+      expect.objectContaining({ studentId: STUDENT, granteeEmail: `${GRANTEE}@school.org`, outcome: "shared", grantId: GRANT_ID }),
+    ]);
+    expect(result.summary).toEqual({ shared: 1, alreadyShared: 0, failed: 0 });
+    expect(audits).toHaveLength(1);
+  });
+
+  it("leaves already-active grants untouched and reactivates revoked ones", async () => {
+    store.set(`studentSupportGrants/${GRANT_ID}`, activeGrant());
+    store.set(`studentSupportGrants/${idFor(CLASSMATE, GRANTEE)}`, activeGrant({ studentId: CLASSMATE, status: "revoked", revokedAt: ts(7), revokedBy: OWNER }));
+    as(OWNER);
+    const result = await grantMany({ classId: CLASS, studentIds: [STUDENT, CLASSMATE], granteeEmails: [`${GRANTEE}@school.org`] });
+    expect(result.results.map((r) => [r.studentId, r.outcome, r.grantId])).toEqual([
+      [STUDENT, "alreadyShared", GRANT_ID],
+      [CLASSMATE, "shared", idFor(CLASSMATE, GRANTEE)],
+    ]);
+    expect(result.summary).toEqual({ shared: 1, alreadyShared: 1, failed: 0 });
+    // The active grant keeps its original grant time (no rewrite).
+    expect((store.get(`studentSupportGrants/${GRANT_ID}`)!.grantedAt as { toMillis: () => number }).toMillis()).toBe(5);
+    expect(store.get(`studentSupportGrants/${idFor(CLASSMATE, GRANTEE)}`)).toEqual(expect.objectContaining({ status: "active" }));
+    expect(audits.map((a) => a.targetId)).toEqual([idFor(CLASSMATE, GRANTEE)]);
+
+    // A full repeat is a no-op: no new records, no new events.
+    const repeat = await grantMany({ classId: CLASS, studentIds: [STUDENT, CLASSMATE], granteeEmails: [`${GRANTEE}@school.org`] });
+    expect(repeat.summary).toEqual({ shared: 0, alreadyShared: 2, failed: 0 });
+    expect(audits).toHaveLength(1);
+  });
+
+  it("shares every valid pair while reporting invalid students and recipients per pair", async () => {
+    store.set(`enrollments/${CLASS}__${CLASSMATE}`, { ...store.get(`enrollments/${CLASS}__${CLASSMATE}`), status: "withdrawn" });
+    store.set(`users/inactive`, teacher("inactive", { status: "suspended" }));
+    as(OWNER);
+    const result = await grantMany({
+      classId: CLASS,
+      studentIds: [STUDENT, CLASSMATE, "ghost-student"],
+      granteeEmails: [
+        `${GRANTEE}@school.org`,
+        "nobody@school.org",
+        `${OTHER_SCHOOL_TEACHER}@school.org`,
+        "inactive@school.org",
+        "ada@school.org",
+        `${OWNER}@school.org`,
+        "not-an-email",
+      ],
+    });
+    const byPair = new Map(result.results.map((r) => [`${r.studentId}|${r.granteeEmail}`, r]));
+    expect(byPair.get(`${STUDENT}|${GRANTEE}@school.org`)).toEqual(expect.objectContaining({ outcome: "shared", grantId: GRANT_ID }));
+    expect(byPair.get(`${CLASSMATE}|${GRANTEE}@school.org`)).toEqual(expect.objectContaining({ outcome: "failed", reason: "studentNotEnrolled", grantId: null }));
+    expect(byPair.get(`ghost-student|${GRANTEE}@school.org`)).toEqual(expect.objectContaining({ outcome: "failed", reason: "studentNotEnrolled" }));
+    // Every non-matching recipient gets the same uniform reason, for every student.
+    for (const email of ["nobody@school.org", `${OTHER_SCHOOL_TEACHER}@school.org`, "inactive@school.org", "ada@school.org", `${OWNER}@school.org`]) {
+      for (const studentId of [STUDENT, CLASSMATE, "ghost-student"]) {
+        expect(byPair.get(`${studentId}|${email}`)).toEqual({
+          studentId, granteeEmail: email, outcome: "failed", grantId: null, granteeDisplayName: null, reason: "granteeUnavailable",
+        });
+      }
+    }
+    expect(byPair.get(`${STUDENT}|not-an-email`)).toEqual(expect.objectContaining({ outcome: "failed", reason: "invalidEmail" }));
+    expect(result.results).toHaveLength(21);
+    expect(result.summary).toEqual({ shared: 1, alreadyShared: 0, failed: 20 });
+    // Nothing identifies the refused accounts.
+    const serialized = JSON.stringify(result);
+    for (const uid of [OTHER_SCHOOL_TEACHER, "inactive", OWNER, STUDENT + "@"]) {
+      expect(serialized.includes(`"${uid}"`)).toBe(false);
+    }
+    expect(serialized).not.toContain("school-b");
+    expect(Array.from(store.keys()).filter((k) => k.startsWith("studentSupportGrants/"))).toEqual([`studentSupportGrants/${GRANT_ID}`]);
+    expect(audits).toHaveLength(1);
+  });
+
+  it("refuses the whole request for a class the caller does not own or that is not active", async () => {
+    as(OWNER);
+    await expectCode(grantMany({ classId: OTHER_CLASS, studentIds: [STUDENT], granteeEmails: [`${GRANTEE}@school.org`] }), "classes.forbidden");
+    as(GRANTEE);
+    await expectCode(grantMany({ classId: CLASS, studentIds: [STUDENT], granteeEmails: [`${OTHER_TEACHER}@school.org`] }), "classes.forbidden");
+    as(OWNER, { schoolId: "school-b" });
+    await expectCode(grantMany({ classId: CLASS, studentIds: [STUDENT], granteeEmails: [`${GRANTEE}@school.org`] }), "classes.forbidden");
+    as(OWNER);
+    store.set(`classes/${CLASS}`, { ...store.get(`classes/${CLASS}`), status: "archived" });
+    await expectCode(grantMany({ classId: CLASS, studentIds: [STUDENT], granteeEmails: [`${GRANTEE}@school.org`] }), "supportAccess.classNotActive");
+    as(STUDENT, { role: "student" });
+    await expectCode(grantMany({ classId: CLASS, studentIds: [STUDENT], granteeEmails: [`${GRANTEE}@school.org`] }), "role-forbidden");
+    mockContext = null;
+    await expectCode(grantMany({ classId: CLASS, studentIds: [STUDENT], granteeEmails: [`${GRANTEE}@school.org`] }), "unauthenticated");
+    expect(Array.from(store.keys()).some((k) => k.startsWith("studentSupportGrants/"))).toBe(false);
+    expect(audits).toHaveLength(0);
+  });
+
+  const malformed: Array<[string, Data]> = [
+    ["a missing class id", { studentIds: [STUDENT], granteeEmails: ["a@school.org"] }],
+    ["a missing student list", { classId: CLASS, granteeEmails: ["a@school.org"] }],
+    ["a missing email list", { classId: CLASS, studentIds: [STUDENT] }],
+    ["an empty student list", { classId: CLASS, studentIds: [], granteeEmails: ["a@school.org"] }],
+    ["an empty email list", { classId: CLASS, studentIds: [STUDENT], granteeEmails: [] }],
+    ["a student list that is not an array", { classId: CLASS, studentIds: STUDENT, granteeEmails: ["a@school.org"] }],
+    ["a non-string student id", { classId: CLASS, studentIds: [42], granteeEmails: ["a@school.org"] }],
+    ["a malformed student id", { classId: CLASS, studentIds: ["bad/id"], granteeEmails: ["a@school.org"] }],
+    ["a non-string email", { classId: CLASS, studentIds: [STUDENT], granteeEmails: [{ email: "a@school.org" }] }],
+    ["a blank email", { classId: CLASS, studentIds: [STUDENT], granteeEmails: ["   "] }],
+    ["an oversized email entry", { classId: CLASS, studentIds: [STUDENT], granteeEmails: [`${"a".repeat(1100)}@school.org`] }],
+    ["41 student ids", { classId: CLASS, studentIds: Array.from({ length: 41 }, (_, i) => `s-${i}`), granteeEmails: ["a@school.org"] }],
+    ["11 emails", { classId: CLASS, studentIds: [STUDENT], granteeEmails: Array.from({ length: 11 }, (_, i) => `t${i}@school.org`) }],
+    ["41 copies of one student id (caps count raw entries)", { classId: CLASS, studentIds: Array.from({ length: 41 }, () => STUDENT), granteeEmails: ["a@school.org"] }],
+    ["an ownership key", { classId: CLASS, studentIds: [STUDENT], granteeEmails: ["a@school.org"], teacherId: OWNER }],
+  ];
+
+  it.each(malformed)("rejects %s without writing", async (_label, data) => {
+    as(OWNER);
+    await expectCode(grantMany(data), "supportAccess.invalidRequest");
+    expect(audits).toHaveLength(0);
+    expect(mockTx.calls).toBe(0);
+  });
+
+  it("rejects a non-object payload", async () => {
+    as(OWNER);
+    await expectCode(__supportAccessHandlers.grantMany(req([CLASS])), "supportAccess.invalidRequest");
+    await expectCode(__supportAccessHandlers.grantMany(req(null)), "supportAccess.invalidRequest");
+  });
+
+  it("accepts exactly 40 student ids and 10 emails", async () => {
+    as(OWNER);
+    const studentIds = [STUDENT, ...Array.from({ length: 39 }, (_, i) => `absent-${i}`)];
+    const granteeEmails = [`${GRANTEE}@school.org`, ...Array.from({ length: 9 }, (_, i) => `nobody${i}@school.org`)];
+    const result = await grantMany({ classId: CLASS, studentIds, granteeEmails });
+    expect(result.results).toHaveLength(400);
+    expect(result.summary).toEqual({ shared: 1, alreadyShared: 0, failed: 399 });
+    // Only the enrolled student has a resolvable pair, so one transaction.
+    expect(mockTx.calls).toBe(1);
+  });
+
+  it("confines a write conflict to one student's pairs and reports exactly what committed", async () => {
+    as(OWNER);
+    mockTx.failOn = 2;
+    mockTx.error = Object.assign(new Error("contention"), { code: "aborted" });
+    const result = await grantMany({
+      classId: CLASS,
+      studentIds: [STUDENT, CLASSMATE, THIRD],
+      granteeEmails: [`${GRANTEE}@school.org`, `${OTHER_TEACHER}@school.org`],
+    });
+    expect(result.results.map((r) => [r.studentId, r.outcome, r.reason])).toEqual([
+      [STUDENT, "shared", null],
+      [STUDENT, "shared", null],
+      [CLASSMATE, "failed", "writeConflict"],
+      [CLASSMATE, "failed", "writeConflict"],
+      [THIRD, "shared", null],
+      [THIRD, "shared", null],
+    ]);
+    expect(store.has(`studentSupportGrants/${idFor(CLASSMATE, GRANTEE)}`)).toBe(false);
+    expect(store.has(`studentSupportGrants/${idFor(CLASSMATE, OTHER_TEACHER)}`)).toBe(false);
+    expect(audits).toHaveLength(4);
+    expect(audits.some((a) => (a.payload as Data).studentId === CLASSMATE)).toBe(false);
+
+    // A retry completes the missing pairs without duplicating the others.
+    mockTx.failOn = null;
+    const retry = await grantMany({
+      classId: CLASS,
+      studentIds: [STUDENT, CLASSMATE, THIRD],
+      granteeEmails: [`${GRANTEE}@school.org`, `${OTHER_TEACHER}@school.org`],
+    });
+    expect(retry.summary).toEqual({ shared: 2, alreadyShared: 4, failed: 0 });
+    expect(audits).toHaveLength(6);
+  });
+
+  it("reports an unexpected transaction error per pair as unavailable", async () => {
+    as(OWNER);
+    mockTx.failOn = 1;
+    mockTx.error = new Error("boom");
+    const result = await grantMany({ classId: CLASS, studentIds: [STUDENT, CLASSMATE], granteeEmails: [`${GRANTEE}@school.org`] });
+    expect(result.results.map((r) => [r.studentId, r.outcome, r.reason])).toEqual([
+      [STUDENT, "failed", "unavailable"],
+      [CLASSMATE, "shared", null],
+    ]);
+    // The structured log carries a serializable cause, never the raw error
+    // object (which Cloud Logging would render as {}).
+    expect(mockLog.error).toHaveBeenCalledWith("supportAccess.grantManyStudentFailed", {
+      actorUserId: OWNER, classId: CLASS, studentId: STUDENT, cause: "Error",
+    });
+  });
+
+  it("never reuses or rewrites a stored record that disagrees with the caller", async () => {
+    store.set(`studentSupportGrants/${GRANT_ID}`, activeGrant({ ownerTeacherId: OTHER_TEACHER, status: "revoked" }));
+    as(OWNER);
+    const result = await grantMany({ classId: CLASS, studentIds: [STUDENT, CLASSMATE], granteeEmails: [`${GRANTEE}@school.org`] });
+    expect(result.results.map((r) => [r.studentId, r.outcome, r.reason, r.grantId])).toEqual([
+      [STUDENT, "failed", "recordInconsistent", null],
+      [CLASSMATE, "shared", null, idFor(CLASSMATE, GRANTEE)],
+    ]);
+    expect(store.get(`studentSupportGrants/${GRANT_ID}`)).toEqual(expect.objectContaining({ ownerTeacherId: OTHER_TEACHER, status: "revoked" }));
+  });
+});
+
+describe("supportAccessRevokeMany", () => {
+  const revokeMany = (data: Data) => __supportAccessHandlers.revokeMany(req(data));
+  const OTHER_OWNER_GRANT = `${OTHER_CLASS}__${STUDENT}__${GRANTEE}`;
+  const CLASSMATE_GRANT = `${CLASS}__${CLASSMATE}__${GRANTEE}`;
+  const REVOKED_GRANT = `${CLASS}__${STUDENT}__${OTHER_TEACHER}`;
+
+  beforeEach(() => {
+    store.set(`studentSupportGrants/${GRANT_ID}`, activeGrant());
+    store.set(`studentSupportGrants/${CLASSMATE_GRANT}`, activeGrant({ studentId: CLASSMATE }));
+    store.set(`studentSupportGrants/${REVOKED_GRANT}`, activeGrant({ granteeUid: OTHER_TEACHER, status: "revoked", revokedAt: ts(8), revokedBy: OWNER }));
+    store.set(`studentSupportGrants/${OTHER_OWNER_GRANT}`, activeGrant({ classId: OTHER_CLASS, ownerTeacherId: OTHER_TEACHER }));
+  });
+
+  it("revokes the caller's grants, skips already-revoked ones, and never touches another owner's", async () => {
+    as(OWNER);
+    const result = await revokeMany({ grantIds: [GRANT_ID, CLASSMATE_GRANT, REVOKED_GRANT, OTHER_OWNER_GRANT, "class-1__nobody__x", GRANT_ID] });
+    expect(result.results).toEqual([
+      { grantId: GRANT_ID, outcome: "revoked", reason: null },
+      { grantId: CLASSMATE_GRANT, outcome: "revoked", reason: null },
+      { grantId: REVOKED_GRANT, outcome: "alreadyRevoked", reason: null },
+      { grantId: OTHER_OWNER_GRANT, outcome: "failed", reason: "notFound" },
+      { grantId: "class-1__nobody__x", outcome: "failed", reason: "notFound" },
+    ]);
+    expect(result.summary).toEqual({ revoked: 2, alreadyRevoked: 1, failed: 2 });
+    expect(store.get(`studentSupportGrants/${GRANT_ID}`)).toEqual(expect.objectContaining({ status: "revoked", revokedBy: OWNER }));
+    expect(store.get(`studentSupportGrants/${OTHER_OWNER_GRANT}`)).toEqual(
+      expect.objectContaining({ classId: OTHER_CLASS, ownerTeacherId: OTHER_TEACHER, status: "active" }),
+    );
+    expect(store.get(`studentSupportGrants/${OTHER_OWNER_GRANT}`)).not.toHaveProperty("revokedBy");
+    expect((store.get(`studentSupportGrants/${REVOKED_GRANT}`)!.revokedAt as { toMillis: () => number }).toMillis()).toBe(8);
+    expect(audits).toEqual([
+      expect.objectContaining({ action: "supportAccess.revoked", targetId: GRANT_ID, payload: { classId: CLASS, studentId: STUDENT, granteeUid: GRANTEE } }),
+      expect.objectContaining({ action: "supportAccess.revoked", targetId: CLASSMATE_GRANT, payload: { classId: CLASS, studentId: CLASSMATE, granteeUid: GRANTEE } }),
+    ]);
+
+    // Revocation takes effect on the next read.
+    as(GRANTEE);
+    await expectCode(listForStudent(CLASS, STUDENT), "classes.forbidden");
+    await expectCode(listForStudent(CLASS, CLASSMATE), "classes.forbidden");
+  });
+
+  it("gives a grantee or another teacher nothing but notFound for the owner's grants", async () => {
+    for (const uid of [GRANTEE, OTHER_TEACHER]) {
+      as(uid);
+      const result = await revokeMany({ grantIds: [GRANT_ID, CLASSMATE_GRANT] });
+      expect(result.results.every((r) => r.outcome === "failed" && r.reason === "notFound")).toBe(true);
+    }
+    expect(store.get(`studentSupportGrants/${GRANT_ID}`)!.status).toBe("active");
+    expect(audits).toHaveLength(0);
+  });
+
+  it("is idempotent: a repeat writes no record change and no event", async () => {
+    as(OWNER);
+    await revokeMany({ grantIds: [GRANT_ID] });
+    const repeat = await revokeMany({ grantIds: [GRANT_ID] });
+    expect(repeat.results).toEqual([{ grantId: GRANT_ID, outcome: "alreadyRevoked", reason: null }]);
+    expect(audits).toHaveLength(1);
+  });
+
+  it("commits in bounded transactions and confines a conflict to its chunk", async () => {
+    const ids: string[] = [];
+    for (let i = 0; i < 60; i += 1) {
+      const studentId = `bulk-${i}`;
+      const grantId = `${CLASS}__${studentId}__${GRANTEE}`;
+      store.set(`studentSupportGrants/${grantId}`, activeGrant({ studentId }));
+      ids.push(grantId);
+    }
+    as(OWNER);
+    mockTx.failOn = 2;
+    mockTx.error = Object.assign(new Error("contention"), { code: "aborted" });
+    const result = await revokeMany({ grantIds: ids });
+    expect(mockTx.calls).toBe(2);
+    expect(result.summary).toEqual({ revoked: 50, alreadyRevoked: 0, failed: 10 });
+    expect(result.results.slice(50).every((r) => r.reason === "writeConflict")).toBe(true);
+    expect(store.get(`studentSupportGrants/${ids[59]}`)!.status).toBe("active");
+    expect(audits).toHaveLength(50);
+  });
+
+  it("logs an unexpected chunk failure with a serializable cause", async () => {
+    as(OWNER);
+    mockTx.failOn = 1;
+    mockTx.error = new TypeError("boom");
+    const result = await revokeMany({ grantIds: [GRANT_ID] });
+    expect(result.results).toEqual([{ grantId: GRANT_ID, outcome: "failed", reason: "unavailable" }]);
+    expect(mockLog.error).toHaveBeenCalledWith("supportAccess.revokeManyChunkFailed", { actorUserId: OWNER, cause: "TypeError" });
+  });
+
+  const malformed: Array<[string, Data]> = [
+    ["a missing list", {}],
+    ["an empty list", { grantIds: [] }],
+    ["a non-array", { grantIds: GRANT_ID }],
+    ["a non-string id", { grantIds: [7] }],
+    ["a malformed id", { grantIds: ["bad id!"] }],
+    ["201 ids", { grantIds: Array.from({ length: 201 }, (_, i) => `${CLASS}__s${i}__${GRANTEE}`) }],
+    ["an ownership key", { grantIds: [GRANT_ID], ownerTeacherId: OWNER }],
+  ];
+
+  it.each(malformed)("rejects %s without writing", async (_label, data) => {
+    as(OWNER);
+    await expectCode(revokeMany(data), "supportAccess.invalidRequest");
+    expect(mockTx.calls).toBe(0);
+    expect(store.get(`studentSupportGrants/${GRANT_ID}`)!.status).toBe("active");
+  });
+
+  it("accepts exactly 200 ids", async () => {
+    as(OWNER);
+    const result = await revokeMany({ grantIds: [GRANT_ID, ...Array.from({ length: 199 }, (_, i) => `${CLASS}__s${i}__${GRANTEE}`)] });
+    expect(result.results).toHaveLength(200);
+    expect(result.summary).toEqual({ revoked: 1, alreadyRevoked: 0, failed: 199 });
+    expect(mockTx.calls).toBe(4);
+  });
+
+  it("refuses an unauthenticated or non-teacher caller", async () => {
+    mockContext = null;
+    await expectCode(revokeMany({ grantIds: [GRANT_ID] }), "unauthenticated");
+    as(STUDENT, { role: "student" });
+    await expectCode(revokeMany({ grantIds: [GRANT_ID] }), "role-forbidden");
   });
 });

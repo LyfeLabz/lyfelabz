@@ -1,7 +1,8 @@
 # Student Support Access (Student Support Workspace V1)
 
 Status: Implemented on `feature/student-support-workspace-v1`, uncommitted,
-not deployed. Governing decision: PDR-032 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+not deployed. Bulk sharing backend (V2 P1, section 3.1) on
+`feature/student-support-workspace-v2`, uncommitted, not deployed. Governing decision: PDR-032 in `LYFELABZ_PLATFORM_DECISIONS.md`.
 Authorized for implementation by the product owner on 2026-10-27; final
 ratification happens at owner review of this change.
 
@@ -62,10 +63,12 @@ All are `platformCallable`s that require an authenticated, active `teacher`
 
 | Callable | Caller | Behavior |
 | --- | --- | --- |
-| `supportAccessGrant({classId, studentId, granteeEmail})` | Owner | Class must be owned, `active`, same school. Student must have an `active` enrollment. The email resolves only to an active `teacher` in the owner's school (not the owner). Idempotent. Writes `supportAccess.granted` in the same transaction. |
+| `supportAccessGrant({classId, studentId, granteeEmail})` | Owner | Class must be owned, `active`, same school. Student must have an `active` enrollment. The email resolves only to an active `teacher` in the owner's school (not the owner). Idempotent. Writes `supportAccess.granted` in the same transaction. Returns `{grant, outcome}`; `outcome` (`shared` or `alreadyShared`) was added in V2 and V1 clients ignore it. |
+| `supportAccessGrantMany({classId, studentIds[], granteeEmails[]})` | Owner | Bulk form of `supportAccessGrant`. See section 3.1. |
 | `supportAccessRevoke({grantId})` | Owner | The grant must name the caller as owner. Idempotent. Writes `supportAccess.revoked` in the same transaction. |
+| `supportAccessRevokeMany({grantIds[]})` | Owner | Bulk form of `supportAccessRevoke`. See section 3.1. |
 | `supportAccessListForClass({classId})` | Owner | Active grants on one owned class, with student and grantee names. |
-| `supportAccessListMine({})` | Grantee | Active grants naming the caller that currently pass the full authorization check (section 4), with student, class, and owner names. |
+| `supportAccessListMine({})` | Grantee | Active grants naming the caller that currently pass the full authorization check (section 4), with student, class, and owner names, and `classBlock`: the class record's `block`, read at list time (null if absent). Class and teacher metadata are never copied into grant records. |
 
 Email lookup is equality on the stored `users/{uid}.email` (as typed and
 lowercased). Stored emails are copied verbatim from Firebase Auth and have
@@ -78,6 +81,75 @@ Email lookup returns one uniform refusal (`supportAccess.granteeUnavailable`)
 for every non-match: unknown email, another school, inactive account,
 non-teacher, ambiguous match, or the owner's own email. A teacher can learn
 only whether an email belongs to an active teacher at their own school.
+
+### 3.1 Bulk grant and revoke (V2)
+
+The bulk callables run the same per-grant transaction bodies
+(`applyGrantInTransaction`, `applyRevokeInTransaction` in
+`platform/functions/src/supportAccess/callables.ts`) as the single ones, so
+record shape, ownership checks, idempotency, and audit are identical. A bulk
+grant creates one independent student-level grant per (student, recipient)
+pair. There is no class-wide grant and no separate permission model.
+
+**Limits.** Counted on the raw arrays, before de-duplication:
+
+| Request | Cap |
+| --- | --- |
+| `studentIds` per grant | 40 |
+| `granteeEmails` per grant | 10 |
+| `grantIds` per revoke | 200 |
+
+**Whole-request refusals** (nothing is written):
+`supportAccess.invalidRequest` for a non-object payload, an ownership key, a
+missing, empty, non-array, or over-cap list, a non-string or malformed id, or
+a non-string, blank, or over-1024-character email entry. For grants, also
+`classes.forbidden` (class not owned or another school) and
+`supportAccess.classNotActive`, the single grant's codes, because every pair
+shares the class.
+
+**`supportAccessGrantMany` response.** `{classId, results[], summary}`.
+`results` has one entry per de-duplicated (student, recipient) pair, in
+student order then recipient order: `{studentId, granteeEmail, outcome,
+grantId, granteeDisplayName, reason}`. `granteeEmail` is the entry trimmed
+and lowercased. `summary` counts `shared`, `alreadyShared`, and `failed`.
+
+| `outcome` | Meaning |
+| --- | --- |
+| `shared` | Newly granted, or a revoked grant reactivated. One `supportAccess.granted` event. |
+| `alreadyShared` | Already active. Not rewritten (`grantedAt` unchanged), no event. |
+| `failed` | Not shared; `grantId` and `granteeDisplayName` are null. |
+
+| `reason` (failed only) | Meaning |
+| --- | --- |
+| `invalidEmail` | The entry is not an email address (syntax only). |
+| `granteeUnavailable` | The uniform recipient refusal of section 3: unknown, another school, inactive, non-teacher, ambiguous, or the owner. Nothing distinguishes these cases, and no uid is returned. |
+| `studentNotEnrolled` | No `active` enrollment in this class (withdrawn, unknown, or never enrolled). |
+| `recordInconsistent` | A stored record under this id disagrees with its id or the caller. Left untouched. |
+| `writeConflict` | That student's transaction lost to concurrent writes. Retrying is safe. |
+| `unavailable` | That student's transaction failed for another reason. Retrying is safe. |
+
+A recipient failure is reported in preference to a student failure for the
+same pair. Duplicate student ids, and emails equal after normalization,
+collapse to one pair, so no record or event is written twice in a request.
+
+**`supportAccessRevokeMany` response.** `{results[], summary}`, one entry per
+de-duplicated grant id: `{grantId, outcome, reason}`, with `outcome`
+`revoked` (one `supportAccess.revoked` event), `alreadyRevoked` (no event),
+or `failed` with `reason` `notFound`, `writeConflict`, or `unavailable`.
+`notFound` covers both a missing grant and a grant naming another owner, so a
+caller never learns whether another teacher's grant exists, and such a
+grant is never written. `summary` counts the three outcomes.
+
+**Transactions and partial results.** A bulk grant commits each student's
+pairs in one transaction (at most 10 grants and 10 audit events). A bulk
+revoke commits in transactions of 50 grants. Transactions run one at a time.
+Every transaction stays far below Firestore's 500-write limit, and a failure
+affects only that transaction's entries, so `results` always reports exactly
+what committed. Outcomes are recomputed on each SDK transaction retry. A
+repeated request (for example a client retry) returns `alreadyShared` or
+`alreadyRevoked` for entries that already committed and writes nothing for
+them. Recipients are resolved, and enrollments read, once per request, before
+any transaction, as the single grant does.
 
 ## 4. Authorization (`authorizeStudentScopedRead`)
 
@@ -172,13 +244,15 @@ and the frozen explanation when present.
 
 ## 9. Audit
 
-`supportAccess.granted` and `supportAccess.revoked`, target type
+`supportAccess.granted` and `supportAccess.revoked`, one per grant whose
+status changes (bulk calls included), target type
 `studentSupportGrant`, target id the grant id, with `schoolId` and
 `districtId`. Payload: `classId`, `studentId`, `granteeUid`. Reads are logged
 as structured logs with `via: "owner" | "grant"`.
 
 ## 10. Production surfaces
 
-Functions (new and modified callables) and Hosting (paired `app` and
+Functions (new and modified callables, including `supportAccessGrantMany`
+and `supportAccessRevokeMany`) and Hosting (paired `app` and
 `marketing` release). No Firestore Rules change (default-deny), no index,
 OAuth, migration, or new infrastructure.

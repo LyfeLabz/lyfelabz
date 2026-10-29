@@ -81,9 +81,11 @@ export {
 export { submissionsCreate, submissionsFinalize } from "./submissions";
 export {
   supportAccessGrant,
+  supportAccessGrantMany,
   supportAccessListForClass,
   supportAccessListMine,
   supportAccessRevoke,
+  supportAccessRevokeMany,
 } from "./supportAccess";
 export {
   teacherUnitsCapabilities,
