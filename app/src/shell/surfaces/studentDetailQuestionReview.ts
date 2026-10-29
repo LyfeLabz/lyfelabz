@@ -9,10 +9,11 @@ import {
   type AssessmentRevisionContent,
   type AssessmentRevisionContentReader,
 } from "../../assignments/detail/question-summary";
+import { findRepeatedMisses, renderRepeatedMisses } from "./studentDetailRepeatedMisses";
 
 // Student Detail question review (PDR-032e, STUDENT_SUPPORT_ACCESS.md
 // section 8). One shared review for class owners and support educators: a
-// "Review questions" disclosure on each Student Detail card that has
+// "Review answers" disclosure on each Student Detail card that has
 // attempts, showing ONE attempt at a time (any attempt, not just the best),
 // question by question.
 //
@@ -122,15 +123,6 @@ function renderReview(
   summary.textContent = `${review.correctCount} of ${review.questions.length} correct`;
   host.appendChild(summary);
 
-  const missed = review.questions.filter((q) => q.status !== "correct");
-  if (missed.length > 0) {
-    const missedEl = doc.createElement("p");
-    missedEl.className = "shell-student-detail-review-missed";
-    missedEl.setAttribute("data-testid", "student-detail-review-missed");
-    missedEl.textContent = `To review: ${missed.map((q) => `Q${q.number}`).join(", ")}`;
-    host.appendChild(missedEl);
-  }
-
   if (review.mode !== "full") {
     const note = doc.createElement("p");
     note.className = "shell-student-detail-thinking-muted";
@@ -205,8 +197,9 @@ function renderReview(
 // "Show incorrect only": a presentation filter over the review already
 // rendered for the selected attempt. It hides correct questions (keeping the
 // original numbering, answers and explanations of the rest) and never reads
-// or scores anything. "Incorrect" means the same set as "To review": any
-// question not answered correctly, including one left unanswered.
+// or scores anything. "Incorrect" means any question not answered
+// correctly, including one left unanswered (the same set the action's
+// incorrect count covers).
 function applyIncorrectOnly(doc: Document, host: HTMLElement, on: boolean): void {
   host.querySelector("[data-testid=student-detail-review-all-correct]")?.remove();
   const items = Array.from(
@@ -228,11 +221,114 @@ function applyIncorrectOnly(doc: Document, host: HTMLElement, on: boolean): void
   }
 }
 
-// Appends the "Review questions" disclosure to a Student Detail card. Attempts
-// are listed oldest first with the same "Attempt N" numbering Show Your
-// Thinking uses (position in the card's chronological order); the latest
-// attempt is shown first. Each attempt's detail and revision text are read
-// only when that attempt is opened, and cached for this render.
+// A Student Detail card's attempts in chronological order (oldest first),
+// each attemptId once. Order is the frozen submission time; an attempt
+// without a usable timestamp sorts before every dated one (it is never
+// presented as the latest) and attemptNumber then attemptId break ties, so
+// the order is deterministic and no date is ever invented.
+const hasUsableTime = (ms: number): boolean => Number.isFinite(ms) && ms > 0;
+
+export function orderAttemptsChronologically(
+  attempts: ReadonlyArray<CompletedAttemptSummary>,
+): CompletedAttemptSummary[] {
+  const seen = new Set<string>();
+  const unique = attempts.filter((a) => (seen.has(a.attemptId) ? false : (seen.add(a.attemptId), true)));
+  return unique.sort((a, b) => {
+    const aTime = hasUsableTime(a.submittedAt);
+    const bTime = hasUsableTime(b.submittedAt);
+    if (aTime !== bTime) return aTime ? 1 : -1;
+    return (
+      (aTime ? a.submittedAt - b.submittedAt : 0) ||
+      a.attemptNumber - b.attemptNumber ||
+      a.attemptId.localeCompare(b.attemptId)
+    );
+  });
+}
+
+// Questions not answered correctly on one attempt, from its frozen summary.
+// Every scored item is worth exactly one point (finalize rejects any other
+// answer-key value, ASSESSMENT_SCORING_CONTRACT.md section 4.2), so
+// maxScore is the item count and maxScore - score counts incorrect plus
+// unanswered items: the same set the review marks for review. Null when the
+// summary is not a consistent unit-point score, so no count is ever shown
+// that the attempt's data does not support.
+export function attemptIncorrectCount(attempt: CompletedAttemptSummary): number | null {
+  const { score, maxScore } = attempt;
+  if (!Number.isInteger(score) || !Number.isInteger(maxScore)) return null;
+  if (maxScore <= 0 || score < 0 || score > maxScore) return null;
+  return maxScore - score;
+}
+
+export function reviewAnswersLabel(attempt: CompletedAttemptSummary): string {
+  const incorrect = attemptIncorrectCount(attempt);
+  if (incorrect === null) return "Review answers";
+  return incorrect === 0 ? "Review answers · all correct" : `Review answers · ${incorrect} incorrect`;
+}
+
+// Selector label for the attempt at `index` of a card's chronological list.
+// "Latest" and "Previous attempt N" describe this card's attempts only; N
+// counts back from the latest (Previous attempt 1 is the attempt just
+// before it). Show Your Thinking keeps its own oldest-first "Attempt N".
+export function attemptOptionLabel(
+  ordered: ReadonlyArray<CompletedAttemptSummary>,
+  index: number,
+  formatDate: (ms: number) => string,
+): string {
+  const attempt = ordered[index]!;
+  const parts = [
+    index === ordered.length - 1 ? "Latest attempt" : `Previous attempt ${ordered.length - 1 - index}`,
+    `${Math.round(attempt.percentage)}%`,
+  ];
+  if (hasUsableTime(attempt.submittedAt)) parts.push(formatDate(attempt.submittedAt));
+  return parts.join(" · ");
+}
+
+// One read per attempt per Student Detail render, shared by a card's
+// disclosures. A failed read is forgotten so the next open retries it.
+export function cacheAttemptDetail(read: AttemptGetForTeacherCallable): AttemptGetForTeacherCallable {
+  const cache = new Map<string, Promise<TeacherVisibleAttempt>>();
+  return (input) => {
+    let pending = cache.get(input.attemptId);
+    if (pending === undefined) {
+      pending = read(input);
+      cache.set(input.attemptId, pending);
+      pending.catch(() => cache.delete(input.attemptId));
+    }
+    return pending;
+  };
+}
+
+// Repeated-miss analysis reads at most this many of a card's most recent
+// attempts, at most two at a time, so a student with many retakes never
+// causes an unbounded burst of reads.
+export const MAX_REPEAT_ANALYSIS_ATTEMPTS = 20;
+const REPEAT_ANALYSIS_CONCURRENCY = 2;
+
+async function readBounded<T, R>(
+  items: ReadonlyArray<T>,
+  read: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const out: R[] = new Array<R>(items.length);
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (next < items.length) {
+      const index = next++;
+      out[index] = await read(items[index]!);
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(REPEAT_ANALYSIS_CONCURRENCY, items.length) }, worker),
+  );
+  return out;
+}
+
+// Appends the "Review answers" disclosure to a Student Detail card: a
+// primary action carrying the selected attempt's incorrect count, the
+// card's repeatedly missed questions (cards with two or more attempts), an
+// attempt selector defaulting to the latest attempt, and the per-question
+// review filtered to incorrect answers by default. Attempt detail and
+// revision text are read only after the teacher opens it, and cached for
+// this render.
 export function appendQuestionReview(
   doc: Document,
   card: HTMLElement,
@@ -242,22 +338,19 @@ export function appendQuestionReview(
   formatDate: (ms: number) => string,
 ): void {
   if (attemptDetail === null || attempts.length === 0) return;
-  const ordered = [...attempts].sort(
-    (a, b) =>
-      a.submittedAt - b.submittedAt ||
-      a.attemptNumber - b.attemptNumber ||
-      a.attemptId.localeCompare(b.attemptId),
-  );
+  const readDetail = cacheAttemptDetail(attemptDetail);
+  const ordered = orderAttemptsChronologically(attempts);
+  const latest = ordered.length - 1;
   const cardKey = card.getAttribute("data-assignment-id") ?? "";
   const panelId = `student-detail-review-${cardKey}`;
 
   const toggle = doc.createElement("button");
   toggle.type = "button";
-  toggle.className = "shell-student-detail-review-toggle";
+  toggle.className = "shell-btn shell-btn-primary shell-student-detail-review-toggle";
   toggle.setAttribute("data-testid", "student-detail-review-toggle");
   toggle.setAttribute("aria-expanded", "false");
   toggle.setAttribute("aria-controls", panelId);
-  toggle.textContent = "Review questions";
+  toggle.textContent = reviewAnswersLabel(ordered[latest]!);
   card.appendChild(toggle);
 
   const panel = doc.createElement("div");
@@ -267,18 +360,13 @@ export function appendQuestionReview(
   panel.hidden = true;
   card.appendChild(panel);
 
-  const label = (index: number): string => {
-    const a = ordered[index]!;
-    return `Attempt ${index + 1} · ${Math.round(a.percentage)}% · ${formatDate(a.submittedAt)}`;
-  };
-
   const body = doc.createElement("div");
   body.className = "shell-student-detail-review-body";
   body.setAttribute("aria-live", "polite");
 
-  // One filter per card, default off. It stays as the teacher set it when
-  // they switch attempts and is re-applied to each newly rendered attempt,
-  // so the checkbox always describes what is shown.
+  // One filter per card, default ON (incorrect answers first). It stays as
+  // the teacher set it when they switch attempts and is re-applied to each
+  // newly rendered attempt, so the checkbox always describes what is shown.
   const filterId = `${panelId}-incorrect-only`;
   const filterLabel = doc.createElement("label");
   filterLabel.className = "shell-student-detail-review-filter";
@@ -286,17 +374,27 @@ export function appendQuestionReview(
   const filter = doc.createElement("input");
   filter.type = "checkbox";
   filter.id = filterId;
+  filter.checked = true;
   filter.setAttribute("data-testid", "student-detail-review-incorrect-only");
   filterLabel.append(filter, doc.createTextNode(" Show incorrect only"));
   filter.addEventListener("change", () => applyIncorrectOnly(doc, body, filter.checked));
 
-  const details = new Map<string, Promise<TeacherVisibleAttempt>>();
   const contents = new Map<string, Promise<AssessmentRevisionContent | null>>();
+  const contentFor = (revisionId: string): Promise<AssessmentRevisionContent | null> => {
+    if (revisionContent === null) return Promise.resolve(null);
+    let pending = contents.get(revisionId);
+    if (pending === undefined) {
+      pending = revisionContent(revisionId).catch(() => null);
+      contents.set(revisionId, pending);
+    }
+    return pending;
+  };
   let token = 0;
 
   const show = (index: number): void => {
     const mine = ++token;
     const attempt = ordered[index]!;
+    toggle.textContent = reviewAnswersLabel(attempt);
     body.replaceChildren();
     const loading = doc.createElement("p");
     loading.className = "shell-student-detail-thinking-muted";
@@ -305,25 +403,11 @@ export function appendQuestionReview(
     loading.textContent = "Loading question results…";
     body.appendChild(loading);
 
-    let detailPromise = details.get(attempt.attemptId);
-    if (detailPromise === undefined) {
-      detailPromise = attemptDetail({ attemptId: attempt.attemptId });
-      details.set(attempt.attemptId, detailPromise);
-      // A failed read is retried on the next open of this attempt.
-      detailPromise.catch(() => details.delete(attempt.attemptId));
-    }
-    void detailPromise
+    void readDetail({ attemptId: attempt.attemptId })
       .then(async (detail) => {
         const revisionId = detail.assessmentRevisionId ?? null;
-        let content: AssessmentRevisionContent | null = null;
-        if (revisionContent !== null && revisionId !== null && detail.canonicalContent !== false) {
-          let contentPromise = contents.get(revisionId);
-          if (contentPromise === undefined) {
-            contentPromise = revisionContent(revisionId).catch(() => null);
-            contents.set(revisionId, contentPromise);
-          }
-          content = await contentPromise;
-        }
+        const content =
+          revisionId !== null && detail.canonicalContent !== false ? await contentFor(revisionId) : null;
         return buildAttemptQuestionReview(detail, content);
       })
       .then(
@@ -345,10 +429,55 @@ export function appendQuestionReview(
       );
   };
 
+  // Repeatedly missed questions over this card's attempts. Reads the most
+  // recent attempts newest first (the selected latest attempt is already
+  // cached), then revision text only for revisions that have a repeat.
+  const repeat = ordered.length >= 2 ? doc.createElement("div") : null;
+  const analyze = (): void => {
+    if (repeat === null) return;
+    repeat.setAttribute("data-state", "loading");
+    repeat.replaceChildren();
+    const loading = doc.createElement("p");
+    loading.className = "shell-student-detail-thinking-muted";
+    loading.setAttribute("role", "status");
+    loading.textContent = "Checking for repeated misses…";
+    repeat.appendChild(loading);
+    const recent = ordered.slice(-MAX_REPEAT_ANALYSIS_ATTEMPTS);
+    void readBounded([...recent].reverse(), (a) => readDetail({ attemptId: a.attemptId }))
+      .then(async (newestFirst) => {
+        const details = newestFirst.reverse();
+        const revisions = new Set(findRepeatedMisses(details, new Map()).groups.map((g) => g.revisionId));
+        const texts = new Map<string, AssessmentRevisionContent | null>();
+        for (const revisionId of revisions) texts.set(revisionId, await contentFor(revisionId));
+        return findRepeatedMisses(details, texts);
+      })
+      .then(
+        (analysis) => {
+          if (!panel.isConnected) return;
+          renderRepeatedMisses(doc, repeat, analysis, { analyzed: recent.length, total: ordered.length });
+        },
+        () => {
+          if (!panel.isConnected) return;
+          repeat.setAttribute("data-state", "error");
+          repeat.replaceChildren();
+          const err = doc.createElement("p");
+          err.className = "shell-student-detail-thinking-muted";
+          err.setAttribute("data-testid", "student-detail-repeat-error");
+          err.textContent = "We couldn't check for repeated misses. Close and reopen to try again.";
+          repeat.appendChild(err);
+        },
+      );
+  };
+
   let built = false;
   const build = (): void => {
     built = true;
-    const latest = ordered.length - 1;
+    if (repeat !== null) {
+      repeat.className = "shell-student-detail-repeat";
+      repeat.setAttribute("data-testid", "student-detail-repeat");
+      repeat.setAttribute("aria-live", "polite");
+      panel.appendChild(repeat);
+    }
     if (ordered.length > 1) {
       const controls = doc.createElement("div");
       controls.className = "shell-student-detail-review-attempt";
@@ -360,12 +489,13 @@ export function appendQuestionReview(
       select.id = selectId;
       select.className = "shell-student-detail-review-select";
       select.setAttribute("data-testid", "student-detail-review-select");
-      ordered.forEach((_a, index) => {
+      // Latest first; each option's value is its chronological index.
+      for (let index = latest; index >= 0; index -= 1) {
         const option = doc.createElement("option");
         option.value = String(index);
-        option.textContent = label(index);
+        option.textContent = attemptOptionLabel(ordered, index, formatDate);
         select.appendChild(option);
-      });
+      }
       select.value = String(latest);
       select.addEventListener("change", () => show(Number(select.value)));
       controls.append(selectLabel, select);
@@ -374,12 +504,13 @@ export function appendQuestionReview(
       const only = doc.createElement("p");
       only.className = "shell-student-detail-thinking-label";
       only.setAttribute("data-testid", "student-detail-review-attempt-label");
-      only.textContent = label(0);
+      only.textContent = attemptOptionLabel(ordered, 0, formatDate);
       panel.appendChild(only);
     }
     panel.appendChild(filterLabel);
     panel.appendChild(body);
     show(latest);
+    analyze();
   };
 
   toggle.addEventListener("click", () => {
@@ -387,9 +518,12 @@ export function appendQuestionReview(
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
     panel.hidden = !open;
     if (open && !built) build();
-    else if (open && body.querySelector("[data-testid=student-detail-review-error]") !== null) {
-      const select = panel.querySelector<HTMLSelectElement>("select");
-      show(select === null ? ordered.length - 1 : Number(select.value));
+    else if (open) {
+      if (body.querySelector("[data-testid=student-detail-review-error]") !== null) {
+        const select = panel.querySelector<HTMLSelectElement>("select");
+        show(select === null ? latest : Number(select.value));
+      }
+      if (repeat?.getAttribute("data-state") === "error") analyze();
     }
   });
 }

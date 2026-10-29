@@ -255,10 +255,39 @@ active, or the owner is not an active teacher at that school.
 
 ## 8. Question review (shared, PDR-032e)
 
-Student Detail shows a "Review questions" disclosure per card for owners and
-grantees alike. It lists each attempt individually and, per question: number,
+Student Detail shows a "Review answers" primary action per card for owners
+and grantees alike. It shows one attempt at a time and, per question: number,
 question text, correct or incorrect, the student's answer, the correct answer,
 and the frozen explanation when present.
+
+- The action carries the selected attempt's incorrect count ("Review answers
+  · 3 incorrect", or "· all correct"), from that attempt's frozen
+  `maxScore - score` (every item is worth exactly one point, so this counts
+  incorrect plus unanswered items). No count is shown when the summary is not
+  a consistent unit-point score.
+- The attempt selector defaults to the latest attempt and lists "Latest
+  attempt", then "Previous attempt N" in reverse chronological order
+  (Previous attempt 1 is the attempt just before the latest; Show Your
+  Thinking keeps its oldest-first "Attempt N"), each with
+  its score and submission date. Order is the frozen `submittedAt`; an
+  attempt without a usable timestamp sorts oldest and shows no date. These
+  labels describe the card's attempts only. Card order is unchanged
+  (newest `publishedAt` first; retakes never reorder cards).
+- "Show incorrect only" is on by default; turning it off shows every
+  question, including correct responses.
+- Cards with two or more attempts show "Missed more than once" above the
+  selector: questions missed on at least two attempts, as "Question N ·
+  Missed X of Y attempts". Identity is (`assessmentRevisionId`, `itemId`);
+  counts are kept per revision and never merged (a card whose attempts span
+  revisions shows each version separately). Attempts without a revision id
+  are excluded. Unanswered items count as missed (finalize scores them
+  incorrect); an item absent from an attempt is not counted for it. Y is the
+  attempts of that revision where the item was present. Wording is shown only
+  from the revision text checked against a standard attempt of the same
+  revision; with only adapted attempts, just "Question N" is shown. The
+  check reads at most the 20 most recent attempts of the card, two at a
+  time, only after the teacher opens the review, sharing one cached read per
+  attempt with the review and Show Your Thinking.
 
 - Correctness, the student's selected option, the correct option, and the
   explanation come from the immutable attempt (`itemResults`).

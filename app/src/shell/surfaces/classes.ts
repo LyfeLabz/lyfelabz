@@ -108,7 +108,11 @@ import { readStudentSupportSeam } from "../../supportAccess/session";
 import { sharedStudentContextLabel } from "../../supportAccess/types";
 import { isSupportOnlyTeacher, type SupportWorkspaceSeam } from "../supportWorkspace";
 import type { SharedStudent, StudentSupportSeam } from "../../supportAccess/types";
-import { appendQuestionReview } from "./studentDetailQuestionReview";
+import {
+  appendQuestionReview,
+  cacheAttemptDetail,
+  orderAttemptsChronologically,
+} from "./studentDetailQuestionReview";
 import {
   renderSharedStudentsError,
   renderSharedStudentsSection,
@@ -5654,8 +5658,10 @@ function appendAttemptDisclosures(
   attemptDetail: AttemptGetForTeacherCallable | null,
   revisionContent: AssessmentRevisionContentReader | null,
 ): void {
-  appendWrittenResponses(doc, card, attempts, attemptDetail);
-  appendQuestionReview(doc, card, attempts, attemptDetail, revisionContent, formatAttemptDate);
+  // One attempt read serves both disclosures and the repeated-miss check.
+  const readDetail = attemptDetail === null ? null : cacheAttemptDetail(attemptDetail);
+  appendWrittenResponses(doc, card, attempts, readDetail);
+  appendQuestionReview(doc, card, attempts, readDetail, revisionContent, formatAttemptDate);
 }
 
 // Sprint 30 Show Your Thinking. A disclosure listing each of the card's
@@ -5673,12 +5679,8 @@ function appendWrittenResponses(
   attemptDetail: AttemptGetForTeacherCallable | null,
 ): void {
   if (attemptDetail === null || attempts.length === 0) return;
-  const ordered = [...attempts].sort(
-    (a, b) =>
-      a.submittedAt - b.submittedAt ||
-      a.attemptNumber - b.attemptNumber ||
-      a.attemptId.localeCompare(b.attemptId),
-  );
+  // The same chronological order the answer review numbers its attempts by.
+  const ordered = orderAttemptsChronologically(attempts);
 
   const panelId = `student-detail-thinking-${card.getAttribute("data-assignment-id") ?? ""}`;
   const toggle = doc.createElement("button");

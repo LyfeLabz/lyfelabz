@@ -5525,8 +5525,7 @@
      Student Detail card. A narrow mirror of the existing disclosure grammar
      (.shell-lesson-resources-toggle: native button, aria-expanded, rotating
      decorative caret) and the metric cell surface, not a new visual system. */
-  .shell-student-detail-thinking-toggle,
-  .shell-student-detail-review-toggle {
+  .shell-student-detail-thinking-toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -5542,26 +5541,22 @@
     cursor: pointer;
     min-height: 28px;
   }
-  .shell-student-detail-thinking-toggle::after,
-  .shell-student-detail-review-toggle::after {
+  .shell-student-detail-thinking-toggle::after {
     content: "\203A";
     font-size: 1rem;
     line-height: 1;
     color: var(--tw-ink-muted, #566472);
     transition: transform 0.15s ease;
   }
-  .shell-student-detail-thinking-toggle[aria-expanded="true"]::after,
-  .shell-student-detail-review-toggle[aria-expanded="true"]::after {
+  .shell-student-detail-thinking-toggle[aria-expanded="true"]::after {
     transform: rotate(90deg);
   }
   .shell-student-detail-thinking-toggle:hover,
-  .shell-student-detail-thinking-toggle:focus-visible,
-  .shell-student-detail-review-toggle:hover,
-  .shell-student-detail-review-toggle:focus-visible {
+  .shell-student-detail-thinking-toggle:focus-visible {
     color: var(--tw-ink, #1c2733);
   }
   .shell-student-detail-thinking-toggle:focus-visible,
-  .shell-student-detail-review-toggle:focus-visible {
+  .shell-btn.shell-student-detail-review-toggle:focus-visible {
     outline: none;
     box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
   }
@@ -5605,7 +5600,51 @@
      question. Mirrors the Show Your Thinking disclosure and metric cell
      surface. Status is always visible text; the left rule only reinforces
      it, so meaning never depends on color alone. */
-  .shell-student-detail-review-toggle { margin-left: 1rem; }
+  /* "Review answers" is the card's primary action: the canonical
+     .shell-btn.shell-btn-primary, compact, with the same rotating caret as
+     the neighboring disclosure (in the button's own ink). */
+  .shell-btn.shell-student-detail-review-toggle {
+    gap: 0.35rem;
+    min-height: 32px;
+    margin: 0.55rem 0 0 1rem;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  .shell-student-detail-review-toggle::after {
+    content: "\203A";
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform 0.15s ease;
+  }
+  .shell-student-detail-review-toggle[aria-expanded="true"]::after {
+    transform: rotate(90deg);
+  }
+  /* Repeatedly missed questions: a compact list above the attempt
+     selector, on the same muted surface as the review items. */
+  .shell-student-detail-repeat { margin: 0 0 0.6rem 0; }
+  .shell-student-detail-repeat-version {
+    margin: 0.35rem 0 0.2rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--tw-ink-soft);
+  }
+  .shell-student-detail-repeat-list {
+    list-style: none;
+    margin: 0.25rem 0 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .shell-student-detail-repeat-item {
+    padding: 0.45rem 0.7rem;
+    background: var(--tw-surface-alt);
+    border: 1px solid var(--tw-hairline);
+    border-left: 4px solid rgba(153, 30, 30, 0.55);
+    border-radius: var(--tw-radius-control);
+  }
+  .shell-student-detail-repeat-item .shell-student-detail-review-head { margin: 0; }
+  .shell-student-detail-repeat-item .shell-student-detail-review-stem { margin: 0.2rem 0 0 0; }
   .shell-student-detail-review[hidden] { display: none; }
   .shell-student-detail-review { margin: 0.4rem 0 0 0; }
   .shell-student-detail-review-attempt {
@@ -5626,11 +5665,6 @@
     margin: 0;
     font-weight: 600;
     color: var(--tw-ink);
-  }
-  .shell-student-detail-review-missed {
-    margin: 0.1rem 0 0.4rem 0;
-    color: var(--tw-ink-soft);
-    font-size: 0.88rem;
   }
   .shell-student-detail-review-list {
     list-style: none;
@@ -5703,7 +5737,7 @@
     .shell-student-detail-review-answers dd { margin: 0 0 0.3rem 0; }
   }
   @media (pointer: coarse) {
-    .shell-student-detail-review-toggle,
+    .shell-btn.shell-student-detail-review-toggle,
     .shell-student-detail-review-select { min-height: 44px; }
   }
   .shell-student-detail-shared-context {
