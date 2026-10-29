@@ -93,10 +93,12 @@ export function teacherUnitsActionsEnabled(capability: UnitsCapability | undefin
 
 // Keep existing validation/pending disabled states when availability returns.
 // Capture also refuses synthetic events and controls inserted during a render.
+// The host's assignment-status line (My Units) sits inside the panel but is
+// not a Teacher Units action: its Try again retries registry hydration only.
 function bindCapabilityControls(
   root: HTMLElement,
   capability: UnitsCapability | undefined,
-  exempt = "[data-lesson-slug], .shell-units-results-pill, a",
+  exempt = "[data-lesson-slug], .shell-units-results-pill, a, .shell-units-assignment-status button",
   onDetach?: () => void,
 ): { readonly apply: () => void; readonly dispose: () => void } {
   const held = new Map<HTMLInputElement | HTMLButtonElement | HTMLSelectElement | HTMLTextAreaElement, boolean>();

@@ -53,6 +53,10 @@ export type AssignmentDetailClassSwitcher = {
     metadata: AssignmentDetailMetadata,
   ) => ReadonlyArray<ClassSwitchOption> | null;
   readonly ready?: Promise<void>;
+  // Performance Operation 1: preferred over `ready` when present. Settles
+  // once `options` can be complete; any subscription it needs is owned by
+  // `owner` (the waiting Detail element) and released when it detaches.
+  readonly waitUntilReady?: (owner: HTMLElement) => Promise<void>;
   readonly select: (
     option: ClassSwitchOption,
     context: { readonly isActive: () => boolean },
