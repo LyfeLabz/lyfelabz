@@ -120,7 +120,7 @@ const lessonRow = (slug: string): LessonResults => ({
   classes: [],
 });
 
-async function openMyUnits() {
+async function openMyUnits(capability: NonNullable<CapabilitySeam["capability"]> = enabledCapability) {
   const registry = createAssignmentDetailRegistry();
   const hydration = createAssignmentRegistryHydration(registry);
   const responses: Array<Deferred<ReadonlyArray<AssignmentDetailMetadata>>> = [];
@@ -157,7 +157,7 @@ async function openMyUnits() {
   const store = new Map([[unit.unitId, unit]]);
   const storage = memoryStorage();
   const seam = createTeacherUnitsSurfaceSeam({
-    capability: enabledCapability,
+    capability,
     callables: {
       list: jest.fn(async () => ({ units: Array.from(store.values()) })),
       get: jest.fn(async (req: { unitId: string }) => ({ unit: store.get(req.unitId)! })),
@@ -264,5 +264,46 @@ describe("My Units assignment state while the registry hydrates", () => {
     await settle();
     // The detached control was never updated.
     expect(l1.getAttribute("data-assignment-state")).toBe("loading");
+  });
+
+  // Staging correction: with Teacher Units unavailable the panel disables its
+  // actions, but the registry's Try again is not one of them.
+  test("Teacher Units unavailable: registry Try again stays enabled and recovers; unit actions stay disabled", async () => {
+    const unavailableCapability = {
+      ...enabledCapability,
+      getSnapshot: () => ({ status: "unavailable" as const }),
+    } as unknown as NonNullable<CapabilitySeam["capability"]>;
+    const { mount, responses, list, hydration } = await openMyUnits(unavailableCapability);
+    expect(q(mount, "units-panel")!.getAttribute("data-capability-status")).toBe("unavailable");
+    responses[0]!.reject(new Error("outage"));
+    await settle();
+    const line = q(mount, "units-assignment-status")!;
+    expect(line.textContent).toContain("We could not load which lessons are assigned.");
+    const retry = q(mount, "units-assignment-retry") as HTMLButtonElement;
+    expect(retry.hidden).toBe(false);
+    expect(retry.disabled).toBe(false);
+    expect((q(mount, "units-create-open") as HTMLButtonElement).disabled).toBe(true);
+
+    retry.click();
+    expect(list).toHaveBeenCalledTimes(2);
+    expect(line.textContent).toBe("Loading assignment status…");
+    responses[1]!.resolve([l1Assigned]);
+    await settle();
+    // No units list without the capability, so the status line is the
+    // whole assignment-status display: it clears once hydration succeeds.
+    expect(hydration.readiness.status()).toBe("ready");
+    expect(line.hidden).toBe(true);
+    expect((q(mount, "units-create-open") as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  test("Teacher Units enabled: create stays enabled and registry Try again still works", async () => {
+    const { mount, responses, list } = await openMyUnits();
+    responses[0]!.reject(new Error("outage"));
+    await settle();
+    expect((q(mount, "units-create-open") as HTMLButtonElement).disabled).toBe(false);
+    const retry = q(mount, "units-assignment-retry") as HTMLButtonElement;
+    expect(retry.disabled).toBe(false);
+    retry.click();
+    expect(list).toHaveBeenCalledTimes(2);
   });
 });
