@@ -5650,7 +5650,8 @@ function buildGroupCard(
 }
 
 // The per-attempt disclosures under a Student Detail card with attempts: the
-// existing Show Your Thinking, then the shared question review (PDR-032e).
+// shared question review (PDR-032e, the card's primary action), then the
+// existing Show Your Thinking beneath it as a secondary action.
 function appendAttemptDisclosures(
   doc: Document,
   card: HTMLElement,
@@ -5660,8 +5661,8 @@ function appendAttemptDisclosures(
 ): void {
   // One attempt read serves both disclosures and the repeated-miss check.
   const readDetail = attemptDetail === null ? null : cacheAttemptDetail(attemptDetail);
-  appendWrittenResponses(doc, card, attempts, readDetail);
   appendQuestionReview(doc, card, attempts, readDetail, revisionContent, formatAttemptDate);
+  appendWrittenResponses(doc, card, attempts, readDetail);
 }
 
 // Sprint 30 Show Your Thinking. A disclosure listing each of the card's
@@ -5685,11 +5686,11 @@ function appendWrittenResponses(
   const panelId = `student-detail-thinking-${card.getAttribute("data-assignment-id") ?? ""}`;
   const toggle = doc.createElement("button");
   toggle.type = "button";
-  toggle.className = "shell-student-detail-thinking-toggle";
+  toggle.className = "shell-student-detail-thinking-toggle ll-chevron";
   toggle.setAttribute("data-testid", "student-detail-thinking-toggle");
   toggle.setAttribute("aria-expanded", "false");
   toggle.setAttribute("aria-controls", panelId);
-  toggle.textContent = "Show Your Thinking";
+  toggle.textContent = "View Student Thinking";
   card.appendChild(toggle);
 
   const panel = doc.createElement("div");

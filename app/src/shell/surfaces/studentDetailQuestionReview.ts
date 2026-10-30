@@ -346,7 +346,7 @@ export function appendQuestionReview(
 
   const toggle = doc.createElement("button");
   toggle.type = "button";
-  toggle.className = "shell-btn shell-btn-primary shell-student-detail-review-toggle";
+  toggle.className = "shell-btn shell-btn-primary shell-student-detail-review-toggle ll-chevron";
   toggle.setAttribute("data-testid", "student-detail-review-toggle");
   toggle.setAttribute("aria-expanded", "false");
   toggle.setAttribute("aria-controls", panelId);

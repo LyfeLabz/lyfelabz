@@ -128,6 +128,55 @@ export function groupGrantsByTeacher(
   return teachers;
 }
 
+type ShareResult = {
+  readonly studentId: string;
+  readonly granteeEmail: string;
+  readonly outcome: "shared" | "alreadyShared" | "failed";
+};
+
+// One plain sentence (or a few) for a counted outcome. `who` names the
+// teacher when a share went to several; with one teacher it is null.
+function describeTeacherOutcome(shared: number, already: number, failed: number, who: string | null): string {
+  const prefix = who === null ? "" : `${who}: `;
+  const students = (n: number): string => plural(n, "student", "students");
+  if (already > 0 && shared === 0 && failed === 0) {
+    const through = who === null ? " through this teacher" : "";
+    if (already === 1) return `${prefix}This student already has access${through}.`;
+    if (already === 2) return `${prefix}Both students already have access${through}.`;
+    return `${prefix}All ${already} students already have access${through}.`;
+  }
+  const parts: string[] = [];
+  if (shared > 0) parts.push(`Access granted to ${students(shared)}.`);
+  else if (failed > 0) parts.push("No access was granted.");
+  if (already > 0) parts.push(`${students(already)} ${already === 1 ? "was" : "were"} already shared.`);
+  if (failed > 0) parts.push(`${students(failed)} couldn't be shared.`);
+  return prefix + parts.join(" ");
+}
+
+// The human-readable result of one `supportAccessGrantMany` call. With one
+// recipient teacher it counts students; with several it gives one clause per
+// teacher (in the order shared), so nothing is summed across teachers in a
+// way that hides a failure. Never reports success for a failed pair.
+export function describeShareResults(results: ReadonlyArray<ShareResult>): string {
+  if (results.length === 0) return "Nothing was shared.";
+  const byEmail = new Map<string, { shared: number; already: number; failed: number }>();
+  for (const r of results) {
+    let row = byEmail.get(r.granteeEmail);
+    if (row === undefined) {
+      row = { shared: 0, already: 0, failed: 0 };
+      byEmail.set(r.granteeEmail, row);
+    }
+    if (r.outcome === "shared") row.shared += 1;
+    else if (r.outcome === "alreadyShared") row.already += 1;
+    else row.failed += 1;
+  }
+  if (byEmail.size === 1) {
+    const [row] = byEmail.values();
+    return describeTeacherOutcome(row!.shared, row!.already, row!.failed, null);
+  }
+  return [...byEmail].map(([email, row]) => describeTeacherOutcome(row.shared, row.already, row.failed, email)).join(" ");
+}
+
 const teacherLabel = (t: RecipientTeacher): string => (t.email === null ? t.displayName : `${t.displayName} (${t.email})`);
 
 export function renderShareStudentProgressSection(
@@ -139,12 +188,6 @@ export function renderShareStudentProgressSection(
   section.className = "shell-ss-share";
   section.setAttribute("data-testid", "ss-share-section");
 
-  const desc = doc.createElement("p");
-  desc.className = "shell-ss-section-desc";
-  desc.textContent =
-    "Give other teachers at your school read-only access to students' assignments and assessment results.";
-  section.appendChild(desc);
-
   // Students (left) and recipients + Share Access (right) sit side by side
   // when there is room and stack otherwise.
   const form = doc.createElement("div");
@@ -155,9 +198,8 @@ export function renderShareStudentProgressSection(
   let recipients: string[] = [];
   let grants: ReadonlyArray<SupportGrant> = [];
   let grantsState: "loading" | "error" | "loaded" = "loading";
-  // Teachers whose student list is open, and the one pending confirmation
-  // (a whole teacher, or one student's grant).
-  const expandedTeachers = new Set<string>();
+  // The removal pending confirmation (a whole teacher, or one student's
+  // grant).
   let confirming: { readonly kind: "teacher"; readonly key: string } | { readonly kind: "student"; readonly grantId: string } | null = null;
   // One flag for every request. Any change goes through `setBusy`, which
   // redraws the access list, so its buttons never keep a stale disabled
@@ -264,17 +306,26 @@ export function renderShareStudentProgressSection(
   recipientList.setAttribute("aria-label", "Teachers to share with");
   recipientsGroup.appendChild(recipientList);
 
+  const sendColumn = doc.createElement("div");
+  sendColumn.className = "shell-ss-share-send";
+  sendColumn.appendChild(recipientsGroup);
+  form.appendChild(sendColumn);
+
+  // One action row under both columns: the teacher count, then Share
+  // Access. The status line below it keeps a reserved line, so "Sharing…"
+  // and the result replace each other in place and only what is below the
+  // row moves when a long result wraps; the button itself never moves.
+  const actions = doc.createElement("div");
+  actions.className = "shell-ss-share-actions";
+  actions.setAttribute("data-testid", "ss-share-actions");
+  section.appendChild(actions);
+
   const recipientCount = doc.createElement("span");
   recipientCount.id = "ss-share-recipient-count";
   recipientCount.className = "shell-ss-share-count";
   recipientCount.setAttribute("data-testid", "ss-share-recipient-count");
   recipientCount.setAttribute("aria-live", "polite");
-  recipientsGroup.appendChild(recipientCount);
-
-  const sendColumn = doc.createElement("div");
-  sendColumn.className = "shell-ss-share-send";
-  sendColumn.appendChild(recipientsGroup);
-  form.appendChild(sendColumn);
+  actions.appendChild(recipientCount);
 
   // Disabled until at least one student is checked and at least one valid
   // email is listed or typed; the counts say what is still missing.
@@ -284,14 +335,17 @@ export function renderShareStudentProgressSection(
   shareButton.setAttribute("data-testid", "ss-share-submit");
   shareButton.setAttribute("aria-describedby", "ss-share-student-count ss-share-recipient-count");
   shareButton.textContent = "Share Access";
-  sendColumn.appendChild(shareButton);
+  actions.appendChild(shareButton);
 
   const shareStatus = doc.createElement("div");
-  shareStatus.className = "shell-ss-share-status";
+  shareStatus.className = "shell-ss-share-status shell-ss-share-status--reserved";
   shareStatus.setAttribute("data-testid", "ss-share-status");
   shareStatus.setAttribute("role", "status");
   shareStatus.setAttribute("aria-live", "polite");
-  sendColumn.appendChild(shareStatus);
+  // Focus lands here after a share when the button it came from is
+  // disabled (nothing left selected), instead of falling to the page.
+  shareStatus.tabIndex = -1;
+  section.appendChild(shareStatus);
 
   // --- Teachers with access: a disclosure, collapsed, with the number of
   // recipient teachers in its header ---
@@ -303,7 +357,7 @@ export function renderShareStudentProgressSection(
   grantsHeading.className = "shell-ss-share-subheading";
   const grantsToggle = doc.createElement("button");
   grantsToggle.type = "button";
-  grantsToggle.className = "shell-ss-disclosure-toggle shell-ss-disclosure-toggle--sub";
+  grantsToggle.className = "shell-ss-disclosure-toggle shell-ss-disclosure-toggle--sub ll-chevron";
   grantsToggle.setAttribute("data-testid", "ss-share-grants-toggle");
   grantsToggle.setAttribute("aria-controls", "ss-share-grants-body");
   grantsToggle.setAttribute("aria-expanded", "false");
@@ -355,6 +409,9 @@ export function renderShareStudentProgressSection(
 
   const renderRecipients = (): void => {
     recipientList.replaceChildren();
+    // An empty list keeps one chip row's height (CSS), so clearing the
+    // teachers after a share does not pull the action row upward.
+    recipientList.setAttribute("data-empty", recipients.length === 0 ? "true" : "false");
     for (const email of recipients) {
       const li = doc.createElement("li");
       li.className = "shell-ss-share-recipient";
@@ -368,6 +425,7 @@ export function renderShareStudentProgressSection(
       remove.textContent = "×";
       remove.addEventListener("click", () => {
         if (busy) return;
+        releaseRecipientHeight();
         recipients = recipients.filter((r) => r !== email);
         renderRecipients();
         updateCounts();
@@ -375,6 +433,18 @@ export function renderShareStudentProgressSection(
       li.append(text, remove);
       recipientList.appendChild(li);
     }
+  };
+
+  // After a share clears the teacher chips, the list keeps the height it
+  // had, so the action row and the result just shown stay where the
+  // teacher's eyes are (stacked layouts put the chips right above the row).
+  // The hold ends as soon as the teacher adds or removes a teacher.
+  const holdRecipientHeight = (): void => {
+    const height = recipientList.getBoundingClientRect().height;
+    if (height > 0) recipientList.style.minHeight = `${height}px`;
+  };
+  const releaseRecipientHeight = (): void => {
+    recipientList.style.minHeight = "";
   };
 
   // Adds every comma/space-separated entry in the field. Returns false and
@@ -394,6 +464,7 @@ export function renderShareStudentProgressSection(
       return false;
     }
     recipients = next;
+    releaseRecipientHeight();
     emailInput.value = "";
     setStatus(shareStatus, "");
     renderRecipients();
@@ -413,7 +484,7 @@ export function renderShareStudentProgressSection(
 
   const updateCounts = (): void => {
     studentCount.textContent = `${plural(selected.size, "student", "students")} selected`;
-    recipientCount.textContent = plural(recipients.length, "teacher", "teachers");
+    recipientCount.textContent = `${plural(recipients.length, "teacher", "teachers")} selected`;
     selectAll.disabled = busy || deps.students.length === 0;
     clearAll.disabled = busy || selected.size === 0;
     shareButton.disabled = busy || selected.size === 0 || (recipients.length === 0 && !typedEmailsValid());
@@ -465,24 +536,24 @@ export function renderShareStudentProgressSection(
         (results) => {
           if (!deps.isConnected()) return;
           const shared = results.filter((r) => r.outcome === "shared").length;
-          const already = results.filter((r) => r.outcome === "alreadyShared").length;
           const failed = results.filter((r) => r.outcome === "failed");
-          const parts = [`Shared ${shared}.`, `Already shared ${already}.`];
-          if (failed.length > 0) parts.push(`Failed ${failed.length}.`);
+          const message = describeShareResults(results);
           // Keep only the students and emails in a failed pair so the teacher
           // can correct them. Sharing again sends every checked student with
           // every listed email; when that includes pairs that just succeeded,
-          // say so (the server reports them as Already shared).
+          // say so (the server reports them as already shared).
           const failedStudents = new Set(failed.map((r) => r.studentId));
           const failedEmails = new Set(failed.map((r) => r.granteeEmail));
           for (const id of [...selected]) if (!failedStudents.has(id)) selected.delete(id);
+          holdRecipientHeight();
           recipients = recipients.filter((e) => failedEmails.has(e));
           const retryPairs = selected.size * recipients.length;
+          const parts = [message];
           if (failed.length > 0) {
             parts.push(
               retryPairs > failed.length
-                ? `The students and emails that failed are still selected. Sharing again also resends ${plural(retryPairs - failed.length, "pair", "pairs")} that already worked; those show as Already shared.`
-                : "The students and emails that failed are still selected.",
+                ? `What couldn't be shared is still selected. Sharing again also resends ${plural(retryPairs - failed.length, "pair", "pairs")} that already worked; those will show as already shared.`
+                : "What couldn't be shared is still selected so you can try again.",
             );
           }
           setStatus(
@@ -503,6 +574,14 @@ export function renderShareStudentProgressSection(
       .finally(() => {
         shareButton.removeAttribute("aria-busy");
         setBusy(false);
+        if (!deps.isConnected()) return;
+        // The disabled button dropped focus to the page; put it back on the
+        // button when it can be used again, else on the result. Never
+        // scroll: the row has not moved.
+        const active = doc.activeElement;
+        if (active === null || active === doc.body || active === shareButton) {
+          (shareButton.disabled ? shareStatus : shareButton).focus({ preventScroll: true });
+        }
       });
   };
   shareButton.addEventListener("click", submitShare);
@@ -514,16 +593,21 @@ export function renderShareStudentProgressSection(
   };
 
   // Moves focus to an access-list control after a redraw replaced it: the
-  // control `testId` inside the element whose `attr` is `value`, else the
-  // list header.
-  const focusIn = (testId: string, attr?: "data-teacher-key" | "data-grant-id", value?: string): void => {
+  // first of `testIds` found inside the element whose `attr` is `value`,
+  // else the list header.
+  const focusIn = (testIds: string | ReadonlyArray<string>, attr?: "data-teacher-key" | "data-grant-id", value?: string): void => {
     const scope =
       attr === undefined
         ? grantList
         : Array.from(grantList.querySelectorAll<HTMLElement>(`[${attr}]`)).find((el) => el.getAttribute(attr) === value);
-    const el = scope?.querySelector<HTMLElement>(`[data-testid="${testId}"]`) ?? null;
-    if (el !== null) el.focus();
-    else grantsToggle.focus();
+    for (const testId of typeof testIds === "string" ? [testIds] : testIds) {
+      const el = scope?.querySelector<HTMLElement>(`[data-testid="${testId}"]`) ?? null;
+      if (el !== null) {
+        el.focus({ preventScroll: true });
+        return;
+      }
+    }
+    grantsToggle.focus({ preventScroll: true });
   };
 
   type RevokeTarget = {
@@ -615,8 +699,13 @@ export function renderShareStudentProgressSection(
       .finally(() => {
         setBusy(false);
         if (!deps.isConnected()) return;
-        // The teacher's row, if any access remains; else the list header.
-        focusIn(target.grant === null ? "ss-access-remove-teacher" : "ss-access-teacher-toggle", "data-teacher-key", target.teacher.key);
+        // The teacher's group, if any access remains (a remaining student's
+        // Remove access after a student removal); else the list header.
+        focusIn(
+          target.grant === null ? "ss-access-remove-teacher" : ["ss-access-remove-student", "ss-access-remove-teacher"],
+          "data-teacher-key",
+          target.teacher.key,
+        );
       });
   };
 
@@ -635,24 +724,43 @@ export function renderShareStudentProgressSection(
     grantStatus.appendChild(retry);
   };
 
+  // The compact inline confirmation shared by Remove teacher and Remove
+  // access: a question, one line of consequence, then Cancel and the
+  // destructive action. Nothing is revoked until the action is chosen;
+  // Escape cancels.
   const confirmBox = (
     testId: string,
-    message: string,
+    question: string,
+    detail: string,
     confirmLabel: string,
     onConfirm: () => void,
     onCancel: () => void,
   ): HTMLElement => {
     const box = doc.createElement("div");
-    box.className = "shell-ss-confirm shell-ss-access-confirm";
+    box.className = "shell-ss-access-confirm";
     box.setAttribute("data-testid", testId);
     box.setAttribute("role", "alertdialog");
-    const msgId = `${testId}-msg`;
-    box.setAttribute("aria-labelledby", msgId);
+    box.setAttribute("aria-labelledby", `${testId}-msg`);
+    box.setAttribute("aria-describedby", `${testId}-detail`);
     const msg = doc.createElement("p");
-    msg.id = msgId;
-    msg.textContent = message;
+    msg.id = `${testId}-msg`;
+    msg.className = "shell-ss-access-confirm-question";
+    msg.setAttribute("data-testid", `${testId}-question`);
+    msg.textContent = question;
+    const note = doc.createElement("p");
+    note.id = `${testId}-detail`;
+    note.className = "shell-ss-access-confirm-detail";
+    note.setAttribute("data-testid", `${testId}-detail`);
+    note.textContent = detail;
     const actions = doc.createElement("div");
     actions.className = "shell-ss-access-confirm-actions";
+    const no = doc.createElement("button");
+    no.type = "button";
+    no.className = "shell-ss-ra-action";
+    no.setAttribute("data-testid", `${testId}-cancel`);
+    no.textContent = "Cancel";
+    no.disabled = busy;
+    no.addEventListener("click", onCancel);
     const yes = doc.createElement("button");
     yes.type = "button";
     yes.className = "shell-ss-ra-action shell-ss-ra-action--confirm";
@@ -661,36 +769,36 @@ export function renderShareStudentProgressSection(
     yes.disabled = busy;
     if (busy) yes.setAttribute("aria-busy", "true");
     yes.addEventListener("click", onConfirm);
-    const no = doc.createElement("button");
-    no.type = "button";
-    no.className = "shell-ss-ra-action";
-    no.setAttribute("data-testid", `${testId}-cancel`);
-    no.textContent = "Cancel";
-    no.disabled = busy;
-    no.addEventListener("click", onCancel);
-    actions.append(yes, no);
-    box.append(msg, actions);
+    actions.append(no, yes);
+    box.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        onCancel();
+      }
+    });
+    box.append(msg, note, actions);
     return box;
   };
 
+  // One teacher's group: name, email, student count and Remove teacher on
+  // the header row, with every shared student listed directly beneath (no
+  // second disclosure). Remove teacher is a bordered button; each student's
+  // Remove access is the quieter text link.
   const renderTeacher = (teacher: RecipientTeacher, index: number): HTMLElement => {
     const li = doc.createElement("li");
     li.className = "shell-ss-access-teacher";
     li.setAttribute("data-testid", "ss-access-teacher");
     li.setAttribute("data-teacher-key", teacher.key);
-    const expanded = expandedTeachers.has(teacher.key);
-    const listId = `ss-access-students-${index}`;
+    const nameId = `ss-access-teacher-${index}`;
+    li.setAttribute("aria-labelledby", nameId);
     const count = plural(teacher.grants.length, "student", "students");
 
     const row = doc.createElement("div");
     row.className = "shell-ss-access-teacher-row";
-    const toggle = doc.createElement("button");
-    toggle.type = "button";
-    toggle.className = "shell-ss-access-toggle";
-    toggle.setAttribute("data-testid", "ss-access-teacher-toggle");
-    toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-    toggle.setAttribute("aria-controls", listId);
+    const ident = doc.createElement("div");
+    ident.className = "shell-ss-access-ident";
     const nameEl = doc.createElement("span");
+    nameEl.id = nameId;
     nameEl.className = "shell-ss-access-name";
     nameEl.setAttribute("data-testid", "ss-access-teacher-name");
     nameEl.textContent = teacher.displayName;
@@ -708,17 +816,11 @@ export function renderShareStudentProgressSection(
     countEl.setAttribute("data-testid", "ss-access-teacher-count");
     countEl.textContent = count;
     meta.appendChild(countEl);
-    toggle.append(nameEl, meta);
-    toggle.addEventListener("click", () => {
-      if (expandedTeachers.has(teacher.key)) expandedTeachers.delete(teacher.key);
-      else expandedTeachers.add(teacher.key);
-      renderGrants();
-      focusIn("ss-access-teacher-toggle", "data-teacher-key", teacher.key);
-    });
+    ident.append(nameEl, meta);
 
     const removeTeacher = doc.createElement("button");
     removeTeacher.type = "button";
-    removeTeacher.className = "shell-classes-settings-support-revoke";
+    removeTeacher.className = "shell-ss-ra-action shell-ss-access-remove-teacher";
     removeTeacher.setAttribute("data-testid", "ss-access-remove-teacher");
     removeTeacher.setAttribute("aria-label", `Remove teacher ${teacherLabel(teacher)}`);
     removeTeacher.textContent = "Remove teacher";
@@ -729,17 +831,17 @@ export function renderShareStudentProgressSection(
       renderGrants();
       focusIn("ss-access-teacher-confirm-cancel");
     });
-    row.append(toggle, removeTeacher);
+    row.append(ident, removeTeacher);
     li.appendChild(row);
 
     if (confirming?.kind === "teacher" && confirming.key === teacher.key) {
       const target: RevokeTarget = { teacher, grant: null };
+      const one = teacher.grants.length === 1;
       li.appendChild(
         confirmBox(
           "ss-access-teacher-confirm",
-          teacher.grants.length === 1
-            ? `Remove ${teacherLabel(teacher)}? Their access to 1 student in this class will be removed, and they will no longer see this student's assignments or assessment results. The student stays in your class, and the teacher's account is not changed.`
-            : `Remove ${teacherLabel(teacher)}? Their access to ${count} in this class will be removed, and they will no longer see these students' assignments or assessment results. The students stay in your class, and the teacher's account is not changed.`,
+          `Remove ${teacher.displayName}'s access to ${count}?`,
+          `${teacherLabel(teacher)} will no longer see ${one ? "this student's" : "these students'"} work in this class. ${one ? "The student remains" : "The students remain"} in your class.`,
           "Remove teacher",
           () => runRevoke(target, teacher.grants.map((g) => g.grantId)),
           () => {
@@ -753,11 +855,9 @@ export function renderShareStudentProgressSection(
     }
 
     const students = doc.createElement("ul");
-    students.id = listId;
     students.className = "shell-ss-access-students";
     students.setAttribute("data-testid", "ss-access-students");
     students.setAttribute("aria-label", `Students shared with ${teacher.displayName}`);
-    students.hidden = !expanded;
     for (const grant of teacher.grants) {
       const sli = doc.createElement("li");
       sli.className = "shell-ss-access-student";
@@ -785,7 +885,8 @@ export function renderShareStudentProgressSection(
         sli.appendChild(
           confirmBox(
             "ss-access-student-confirm",
-            `Remove access to ${grant.studentDisplayName} for ${teacherLabel(teacher)}? Only this student's shared access is removed. ${grant.studentDisplayName} stays in your class, and ${teacher.displayName} keeps access to any other students you shared.`,
+            `Remove ${teacher.displayName}'s access to ${grant.studentDisplayName}?`,
+            "The student will remain in your class. Other shared students will not be affected.",
             "Remove access",
             () => runRevoke(target, [grant.grantId]),
             () => {
@@ -843,9 +944,9 @@ export function renderShareStudentProgressSection(
       grantList.appendChild(empty);
       return;
     }
-    // A teacher or grant that is gone after a refresh drops its open state.
+    // A teacher or grant that is gone after a refresh drops its pending
+    // confirmation.
     const keys = new Set(teachers.map((t) => t.key));
-    for (const key of [...expandedTeachers]) if (!keys.has(key)) expandedTeachers.delete(key);
     const pending = confirming;
     if (pending !== null && (pending.kind === "teacher" ? !keys.has(pending.key) : !grants.some((g) => g.grantId === pending.grantId))) {
       confirming = null;
@@ -854,6 +955,7 @@ export function renderShareStudentProgressSection(
   };
 
   updateCounts();
+  renderRecipients();
   renderGrants();
   void refreshGrants();
   return section;

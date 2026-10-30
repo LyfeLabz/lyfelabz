@@ -647,7 +647,7 @@ export function renderSettingsSurface(
     heading.setAttribute("data-testid", headingId);
     const toggle = doc.createElement("button");
     toggle.type = "button";
-    toggle.className = "shell-ss-disclosure-toggle";
+    toggle.className = "shell-ss-disclosure-toggle ll-chevron";
     toggle.setAttribute("data-testid", `ss-${key}-toggle`);
     toggle.setAttribute("aria-controls", bodyId);
     toggle.textContent = title;

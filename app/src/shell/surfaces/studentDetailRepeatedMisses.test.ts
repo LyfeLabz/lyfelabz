@@ -204,7 +204,18 @@ describe("renderRepeatedMisses", () => {
 
   it("labels each question with its number and missed count", () => {
     const host = render([attempt([miss("q1"), miss("q2")]), attempt([miss("q1"), hit("q2")])]);
-    expect(host.querySelector(".shell-student-detail-thinking-label")!.textContent).toBe("Missed more than once");
+    const toggle = host.querySelector<HTMLButtonElement>("[data-testid=student-detail-repeat-toggle]")!;
+    const body = host.querySelector<HTMLElement>("[data-testid=student-detail-repeat-body]")!;
+    expect(toggle.textContent).toBe("Missed more than once (1)");
+    // Collapsed by default, a real disclosure with the standard chevron.
+    expect(toggle.type).toBe("button");
+    expect(toggle.className).toContain("ll-chevron");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-controls")).toBe(body.id);
+    expect(body.hidden).toBe(true);
+    toggle.click();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(body.hidden).toBe(false);
     const items = host.querySelectorAll("[data-testid=student-detail-repeat-item]");
     expect(items).toHaveLength(1);
     expect(items[0]!.querySelector("[data-testid=student-detail-repeat-number]")!.textContent).toBe("Question 1");
@@ -212,6 +223,29 @@ describe("renderRepeatedMisses", () => {
     expect(items[0]!.querySelector("[data-testid=student-detail-repeat-stem]")!.textContent).toBe(`${tag(R1)} first`);
     // Revision ids are never shown.
     expect(host.innerHTML).not.toContain(R1);
+  });
+
+  it("counts every repeated question across versions in the header, and collapses again", () => {
+    const host = render([
+      attempt([miss("q1"), miss("q2")]),
+      attempt([miss("q1"), miss("q2")]),
+      attempt([miss("q1")], { assessmentRevisionId: R2 }),
+      attempt([miss("q1")], { assessmentRevisionId: R2 }),
+    ]);
+    const toggle = host.querySelector<HTMLButtonElement>("[data-testid=student-detail-repeat-toggle]")!;
+    const body = host.querySelector<HTMLElement>("[data-testid=student-detail-repeat-body]")!;
+    expect(toggle.textContent).toBe(`Missed more than once (${body.querySelectorAll("[data-testid=student-detail-repeat-item]").length})`);
+    expect(body.querySelectorAll("[data-testid=student-detail-repeat-item]").length).toBeGreaterThan(1);
+    toggle.click();
+    toggle.click();
+    expect(body.hidden).toBe(true);
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("shows no disclosure when nothing repeats", () => {
+    const host = render([attempt([miss("q1")]), attempt([hit("q1")])]);
+    expect(host.querySelector("[data-testid=student-detail-repeat-toggle]")).toBeNull();
+    expect(host.querySelector("[data-testid=student-detail-repeat-none]")).not.toBeNull();
   });
 
   it("separates versions when the quiz changed between attempts", () => {

@@ -188,7 +188,16 @@ describe("Student Detail Show Your Thinking", () => {
     const { mount, detailCalls } = await openStudent({ attempts: history(), groups: [group({})], written });
     const card = cards(mount)[0]!;
     const btn = q(card, "[data-testid=student-detail-thinking-toggle]")!;
-    expect(btn.textContent).toBe("Show Your Thinking");
+    expect(btn.textContent).toBe("View Student Thinking");
+    expect(btn.className).toContain("ll-chevron");
+    // Review answers is the primary action; View Student Thinking follows it
+    // as a secondary text action, not a button beside it.
+    const review = q(card, "[data-testid=student-detail-review-toggle]");
+    if (review !== null) {
+      expect(review.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(review.className).toContain("shell-btn-primary");
+      expect(btn.className).not.toContain("shell-btn");
+    }
     expect(btn.getAttribute("aria-expanded")).toBe("false");
     expect(q(card, "[data-testid=student-detail-thinking]")!.hidden).toBe(true);
     expect(detailCalls).toEqual([]);

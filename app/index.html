@@ -1593,9 +1593,35 @@
     border: 1px solid rgba(192,57,43,0.18);
   }
   .shell-ss-conflict-msg { font-size: 0.88rem; color: #8a5a12; }
+  /* LyfeLabz chevron convention (.ll-chevron; docs/platform/UI_CHEVRON_CONVENTION.md).
+     One icon: a CSS-drawn stroke chevron in currentColor at the text's
+     size, generated content so the control's accessible name is its text.
+     Disclosure (a button with aria-expanded): points down when collapsed,
+     up when expanded. Navigation (.ll-chevron--nav, no aria-expanded):
+     points right. Hosts provide the hit target, focus ring and
+     aria-expanded; the chevron never carries state by color. */
+  .ll-chevron::after {
+    content: "";
+    flex: none;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 0.5em;
+    height: 0.5em;
+    margin: -0.25em 0.2em 0 0.35em;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.15s ease, margin 0.15s ease;
+    vertical-align: middle;
+  }
+  .ll-chevron[aria-expanded="true"]::after {
+    margin-top: 0.25em;
+    transform: rotate(-135deg);
+  }
+  .ll-chevron--nav::after { margin-top: 0; transform: rotate(-45deg); }
+  @media (prefers-reduced-motion: reduce) { .ll-chevron::after { transition: none; } }
   /* P5F-UX: Student Services sections are disclosures. The header is a
-     full-width text button; the chevron (closed / open) is generated
-     content with empty alt text, so the accessible name stays the title. */
+     full-width text button carrying .ll-chevron (down closed, up open). */
   .shell-ss-disclosure {
     max-width: 48rem;
     border-top: 1px solid var(--tw-hairline);
@@ -1621,18 +1647,7 @@
     text-align: left;
     cursor: pointer;
   }
-  .shell-ss-disclosure-toggle::after {
-    content: "\25BE";
-    content: "\25BE" / "";
-    flex: none;
-    font-size: 1.1em;
-    line-height: 1;
-    color: var(--tw-ink-muted, #566472);
-  }
-  .shell-ss-disclosure-toggle[aria-expanded="true"]::after {
-    content: "\25B4";
-    content: "\25B4" / "";
-  }
+  .shell-ss-disclosure-toggle::after { color: var(--tw-ink-muted, #566472); }
   .shell-ss-disclosure-toggle:hover { text-decoration: underline; }
   .shell-ss-disclosure-toggle:focus-visible {
     outline: none;
@@ -1654,7 +1669,19 @@
     align-items: start;
   }
   .shell-ss-share-send { min-width: 0; }
-  .shell-ss-share-submit { margin: 0.25rem 0 0 0; }
+  /* One aligned action row (teacher count, then Share Access) and a status
+     line that always reserves one line, so loading and results swap in
+     place without moving the button. Longer results grow downward. */
+  .shell-ss-share-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+    margin-top: 0.6rem;
+  }
+  .shell-ss-share-submit { margin: 0; }
+  .shell-ss-share-status--reserved { min-height: 1.35em; margin: 0.4rem 0 0 0; }
+  .shell-ss-share-status--reserved:focus { outline: none; }
   /* A disabled primary keeps legible contrast instead of faded green
      (same treatment as My Units). */
   .shell-ss-share-submit:disabled,
@@ -1717,10 +1744,15 @@
     list-style: none;
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: flex-start;
     gap: 0.35rem;
     margin: 0 0 0.35rem 0;
     padding: 0;
   }
+  /* Empty, it keeps one chip row so clearing teachers does not shift the
+     action row. */
+  .shell-ss-share-recipients[data-empty="true"] { min-height: 1.9rem; }
   .shell-ss-share-recipient {
     display: inline-flex;
     align-items: center;
@@ -1734,11 +1766,12 @@
   .shell-ss-share-status { font-size: 0.88rem; margin: 0.5rem 0; }
   .shell-ss-share-status p { margin: 0; }
   .shell-ss-share-status ul { margin: 0.25rem 0 0 1.1rem; padding: 0; }
-  /* P5H: Teachers with access, one row per recipient teacher; the row
-     opens that teacher's students. Remove teacher and Remove access reuse
-     the calm destructive link (.shell-classes-settings-support-revoke). */
+  /* Teachers with access: one group per recipient teacher, students
+     listed directly beneath (no nested disclosure). Remove teacher is a
+     small bordered button; each student's Remove access is the calm
+     destructive link (.shell-classes-settings-support-revoke). */
   .shell-ss-access-teacher {
-    padding: 0.35rem 0;
+    padding: 0.55rem 0 0.45rem 0;
     border-bottom: 1px solid var(--tw-hairline);
   }
   .shell-ss-access-teacher-row {
@@ -1748,42 +1781,14 @@
     justify-content: space-between;
     gap: 0.25rem 0.75rem;
   }
-  .shell-ss-access-toggle {
+  .shell-ss-access-ident {
     display: flex;
     flex: 1 1 14rem;
     min-width: 0;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.1rem 0.6rem;
-    margin: 0;
-    padding: 0.25rem 1.4rem 0.25rem 0.1rem;
-    min-height: 36px;
-    position: relative;
-    background: transparent;
-    border: none;
-    font: inherit;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
     overflow-wrap: anywhere;
-  }
-  .shell-ss-access-toggle::after {
-    content: "\25BE";
-    content: "\25BE" / "";
-    position: absolute;
-    right: 0.2rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--tw-ink-muted, #566472);
-  }
-  .shell-ss-access-toggle[aria-expanded="true"]::after {
-    content: "\25B4";
-    content: "\25B4" / "";
-  }
-  .shell-ss-access-toggle:hover .shell-ss-access-name { text-decoration: underline; }
-  .shell-ss-access-toggle:focus-visible {
-    outline: none;
-    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
   }
   .shell-ss-access-name { font-weight: 600; }
   .shell-ss-access-meta {
@@ -1794,30 +1799,56 @@
     font-size: 0.82rem;
     color: var(--tw-ink-muted, #566472);
   }
+  .shell-ss-ra-action.shell-ss-access-remove-teacher {
+    margin: 0;
+    padding: 0.2rem 0.65rem;
+    min-height: 30px;
+    font-size: 0.82rem;
+    color: #a93226;
+    border-color: rgba(192,57,43,0.35);
+  }
+  .shell-ss-ra-action.shell-ss-access-remove-teacher:hover,
+  .shell-ss-ra-action.shell-ss-access-remove-teacher:focus-visible { border-color: #a93226; }
   .shell-ss-access-students {
     list-style: none;
-    margin: 0.2rem 0 0.2rem 0.9rem;
-    padding: 0 0 0 0.6rem;
+    margin: 0.3rem 0 0 0.25rem;
+    padding: 0 0 0 0.7rem;
     border-left: 2px solid var(--tw-hairline);
+    max-height: 18rem;
+    overflow-y: auto;
   }
   .shell-ss-access-student {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0.25rem 0.75rem;
+    gap: 0.15rem 0.75rem;
     padding: 0.15rem 0;
+    font-size: 0.92rem;
     overflow-wrap: anywhere;
   }
+  .shell-ss-access-student + .shell-ss-access-student { border-top: 1px solid var(--tw-hairline-soft, rgba(28,39,51,0.08)); }
   .shell-ss-access-student-name { min-width: 0; }
   .shell-ss-access-student > .shell-ss-access-confirm { flex: 1 1 100%; }
-  .shell-ss-access-confirm { margin: 0.35rem 0; font-size: 0.88rem; }
+  /* Compact inline confirmation: question, one line of consequence, then
+     Cancel and the destructive action. */
+  .shell-ss-access-confirm {
+    margin: 0.35rem 0;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.86rem;
+    border-radius: 5px;
+    background: rgba(192,57,43,0.05);
+    border: 1px solid rgba(192,57,43,0.18);
+  }
   .shell-ss-access-confirm p { margin: 0; }
-  .shell-ss-access-confirm-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .shell-ss-access-confirm .shell-ss-ra-action { margin: 0; }
+  .shell-ss-access-confirm-question { font-weight: 600; overflow-wrap: anywhere; }
+  .shell-ss-access-confirm-detail { color: var(--tw-ink-soft, #3a4653); margin-top: 0.15rem !important; }
+  .shell-ss-access-confirm-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.45rem; }
+  .shell-ss-access-confirm .shell-ss-ra-action { margin: 0; padding: 0.25rem 0.8rem; min-height: 30px; font-size: 0.86rem; }
   @media (pointer: coarse) {
     .shell-ss-share-students label,
-    .shell-ss-access-toggle,
+    .shell-ss-access-confirm .shell-ss-ra-action,
+    .shell-ss-ra-action.shell-ss-access-remove-teacher,
     .shell-ss-disclosure-toggle,
     .shell-ss-share-tools .shell-ss-ra-action { min-height: 44px; }
   }
@@ -5687,11 +5718,14 @@
      Student Detail card. A narrow mirror of the existing disclosure grammar
      (.shell-lesson-resources-toggle: native button, aria-expanded, rotating
      decorative caret) and the metric cell surface, not a new visual system. */
+  /* View Student Thinking: a secondary text action on its own line beneath
+     the primary Review answers button. */
   .shell-student-detail-thinking-toggle {
-    display: inline-flex;
+    display: flex;
+    width: fit-content;
     align-items: center;
-    gap: 0.3rem;
-    margin: 0.55rem 0 0 0;
+    gap: 0.1rem;
+    margin: 0.4rem 0 0 0;
     padding: 0.15rem 0;
     font: inherit;
     font-size: 0.85rem;
@@ -5703,16 +5737,7 @@
     cursor: pointer;
     min-height: 28px;
   }
-  .shell-student-detail-thinking-toggle::after {
-    content: "\203A";
-    font-size: 1rem;
-    line-height: 1;
-    color: var(--tw-ink-muted, #566472);
-    transition: transform 0.15s ease;
-  }
-  .shell-student-detail-thinking-toggle[aria-expanded="true"]::after {
-    transform: rotate(90deg);
-  }
+  .shell-student-detail-thinking-toggle::after { color: var(--tw-ink-muted, #566472); }
   .shell-student-detail-thinking-toggle:hover,
   .shell-student-detail-thinking-toggle:focus-visible {
     color: var(--tw-ink, #1c2733);
@@ -5766,24 +5791,41 @@
      .shell-btn.shell-btn-primary, compact, with the same rotating caret as
      the neighboring disclosure (in the button's own ink). */
   .shell-btn.shell-student-detail-review-toggle {
-    gap: 0.35rem;
+    gap: 0.1rem;
     min-height: 32px;
-    margin: 0.55rem 0 0 1rem;
+    margin: 0.55rem 0 0 0;
     padding: 0.3rem 0.8rem;
     font-size: 0.85rem;
-  }
-  .shell-student-detail-review-toggle::after {
-    content: "\203A";
-    font-size: 1rem;
-    line-height: 1;
-    transition: transform 0.15s ease;
-  }
-  .shell-student-detail-review-toggle[aria-expanded="true"]::after {
-    transform: rotate(90deg);
   }
   /* Repeatedly missed questions: a compact list above the attempt
      selector, on the same muted surface as the review items. */
   .shell-student-detail-repeat { margin: 0 0 0.6rem 0; }
+  /* "Missed more than once (N)": collapsed by default (.ll-chevron). */
+  .shell-student-detail-repeat-toggle {
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.1rem;
+    margin: 0;
+    padding: 0.15rem 0;
+    min-height: 28px;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--tw-ink-soft, #3a4653);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .shell-student-detail-repeat-toggle::after { color: var(--tw-ink-muted, #566472); }
+  .shell-student-detail-repeat-toggle:hover,
+  .shell-student-detail-repeat-toggle:focus-visible { color: var(--tw-ink, #1c2733); }
+  .shell-student-detail-repeat-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--tw-focus-ring, 0 0 0 3px rgba(26, 95, 111, 0.22));
+  }
+  .shell-student-detail-repeat-body[hidden] { display: none; }
   .shell-student-detail-repeat-version {
     margin: 0.35rem 0 0.2rem 0;
     font-size: 0.85rem;
@@ -5900,6 +5942,8 @@
   }
   @media (pointer: coarse) {
     .shell-btn.shell-student-detail-review-toggle,
+    .shell-student-detail-thinking-toggle,
+    .shell-student-detail-repeat-toggle,
     .shell-student-detail-review-select { min-height: 44px; }
   }
   .shell-student-detail-shared-context {

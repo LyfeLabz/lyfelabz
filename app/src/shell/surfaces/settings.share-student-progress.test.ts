@@ -4,6 +4,7 @@
 import { renderSettingsSurface, type SettingsDeps } from "./settings";
 import {
   MAX_REVOKE_GRANTS,
+  describeShareResults,
   groupGrantsByTeacher,
   isValidRecipientEmail,
   normalizeRecipientEmail,
@@ -184,10 +185,10 @@ describe("Share Student Progress: recipients", () => {
     addEmail(root, "Para@School.org, sped@school.org");
     addEmail(root, "para@school.org");
     expect(recipients(root)).toEqual(["para@school.org", "sped@school.org"]);
-    expect(q(root, tid("ss-share-recipient-count"))!.textContent).toBe("2 teachers");
+    expect(q(root, tid("ss-share-recipient-count"))!.textContent).toBe("2 teachers selected");
     q<HTMLButtonElement>(qa(root, tid("ss-share-recipient"))[0]!, "button")!.click();
     expect(recipients(root)).toEqual(["sped@school.org"]);
-    expect(q(root, tid("ss-share-recipient-count"))!.textContent).toBe("1 teacher");
+    expect(q(root, tid("ss-share-recipient-count"))!.textContent).toBe("1 teacher selected");
   });
 
   it("rejects a malformed email without adding it or calling the server", async () => {
@@ -254,7 +255,9 @@ describe("Share Student Progress: sharing", () => {
     expect(fake.grantManyCalls).toEqual([
       { classId: "cls-1", studentIds: ["s-ada", "s-cara"], granteeEmails: ["para@school.org", "sped@school.org"] },
     ]);
-    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Shared 4. Already shared 0.");
+    expect(q(root, tid("ss-share-status"))!.textContent).toBe(
+      "para@school.org: Access granted to 2 students. sped@school.org: Access granted to 2 students.",
+    );
     expect(qa(root, tid("ss-access-student"))).toHaveLength(4);
     expect(q(root, tid("ss-share-grants-toggle"))!.textContent).toBe("Teachers with access (2)");
     expect(fake.listCalls).toEqual(["cls-1", "cls-1"]);
@@ -292,7 +295,7 @@ describe("Share Student Progress: sharing", () => {
     await flush();
     const status = q(root, tid("ss-share-status"))!;
     expect(status.querySelector("p")!.textContent).toBe(
-      "Shared 1. Already shared 1. Failed 2. The students and emails that failed are still selected.",
+      "para@school.org: Access granted to 1 student. 1 student was already shared. nobody@school.org: No access was granted. 2 students couldn't be shared. What couldn't be shared is still selected so you can try again.",
     );
     const failures = qa(root, tid("ss-share-status-failures") + " li").map((li) => li.textContent);
     expect(failures).toEqual([
@@ -320,7 +323,7 @@ describe("Share Student Progress: sharing", () => {
     q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
     await flush();
     expect(q(root, tid("ss-share-status"))!.querySelector("p")!.textContent).toContain(
-      "Sharing again also resends 2 pairs that already worked; those show as Already shared.",
+      "Sharing again also resends 2 pairs that already worked; those will show as already shared.",
     );
     expect(recipients(root)).toEqual(["x@school.org", "y@school.org"]);
     expect(q(root, tid("ss-share-student-count"))!.textContent).toBe("2 students selected");
@@ -366,7 +369,7 @@ describe("Share Student Progress: sharing", () => {
     resolve([{ studentId: "s-ada", granteeEmail: "para@school.org", outcome: "alreadyShared", reason: null }]);
     await flush();
     expect(submit.getAttribute("aria-busy")).toBeNull();
-    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Shared 0. Already shared 1.");
+    expect(q(root, tid("ss-share-status"))!.textContent).toBe("This student already has access through this teacher.");
     // Nothing failed, so the selections cleared; Share Access waits for new ones.
     expect(submit.disabled).toBe(true);
   });
@@ -499,31 +502,35 @@ describe("Teachers with access: display and removal", () => {
     expect(root.textContent).not.toContain("Zoe Z");
   });
 
-  it("expands and collapses a teacher's students with button semantics", async () => {
+  it("lists each teacher's students directly, with no nested disclosure", async () => {
     const root = mountSection(fakeSeam({}, initial()));
     await flush();
+    // The outer "Teachers with access" disclosure is the only toggle.
+    expect(qa(root, "[aria-expanded]").map((el) => el.getAttribute("data-testid"))).toEqual(["ss-share-grants-toggle"]);
+    expect(q(root, tid("ss-access-teacher-toggle"))).toBeNull();
     const pat = teacherRow(root, "uidPat");
-    const toggle = q<HTMLButtonElement>(pat, tid("ss-access-teacher-toggle"))!;
     const list = q(pat, tid("ss-access-students"))!;
-    expect(toggle.tagName).toBe("BUTTON");
-    expect(toggle.type).toBe("button");
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(toggle.getAttribute("aria-controls")).toBe(list.id);
-    expect(list.hidden).toBe(true);
+    expect(list.hidden).toBe(false);
     expect(list.getAttribute("aria-label")).toBe("Students shared with Pat Para");
-    toggle.focus();
-    toggle.click();
-    const patOpen = teacherRow(root, "uidPat");
-    const toggleOpen = q<HTMLButtonElement>(patOpen, tid("ss-access-teacher-toggle"))!;
-    expect(toggleOpen.getAttribute("aria-expanded")).toBe("true");
-    expect(document.activeElement).toBe(toggleOpen);
-    const openList = q(patOpen, tid("ss-access-students"))!;
-    expect(openList.hidden).toBe(false);
-    expect(qa(openList, tid("ss-access-student")).map((li) => li.querySelector("span")!.textContent)).toEqual(["Ada Avery", "Ben Baker"]);
-    // Only this teacher opened.
-    expect(q(teacherRow(root, "uidSam"), tid("ss-access-students"))!.hidden).toBe(true);
-    toggleOpen.click();
-    expect(q(teacherRow(root, "uidPat"), tid("ss-access-students"))!.hidden).toBe(true);
+    expect(pat.getAttribute("aria-labelledby")).toBe(q(pat, tid("ss-access-teacher-name"))!.id);
+    expect(qa(list, tid("ss-access-student")).map((li) => li.querySelector("span")!.textContent)).toEqual(["Ada Avery", "Ben Baker"]);
+    expect(qa(teacherRow(root, "uidSam"), tid("ss-access-student"))).toHaveLength(1);
+    // Teacher-level and student-level removal look different.
+    expect(q(pat, tid("ss-access-remove-teacher"))!.className).toContain("shell-ss-access-remove-teacher");
+    expect(q(pat, tid("ss-access-remove-student"))!.className).toBe("shell-classes-settings-support-revoke");
+  });
+
+  it("Escape cancels a pending removal without a request", async () => {
+    const fake = fakeSeam({}, initial());
+    fake.seam = { ...fake.seam, revokeMany: revokeManyFake(fake) };
+    const root = mountSection(fake);
+    await flush();
+    q<HTMLButtonElement>(studentRow(root, PAT_ADA.grantId), tid("ss-access-remove-student"))!.click();
+    const cancel = q<HTMLButtonElement>(root, tid("ss-access-student-confirm-cancel"))!;
+    cancel.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    expect(q(root, tid("ss-access-student-confirm"))).toBeNull();
+    expect(document.activeElement).toBe(q(studentRow(root, PAT_ADA.grantId), tid("ss-access-remove-student")));
+    expect(fake.revokeManyCalls).toEqual([]);
   });
 
   it("labels the removal controls for screen readers", async () => {
@@ -556,11 +563,12 @@ describe("Teachers with access: display and removal", () => {
     q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
     const confirm = q(teacherRow(root, "uidPat"), tid("ss-access-teacher-confirm"))!;
     expect(confirm.getAttribute("role")).toBe("alertdialog");
-    expect(confirm.getAttribute("aria-labelledby")).toBe(q(confirm, "p")!.id);
-    const text = q(confirm, "p")!.textContent!;
+    expect(confirm.getAttribute("aria-labelledby")).toBe(q(confirm, tid("ss-access-teacher-confirm-question"))!.id);
+    expect(confirm.getAttribute("aria-describedby")).toBe(q(confirm, tid("ss-access-teacher-confirm-detail"))!.id);
+    expect(q(confirm, tid("ss-access-teacher-confirm-question"))!.textContent).toBe("Remove Pat Para's access to 2 students?");
+    const text = q(confirm, tid("ss-access-teacher-confirm-detail"))!.textContent!;
     expect(text).toContain("Pat Para (pat@school.org)");
-    expect(text).toContain("access to 2 students in this class will be removed");
-    expect(text).toContain("The students stay in your class");
+    expect(text).toContain("The students remain in your class");
     expect(q(confirm, tid("ss-access-teacher-confirm-yes"))!.textContent).toBe("Remove teacher");
     // Focus starts on the safe choice.
     expect(document.activeElement).toBe(q(confirm, tid("ss-access-teacher-confirm-cancel")));
@@ -579,8 +587,9 @@ describe("Teachers with access: display and removal", () => {
     const root = mountSection(fakeSeam({}, initial()));
     await flush();
     q<HTMLButtonElement>(teacherRow(root, "uidSam"), tid("ss-access-remove-teacher"))!.click();
-    expect(q(root, tid("ss-access-teacher-confirm") + " p")!.textContent).toBe(
-      "Remove Sam Sped (sam@school.org)? Their access to 1 student in this class will be removed, and they will no longer see this student's assignments or assessment results. The student stays in your class, and the teacher's account is not changed.",
+    expect(q(root, tid("ss-access-teacher-confirm-question"))!.textContent).toBe("Remove Sam Sped's access to 1 student?");
+    expect(q(root, tid("ss-access-teacher-confirm-detail"))!.textContent).toBe(
+      "Sam Sped (sam@school.org) will no longer see this student's work in this class. The student remains in your class.",
     );
   });
 
@@ -657,12 +666,11 @@ describe("Teachers with access: display and removal", () => {
     const root = mountSection(fake);
     await flush();
     q<HTMLButtonElement>(root, tid("ss-share-grants-toggle"))!.click();
-    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-teacher-toggle"))!.click();
     q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-remove-teacher"))!.click();
     q<HTMLButtonElement>(root, tid("ss-access-teacher-confirm-yes"))!.click();
     await flush();
     expect(q(grantStatus(root), "p")!.textContent).toBe("We couldn't remove Pat Para's access. Nothing was changed. Please try again.");
-    // The display is preserved, including the open teacher.
+    // The display is preserved.
     expect(summary(root)).toEqual(["Pat Para | pat@school.org | 2 students", "Sam Sped | sam@school.org | 1 student"]);
     expect(q(teacherRow(root, "uidPat"), tid("ss-access-students"))!.hidden).toBe(false);
     expect(q(root, tid("ss-access-teacher-confirm"))).toBeNull();
@@ -728,14 +736,18 @@ describe("Teachers with access: display and removal", () => {
     fake.seam = { ...fake.seam, revokeMany: revokeManyFake(fake) };
     const root = mountSection(fake);
     await flush();
-    q<HTMLButtonElement>(teacherRow(root, "uidPat"), tid("ss-access-teacher-toggle"))!.click();
     q<HTMLButtonElement>(studentRow(root, PAT_BEN.grantId), tid("ss-access-remove-student"))!.click();
     const confirm = q(studentRow(root, PAT_BEN.grantId), tid("ss-access-student-confirm"))!;
-    const text = q(confirm, "p")!.textContent!;
-    expect(text).toBe(
-      "Remove access to Ben Baker for Pat Para (pat@school.org)? Only this student's shared access is removed. Ben Baker stays in your class, and Pat Para keeps access to any other students you shared.",
+    expect(q(confirm, tid("ss-access-student-confirm-question"))!.textContent).toBe("Remove Pat Para's access to Ben Baker?");
+    expect(q(confirm, tid("ss-access-student-confirm-detail"))!.textContent).toBe(
+      "The student will remain in your class. Other shared students will not be affected.",
     );
-    expect(text).not.toMatch(/remove Ben Baker from/i);
+    expect(confirm.textContent).not.toMatch(/remove Ben Baker from/i);
+    // Cancel comes first, the destructive action second.
+    expect(qa(confirm, "button").map((b) => b.getAttribute("data-testid"))).toEqual([
+      "ss-access-student-confirm-cancel",
+      "ss-access-student-confirm-yes",
+    ]);
     expect(document.activeElement).toBe(q(confirm, tid("ss-access-student-confirm-cancel")));
     // Cancel changes nothing.
     q<HTMLButtonElement>(confirm, tid("ss-access-student-confirm-cancel"))!.click();
@@ -750,7 +762,8 @@ describe("Teachers with access: display and removal", () => {
     expect(grantStatus(root).textContent).toBe("Removed Pat Para's access to Ben Baker.");
     expect(summary(root)).toEqual(["Pat Para | pat@school.org | 1 student", "Sam Sped | sam@school.org | 1 student"]);
     expect(header(root)).toBe("Teachers with access (2)");
-    // Still open, other grants intact.
+    // Other grants intact; focus stays in Pat's group on the remaining student.
+    expect(document.activeElement).toBe(q(studentRow(root, PAT_ADA.grantId), tid("ss-access-remove-student")));
     expect(qa(teacherRow(root, "uidPat"), tid("ss-access-student")).map((li) => li.getAttribute("data-grant-id"))).toEqual([PAT_ADA.grantId]);
     expect(fake.grants).toEqual([PAT_ADA, SAM_CARA]);
   });
@@ -781,14 +794,13 @@ describe("Teachers with access: display and removal", () => {
     addEmail(root, "para@school.org");
     q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
     await flush();
-    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Shared 2. Already shared 0.");
+    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Access granted to 2 students.");
     expect(header(root)).toBe("Teachers with access (1)");
     const controls = [
       ...qa(root, tid("ss-access-remove-teacher")),
       ...qa(root, tid("ss-access-remove-student")),
-      ...qa(root, tid("ss-access-teacher-toggle")),
     ] as HTMLButtonElement[];
-    expect(controls).toHaveLength(4);
+    expect(controls).toHaveLength(3);
     expect(controls.every((b) => !b.disabled)).toBe(true);
     const [first] = qa(root, tid("ss-access-student"));
     q<HTMLButtonElement>(first!, tid("ss-access-remove-student"))!.click();
@@ -1013,5 +1025,140 @@ describe("Settings > Student Services integration", () => {
     expect(listStudents.mock.calls[1]![0]).toEqual({ classId: "cls-1" });
     expect(q(mount, tid("ss-students-error"))).toBeNull();
     expect(q(mount, tid("ss-student-btn-s-ada"))).not.toBeNull();
+  });
+});
+
+describe("describeShareResults", () => {
+  const r = (studentId: string, granteeEmail: string, outcome: SupportGrantManyResult["outcome"]): SupportGrantManyResult => ({
+    studentId,
+    granteeEmail,
+    outcome,
+    reason: outcome === "failed" ? "unavailable" : null,
+  });
+
+  it("counts students for one teacher, with singular and plural wording", () => {
+    expect(describeShareResults([r("a", "t@x.org", "shared")])).toBe("Access granted to 1 student.");
+    expect(describeShareResults([r("a", "t@x.org", "shared"), r("b", "t@x.org", "shared")])).toBe("Access granted to 2 students.");
+    expect(describeShareResults([r("a", "t@x.org", "alreadyShared"), r("b", "t@x.org", "alreadyShared")])).toBe(
+      "Both students already have access through this teacher.",
+    );
+    expect(describeShareResults(["a", "b", "c"].map((id) => r(id, "t@x.org", "alreadyShared")))).toBe(
+      "All 3 students already have access through this teacher.",
+    );
+    expect(
+      describeShareResults([r("a", "t@x.org", "shared"), r("b", "t@x.org", "shared"), r("c", "t@x.org", "alreadyShared")]),
+    ).toBe("Access granted to 2 students. 1 student was already shared.");
+  });
+
+  it("never implies success when pairs failed", () => {
+    expect(describeShareResults([r("a", "t@x.org", "failed")])).toBe("No access was granted. 1 student couldn't be shared.");
+    expect(describeShareResults([r("a", "t@x.org", "failed"), r("b", "t@x.org", "alreadyShared")])).toBe(
+      "No access was granted. 1 student was already shared. 1 student couldn't be shared.",
+    );
+    expect(describeShareResults([r("a", "t@x.org", "shared"), r("b", "t@x.org", "failed"), r("c", "t@x.org", "failed")])).toBe(
+      "Access granted to 1 student. 2 students couldn't be shared.",
+    );
+    expect(describeShareResults([])).toBe("Nothing was shared.");
+  });
+
+  it("reports each recipient teacher separately, in the order shared", () => {
+    expect(
+      describeShareResults([
+        r("a", "p@x.org", "shared"),
+        r("a", "q@x.org", "alreadyShared"),
+        r("b", "p@x.org", "shared"),
+        r("b", "q@x.org", "failed"),
+      ]),
+    ).toBe("p@x.org: Access granted to 2 students. q@x.org: No access was granted. 1 student was already shared. 1 student couldn't be shared.");
+    expect(describeShareResults([r("a", "p@x.org", "alreadyShared"), r("a", "q@x.org", "alreadyShared")])).toBe(
+      "p@x.org: This student already has access. q@x.org: This student already has access.",
+    );
+  });
+});
+
+describe("Share Student Progress: stable action area", () => {
+  it("drops the redundant description and puts the teacher count and Share Access in one action row", async () => {
+    const root = mountSection(fakeSeam());
+    await flush();
+    expect(root.textContent).not.toContain("Give other teachers at your school read-only access");
+    const actions = q(root, tid("ss-share-actions"))!;
+    expect(Array.from(actions.children).map((el) => el.getAttribute("data-testid"))).toEqual([
+      "ss-share-recipient-count",
+      "ss-share-submit",
+    ]);
+    // The status line sits directly after the row with a reserved line, so
+    // feedback never pushes the button.
+    const status = q(root, tid("ss-share-status"))!;
+    expect(actions.nextElementSibling).toBe(status);
+    expect(status.className).toContain("shell-ss-share-status--reserved");
+    expect(status.getAttribute("role")).toBe("status");
+    expect(q(root, tid("ss-share-submit"))!.className).toContain("shell-btn-primary");
+    expect(q(root, tid("ss-share-recipients"))!.getAttribute("data-empty")).toBe("true");
+  });
+
+  it("swaps Sharing… for the result in the same element and restores focus without leaving the row", async () => {
+    let resolve!: (r: ReadonlyArray<SupportGrantManyResult>) => void;
+    const fake = fakeSeam({ grantMany: () => new Promise((res) => (resolve = res)) });
+    const root = mountSection(fake);
+    await flush();
+    check(root, "s-ada");
+    addEmail(root, "para@school.org");
+    expect(q(root, tid("ss-share-recipients"))!.getAttribute("data-empty")).toBe("false");
+    const status = q(root, tid("ss-share-status"))!;
+    const submit = q<HTMLButtonElement>(root, tid("ss-share-submit"))!;
+    submit.focus();
+    submit.click();
+    expect(status.textContent).toBe("Sharing…");
+    resolve([{ studentId: "s-ada", granteeEmail: "para@school.org", outcome: "shared", reason: null }]);
+    await flush();
+    expect(q(root, tid("ss-share-status"))).toBe(status);
+    expect(status.textContent).toBe("Access granted to 1 student.");
+    // Nothing is left selected, so the button is disabled; focus lands on
+    // the result instead of falling to the page.
+    expect(submit.disabled).toBe(true);
+    expect(document.activeElement).toBe(status);
+    expect(q(root, tid("ss-share-recipients"))!.getAttribute("data-empty")).toBe("true");
+  });
+
+  it("keeps the teacher list's height after a share clears it, until the teacher edits it", async () => {
+    const fake = fakeSeam();
+    const root = mountSection(fake);
+    await flush();
+    check(root, "s-ada");
+    addEmail(root, "para@school.org, sped@school.org");
+    const list = q(root, tid("ss-share-recipients"))!;
+    list.getBoundingClientRect = () => ({ height: 64 }) as DOMRect;
+    q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
+    await flush();
+    expect(recipients(root)).toEqual([]);
+    expect(list.style.minHeight).toBe("64px");
+    addEmail(root, "new@school.org");
+    expect(list.style.minHeight).toBe("");
+  });
+
+  it("clears a stale result when a new share starts", async () => {
+    let calls = 0;
+    let resolveSecond!: (r: ReadonlyArray<SupportGrantManyResult>) => void;
+    const fake = fakeSeam({
+      grantMany: () => {
+        calls += 1;
+        if (calls === 1) return Promise.resolve([{ studentId: "s-ada", granteeEmail: "para@school.org", outcome: "shared", reason: null }]);
+        return new Promise((res) => (resolveSecond = res));
+      },
+    });
+    const root = mountSection(fake);
+    await flush();
+    check(root, "s-ada");
+    addEmail(root, "para@school.org");
+    q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
+    await flush();
+    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Access granted to 1 student.");
+    check(root, "s-ben");
+    addEmail(root, "para@school.org");
+    q<HTMLButtonElement>(root, tid("ss-share-submit"))!.click();
+    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Sharing…");
+    resolveSecond([{ studentId: "s-ben", granteeEmail: "para@school.org", outcome: "failed", reason: "unavailable" }]);
+    await flush();
+    expect(q(root, tid("ss-share-status"))!.querySelector("p")!.textContent).toContain("No access was granted.");
   });
 });

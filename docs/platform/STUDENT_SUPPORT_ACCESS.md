@@ -232,16 +232,23 @@ active, or the owner is not an active teacher at that school.
   below Reading Accessibility for the chosen class, lets the owner check
   students (Select all / Clear all), add several support-teacher emails
   (syntax-checked, normalized, de-duplicated), and share in one
-  `supportAccessGrantMany` call. Results show shared, already shared, and
-  each failed pair; failed students and emails stay selected for correction.
+  `supportAccessGrantMany` call. Results are plain sentences
+  (`describeShareResults`: "Access granted to 2 students.", "Both students
+  already have access through this teacher.", one clause per teacher when
+  sharing with several) plus each failed pair; failed students and emails
+  stay selected for correction. The teacher count and Share Access sit in
+  one action row with a reserved status line beneath, so feedback never
+  moves the button.
   Active grants (`supportAccessListForClass`) are listed by recipient teacher
   under "Teachers with access (N)", N being distinct teachers in the chosen
   class. A teacher is identified by the grantee uid at the end of the grant
   id (`{classId}__{studentId}__{granteeUid}`), never by display name. Each
-  teacher shows name, email, and student count, and expands to the shared
-  students. "Remove teacher" revokes every active grant that teacher holds
+  teacher shows name, email, student count, and Remove teacher, with the
+  shared students listed directly beneath (no nested disclosure; long lists
+  scroll). "Remove teacher" revokes every active grant that teacher holds
   in the chosen class; "Remove access" revokes one student's grant. Both ask
-  for confirmation first, call `supportAccessRevokeMany` (batched within its
+  for confirmation first in one compact inline form (question, one line of
+  consequence, Cancel then the destructive action; Escape cancels), call `supportAccessRevokeMany` (batched within its
   cap), report partial failures by student, and offer Try again. Neither
   touches the teacher's account, the class roster, other classes, or other
   teachers. The list is re-read after every change. There is no Save: each
@@ -283,8 +290,11 @@ and the frozen explanation when present.
   (newest `publishedAt` first; retakes never reorder cards).
 - "Show incorrect only" is on by default; turning it off shows every
   question, including correct responses.
-- Cards with two or more attempts show "Missed more than once" above the
-  selector: questions missed on at least two attempts, as "Question N ·
+- "Review answers" is the card's primary action; "View Student Thinking"
+  (the existing Show Your Thinking disclosure) sits beneath it as a
+  secondary text action.
+- Cards with two or more attempts show "Missed more than once (N)" above the
+  selector, as a disclosure collapsed by default: questions missed on at least two attempts, as "Question N ·
   Missed X of Y attempts". Identity is (`assessmentRevisionId`, `itemId`);
   counts are kept per revision and never merged (a card whose attempts span
   revisions shows each version separately). Attempts without a revision id

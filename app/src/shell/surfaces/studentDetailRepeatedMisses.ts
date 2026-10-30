@@ -159,7 +159,9 @@ function standardStem(
   return summary === undefined ? null : buildQuestionDetail(summary, content).stem;
 }
 
-// The compact section shown at the top of a card's answer review.
+// The compact section shown at the top of a card's answer review. When
+// questions repeat, it is a disclosure, "Missed more than once (N)",
+// collapsed by default so the selected attempt's answers stay in reach.
 export function renderRepeatedMisses(
   doc: Document,
   host: HTMLElement,
@@ -168,12 +170,14 @@ export function renderRepeatedMisses(
 ): void {
   host.replaceChildren();
   host.setAttribute("data-state", "ready");
+  // Where content goes: the host, or the disclosure body once there is one.
+  let target: HTMLElement = host;
   const muted = (text: string, testid: string): void => {
     const p = doc.createElement("p");
     p.className = "shell-student-detail-thinking-muted";
     p.setAttribute("data-testid", testid);
     p.textContent = text;
-    host.appendChild(p);
+    target.appendChild(p);
   };
   const appendScope = (): void => {
     if (partial.analyzed < partial.total) {
@@ -190,10 +194,29 @@ export function renderRepeatedMisses(
     return;
   }
 
-  const label = doc.createElement("p");
-  label.className = "shell-student-detail-thinking-label";
-  label.textContent = "Missed more than once";
-  host.appendChild(label);
+  const total = analysis.groups.reduce((n, g) => n + g.questions.length, 0);
+  const bodyId = `${host.id !== "" ? host.id : `repeat-${++repeatDisclosureSeq}`}-body`;
+  const toggle = doc.createElement("button");
+  toggle.type = "button";
+  toggle.className = "shell-student-detail-repeat-toggle ll-chevron";
+  toggle.setAttribute("data-testid", "student-detail-repeat-toggle");
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", bodyId);
+  toggle.textContent = `Missed more than once (${total})`;
+  host.appendChild(toggle);
+  const body = doc.createElement("div");
+  body.id = bodyId;
+  body.className = "shell-student-detail-repeat-body";
+  body.setAttribute("data-testid", "student-detail-repeat-body");
+  body.hidden = true;
+  host.appendChild(body);
+  toggle.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    body.hidden = !open;
+  });
+  // Everything below goes inside the collapsed body.
+  target = body;
 
   const multi = analysis.revisionCount > 1;
   if (multi) {
@@ -205,7 +228,7 @@ export function renderRepeatedMisses(
       version.className = "shell-student-detail-repeat-version";
       version.setAttribute("data-testid", "student-detail-repeat-version");
       version.textContent = `Version ${group.version}`;
-      host.appendChild(version);
+      target.appendChild(version);
     }
     const list = doc.createElement("ul");
     list.className = "shell-student-detail-repeat-list";
@@ -236,7 +259,10 @@ export function renderRepeatedMisses(
       }
       list.appendChild(li);
     }
-    host.appendChild(list);
+    target.appendChild(list);
   }
+  target = host;
   appendScope();
 }
+
+let repeatDisclosureSeq = 0;
