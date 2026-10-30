@@ -5735,7 +5735,7 @@
   .shell-student-detail-tool {
     display: inline-flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 0.6rem;
     flex: 1 1 10rem;
     min-width: 0;
@@ -5745,18 +5745,27 @@
     font: inherit;
     text-align: left;
     color: var(--tw-ink-soft, #3a4653);
-    background: var(--tw-surface);
+    background: var(--tw-badge-neutral-bg);
     border: 1px solid var(--tw-hairline);
     border-radius: var(--tw-radius-control);
     cursor: pointer;
     box-sizing: border-box;
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
-  .shell-student-detail-tool::after { color: var(--tw-ink-muted, #566472); }
+  .shell-student-detail-tool::after { flex: none; margin-left: auto; color: var(--tw-ink-muted, #566472); }
   .shell-student-detail-tool:hover {
+    background: var(--tw-nav-wash);
     border-color: var(--tw-nav-edge);
     color: var(--tw-ink, #1c2733);
   }
+  .shell-student-detail-tool-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--tw-ink-muted, #566472);
+  }
+  .shell-student-detail-tool:hover .shell-student-detail-tool-icon { color: var(--tw-nav-edge); }
+  .shell-student-detail-tool[aria-expanded="true"] .shell-student-detail-tool-icon { color: var(--tw-primary); }
   .shell-student-detail-tool[aria-expanded="true"] {
     color: var(--tw-primary-strong);
     background: var(--tw-primary-wash);

@@ -308,6 +308,12 @@ describe("appendQuestionReview", () => {
         expect(panelOf(b).hidden).toBe(true);
         // Each panel sits below the toolbar, never inside it.
         expect(toolbar.contains(panelOf(b))).toBe(false);
+        // One decorative icon leads each tool; the label stays its name.
+        const icons = b.querySelectorAll("svg.shell-student-detail-tool-icon");
+        expect(icons).toHaveLength(1);
+        expect(b.firstElementChild).toBe(icons[0]);
+        expect(icons[0]!.getAttribute("aria-hidden")).toBe("true");
+        expect(icons[0]!.getAttribute("focusable")).toBe("false");
       }
       expect(buttons.map((b) => b.getAttribute("aria-controls"))).toEqual([
         "student-detail-review-a1",

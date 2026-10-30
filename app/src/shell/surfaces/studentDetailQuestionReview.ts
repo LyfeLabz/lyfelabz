@@ -318,6 +318,37 @@ async function readBounded<T, R>(
 
 export type AssessmentToolKey = "review" | "repeat" | "thinking";
 
+// Lucide outline icons for the toolbar (clipboard-check, repeat-2, brain),
+// inlined like the navigation icons so the shell has no icon dependency.
+const TOOL_ICON_PATHS: Readonly<Record<AssessmentToolKey, string>> = Object.freeze({
+  review:
+    "M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M9 14l2 2 4-4",
+  repeat:
+    "M2 9l3-3 3 3 M13 18H7a2 2 0 0 1-2-2V6 M22 15l-3 3-3-3 M11 6h6a2 2 0 0 1 2 2v10",
+  thinking:
+    "M12 18V5 M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4 M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5 M17.997 5.125a4 4 0 0 1 2.526 5.77 M18 18a4 4 0 0 0 2-7.464 M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517 M6 18a4 4 0 0 1-2-7.464 M6.003 5.125a4 4 0 0 0-2.526 5.77",
+});
+
+function buildToolIcon(doc: Document, key: AssessmentToolKey): SVGElement {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = doc.createElementNS(svgNS, "svg");
+  svg.setAttribute("class", "shell-student-detail-tool-icon");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "18");
+  svg.setAttribute("height", "18");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "1.75");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+  const path = doc.createElementNS(svgNS, "path");
+  path.setAttribute("d", TOOL_ICON_PATHS[key]);
+  svg.appendChild(path);
+  return svg;
+}
+
 // Called each time Student thinking opens, with its (now visible) panel. The
 // caller owns the content, its reads and its retry behavior.
 export type StudentThinkingPanel = (panel: HTMLElement) => void;
@@ -398,7 +429,7 @@ export function appendQuestionReview(
     count.setAttribute("data-testid", testids.count);
     count.hidden = true;
     text.append(name, count);
-    button.appendChild(text);
+    button.append(buildToolIcon(doc, key), text);
     toolbar.appendChild(button);
 
     const panel = doc.createElement("div");
