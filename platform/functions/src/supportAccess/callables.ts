@@ -774,12 +774,12 @@ async function listMineHandler(request: CallableRequest<unknown>): Promise<Suppo
   return { students };
 }
 
-export const supportAccessGrant = platformCallable(grantHandler);
-export const supportAccessGrantMany = platformCallable(grantManyHandler);
-export const supportAccessRevoke = platformCallable(revokeHandler);
-export const supportAccessRevokeMany = platformCallable(revokeManyHandler);
-export const supportAccessListForClass = platformCallable(listForClassHandler);
-export const supportAccessListMine = platformCallable(listMineHandler);
+export const supportAccessGrant = platformCallable({ maxInstances: 20 }, grantHandler);
+export const supportAccessGrantMany = platformCallable({ maxInstances: 20 }, grantManyHandler);
+export const supportAccessRevoke = platformCallable({ maxInstances: 20 }, revokeHandler);
+export const supportAccessRevokeMany = platformCallable({ maxInstances: 20 }, revokeManyHandler);
+export const supportAccessListForClass = platformCallable({ maxInstances: 20 }, listForClassHandler);
+export const supportAccessListMine = platformCallable({ maxInstances: 20 }, listMineHandler);
 
 // Exported for direct unit testing without going through the callable wrapper.
 export const __supportAccessHandlers = {

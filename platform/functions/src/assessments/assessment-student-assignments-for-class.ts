@@ -485,6 +485,7 @@ async function assessmentStudentAssignmentsForClassHandler(
 }
 
 export const assessmentStudentAssignmentsForClass = platformCallable(
+  { maxInstances: 20 },
   assessmentStudentAssignmentsForClassHandler,
 );
 

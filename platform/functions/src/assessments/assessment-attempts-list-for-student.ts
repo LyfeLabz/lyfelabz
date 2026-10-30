@@ -152,6 +152,7 @@ async function assessmentAttemptsListForStudentHandler(
 }
 
 export const assessmentAttemptsListForStudent = platformCallable(
+  { maxInstances: 20 },
   assessmentAttemptsListForStudentHandler,
 );
 

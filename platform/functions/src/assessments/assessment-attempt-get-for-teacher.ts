@@ -426,6 +426,7 @@ async function assessmentAttemptGetForTeacherHandler(
 }
 
 export const assessmentAttemptGetForTeacher = platformCallable(
+  { maxInstances: 20 },
   assessmentAttemptGetForTeacherHandler,
 );
 
