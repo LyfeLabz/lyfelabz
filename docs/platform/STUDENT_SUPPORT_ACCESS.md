@@ -236,9 +236,11 @@ active, or the owner is not an active teacher at that school.
   (`describeShareResults`: "Access granted to 2 students.", "Both students
   already have access through this teacher.", one clause per teacher when
   sharing with several) plus each failed pair; failed students and emails
-  stay selected for correction. The teacher count and Share Access sit in
-  one action row with a reserved status line beneath, so feedback never
-  moves the button.
+  stay selected for correction. Share Access, then the teacher count, sit
+  in one action row with a reserved status line beneath (its line-height
+  matches the reserved height), and an empty teacher list keeps one chip
+  row's height, so a typed email becoming a chip, the count changing, and
+  feedback never move the button.
   Active grants (`supportAccessListForClass`) are listed by recipient teacher
   under "Teachers with access (N)", N being distinct teachers in the chosen
   class. A teacher is identified by the grantee uid at the end of the grant
@@ -270,13 +272,18 @@ active, or the owner is not an active teacher at that school.
 
 ## 8. Question review (shared, PDR-032e)
 
-Student Detail shows a "Review answers" primary action per card for owners
-and grantees alike. It shows one attempt at a time and, per question: number,
+Student Detail shows an assessment toolbar per card with attempts, for
+owners and grantees alike: "Review answers", "Repeated misses" and "Student
+thinking" as three equal disclosure buttons in one wrapping row. Every panel
+starts collapsed, at most one is open (choosing another tool closes the
+open one; choosing the open tool collapses it), and each panel sits directly
+below the toolbar. Review answers shows one attempt at a time and, per
+question: number,
 question text, correct or incorrect, the student's answer, the correct answer,
 and the frozen explanation when present.
 
-- The action carries the selected attempt's incorrect count ("Review answers
-  · 3 incorrect", or "· all correct"), from that attempt's frozen
+- Review answers carries the selected attempt's incorrect count ("3
+  incorrect", or "All correct") as secondary text, from that attempt's frozen
   `maxScore - score` (every item is worth exactly one point, so this counts
   incorrect plus unanswered items). No count is shown when the summary is not
   a consistent unit-point score.
@@ -290,11 +297,8 @@ and the frozen explanation when present.
   (newest `publishedAt` first; retakes never reorder cards).
 - "Show incorrect only" is on by default; turning it off shows every
   question, including correct responses.
-- "Review answers" is the card's primary action; "View Student Thinking"
-  (the existing Show Your Thinking disclosure) sits beneath it as a
-  secondary text action.
-- Cards with two or more attempts show "Missed more than once (N)" above the
-  selector, as a disclosure collapsed by default: questions missed on at least two attempts, as "Question N ·
+- "Student thinking" is the existing Show Your Thinking content, unchanged.
+- "Repeated misses" lists questions missed on at least two attempts, as "Question N ·
   Missed X of Y attempts". Identity is (`assessmentRevisionId`, `itemId`);
   counts are kept per revision and never merged (a card whose attempts span
   revisions shows each version separately). Attempts without a revision id
@@ -304,8 +308,12 @@ and the frozen explanation when present.
   from the revision text checked against a standard attempt of the same
   revision; with only adapted attempts, just "Question N" is shown. The
   check reads at most the 20 most recent attempts of the card, two at a
-  time, only after the teacher opens the review, sharing one cached read per
-  attempt with the review and Show Your Thinking.
+  time, only when the teacher opens Repeated misses (never just for a
+  count), sharing one cached read per attempt with the review and Show Your
+  Thinking. Its secondary count ("2 questions", "None") appears only once
+  that check has run; a failed check shows an error and retries on the next
+  open. With one attempt it says repeated misses need two or more attempts,
+  without a read; with nothing missed twice it says so in one line.
 
 - Correctness, the student's selected option, the correct option, and the
   explanation come from the immutable attempt (`itemResults`).

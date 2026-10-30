@@ -159,25 +159,23 @@ function standardStem(
   return summary === undefined ? null : buildQuestionDetail(summary, content).stem;
 }
 
-// The compact section shown at the top of a card's answer review. When
-// questions repeat, it is a disclosure, "Missed more than once (N)",
-// collapsed by default so the selected attempt's answers stay in reach.
+// The Repeated misses panel under a Student Detail card's assessment
+// toolbar (the toolbar button is its disclosure). Returns the number of
+// repeatedly missed questions rendered, for the button's count.
 export function renderRepeatedMisses(
   doc: Document,
   host: HTMLElement,
   analysis: RepeatedMissAnalysis,
   partial: { readonly analyzed: number; readonly total: number },
-): void {
+): number {
   host.replaceChildren();
   host.setAttribute("data-state", "ready");
-  // Where content goes: the host, or the disclosure body once there is one.
-  let target: HTMLElement = host;
   const muted = (text: string, testid: string): void => {
     const p = doc.createElement("p");
     p.className = "shell-student-detail-thinking-muted";
     p.setAttribute("data-testid", testid);
     p.textContent = text;
-    target.appendChild(p);
+    host.appendChild(p);
   };
   const appendScope = (): void => {
     if (partial.analyzed < partial.total) {
@@ -191,32 +189,10 @@ export function renderRepeatedMisses(
     if (analysis.comparable) muted("No question was missed more than once.", "student-detail-repeat-none");
     else muted("These attempts can't be compared question by question.", "student-detail-repeat-unavailable");
     appendScope();
-    return;
+    return 0;
   }
 
   const total = analysis.groups.reduce((n, g) => n + g.questions.length, 0);
-  const bodyId = `${host.id !== "" ? host.id : `repeat-${++repeatDisclosureSeq}`}-body`;
-  const toggle = doc.createElement("button");
-  toggle.type = "button";
-  toggle.className = "shell-student-detail-repeat-toggle ll-chevron";
-  toggle.setAttribute("data-testid", "student-detail-repeat-toggle");
-  toggle.setAttribute("aria-expanded", "false");
-  toggle.setAttribute("aria-controls", bodyId);
-  toggle.textContent = `Missed more than once (${total})`;
-  host.appendChild(toggle);
-  const body = doc.createElement("div");
-  body.id = bodyId;
-  body.className = "shell-student-detail-repeat-body";
-  body.setAttribute("data-testid", "student-detail-repeat-body");
-  body.hidden = true;
-  host.appendChild(body);
-  toggle.addEventListener("click", () => {
-    const open = toggle.getAttribute("aria-expanded") !== "true";
-    toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    body.hidden = !open;
-  });
-  // Everything below goes inside the collapsed body.
-  target = body;
 
   const multi = analysis.revisionCount > 1;
   if (multi) {
@@ -228,7 +204,7 @@ export function renderRepeatedMisses(
       version.className = "shell-student-detail-repeat-version";
       version.setAttribute("data-testid", "student-detail-repeat-version");
       version.textContent = `Version ${group.version}`;
-      target.appendChild(version);
+      host.appendChild(version);
     }
     const list = doc.createElement("ul");
     list.className = "shell-student-detail-repeat-list";
@@ -259,10 +235,8 @@ export function renderRepeatedMisses(
       }
       list.appendChild(li);
     }
-    target.appendChild(list);
+    host.appendChild(list);
   }
-  target = host;
   appendScope();
+  return total;
 }
-
-let repeatDisclosureSeq = 0;

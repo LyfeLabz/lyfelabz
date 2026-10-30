@@ -5649,9 +5649,9 @@ function buildGroupCard(
   return li;
 }
 
-// The per-attempt disclosures under a Student Detail card with attempts: the
-// shared question review (PDR-032e, the card's primary action), then the
-// existing Show Your Thinking beneath it as a secondary action.
+// The assessment toolbar under a Student Detail card with attempts: Review
+// answers, Repeated misses and Student thinking (PDR-032e), one panel open
+// at a time, all collapsed at first.
 function appendAttemptDisclosures(
   doc: Document,
   card: HTMLElement,
@@ -5659,54 +5659,39 @@ function appendAttemptDisclosures(
   attemptDetail: AttemptGetForTeacherCallable | null,
   revisionContent: AssessmentRevisionContentReader | null,
 ): void {
-  // One attempt read serves both disclosures and the repeated-miss check.
-  const readDetail = attemptDetail === null ? null : cacheAttemptDetail(attemptDetail);
-  appendQuestionReview(doc, card, attempts, readDetail, revisionContent, formatAttemptDate);
-  appendWrittenResponses(doc, card, attempts, readDetail);
+  if (attemptDetail === null) return;
+  // One attempt read serves every tool and the repeated-miss check.
+  const readDetail = cacheAttemptDetail(attemptDetail);
+  appendQuestionReview(
+    doc,
+    card,
+    attempts,
+    readDetail,
+    revisionContent,
+    formatAttemptDate,
+    writtenResponsesPanel(doc, attempts, readDetail),
+  );
 }
 
-// Sprint 30 Show Your Thinking. A disclosure listing each of the card's
-// attempts with the written response frozen on THAT attempt. Responses are
-// read per attempt (`assessmentAttemptGetForTeacher`) only when the teacher
-// opens the disclosure, so Student Detail's initial load is unchanged. A
-// Current group card spans several assignment occurrences; its attempts are
-// still listed one by one (oldest first), never merged, so a historical
-// attempt's response stays attached to that attempt. Cards with no attempts
-// (Not started / In progress) get no disclosure.
-function appendWrittenResponses(
+// Sprint 30 Show Your Thinking, the toolbar's Student thinking panel. Lists
+// each of the card's attempts with the written response frozen on THAT
+// attempt. Responses are read per attempt (`assessmentAttemptGetForTeacher`)
+// only when the teacher opens the panel, so Student Detail's initial load is
+// unchanged. A Current group card spans several assignment occurrences; its
+// attempts are still listed one by one (oldest first), never merged, so a
+// historical attempt's response stays attached to that attempt.
+function writtenResponsesPanel(
   doc: Document,
-  card: HTMLElement,
   attempts: ReadonlyArray<CompletedAttemptSummary>,
-  attemptDetail: AttemptGetForTeacherCallable | null,
-): void {
-  if (attemptDetail === null || attempts.length === 0) return;
+  attemptDetail: AttemptGetForTeacherCallable,
+): (panel: HTMLElement) => void {
   // The same chronological order the answer review numbers its attempts by.
   const ordered = orderAttemptsChronologically(attempts);
 
-  const panelId = `student-detail-thinking-${card.getAttribute("data-assignment-id") ?? ""}`;
-  const toggle = doc.createElement("button");
-  toggle.type = "button";
-  toggle.className = "shell-student-detail-thinking-toggle ll-chevron";
-  toggle.setAttribute("data-testid", "student-detail-thinking-toggle");
-  toggle.setAttribute("aria-expanded", "false");
-  toggle.setAttribute("aria-controls", panelId);
-  toggle.textContent = "View Student Thinking";
-  card.appendChild(toggle);
-
-  const panel = doc.createElement("div");
-  panel.className = "shell-student-detail-thinking";
-  panel.id = panelId;
-  panel.setAttribute("data-testid", "student-detail-thinking");
-  panel.hidden = true;
-  card.appendChild(panel);
-
   // Loaded once per render; a failed read is retried on the next open.
   let loaded = false;
-  toggle.addEventListener("click", () => {
-    const open = toggle.getAttribute("aria-expanded") !== "true";
-    toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    panel.hidden = !open;
-    if (!open || loaded) return;
+  return (panel) => {
+    if (loaded) return;
     loaded = true;
 
     panel.replaceChildren();
@@ -5768,7 +5753,7 @@ function appendWrittenResponses(
       });
       panel.appendChild(list);
     });
-  });
+  };
 }
 
 // Card title + a secondary status/date line from server metadata (the

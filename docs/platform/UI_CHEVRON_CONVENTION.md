@@ -47,11 +47,10 @@ Guarded by `app/src/shell/chevron-convention-css.test.ts`.
   `settings.ts`).
 - Share Student Progress > "Teachers with access (N)"
   (`classSupportAccess.ts`). Teacher groups inside it are not disclosures.
-- Student Detail assessment card: "Review answers" (primary button,
-  `studentDetailQuestionReview.ts`) and "View Student Thinking" (secondary
-  text action, `classes.ts`).
-- Student Detail "Missed more than once (N)" (`studentDetailRepeatedMisses.ts`),
-  collapsed by default.
+- Student Detail assessment toolbar (`.shell-student-detail-tool`,
+  `studentDetailQuestionReview.ts`): Review answers, Repeated misses and
+  Student thinking, all collapsed at first, one open at a time. The open
+  tool adds a green edge and wash; its chevron points up.
 
 ## Remaining inconsistencies (audit, not yet migrated)
 

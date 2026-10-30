@@ -311,21 +311,16 @@ export function renderShareStudentProgressSection(
   sendColumn.appendChild(recipientsGroup);
   form.appendChild(sendColumn);
 
-  // One action row under both columns: the teacher count, then Share
-  // Access. The status line below it keeps a reserved line, so "Sharing…"
+  // One action row under both columns: Share Access, then the teacher
+  // count. The button leads so the count's changing text ("1 teacher
+  // selected" while sharing, "0 teachers selected" after) never pushes it
+  // sideways. The status line below keeps a reserved line, so "Sharing…"
   // and the result replace each other in place and only what is below the
   // row moves when a long result wraps; the button itself never moves.
   const actions = doc.createElement("div");
   actions.className = "shell-ss-share-actions";
   actions.setAttribute("data-testid", "ss-share-actions");
   section.appendChild(actions);
-
-  const recipientCount = doc.createElement("span");
-  recipientCount.id = "ss-share-recipient-count";
-  recipientCount.className = "shell-ss-share-count";
-  recipientCount.setAttribute("data-testid", "ss-share-recipient-count");
-  recipientCount.setAttribute("aria-live", "polite");
-  actions.appendChild(recipientCount);
 
   // Disabled until at least one student is checked and at least one valid
   // email is listed or typed; the counts say what is still missing.
@@ -336,6 +331,13 @@ export function renderShareStudentProgressSection(
   shareButton.setAttribute("aria-describedby", "ss-share-student-count ss-share-recipient-count");
   shareButton.textContent = "Share Access";
   actions.appendChild(shareButton);
+
+  const recipientCount = doc.createElement("span");
+  recipientCount.id = "ss-share-recipient-count";
+  recipientCount.className = "shell-ss-share-count";
+  recipientCount.setAttribute("data-testid", "ss-share-recipient-count");
+  recipientCount.setAttribute("aria-live", "polite");
+  actions.appendChild(recipientCount);
 
   const shareStatus = doc.createElement("div");
   shareStatus.className = "shell-ss-share-status shell-ss-share-status--reserved";

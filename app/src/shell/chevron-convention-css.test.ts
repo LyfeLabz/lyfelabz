@@ -6,7 +6,8 @@
  * served document and pins the shared `.ll-chevron` primitive: one CSS-drawn
  * stroke chevron in currentColor, down when collapsed, up when
  * `aria-expanded="true"`, right for `.ll-chevron--nav`. The Student Support
- * and Student Services disclosures that adopt it carry no glyph of their own.
+ * and Student Services disclosures that adopt it (including the Student
+ * Detail assessment toolbar) carry no glyph of their own.
  */
 import * as fs from "fs";
 import * as path from "path";
@@ -48,9 +49,7 @@ describe("LyfeLabz chevron convention (.ll-chevron)", () => {
 
   it.each([
     ".shell-ss-disclosure-toggle",
-    ".shell-student-detail-thinking-toggle",
-    ".shell-student-detail-review-toggle",
-    ".shell-student-detail-repeat-toggle",
+    ".shell-student-detail-tool",
   ])("%s carries no glyph or rotation of its own", (selector) => {
     const own = [bodyOf(`${selector}::after`), bodyOf(`${selector}[aria-expanded="true"]::after`)].join(";");
     expect(own).not.toMatch(/content:/);
@@ -60,18 +59,24 @@ describe("LyfeLabz chevron convention (.ll-chevron)", () => {
   it("is applied to the Student Support and Student Services disclosures", () => {
     expect(src("shell/surfaces/settings.ts")).toContain('"shell-ss-disclosure-toggle ll-chevron"');
     expect(src("shell/surfaces/classSupportAccess.ts")).toContain("shell-ss-disclosure-toggle--sub ll-chevron");
-    expect(src("shell/surfaces/classes.ts")).toContain('"shell-student-detail-thinking-toggle ll-chevron"');
-    expect(src("shell/surfaces/studentDetailQuestionReview.ts")).toContain("shell-student-detail-review-toggle ll-chevron");
-    expect(src("shell/surfaces/studentDetailRepeatedMisses.ts")).toContain('"shell-student-detail-repeat-toggle ll-chevron"');
+    // The Student Detail assessment toolbar: one class for all three tools.
+    expect(src("shell/surfaces/studentDetailQuestionReview.ts")).toContain('"shell-student-detail-tool ll-chevron"');
   });
 
   it("disclosure hosts keep a visible focus ring", () => {
     for (const selector of [
       ".shell-ss-disclosure-toggle:focus-visible",
-      ".shell-student-detail-thinking-toggle:focus-visible",
-      ".shell-student-detail-repeat-toggle:focus-visible",
+      ".shell-student-detail-tool:focus-visible",
     ]) {
       expect(bodyOf(selector)).toMatch(/box-shadow:\s*var\(--tw-focus-ring/);
     }
+  });
+
+  it("marks the open assessment tool without relying on color alone", () => {
+    // Selected state pairs a visible edge and wash with aria-expanded, which
+    // also flips the chevron up.
+    const open = bodyOf('.shell-student-detail-tool[aria-expanded="true"]');
+    expect(open).toMatch(/border-color:\s*var\(--tw-primary\)/);
+    expect(open).toMatch(/background:\s*var\(--tw-primary-wash\)/);
   });
 });

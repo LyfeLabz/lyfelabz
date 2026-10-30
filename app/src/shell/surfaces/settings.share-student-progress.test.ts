@@ -1,6 +1,8 @@
 /**
  * @jest-environment jsdom
  */
+import * as fs from "fs";
+import * as path from "path";
 import { renderSettingsSurface, type SettingsDeps } from "./settings";
 import {
   MAX_REVOKE_GRANTS,
@@ -1077,14 +1079,15 @@ describe("describeShareResults", () => {
 });
 
 describe("Share Student Progress: stable action area", () => {
-  it("drops the redundant description and puts the teacher count and Share Access in one action row", async () => {
+  it("drops the redundant description and puts Share Access, then the teacher count, in one action row", async () => {
     const root = mountSection(fakeSeam());
     await flush();
     expect(root.textContent).not.toContain("Give other teachers at your school read-only access");
     const actions = q(root, tid("ss-share-actions"))!;
+    // The button leads, so the count's changing width never moves it.
     expect(Array.from(actions.children).map((el) => el.getAttribute("data-testid"))).toEqual([
-      "ss-share-recipient-count",
       "ss-share-submit",
+      "ss-share-recipient-count",
     ]);
     // The status line sits directly after the row with a reserved line, so
     // feedback never pushes the button.
@@ -1118,6 +1121,48 @@ describe("Share Student Progress: stable action area", () => {
     expect(submit.disabled).toBe(true);
     expect(document.activeElement).toBe(status);
     expect(q(root, tid("ss-share-recipients"))!.getAttribute("data-empty")).toBe("true");
+  });
+
+  it("shares a typed email directly, with the count changing only after the button", async () => {
+    // Staging acceptance: typing an email and pressing Share Access (no Add)
+    // turns it into a chip and changes the count from "0 teachers" to
+    // "1 teacher" and back. Both happen after the button in the row, so
+    // neither can push it sideways.
+    let resolve!: (r: ReadonlyArray<SupportGrantManyResult>) => void;
+    const root = mountSection(fakeSeam({ grantMany: () => new Promise((res) => (resolve = res)) }));
+    await flush();
+    check(root, "s-ada");
+    typeEmail(root, "para@school.org");
+    const count = q(root, tid("ss-share-recipient-count"))!;
+    const submit = q<HTMLButtonElement>(root, tid("ss-share-submit"))!;
+    expect(count.textContent).toBe("0 teachers selected");
+    expect(submit.disabled).toBe(false);
+    expect(submit.compareDocumentPosition(count) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    submit.click();
+    expect(count.textContent).toBe("1 teacher selected");
+    expect(recipients(root)).toEqual(["para@school.org"]);
+    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Sharing…");
+    resolve([{ studentId: "s-ada", granteeEmail: "para@school.org", outcome: "shared", reason: null }]);
+    await flush();
+    expect(count.textContent).toBe("0 teachers selected");
+    expect(q(root, tid("ss-share-status"))!.textContent).toBe("Access granted to 1 student.");
+    expect(q(root, tid("ss-share-actions"))!.firstElementChild).toBe(submit);
+  });
+
+  it("reserves exactly one status line and one chip row in the served CSS", () => {
+    // jsdom never applies app/index.html, so pin the rules that keep the
+    // row still: the reserved status line's line-height matches its
+    // min-height (inherited by its message), and an empty chip list is one
+    // chip tall (30px; 46px under coarse pointers, where the remove button
+    // is 44px).
+    const css = fs.readFileSync(path.resolve(__dirname, "../../../index.html"), "utf8");
+    expect(css).toMatch(
+      /\.shell-ss-share-status--reserved \{ min-height: 1\.35em; line-height: 1\.35;/,
+    );
+    expect(css).toMatch(/\.shell-ss-share-recipients\[data-empty="true"\] \{ min-height: 30px; \}/);
+    expect(css).toMatch(
+      /@media \(pointer: coarse\) \{[^}]*\.shell-ss-share-tools \.shell-ss-ra-action \{ min-height: 44px; \}\s*\.shell-ss-share-recipients\[data-empty="true"\] \{ min-height: 46px; \}/,
+    );
   });
 
   it("keeps the teacher list's height after a share clears it, until the teacher edits it", async () => {

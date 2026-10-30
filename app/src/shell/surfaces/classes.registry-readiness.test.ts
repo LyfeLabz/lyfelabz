@@ -541,8 +541,9 @@ describe("late enrichment preserves an active Student Detail review", () => {
       card.querySelector("[data-testid=student-detail-assignment-title]")!.textContent;
     expect(titleOf(second)).toBe("Assignment");
 
-    // The teacher works on the second card: Show Your Thinking, then
-    // Review questions with the first (older) attempt selected.
+    // The teacher works on the second card: Student thinking, then Review
+    // answers (which closes Student thinking) with the first (older)
+    // attempt selected.
     const thinkingToggle = second.querySelector<HTMLButtonElement>("[data-testid=student-detail-thinking-toggle]")!;
     thinkingToggle.click();
     await flush();
@@ -561,6 +562,7 @@ describe("late enrichment preserves an active Student Detail review", () => {
     expect(summary()).toBe("1 of 3 correct");
     const thinkingText = second.querySelector("[data-testid=student-detail-thinking]")!.textContent;
     expect(thinkingText).toContain("Response for t2");
+    expect(thinkingToggle.getAttribute("aria-expanded")).toBe("false");
     select.focus();
     expect(document.activeElement).toBe(select);
 
@@ -572,8 +574,8 @@ describe("late enrichment preserves an active Student Detail review", () => {
     // Same card elements: nothing was rebuilt.
     expect(cardFor(mount, "a2")).toBe(second);
     expect(cardFor(mount, "a1")).toBe(first);
-    // Disclosures stay open with their content.
-    expect(thinkingToggle.getAttribute("aria-expanded")).toBe("true");
+    // The open tool stays open; the closed one keeps what it loaded.
+    expect(thinkingToggle.getAttribute("aria-expanded")).toBe("false");
     expect(second.querySelector("[data-testid=student-detail-thinking]")!.textContent).toBe(thinkingText);
     expect(reviewToggle.getAttribute("aria-expanded")).toBe("true");
     expect(second.querySelector<HTMLElement>("[data-testid=student-detail-review]")!.hidden).toBe(false);

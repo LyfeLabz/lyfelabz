@@ -232,7 +232,7 @@ describe("Shared students (support educator)", () => {
     expect(h.reverse).not.toHaveBeenCalled();
   });
 
-  it("gives the grantee the same Review answers action, defaults and repeated misses", async () => {
+  it("gives the grantee the same assessment tools, defaults and repeated misses", async () => {
     const h = harness();
     const mount = await mountSurface(h);
     q(mount, "[data-testid=classes-shared-student]")!.click();
@@ -240,7 +240,8 @@ describe("Shared students (support educator)", () => {
     const card = q(mount, "[data-testid=student-detail-assignments] > li")!;
     const toggle = q(card, "[data-testid=student-detail-review-toggle]")!;
     // Latest attempt (att-ada-2) scored 9 of 10.
-    expect(toggle.textContent).toBe("Review answers · 1 incorrect");
+    expect(toggle.textContent).toBe("Review answers1 incorrect");
+    expect(qa(card, "[data-tool]").every((b) => b.getAttribute("aria-expanded") === "false")).toBe(true);
     q(card, "[data-testid=student-detail-thinking-toggle]")!.click();
     await settle();
     toggle.click();
@@ -255,8 +256,11 @@ describe("Shared students (support educator)", () => {
     expect(qa(card, ".shell-student-detail-review-item").filter((li) => !li.hidden).map((li) => li.getAttribute("data-status"))).toEqual([
       "incorrect",
     ]);
+    q(card, "[data-testid=student-detail-repeat-toggle]")!.click();
+    await settle();
     const repeat = qa(card, "[data-testid=student-detail-repeat-item]");
     expect(repeat).toHaveLength(1);
+    expect(q(card, "[data-testid=student-detail-repeat-total]")!.textContent).toBe("1 question");
     expect(q(repeat[0]!, "[data-testid=student-detail-repeat-count]")!.textContent).toBe("Missed 2 of 2 attempts");
     expect(q(repeat[0]!, "[data-testid=student-detail-repeat-stem]")!.textContent).toBe("Which layer is liquid?");
     // Show Your Thinking, the review and the repeated-miss check share one
@@ -308,10 +312,15 @@ describe("Owner Student Detail", () => {
     await settle();
     expect(q(card, "[data-testid=student-detail-review-summary]")!.textContent).toBe("1 of 2 correct");
     expect(q(card, "[data-testid=student-detail-review-stem]")!.textContent).toBe("Which layer is liquid?");
-    // One attempt: Latest attempt, its own incorrect count, no repeated-miss section.
-    expect(q(card, "[data-testid=student-detail-review-toggle]")!.textContent).toBe("Review answers · 5 incorrect");
+    // One attempt: Latest attempt and its own incorrect count; Repeated
+    // misses explains that it needs two attempts, without a read.
+    expect(q(card, "[data-testid=student-detail-review-count]")!.textContent).toBe("5 incorrect");
     expect(q(card, "[data-testid=student-detail-review-attempt-label]")!.textContent).toMatch(/^Latest attempt · 50% · /);
-    expect(q(card, "[data-testid=student-detail-repeat]")).toBeNull();
+    const reads = h.detailCalls.length;
+    q(card, "[data-testid=student-detail-repeat-toggle]")!.click();
+    await settle();
+    expect(q(card, "[data-testid=student-detail-repeat-single]")).not.toBeNull();
+    expect(h.detailCalls).toHaveLength(reads);
   });
 });
 

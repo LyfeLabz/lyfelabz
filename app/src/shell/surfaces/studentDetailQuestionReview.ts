@@ -259,12 +259,6 @@ export function attemptIncorrectCount(attempt: CompletedAttemptSummary): number 
   return maxScore - score;
 }
 
-export function reviewAnswersLabel(attempt: CompletedAttemptSummary): string {
-  const incorrect = attemptIncorrectCount(attempt);
-  if (incorrect === null) return "Review answers";
-  return incorrect === 0 ? "Review answers · all correct" : `Review answers · ${incorrect} incorrect`;
-}
-
 // Selector label for the attempt at `index` of a card's chronological list.
 // "Latest" and "Previous attempt N" describe this card's attempts only; N
 // counts back from the latest (Previous attempt 1 is the attempt just
@@ -322,13 +316,34 @@ async function readBounded<T, R>(
   return out;
 }
 
-// Appends the "Review answers" disclosure to a Student Detail card: a
-// primary action carrying the selected attempt's incorrect count, the
-// card's repeatedly missed questions (cards with two or more attempts), an
-// attempt selector defaulting to the latest attempt, and the per-question
-// review filtered to incorrect answers by default. Attempt detail and
-// revision text are read only after the teacher opens it, and cached for
-// this render.
+export type AssessmentToolKey = "review" | "repeat" | "thinking";
+
+// Called each time Student thinking opens, with its (now visible) panel. The
+// caller owns the content, its reads and its retry behavior.
+export type StudentThinkingPanel = (panel: HTMLElement) => void;
+
+// Count text under "Review answers" for the selected attempt, from its
+// frozen summary (no read). Null when the summary does not support a count.
+export function reviewAnswersCount(attempt: CompletedAttemptSummary): string | null {
+  const incorrect = attemptIncorrectCount(attempt);
+  if (incorrect === null) return null;
+  return incorrect === 0 ? "All correct" : `${incorrect} incorrect`;
+}
+
+export function repeatedMissesCount(questions: number): string {
+  return questions === 0 ? "None" : `${questions} ${questions === 1 ? "question" : "questions"}`;
+}
+
+// Appends the assessment toolbar to a Student Detail card: three related
+// tools in one row (Review answers, Repeated misses, Student thinking), each
+// a disclosure button (aria-expanded + aria-controls) whose panel sits
+// directly below the row. Every panel starts collapsed, at most one is open,
+// and choosing the open tool closes it. Nothing is read until a tool opens:
+// Review answers reads the selected attempt (and its revision text);
+// Repeated misses reads up to MAX_REPEAT_ANALYSIS_ATTEMPTS attempts, two at
+// a time; Student thinking is delegated to `studentThinking`. Reads are
+// cached for this render, so a card rebuilt for another student or
+// assessment starts collapsed with no stale state.
 export function appendQuestionReview(
   doc: Document,
   card: HTMLElement,
@@ -336,6 +351,7 @@ export function appendQuestionReview(
   attemptDetail: AttemptGetForTeacherCallable | null,
   revisionContent: AssessmentRevisionContentReader | null,
   formatDate: (ms: number) => string,
+  studentThinking: StudentThinkingPanel | null = null,
 ): void {
   if (attemptDetail === null || attempts.length === 0) return;
   const readDetail = cacheAttemptDetail(attemptDetail);
@@ -344,22 +360,75 @@ export function appendQuestionReview(
   const cardKey = card.getAttribute("data-assignment-id") ?? "";
   const panelId = `student-detail-review-${cardKey}`;
 
-  const toggle = doc.createElement("button");
-  toggle.type = "button";
-  toggle.className = "shell-btn shell-btn-primary shell-student-detail-review-toggle ll-chevron";
-  toggle.setAttribute("data-testid", "student-detail-review-toggle");
-  toggle.setAttribute("aria-expanded", "false");
-  toggle.setAttribute("aria-controls", panelId);
-  toggle.textContent = reviewAnswersLabel(ordered[latest]!);
-  card.appendChild(toggle);
+  const toolbar = doc.createElement("div");
+  toolbar.className = "shell-student-detail-tools";
+  toolbar.setAttribute("role", "group");
+  toolbar.setAttribute("aria-label", "Assessment review tools");
+  toolbar.setAttribute("data-testid", "student-detail-tools");
+  card.appendChild(toolbar);
 
-  const panel = doc.createElement("div");
-  panel.className = "shell-student-detail-review";
-  panel.id = panelId;
-  panel.setAttribute("data-testid", "student-detail-review");
-  panel.hidden = true;
-  card.appendChild(panel);
+  type Tool = {
+    readonly button: HTMLButtonElement;
+    readonly count: HTMLElement;
+    readonly panel: HTMLElement;
+    readonly onOpen: () => void;
+  };
+  const tools = new Map<AssessmentToolKey, Tool>();
+  const addTool = (
+    key: AssessmentToolKey,
+    label: string,
+    id: string,
+    testids: { readonly button: string; readonly panel: string; readonly count: string },
+    onOpen: () => void,
+  ): Tool => {
+    const button = doc.createElement("button");
+    button.type = "button";
+    button.className = "shell-student-detail-tool ll-chevron";
+    button.setAttribute("data-tool", key);
+    button.setAttribute("data-testid", testids.button);
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-controls", id);
+    const text = doc.createElement("span");
+    text.className = "shell-student-detail-tool-text";
+    const name = doc.createElement("span");
+    name.className = "shell-student-detail-tool-label";
+    name.textContent = label;
+    const count = doc.createElement("span");
+    count.className = "shell-student-detail-tool-count";
+    count.setAttribute("data-testid", testids.count);
+    count.hidden = true;
+    text.append(name, count);
+    button.appendChild(text);
+    toolbar.appendChild(button);
 
+    const panel = doc.createElement("div");
+    panel.className = `shell-student-detail-tool-panel shell-student-detail-${key}`;
+    panel.id = id;
+    panel.setAttribute("data-testid", testids.panel);
+    panel.hidden = true;
+    card.appendChild(panel);
+
+    const tool: Tool = { button, count, panel, onOpen };
+    tools.set(key, tool);
+    button.addEventListener("click", () => {
+      const open = button.getAttribute("aria-expanded") !== "true";
+      for (const other of tools.values()) {
+        other.button.setAttribute("aria-expanded", "false");
+        other.panel.hidden = true;
+      }
+      if (!open) return;
+      button.setAttribute("aria-expanded", "true");
+      panel.hidden = false;
+      onOpen();
+    });
+    return tool;
+  };
+  const setCount = (tool: Tool, text: string | null): void => {
+    tool.count.textContent = text ?? "";
+    tool.count.hidden = text === null;
+  };
+
+  // --- Review answers ---
   const body = doc.createElement("div");
   body.className = "shell-student-detail-review-body";
   body.setAttribute("aria-live", "polite");
@@ -394,7 +463,7 @@ export function appendQuestionReview(
   const show = (index: number): void => {
     const mine = ++token;
     const attempt = ordered[index]!;
-    toggle.textContent = reviewAnswersLabel(attempt);
+    setCount(review, reviewAnswersCount(attempt));
     body.replaceChildren();
     const loading = doc.createElement("p");
     loading.className = "shell-student-detail-thinking-muted";
@@ -411,14 +480,14 @@ export function appendQuestionReview(
         return buildAttemptQuestionReview(detail, content);
       })
       .then(
-        (review) => {
-          if (mine !== token || !panel.isConnected) return;
+        (result) => {
+          if (mine !== token || !review.panel.isConnected) return;
           body.replaceChildren();
-          renderReview(doc, body, review);
+          renderReview(doc, body, result);
           applyIncorrectOnly(doc, body, filter.checked);
         },
         () => {
-          if (mine !== token || !panel.isConnected) return;
+          if (mine !== token || !review.panel.isConnected) return;
           body.replaceChildren();
           const err = doc.createElement("p");
           err.className = "shell-student-detail-thinking-muted";
@@ -429,55 +498,10 @@ export function appendQuestionReview(
       );
   };
 
-  // Repeatedly missed questions over this card's attempts. Reads the most
-  // recent attempts newest first (the selected latest attempt is already
-  // cached), then revision text only for revisions that have a repeat.
-  const repeat = ordered.length >= 2 ? doc.createElement("div") : null;
-  const analyze = (): void => {
-    if (repeat === null) return;
-    repeat.setAttribute("data-state", "loading");
-    repeat.replaceChildren();
-    const loading = doc.createElement("p");
-    loading.className = "shell-student-detail-thinking-muted";
-    loading.setAttribute("role", "status");
-    loading.textContent = "Checking for repeated misses…";
-    repeat.appendChild(loading);
-    const recent = ordered.slice(-MAX_REPEAT_ANALYSIS_ATTEMPTS);
-    void readBounded([...recent].reverse(), (a) => readDetail({ attemptId: a.attemptId }))
-      .then(async (newestFirst) => {
-        const details = newestFirst.reverse();
-        const revisions = new Set(findRepeatedMisses(details, new Map()).groups.map((g) => g.revisionId));
-        const texts = new Map<string, AssessmentRevisionContent | null>();
-        for (const revisionId of revisions) texts.set(revisionId, await contentFor(revisionId));
-        return findRepeatedMisses(details, texts);
-      })
-      .then(
-        (analysis) => {
-          if (!panel.isConnected) return;
-          renderRepeatedMisses(doc, repeat, analysis, { analyzed: recent.length, total: ordered.length });
-        },
-        () => {
-          if (!panel.isConnected) return;
-          repeat.setAttribute("data-state", "error");
-          repeat.replaceChildren();
-          const err = doc.createElement("p");
-          err.className = "shell-student-detail-thinking-muted";
-          err.setAttribute("data-testid", "student-detail-repeat-error");
-          err.textContent = "We couldn't check for repeated misses. Close and reopen to try again.";
-          repeat.appendChild(err);
-        },
-      );
-  };
-
   let built = false;
-  const build = (): void => {
+  const buildReview = (): void => {
     built = true;
-    if (repeat !== null) {
-      repeat.className = "shell-student-detail-repeat";
-      repeat.setAttribute("data-testid", "student-detail-repeat");
-      repeat.setAttribute("aria-live", "polite");
-      panel.appendChild(repeat);
-    }
+    const panel = review.panel;
     if (ordered.length > 1) {
       const controls = doc.createElement("div");
       controls.className = "shell-student-detail-review-attempt";
@@ -510,20 +534,96 @@ export function appendQuestionReview(
     panel.appendChild(filterLabel);
     panel.appendChild(body);
     show(latest);
-    analyze();
   };
 
-  toggle.addEventListener("click", () => {
-    const open = toggle.getAttribute("aria-expanded") !== "true";
-    toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    panel.hidden = !open;
-    if (open && !built) build();
-    else if (open) {
-      if (body.querySelector("[data-testid=student-detail-review-error]") !== null) {
-        const select = panel.querySelector<HTMLSelectElement>("select");
+  const review = addTool(
+    "review",
+    "Review answers",
+    panelId,
+    { button: "student-detail-review-toggle", panel: "student-detail-review", count: "student-detail-review-count" },
+    () => {
+      if (!built) buildReview();
+      else if (body.querySelector("[data-testid=student-detail-review-error]") !== null) {
+        const select = review.panel.querySelector<HTMLSelectElement>("select");
         show(select === null ? latest : Number(select.value));
       }
-      if (repeat?.getAttribute("data-state") === "error") analyze();
-    }
-  });
+    },
+  );
+  setCount(review, reviewAnswersCount(ordered[latest]!));
+
+  // --- Repeated misses ---
+  // Repeatedly missed questions over this card's attempts. Runs only when
+  // the tool opens (never just for the count), reading the most recent
+  // attempts newest first, then revision text only for revisions that have
+  // a repeat. A failed analysis is retried on the next open.
+  let repeatState: "idle" | "loading" | "ready" | "error" = "idle";
+  const analyze = (): void => {
+    const host = repeat.panel;
+    repeatState = "loading";
+    host.setAttribute("data-state", "loading");
+    host.replaceChildren();
+    const loading = doc.createElement("p");
+    loading.className = "shell-student-detail-thinking-muted";
+    loading.setAttribute("role", "status");
+    loading.textContent = "Checking for repeated misses…";
+    host.appendChild(loading);
+    const recent = ordered.slice(-MAX_REPEAT_ANALYSIS_ATTEMPTS);
+    void readBounded([...recent].reverse(), (a) => readDetail({ attemptId: a.attemptId }))
+      .then(async (newestFirst) => {
+        const details = newestFirst.reverse();
+        const revisions = new Set(findRepeatedMisses(details, new Map()).groups.map((g) => g.revisionId));
+        const texts = new Map<string, AssessmentRevisionContent | null>();
+        for (const revisionId of revisions) texts.set(revisionId, await contentFor(revisionId));
+        return findRepeatedMisses(details, texts);
+      })
+      .then(
+        (analysis) => {
+          if (!host.isConnected) return;
+          repeatState = "ready";
+          const total = renderRepeatedMisses(doc, host, analysis, { analyzed: recent.length, total: ordered.length });
+          setCount(repeat, analysis.comparable || total > 0 ? repeatedMissesCount(total) : null);
+        },
+        () => {
+          if (!host.isConnected) return;
+          repeatState = "error";
+          host.setAttribute("data-state", "error");
+          host.replaceChildren();
+          const err = doc.createElement("p");
+          err.className = "shell-student-detail-thinking-muted";
+          err.setAttribute("data-testid", "student-detail-repeat-error");
+          err.textContent = "We couldn't check for repeated misses. Close and reopen to try again.";
+          host.appendChild(err);
+        },
+      );
+  };
+  const repeat = addTool(
+    "repeat",
+    "Repeated misses",
+    `student-detail-repeat-${cardKey}`,
+    { button: "student-detail-repeat-toggle", panel: "student-detail-repeat", count: "student-detail-repeat-total" },
+    () => {
+      if (ordered.length < 2) {
+        if (repeat.panel.childElementCount > 0) return;
+        const one = doc.createElement("p");
+        one.className = "shell-student-detail-thinking-muted";
+        one.setAttribute("data-testid", "student-detail-repeat-single");
+        one.textContent = "Repeated misses appear after the student has two or more attempts.";
+        repeat.panel.appendChild(one);
+        return;
+      }
+      if (repeatState === "idle" || repeatState === "error") analyze();
+    },
+  );
+  repeat.panel.setAttribute("aria-live", "polite");
+
+  // --- Student thinking ---
+  if (studentThinking !== null) {
+    const thinking: Tool = addTool(
+      "thinking",
+      "Student thinking",
+      `student-detail-thinking-${cardKey}`,
+      { button: "student-detail-thinking-toggle", panel: "student-detail-thinking", count: "student-detail-thinking-count" },
+      () => studentThinking(thinking.panel),
+    );
+  }
 }

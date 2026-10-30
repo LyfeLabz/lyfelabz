@@ -18,7 +18,9 @@ import {
   buildAttemptQuestionReview,
   MAX_REPEAT_ANALYSIS_ATTEMPTS,
   orderAttemptsChronologically,
-  reviewAnswersLabel,
+  repeatedMissesCount,
+  reviewAnswersCount,
+  type StudentThinkingPanel,
 } from "./studentDetailQuestionReview";
 
 const REV = "assessment_earths-layers__r1";
@@ -165,14 +167,15 @@ const summary = (
 describe("attempt labels and ordering", () => {
   it("counts incorrect answers from the selected attempt's unit-point score", () => {
     expect(attemptIncorrectCount(summary("a", 1, 1, 33, 1, 3))).toBe(2);
-    expect(reviewAnswersLabel(summary("a", 1, 1, 33, 1, 3))).toBe("Review answers · 2 incorrect");
-    expect(reviewAnswersLabel(summary("a", 1, 1, 100, 3, 3))).toBe("Review answers · all correct");
+    expect(reviewAnswersCount(summary("a", 1, 1, 33, 1, 3))).toBe("2 incorrect");
+    expect(reviewAnswersCount(summary("a", 1, 1, 100, 3, 3))).toBe("All correct");
+    expect([0, 1, 4].map(repeatedMissesCount)).toEqual(["None", "1 question", "4 questions"]);
   });
 
   it("shows no count when the summary cannot support one", () => {
     for (const [score, maxScore] of [[1.5, 3], [4, 3], [-1, 3], [0, 0]] as const) {
       expect(attemptIncorrectCount(summary("a", 1, 1, 50, score, maxScore))).toBeNull();
-      expect(reviewAnswersLabel(summary("a", 1, 1, 50, score, maxScore))).toBe("Review answers");
+      expect(reviewAnswersCount(summary("a", 1, 1, 50, score, maxScore))).toBeNull();
     }
   });
 
@@ -221,6 +224,7 @@ describe("appendQuestionReview", () => {
   function setup(
     details: Record<string, TeacherVisibleAttempt | Error>,
     attempts: ReadonlyArray<CompletedAttemptSummary> = [summary("att-1", 1, 1000, 33), summary("att-2", 2, 2000, 100)],
+    thinking: StudentThinkingPanel | null = null,
   ) {
     const card = document.createElement("li");
     card.setAttribute("data-assignment-id", "a1");
@@ -242,11 +246,27 @@ describe("appendQuestionReview", () => {
     appendQuestionReview(document, card, attempts, attemptDetail, async (id) => {
       revisionCalls.push(id);
       return content;
-    }, (ms) => `day-${ms}`);
+    }, (ms) => `day-${ms}`, thinking);
     return { card, calls, revisionCalls, maxInFlight: () => maxInFlight };
   }
   const toggleOf = (card: HTMLElement) =>
     card.querySelector<HTMLButtonElement>("[data-testid=student-detail-review-toggle]")!;
+  const repeatOf = (card: HTMLElement) =>
+    card.querySelector<HTMLButtonElement>("[data-testid=student-detail-repeat-toggle]")!;
+  const thinkingOf = (card: HTMLElement) =>
+    card.querySelector<HTMLButtonElement>("[data-testid=student-detail-thinking-toggle]");
+  // A tool's secondary count text, or null while it shows none.
+  const countOf = (card: HTMLElement, testid: string): string | null => {
+    const el = card.querySelector<HTMLElement>(`[data-testid=${testid}]`)!;
+    return el.hidden ? null : el.textContent;
+  };
+  const expanded = (card: HTMLElement): string[] =>
+    Array.from(card.querySelectorAll<HTMLButtonElement>("[data-tool]"))
+      .filter((b) => b.getAttribute("aria-expanded") === "true")
+      .map((b) => b.getAttribute("data-tool")!);
+  // The panel a tool controls, within that tool's own card.
+  const panelOf = (button: HTMLElement) =>
+    button.closest("li")!.querySelector<HTMLElement>(`#${button.getAttribute("aria-controls")!}`)!;
   const selectOf = (card: HTMLElement) =>
     card.querySelector<HTMLSelectElement>("[data-testid=student-detail-review-select]")!;
   const choose = async (card: HTMLElement, value: string): Promise<void> => {
@@ -267,16 +287,101 @@ describe("appendQuestionReview", () => {
     box.dispatchEvent(new Event("change"));
   };
 
-  it("is a primary 'Review answers' action with the latest attempt's count, closed and unread until opened", async () => {
-    const { card, calls } = setup({ "att-1": detail(), "att-2": allCorrect() });
-    const toggle = toggleOf(card);
-    expect(toggle.textContent).toBe("Review answers · all correct");
-    expect(toggle.classList.contains("shell-btn")).toBe(true);
-    expect(toggle.classList.contains("shell-btn-primary")).toBe(true);
-    expect(toggle.tagName).toBe("BUTTON");
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(toggle.getAttribute("aria-controls")).toBe("student-detail-review-a1");
-    expect(calls).toEqual([]);
+  describe("assessment toolbar", () => {
+    it("renders three tools in one group, all collapsed, with no reads until one opens", () => {
+      const thinking = jest.fn();
+      const { card, calls, revisionCalls } = setup({ "att-1": detail(), "att-2": allCorrect() }, undefined, thinking);
+      const toolbar = card.querySelector<HTMLElement>("[data-testid=student-detail-tools]")!;
+      expect(toolbar.getAttribute("role")).toBe("group");
+      expect(toolbar.getAttribute("aria-label")).toBe("Assessment review tools");
+      const buttons = Array.from(toolbar.querySelectorAll<HTMLButtonElement>("button"));
+      expect(buttons.map((b) => b.getAttribute("data-tool"))).toEqual(["review", "repeat", "thinking"]);
+      expect(buttons.map((b) => b.querySelector(".shell-student-detail-tool-label")!.textContent)).toEqual([
+        "Review answers",
+        "Repeated misses",
+        "Student thinking",
+      ]);
+      for (const b of buttons) {
+        expect(b.type).toBe("button");
+        expect(b.classList.contains("ll-chevron")).toBe(true);
+        expect(b.getAttribute("aria-expanded")).toBe("false");
+        expect(panelOf(b).hidden).toBe(true);
+        // Each panel sits below the toolbar, never inside it.
+        expect(toolbar.contains(panelOf(b))).toBe(false);
+      }
+      expect(buttons.map((b) => b.getAttribute("aria-controls"))).toEqual([
+        "student-detail-review-a1",
+        "student-detail-repeat-a1",
+        "student-detail-thinking-a1",
+      ]);
+      expect(countOf(card, "student-detail-review-count")).toBe("All correct");
+      // No repeated-miss count is invented before the analysis runs.
+      expect(countOf(card, "student-detail-repeat-total")).toBeNull();
+      expect(calls).toEqual([]);
+      expect(revisionCalls).toEqual([]);
+      expect(thinking).not.toHaveBeenCalled();
+    });
+
+    it("opens one panel at a time and collapses the active tool when chosen again", async () => {
+      const thinking = jest.fn();
+      const { card } = setup({ "att-1": detail(), "att-2": detail({ attemptId: "att-2" }) }, undefined, thinking);
+      toggleOf(card).click();
+      await flush();
+      expect(expanded(card)).toEqual(["review"]);
+      expect(panelOf(toggleOf(card)).hidden).toBe(false);
+      repeatOf(card).click();
+      await flush();
+      expect(expanded(card)).toEqual(["repeat"]);
+      expect(panelOf(toggleOf(card)).hidden).toBe(true);
+      expect(panelOf(repeatOf(card)).hidden).toBe(false);
+      thinkingOf(card)!.click();
+      expect(expanded(card)).toEqual(["thinking"]);
+      expect(panelOf(repeatOf(card)).hidden).toBe(true);
+      expect(thinking).toHaveBeenCalledTimes(1);
+      expect(thinking).toHaveBeenCalledWith(panelOf(thinkingOf(card)!));
+      thinkingOf(card)!.click();
+      expect(expanded(card)).toEqual([]);
+      expect(Array.from(card.querySelectorAll<HTMLElement>(".shell-student-detail-tool-panel")).every((p) => p.hidden)).toBe(true);
+      // Reopening a tool keeps what it loaded (no rebuild).
+      toggleOf(card).click();
+      expect(card.querySelectorAll("[data-testid=student-detail-review-select]")).toHaveLength(1);
+    });
+
+    it("keeps keyboard focus on the chosen tool as panels switch", async () => {
+      const { card } = setup({ "att-1": detail(), "att-2": detail({ attemptId: "att-2" }) }, undefined, () => {});
+      toggleOf(card).focus();
+      toggleOf(card).click();
+      await flush();
+      expect(document.activeElement).toBe(toggleOf(card));
+      repeatOf(card).focus();
+      repeatOf(card).click();
+      await flush();
+      expect(document.activeElement).toBe(repeatOf(card));
+      repeatOf(card).click();
+      expect(document.activeElement).toBe(repeatOf(card));
+    });
+
+    it("omits Student thinking when no thinking panel is supplied", () => {
+      const { card } = setup({ "att-1": detail() });
+      expect(thinkingOf(card)).toBeNull();
+      expect(Array.from(card.querySelectorAll("[data-tool]")).map((b) => b.getAttribute("data-tool"))).toEqual([
+        "review",
+        "repeat",
+      ]);
+    });
+
+    it("starts collapsed and unread on a card rendered for another student, ignoring the old card's late results", async () => {
+      const first = setup({ "att-1": detail(), "att-2": detail({ attemptId: "att-2" }) });
+      repeatOf(first.card).click();
+      first.card.remove();
+      await flush();
+      expect(countOf(first.card, "student-detail-repeat-total")).toBeNull();
+      const second = setup({ "att-1": detail(), "att-2": allCorrect() });
+      expect(expanded(second.card)).toEqual([]);
+      expect(second.calls).toEqual([]);
+      expect(countOf(second.card, "student-detail-review-count")).toBe("All correct");
+      expect(countOf(second.card, "student-detail-repeat-total")).toBeNull();
+    });
   });
 
   it("opens on the latest attempt, listed first, with Previous attempt labels", async () => {
@@ -292,8 +397,8 @@ describe("appendQuestionReview", () => {
     ]);
     expect(select.value).toBe("1");
     expect(select.selectedOptions[0]!.textContent).toBe("Latest attempt · 100% · day-2000");
-    // The latest attempt is read first; the repeated-miss check then reads the rest.
-    expect(calls).toEqual(["att-2", "att-1"]);
+    // Only the selected attempt is read; the repeated-miss check waits for its own tool.
+    expect(calls).toEqual(["att-2"]);
     expect(revisionCalls).toEqual([REV]);
     expect(card.querySelector("[data-testid=student-detail-review-summary]")!.textContent).toBe("3 of 3 correct");
   });
@@ -303,7 +408,7 @@ describe("appendQuestionReview", () => {
     toggleOf(card).click();
     await flush();
     await choose(card, "0");
-    expect(toggleOf(card).textContent).toBe("Review answers · 2 incorrect");
+    expect(countOf(card, "student-detail-review-count")).toBe("2 incorrect");
     expect(calls).toEqual(["att-2", "att-1"]);
     expect(card.querySelector("[data-testid=student-detail-review-summary]")!.textContent).toBe("1 of 3 correct");
     // The redundant "To review" list is gone; the filter already shows exactly those questions.
@@ -318,7 +423,7 @@ describe("appendQuestionReview", () => {
     const q3 = card.querySelector<HTMLElement>("[data-testid=student-detail-review-item-3]")!;
     expect(q3.querySelector("[data-testid=student-detail-review-student-answer]")!.textContent).toBe("No answer");
     await choose(card, "1");
-    expect(toggleOf(card).textContent).toBe("Review answers · all correct");
+    expect(countOf(card, "student-detail-review-count")).toBe("All correct");
   });
 
   it("shows results only, with a neutral note, for an adapted attempt", async () => {
@@ -344,18 +449,24 @@ describe("appendQuestionReview", () => {
     toggle.click();
     await flush();
     expect(card.querySelector("[data-testid=student-detail-review-error]")).not.toBeNull();
+    // The failed read is forgotten, so the repeated-miss check retries it.
+    repeatOf(card).click();
+    await flush();
     expect(card.querySelector("[data-testid=student-detail-repeat-error]")!.textContent).toBe(
       "We couldn't check for repeated misses. Close and reopen to try again.",
     );
+    expect(countOf(card, "student-detail-repeat-total")).toBeNull();
     details["att-2"] = detail({ attemptId: "att-2" });
-    toggle.click();
+    repeatOf(card).click();
+    repeatOf(card).click();
+    await flush();
+    expect(card.querySelectorAll("[data-testid=student-detail-repeat-item]")).toHaveLength(2);
+    expect(countOf(card, "student-detail-repeat-total")).toBe("2 questions");
+    // The review shares the now-cached read: reopening it retries without another read.
     toggle.click();
     await flush();
-    // The failed read is shared by the review and the repeated-miss check,
-    // and retried once for both.
-    expect(calls.filter((id) => id === "att-2")).toHaveLength(2);
+    expect(calls.filter((id) => id === "att-2")).toHaveLength(3);
     expect(card.querySelector("[data-testid=student-detail-review-summary]")!.textContent).toBe("1 of 3 correct");
-    expect(card.querySelectorAll("[data-testid=student-detail-repeat-item]")).toHaveLength(2);
   });
 
   describe("Show incorrect only", () => {
@@ -412,15 +523,20 @@ describe("appendQuestionReview", () => {
   });
 
   describe("repeatedly missed questions", () => {
-    it("lists questions missed on two attempts above the attempt selector", async () => {
-      const { card } = setup(
+    it("lists questions missed on two attempts in its own panel, with the count on the tool", async () => {
+      const { card, calls } = setup(
         { "att-1": detail(), "att-2": detail({ attemptId: "att-2" }) },
         [summary("att-1", 1, 1000, 33), summary("att-2", 2, 2000, 33)],
       );
-      toggleOf(card).click();
+      repeatOf(card).click();
       await flush();
       const repeat = card.querySelector<HTMLElement>("[data-testid=student-detail-repeat]")!;
-      expect(repeat.nextElementSibling!.className).toBe("shell-student-detail-review-attempt");
+      expect(repeat).toBe(panelOf(repeatOf(card)));
+      expect(repeat.hidden).toBe(false);
+      expect(countOf(card, "student-detail-repeat-total")).toBe("2 questions");
+      // Newest first; the review was never opened.
+      expect(calls).toEqual(["att-2", "att-1"]);
+      expect(card.querySelector("[data-testid=student-detail-review-select]")).toBeNull();
       const items = Array.from(repeat.querySelectorAll<HTMLElement>("[data-testid=student-detail-repeat-item]"));
       expect(items.map((li) => li.querySelector("[data-testid=student-detail-repeat-number]")!.textContent)).toEqual([
         "Question 1",
@@ -434,21 +550,30 @@ describe("appendQuestionReview", () => {
       expect(repeat.querySelector("[data-testid=student-detail-repeat-versions]")).toBeNull();
     });
 
-    it("is one quiet line when nothing was missed twice", async () => {
+    it("is one quiet line, and stays available, when nothing was missed twice", async () => {
       const { card } = setup({ "att-1": detail(), "att-2": allCorrect() });
-      toggleOf(card).click();
+      repeatOf(card).click();
       await flush();
       const repeat = card.querySelector<HTMLElement>("[data-testid=student-detail-repeat]")!;
       expect(repeat.childElementCount).toBe(1);
       expect(repeat.textContent).toBe("No question was missed more than once.");
+      expect(countOf(card, "student-detail-repeat-total")).toBe("None");
     });
 
-    it("is absent for a single attempt, which gets a Latest attempt label", async () => {
+    it("explains a single attempt without reading anything; the review gets a Latest attempt label", async () => {
       const { card, calls } = setup({ "att-1": detail() }, [summary("att-1", 1, 1000, 33)]);
-      expect(toggleOf(card).textContent).toBe("Review answers · 2 incorrect");
+      expect(countOf(card, "student-detail-review-count")).toBe("2 incorrect");
+      repeatOf(card).click();
+      await flush();
+      expect(card.querySelector("[data-testid=student-detail-repeat-single]")!.textContent).toBe(
+        "Repeated misses appear after the student has two or more attempts.",
+      );
+      expect(calls).toEqual([]);
+      repeatOf(card).click();
+      repeatOf(card).click();
+      expect(card.querySelectorAll("[data-testid=student-detail-repeat-single]")).toHaveLength(1);
       toggleOf(card).click();
       await flush();
-      expect(card.querySelector("[data-testid=student-detail-repeat]")).toBeNull();
       expect(card.querySelector("[data-testid=student-detail-review-attempt-label]")!.textContent).toBe(
         "Latest attempt · 33% · day-1000",
       );
@@ -464,7 +589,7 @@ describe("appendQuestionReview", () => {
         details[`att-${n}`] = detail({ attemptId: `att-${n}`, attemptNumber: n });
       }
       const { card, calls, maxInFlight } = setup(details, attempts);
-      toggleOf(card).click();
+      repeatOf(card).click();
       await flush();
       for (let i = 0; i < 20; i += 1) await flush();
       expect(new Set(calls).size).toBe(MAX_REPEAT_ANALYSIS_ATTEMPTS);
@@ -505,7 +630,7 @@ describe("appendQuestionReview", () => {
       card.querySelector<HTMLElement>("[data-testid=student-detail-repeat]")!;
 
     it("lists Latest, then Previous attempt 1 as the immediately preceding attempt, counting back", async () => {
-      const { card } = deferredSetup(4);
+      const { card, calls } = deferredSetup(4);
       toggleOf(card).click();
       await flush();
       const select = selectOf(card);
@@ -516,13 +641,17 @@ describe("appendQuestionReview", () => {
         ["0", "Previous attempt 3 · 10% · day-1000"],
       ]);
       expect(select.value).toBe("3");
+      expect(calls).toEqual(["att-4"]);
     });
 
     it("shows the selected attempt as soon as its own read lands, while analysis is still pending", async () => {
       const { card, calls, settle } = deferredSetup(3);
+      repeatOf(card).click();
+      await flush();
+      // Analysis reads newest first, two at a time; the review then reuses the latest read.
+      expect(calls).toEqual(["att-3", "att-2"]);
       toggleOf(card).click();
       await flush();
-      // Latest is read first; analysis has started on the next attempt (two at a time).
       expect(calls).toEqual(["att-3", "att-2"]);
       expect(repeatState(card).getAttribute("data-state")).toBe("loading");
       expect(repeatState(card).textContent).toBe("Checking for repeated misses…");
@@ -535,15 +664,19 @@ describe("appendQuestionReview", () => {
       await settle("att-1", detail({ attemptId: "att-1" }));
       expect(repeatState(card).getAttribute("data-state")).toBe("ready");
       expect(card.querySelector("[data-testid=student-detail-repeat-count]")!.textContent).toBe("Missed 3 of 3 attempts");
+      // Analysis finished while its panel was closed; the tool's count is ready.
+      expect(countOf(card, "student-detail-repeat-total")).toBe("2 questions");
+      expect(expanded(card)).toEqual(["review"]);
     });
 
     it("switches attempts during analysis without duplicate reads", async () => {
       const { card, calls, settle } = deferredSetup(3);
+      repeatOf(card).click();
       toggleOf(card).click();
       await flush();
       // Switch to the oldest attempt before the analysis has reached it.
       await choose(card, "0");
-      expect(toggleOf(card).textContent).toBe("Review answers · 2 incorrect");
+      expect(countOf(card, "student-detail-review-count")).toBe("2 incorrect");
       expect(calls).toEqual(["att-3", "att-2", "att-1"]);
       await settle("att-1", detail({ attemptId: "att-1" }));
       expect(card.querySelector("[data-testid=student-detail-review-summary]")!.textContent).toBe("1 of 3 correct");
@@ -558,6 +691,7 @@ describe("appendQuestionReview", () => {
 
     it("reports a failed analysis as an error, never as no repeated misses, while the review still works", async () => {
       const { card, settle } = deferredSetup(3);
+      repeatOf(card).click();
       toggleOf(card).click();
       await flush();
       await settle("att-3", detail({ attemptId: "att-3" }));
