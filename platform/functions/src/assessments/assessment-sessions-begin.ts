@@ -76,6 +76,11 @@ export type AssessmentSessionsBeginResponse = {
   // restore into a presentation it does not display. Informational only.
   readonly responses?: readonly AssessmentSessionResponse[];
   readonly assessmentPresentationRevisionId?: string;
+  // Written-response continuity (additive, idempotent replay only): the
+  // caller's own unscored Show Your Thinking text from the Live session, so a
+  // reloaded page can restore it. Present only when non-empty; it never
+  // reaches the scorer or any audit payload.
+  readonly writtenResponse?: string;
 };
 
 const ASSIGNMENT_ID_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
@@ -227,6 +232,9 @@ function liveSessionResponse(
     assessmentRevisionId: existing.assessmentRevisionId,
     responses: persistedResponsesOf(existing),
     ...(isNonEmptyString(apId) ? { assessmentPresentationRevisionId: apId } : {}),
+    ...(isNonEmptyString(existing.writtenResponse)
+      ? { writtenResponse: existing.writtenResponse }
+      : {}),
   };
 }
 
@@ -678,7 +686,10 @@ async function assessmentSessionsBeginHandler(
   return { sessionId, alreadyLive: false, assessmentRevisionId };
 }
 
-export const assessmentSessionsBegin = platformCallable(assessmentSessionsBeginHandler);
+export const assessmentSessionsBegin = platformCallable(
+  { maxInstances: 20 },
+  assessmentSessionsBeginHandler,
+);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

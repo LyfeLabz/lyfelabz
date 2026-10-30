@@ -62,7 +62,7 @@ describe("groupRoster", () => {
     expect(g.submitted.map((r) => r.studentId)).toEqual(["a"]);
     expect(g.submitted[0]?.percentage).toBe(90);
     expect(g.inProgress).toEqual([
-      { studentId: "c", studentDisplayName: "Cid", status: "In Progress · 4/10" },
+      { studentId: "c", studentDisplayName: "Cid", status: "In Progress · 4 of 10 answered" },
     ]);
     expect(g.notStarted.map((r) => r.studentId)).toEqual(["b"]);
   });
@@ -89,9 +89,9 @@ describe("groupRoster", () => {
     });
     expect(new Map(g.inProgress.map((r) => [r.studentId, r.status]))).toEqual(
       new Map([
-        ["a", "Started · 0/10"],
-        ["b", "In Progress · 7/10"],
-        ["c", "Ready to Submit · 10/10"],
+        ["a", "Opened · No questions answered"],
+        ["b", "In Progress · 7 of 10 answered"],
+        ["c", "All 10 answered · Not submitted"],
       ]),
     );
     expect(g.notStarted).toEqual([]);
@@ -107,7 +107,7 @@ describe("groupRoster", () => {
       expect.objectContaining({
         studentId: "b",
         percentage: 70,
-        retakeStatus: "Retake In Progress · 0/10",
+        retakeStatus: "Retake In Progress · No questions answered",
       }),
     ]);
     expect(g.notStarted.map((r) => r.studentId).sort()).toEqual(["a", "c"]);
@@ -128,7 +128,7 @@ describe("groupRoster", () => {
         studentDisplayName: "Ada",
         percentage: 90,
         attemptCount: 2,
-        retakeStatus: "Retake In Progress · 3/10",
+        retakeStatus: "Retake In Progress · 3 of 10 answered",
       },
     ]);
     expect(g.inProgress).toEqual([]);
@@ -282,16 +282,29 @@ describe("Sprint 30 roster polish - teacher sort preference", () => {
 
 describe("formatProgressStatus", () => {
   test("labels each live state from answered and the frozen total", () => {
-    expect(formatProgressStatus({ answered: 0, total: 10, retake: false })).toBe("Started · 0/10");
-    expect(formatProgressStatus({ answered: 1, total: 10, retake: false })).toBe("In Progress · 1/10");
-    expect(formatProgressStatus({ answered: 9, total: 10, retake: false })).toBe("In Progress · 9/10");
-    expect(formatProgressStatus({ answered: 10, total: 10, retake: false })).toBe("Ready to Submit · 10/10");
-    expect(formatProgressStatus({ answered: 6, total: 6, retake: false })).toBe("Ready to Submit · 6/6");
-    expect(formatProgressStatus({ answered: 4, total: 10, retake: true })).toBe("Retake In Progress · 4/10");
+    expect(formatProgressStatus({ answered: 0, total: 10, retake: false })).toBe("Opened · No questions answered");
+    expect(formatProgressStatus({ answered: 1, total: 10, retake: false })).toBe("In Progress · 1 of 10 answered");
+    expect(formatProgressStatus({ answered: 9, total: 10, retake: false })).toBe("In Progress · 9 of 10 answered");
+    expect(formatProgressStatus({ answered: 10, total: 10, retake: false })).toBe("All 10 answered · Not submitted");
+    expect(formatProgressStatus({ answered: 6, total: 6, retake: false })).toBe("All 6 answered · Not submitted");
+    expect(formatProgressStatus({ answered: 4, total: 10, retake: true })).toBe("Retake In Progress · 4 of 10 answered");
   });
 
   test("never invents a total the server could not read", () => {
-    expect(formatProgressStatus({ answered: 0, total: null, retake: false })).toBe("Started");
+    expect(formatProgressStatus({ answered: 0, total: null, retake: false })).toBe("Opened · No questions answered");
     expect(formatProgressStatus({ answered: 3, total: null, retake: false })).toBe("In Progress · 3 answered");
+  });
+
+  test("never formats an answer count like a score", () => {
+    for (const answered of [0, 1, 4, 9, 10]) {
+      for (const retake of [false, true]) {
+        const text = formatProgressStatus({ answered, total: 10, retake });
+        expect(text).not.toMatch(/\d+\s*\/\s*\d+/);
+        expect(text).toMatch(/answered/);
+      }
+    }
+    expect(formatProgressStatus({ answered: 10, total: 10, retake: true })).toBe(
+      "Retake In Progress · All 10 answered",
+    );
   });
 });

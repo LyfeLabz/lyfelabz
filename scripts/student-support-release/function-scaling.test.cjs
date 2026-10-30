@@ -13,6 +13,8 @@ const endpoints = [
   'supportAccessGrant', 'supportAccessGrantMany',
   'supportAccessRevoke', 'supportAccessRevokeMany',
   'supportAccessListForClass', 'supportAccessListMine',
+  // Student autosave restore changes this callable; production reports 20.
+  'assessmentSessionsBegin',
 ];
 
 for (const id of endpoints) {

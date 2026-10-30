@@ -70,6 +70,9 @@ export type BeginCallable = (
   // id (differentiated sessions only). Absent on a fresh session.
   readonly responses?: readonly SessionResponse[];
   readonly assessmentPresentationRevisionId?: string;
+  // Written-response continuity: the saved Show Your Thinking text on a
+  // replay. Absent when none is saved.
+  readonly writtenResponse?: string;
 }>;
 
 // The persisted state an idempotent begin returned, offered to the page so it
@@ -77,6 +80,7 @@ export type BeginCallable = (
 export type PersistedSessionState = {
   readonly responses: readonly SessionResponse[];
   readonly assessmentPresentationRevisionId?: string;
+  readonly writtenResponse?: string;
 };
 
 // F5.3 Slice 9D: verifies that the page displays exactly the server's frozen

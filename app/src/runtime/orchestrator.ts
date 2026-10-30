@@ -223,7 +223,9 @@ export function createAssessmentRuntime(
   }
 
   function adoptPersisted(state: PersistedSessionState): void {
-    if (state.responses.length === 0) {
+    // A saved written response alone is still offered to the page so it can
+    // be restored; it never joins the response baseline.
+    if (state.responses.length === 0 && state.writtenResponse === undefined) {
       persisted = [];
       return;
     }
@@ -301,6 +303,9 @@ export function createAssessmentRuntime(
             ...(isNonEmptyString(outcome.assessmentPresentationRevisionId)
               ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId }
               : {}),
+            ...(isNonEmptyString(outcome.writtenResponse)
+              ? { writtenResponse: outcome.writtenResponse }
+              : {}),
           });
         }
       } catch (err) {
@@ -355,8 +360,17 @@ export function createAssessmentRuntime(
     if (lastAutosaveSerialized === serialized) {
       return { persisted: false };
     }
-    if (inflightAutosave !== null) {
+    // Writes are strictly sequential: every caller waiting on the same
+    // in-flight write re-checks after it, so two queued writes can never run
+    // concurrently and land out of order.
+    while (inflightAutosave !== null) {
       await inflightAutosave;
+    }
+    if (lastAutosaveSerialized === serialized) {
+      return { persisted: false };
+    }
+    if (sessionId === null) {
+      throw new Error("session was not established");
     }
     const activeSessionId = sessionId;
     inflightAutosave = (async () => {

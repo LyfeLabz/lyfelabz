@@ -11,6 +11,8 @@ import type { Functions } from "firebase/functions";
 import { createAssessmentRuntime, isRecoverableCallableError } from "./orchestrator";
 import type { AssessmentRuntime } from "./orchestrator";
 import { detectLaunchRef } from "./launchParams";
+import { createSaveCoordinator } from "./saveCoordinator";
+import type { SaveCoordinator, SaveStatus } from "./saveCoordinator";
 import type {
   AttemptItemResult,
   AttemptSummary,
@@ -327,8 +329,47 @@ function quizOptionButtons(doc: Document): Map<string, HTMLElement> {
 
 // While restoring, the lesson's own handler calls lessonQuiz.autosave with a
 // partially rebuilt selection; those calls are suppressed (the server already
-// holds every restored answer).
+// holds every restored answer). A restored written response is likewise
+// adopted as known text without a write.
 type RestoreGuard = { restoring: boolean };
+
+// Every lesson quiz section (`#quiz`) holds exactly one textarea: the Show
+// Your Thinking explanation the lesson submits as `writtenResponse`. Any other
+// shape is not recognized, and then no text is autosaved or restored.
+function quizWrittenResponseInput(doc: Document | undefined): HTMLTextAreaElement | null {
+  if (doc === undefined) return null;
+  const quiz = doc.getElementById("quiz");
+  if (quiz === null) return null;
+  const inputs = quiz.querySelectorAll("textarea");
+  return inputs.length === 1 ? (inputs[0] as HTMLTextAreaElement) : null;
+}
+
+function whenDocumentReady(doc: Document, fn: () => void): void {
+  if (doc.readyState === "loading") {
+    doc.addEventListener("DOMContentLoaded", fn, { once: true });
+  } else {
+    fn();
+  }
+}
+
+// Restores saved text only into an empty input (text the student already
+// typed on this page wins). The input event lets the lesson's own submit gate
+// see the text, exactly as if the student had typed it.
+function applyRestoredWrittenResponse(
+  doc: Document,
+  text: string,
+  guard: RestoreGuard,
+): void {
+  const input = quizWrittenResponseInput(doc);
+  if (input === null || input.disabled || input.value.trim().length > 0) return;
+  guard.restoring = true;
+  try {
+    input.value = text;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  } finally {
+    guard.restoring = false;
+  }
+}
 
 function applyRestoredSelections(
   doc: Document,
@@ -369,6 +410,10 @@ function adoptPersistedForPage(
   if (doc === undefined) return [];
   const binding = readPresentationBinding(doc);
   if (!presentationMatchesSession(binding, state)) return [];
+  const savedText = state.writtenResponse;
+  if (typeof savedText === "string" && savedText.trim().length > 0) {
+    whenDocumentReady(doc, () => applyRestoredWrittenResponse(doc, savedText, guard));
+  }
   const kept: SessionResponse[] = [];
   const selections: QuizSelection[] = [];
   for (const response of state.responses) {
@@ -632,6 +677,130 @@ type DeliveryNavigationState = {
   finalizeSettled?: (finalized: boolean) => void;
 };
 
+// Student save status. A compact line beside the quiz Submit button; it never
+// blocks the quiz and never claims "Saved" before the backend acknowledged the
+// latest change.
+const SAVE_STATUS_ID = "lyfelabz-save-status";
+const SAVE_STATUS_STYLE_ID = "lyfelabz-save-status-style";
+
+type SaveStatusView = SaveStatus | "signedOut" | "tooLong";
+
+export const SAVE_STATUS_MESSAGES: Readonly<Record<SaveStatusView, string>> = {
+  idle: "",
+  pending: "Saving...",
+  saving: "Saving...",
+  saved: "Saved",
+  retrying: "Connection problem. Trying to save again...",
+  failed: "Not saved. Check your connection. Your work is still on this page.",
+  blocked:
+    "Not saved. Copy your written explanation somewhere safe, then reload this page to keep saving.",
+  signedOut:
+    "Not saved. You appear to be signed out. Sign in and reopen the assignment to save your work.",
+  tooLong: `Your explanation is not saved. It is over ${WRITTEN_RESPONSE_MAX_LENGTH.toLocaleString("en-US")} characters. Shorten it to keep saving.`,
+};
+
+const SAVE_STATUS_CSS =
+  `#${SAVE_STATUS_ID}{margin:.6rem auto 0;text-align:center;font-size:.85rem;line-height:1.4;color:var(--text-muted,#7ab4cc);min-height:1.2em}` +
+  `#${SAVE_STATUS_ID}[data-save-status="failed"],#${SAVE_STATUS_ID}[data-save-status="blocked"],#${SAVE_STATUS_ID}[data-save-status="signedOut"],#${SAVE_STATUS_ID}[data-save-status="tooLong"]{color:var(--orange,#e67e22);font-weight:600}` +
+  `#${SAVE_STATUS_ID} button{margin-left:.5rem;min-height:2.2rem;padding:.3rem .9rem;border-radius:8px;border:1.5px solid currentColor;background:transparent;color:inherit;font:inherit;cursor:pointer}`;
+
+function ensureSaveStatusElement(doc: Document | undefined): HTMLElement | null {
+  if (doc === undefined) return null;
+  const existing = doc.getElementById(SAVE_STATUS_ID);
+  if (existing !== null) return existing;
+  const quiz = doc.getElementById("quiz");
+  const submit = quiz?.querySelector(".quiz-submit-btn") ?? null;
+  if (quiz === null || quiz === undefined || submit === null || submit.parentNode === null) {
+    return null;
+  }
+  if (doc.getElementById(SAVE_STATUS_STYLE_ID) === null && doc.head !== null) {
+    const style = doc.createElement("style");
+    style.id = SAVE_STATUS_STYLE_ID;
+    style.textContent = SAVE_STATUS_CSS;
+    doc.head.appendChild(style);
+  }
+  const el = doc.createElement("div");
+  el.id = SAVE_STATUS_ID;
+  el.setAttribute("role", "status");
+  el.setAttribute("aria-live", "polite");
+  el.setAttribute("data-save-status", "idle");
+  submit.parentNode.insertBefore(el, submit.nextSibling);
+  return el;
+}
+
+function renderSaveStatus(
+  doc: Document | undefined,
+  status: SaveStatusView | "hidden",
+  onRetry?: () => void,
+): void {
+  const el = ensureSaveStatusElement(doc);
+  if (el === null || doc === undefined) return;
+  el.setAttribute("data-save-status", status);
+  el.textContent = status === "hidden" ? "" : SAVE_STATUS_MESSAGES[status];
+  if (status === "failed" && onRetry !== undefined) {
+    const button = doc.createElement("button");
+    button.type = "button";
+    button.textContent = "Try again";
+    button.addEventListener("click", onRetry);
+    el.appendChild(button);
+  }
+}
+
+// One save queue per assigned page: selections and Show Your Thinking text
+// are saved together through the runtime, with bounded retries and a visible
+// status (see saveCoordinator.ts).
+//
+// Over-limit text is never sent (the server would store a truncated copy and
+// the status would say Saved). The last saved text stays on the server, the
+// text stays on the page, and the status says the explanation is not saved
+// until it is shortened. Connection and reload problems still take precedence.
+type PageSaves = SaveCoordinator & {
+  setTextOverLimit(over: boolean): void;
+  isTextOverLimit(): boolean;
+};
+
+function createPageSaveCoordinator(
+  win: WindowWithRuntime,
+  runtime: AssessmentRuntime,
+): PageSaves {
+  const doc = documentOf(win);
+  let coordinator: SaveCoordinator | null = null;
+  let textOverLimit = false;
+  const retry = () => coordinator?.retryNow();
+  const render = () => {
+    if (coordinator === null) return;
+    const status = coordinator.getStatus();
+    const urgent = status === "blocked" || status === "failed" || status === "retrying";
+    renderSaveStatus(doc, textOverLimit && !urgent ? "tooLong" : status, retry);
+  };
+  coordinator = createSaveCoordinator({
+    send: (responses, writtenResponse) =>
+      writtenResponse === undefined
+        ? runtime.autosave(responses)
+        : runtime.autosave(responses, writtenResponse),
+    // The runtime refuses every later call until a reload once it is in its
+    // error state (authentication, permission, integrity, refusal).
+    isPermanentFailure: () => runtime.getStatus().mode === "error",
+    onError: (err) => recordLastError(win, "autosave", err),
+    onStatus: () => render(),
+  });
+  const base = coordinator;
+  return {
+    ...base,
+    hasUnsavedChanges: () => textOverLimit || base.hasUnsavedChanges(),
+    resetForNewAttempt: () => {
+      textOverLimit = false;
+      base.resetForNewAttempt();
+    },
+    setTextOverLimit(over) {
+      if (over === textOverLimit) return;
+      textOverLimit = over;
+      render();
+    },
+    isTextOverLimit: () => textOverLimit,
+  };
+}
+
 function installLessonQuiz(
   win: WindowWithRuntime,
   runtime: AssessmentRuntime | null,
@@ -642,6 +811,10 @@ function installLessonQuiz(
   // runtime that loads before the page finishes parsing still sees the block.
   const mapSelections = (indexSelections: ReadonlyArray<number | null | undefined>) =>
     mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win)));
+  const saves =
+    runtime !== null && runtime.hasAssignmentContext
+      ? createPageSaveCoordinator(win, runtime)
+      : null;
   // New attempts. Every lesson locks its answers once Submit is pressed and only
   // unlocks them by rebuilding the quiz (Try Again), so an answer arriving
   // after a submission is the first answer of a new attempt. The adapter then
@@ -649,6 +822,92 @@ function installLessonQuiz(
   // and the earlier submission's pending outcome is dropped rather than
   // reported over the new attempt. No lesson markup or script changes.
   let attemptGeneration = 0;
+  // Starts the new attempt when the first change arrives after a submission.
+  // Returns false when the new attempt could not begin.
+  const ensureCurrentAttempt = async (): Promise<boolean> => {
+    if (runtime === null || !runtime.hasSubmittedAttempt()) return true;
+    attemptGeneration += 1;
+    try {
+      await runtime.restart();
+    } catch (err) {
+      // The new attempt could not begin; finalize reports the cause.
+      recordLastError(win, "begin", err);
+      return false;
+    }
+    saves?.resetForNewAttempt();
+    saves?.resume();
+    return true;
+  };
+  if (saves !== null && runtime !== null) {
+    const doc = documentOf(win);
+    if (doc !== undefined) {
+      whenDocumentReady(doc, () => {
+        const input = quizWrittenResponseInput(doc);
+        if (input === null) return;
+        input.addEventListener("input", () => {
+          const text = input.value.trim();
+          if (restoreGuard.restoring) {
+            saves.adoptWrittenResponse(text);
+            return;
+          }
+          const save = () => {
+            const over = text.length > WRITTEN_RESPONSE_MAX_LENGTH;
+            saves.setTextOverLimit(over);
+            if (!over) saves.setWrittenResponse(text);
+          };
+          if (runtime.hasSubmittedAttempt()) {
+            void ensureCurrentAttempt().then((ok) => {
+              if (ok) save();
+            });
+            return;
+          }
+          save();
+        });
+      });
+    }
+    // Submit guard: over-limit text would be submitted truncated. Every lesson
+    // reveals answers and locks the quiz in its own Submit handler, so the
+    // click is stopped in the capture phase, before that handler runs, and the
+    // student is sent back to shorten the explanation.
+    doc?.addEventListener(
+      "click",
+      (event) => {
+        if (!saves.isTextOverLimit()) return;
+        const target = event.target as Element | null;
+        const submit = target?.closest?.("#quiz .quiz-submit-btn");
+        if (submit === null || submit === undefined) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const input = quizWrittenResponseInput(doc);
+        try {
+          input?.focus();
+        } catch {
+          // Focus is best effort.
+        }
+      },
+      true,
+    );
+    // Page hide: send any debounced change now. Delivery is best effort; an
+    // abrupt close can still drop the last change.
+    try {
+      win.addEventListener("pagehide", () => saves.flush());
+      doc?.addEventListener("visibilitychange", () => {
+        if (doc.visibilityState === "hidden") saves.flush();
+      });
+      win.addEventListener("online", () => {
+        const status = saves.getStatus();
+        if (status === "failed" || status === "retrying") saves.retryNow();
+      });
+      win.addEventListener("beforeunload", (event) => {
+        if (!saves.hasUnsavedChanges()) return;
+        saves.flush();
+        event.preventDefault();
+        event.returnValue = "";
+      });
+    } catch {
+      // Event wiring is best effort.
+    }
+  }
   const helper: LessonQuizGlobal = {
     version: VERSION,
     optionLetters: OPTION_LETTERS,
@@ -658,16 +917,7 @@ function installLessonQuiz(
     autosave: async (indexSelections) => {
       if (runtime === null || !runtime.hasAssignmentContext) return null;
       if (restoreGuard.restoring) return null;
-      if (runtime.hasSubmittedAttempt()) {
-        attemptGeneration += 1;
-        try {
-          await runtime.restart();
-        } catch (err) {
-          // The new attempt could not begin; finalize reports the cause.
-          recordLastError(win, "begin", err);
-          return null;
-        }
-      }
+      if (!(await ensureCurrentAttempt())) return null;
       let responses: readonly SessionResponse[];
       try {
         responses = mapSelections(indexSelections);
@@ -677,18 +927,10 @@ function installLessonQuiz(
         return null;
       }
       if (responses.length === 0) return null;
-      try {
-        return await runtime.autosave(responses);
-      } catch (err) {
-        // Autosave failure is soft by design for the lesson UX
-        // (byte-identical coalesce, subsequent autosaves recover the
-        // payload), but the underlying Firebase rejection is the first
-        // observable evidence of a callable failure and disappears
-        // forever once the orchestrator masks it behind the generic
-        // error-state guard. Preserve it for diagnostic inspection.
-        recordLastError(win, "autosave", err);
-        return null;
-      }
+      // Autosave failure is soft for the lesson (null): the save queue
+      // retries transient failures, shows the student the save status, and
+      // records the underlying rejection for diagnostics.
+      return saves === null ? null : saves.setResponses(responses);
     },
     finalize: async (indexSelections, options) => {
       if (runtime === null) {
@@ -715,12 +957,20 @@ function installLessonQuiz(
       const deliveryNav = win[NAMESPACE]?.deliveryNavigation;
       deliveryNav?.finalizeStarted?.();
       const generation = attemptGeneration;
+      // Background saves hold while the submission writes its own final
+      // state, so none can land between that write and the scored finalize.
+      if (saves !== null) await saves.pause();
       try {
         const result = await runtime.finalize(responses, writtenResponse);
         deliveryNav?.finalizeSettled?.(true);
         if (generation !== attemptGeneration) return supersededSubmission();
+        // The submission carried the final state; nothing is left unsaved
+        // (no leave-page warning). Saving stays held until a new attempt.
+        saves?.resetForNewAttempt();
+        renderSaveStatus(documentOf(win), "hidden");
         return { ok: true, result };
       } catch (err) {
+        saves?.resume();
         deliveryNav?.finalizeSettled?.(false);
         recordLastError(win, "finalize", err);
         if (generation !== attemptGeneration) return supersededSubmission();
@@ -888,6 +1138,7 @@ function createBackedCallables(functions: Functions): RuntimeCallables {
   const persistedOf = (data: Record<string, unknown>): {
     readonly responses: readonly SessionResponse[];
     readonly assessmentPresentationRevisionId?: string;
+    readonly writtenResponse?: string;
   } => {
     const responses: SessionResponse[] = [];
     if (Array.isArray(data.responses)) {
@@ -900,9 +1151,14 @@ function createBackedCallables(functions: Functions): RuntimeCallables {
       }
     }
     const apId = data.assessmentPresentationRevisionId;
-    return typeof apId === "string" && apId.length > 0
-      ? { responses, assessmentPresentationRevisionId: apId }
-      : { responses };
+    const text = data.writtenResponse;
+    return {
+      responses,
+      ...(typeof apId === "string" && apId.length > 0
+        ? { assessmentPresentationRevisionId: apId }
+        : {}),
+      ...(typeof text === "string" && text.trim().length > 0 ? { writtenResponse: text } : {}),
+    };
   };
   return {
     begin: async (assignmentId, launchRef) => {
@@ -992,7 +1248,10 @@ function installSignedOutLessonQuiz(win: WindowWithRuntime): void {
     hasAssignmentContext: () => true,
     mapIndexSelectionsToResponses: (indexSelections) =>
       mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win))),
-    autosave: async () => null,
+    autosave: async () => {
+      renderSaveStatus(documentOf(win), "signedOut");
+      return null;
+    },
     finalize: async () => ({
       ok: false,
       message:
