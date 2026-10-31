@@ -5,7 +5,7 @@
 // deploy) builds and gates both artifacts from the same checkout:
 //
 //   1. the committed homepage catalog matches the curriculum registry;
-//   2. the application bundle is built;
+//   2. the application bundle and active assessment runtime are built;
 //   3. Teacher Units intent alone rebuilds Functions for backend comparison;
 //   4. the app and marketing artifacts are built from their manifests;
 //   5. the pair ownership/parity gate passes;
@@ -40,6 +40,7 @@ const {
 
 const FUNCTIONS_BUILD = Object.freeze(['npm', ['--prefix', 'platform/functions', 'run', 'build']]);
 const APP_BUNDLE_BUILD = Object.freeze(['npm', ['--prefix', 'app', 'run', 'build']]);
+const ASSESSMENT_RUNTIME_BUILD = Object.freeze(['npm', ['--prefix', 'app', 'run', 'build:runtime']]);
 const recordDirectory = path.join(repositoryRoot, 'dist', 'hosting-release');
 const pairRecordPath = path.join(recordDirectory, 'pair-build.json');
 
@@ -71,6 +72,10 @@ function buildPair({ intent, target, runBundleBuild = true, runFunctionsBuild = 
     // policy-capable only; backend eligibility remains authoritative.
     execFileSync(process.execPath, [path.join(repositoryRoot, 'app/scripts/build-application.cjs'), '--build', repositoryRoot, intent, ...(target ? [target.projectId,target.environment,target.origin] : [])], { cwd:repositoryRoot, stdio:['ignore','ignore','inherit'] });
   }
+  // Both manifests copy this tracked generated asset. Always overwrite it
+  // from this checkout before either packager runs, even when reusing the
+  // app bundle. A failed runtime build must abort the paired release.
+  execFileSync(ASSESSMENT_RUNTIME_BUILD[0], ASSESSMENT_RUNTIME_BUILD[1], { cwd: repositoryRoot, stdio: 'inherit' });
   if (intent === 'teacher-units' && runFunctionsBuild) {
     // Rebuild the packaged runtime locally, without deploying Functions.
     fs.rmSync(path.join(repositoryRoot, 'platform/functions/lib'), { recursive: true, force: true });
@@ -159,4 +164,4 @@ if (require.main === module) {
   hostingPredeploy().catch(error => { console.error(error.message); process.exitCode = 1; });
 }
 
-module.exports = { APP_BUNDLE_BUILD, FUNCTIONS_BUILD, buildPair, hostingPredeploy, verifyPreparedPair, gitSource, pairRecordPath, recordDirectory };
+module.exports = { APP_BUNDLE_BUILD, ASSESSMENT_RUNTIME_BUILD, FUNCTIONS_BUILD, buildPair, hostingPredeploy, verifyPreparedPair, gitSource, pairRecordPath, recordDirectory };

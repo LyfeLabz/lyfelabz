@@ -8,11 +8,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const vm = require('node:vm');
+const { createRequire } = require('node:module');
 
 const { buildApplicationArtifact } = require('../app-hosting/build.cjs');
 const { buildMarketingArtifact } = require('../marketing-hosting/build.cjs');
 const { spliceCatalog } = require('../../app/scripts/curriculumCatalog.cjs');
-const { APP_BUNDLE_BUILD } = require('./build-pair.cjs');
+const { APP_BUNDLE_BUILD, ASSESSMENT_RUNTIME_BUILD } = require('./build-pair.cjs');
 const {
   loadContract,
   readConfigFile,
@@ -127,7 +129,100 @@ test('a declared host-specific exception is the only way two shared copies may d
 
 test('the pair build runs the application bundle build and both predeploys use it', () => {
   assert.deepEqual(APP_BUNDLE_BUILD, ['npm', ['--prefix', 'app', 'run', 'build']]);
+  assert.deepEqual(ASSESSMENT_RUNTIME_BUILD, ['npm', ['--prefix', 'app', 'run', 'build:runtime']]);
   for (const target of ['app', 'marketing']) assert.deepEqual(targets[target].predeploy, ['node scripts/hosting-release/build-pair.cjs']);
+});
+
+test('the packaged active runtime equals a fresh build of the current entry and autosave coordinator', async () => {
+  const built = require('../../app/node_modules/esbuild').buildSync({
+    absWorkingDir: path.join(repositoryRoot, 'app'), entryPoints: ['src/runtime/entry.ts'],
+    bundle: true, format: 'iife', target: 'es2020',
+    outfile: '../assets/lyfelabz-assessment-runtime-active.js', write: false, metafile: true,
+  });
+  for (const input of ['src/runtime/entry.ts', 'src/runtime/orchestrator.ts', 'src/runtime/saveCoordinator.ts', 'src/runtime/launchParams.ts', 'src/firebase-config.ts']) {
+    assert.ok(built.metafile.inputs[input], input);
+  }
+  const bytes = Buffer.from(built.outputFiles[0].contents);
+  for (const directory of [repositoryRoot, appDirectory, marketingDirectory]) {
+    assert.deepEqual(fs.readFileSync(path.join(directory, 'assets/lyfelabz-assessment-runtime-active.js')), bytes);
+  }
+  // Exercise the actual emitted coordinator: a text edit during an in-flight
+  // selection save must queue the complete latest state behind that save.
+  const code = bytes.toString();
+  const start = code.indexOf('  // src/runtime/saveCoordinator.ts');
+  const end = code.indexOf('  // src/runtime/entry.ts', start);
+  assert.ok(start >= 0 && end > start, 'coordinator is bundled before the lesson adapter');
+  const context = { setTimeout, clearTimeout };
+  vm.runInNewContext(code.slice(start, end) + '\nglobalThis.create = createSaveCoordinator;', context);
+  const writes = [];
+  let finish;
+  const coordinator = context.create({
+    send: (responses, text) => new Promise(resolve => { writes.push({ responses, text }); finish = resolve; }),
+    isPermanentFailure: () => false,
+  });
+  const responses = [{ itemId: 'synthetic-item', response: 'B' }];
+  coordinator.setResponses(responses);
+  coordinator.setWrittenResponse('synthetic reasoning');
+  coordinator.flush();
+  assert.equal(writes.length, 1);
+  finish({ persisted: true });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(writes.length, 2);
+  assert.deepEqual(writes[1], { responses, text: 'synthetic reasoning' });
+  assert.notEqual(coordinator.getStatus(), 'saved');
+  finish({ persisted: true });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(coordinator.getStatus(), 'saved');
+});
+
+// Isolate orchestration from real outputs so a deliberately stale asset or
+// failed compiler never damages the checkout or another release's artifacts.
+function isolatedPairBuild({ failRuntime = false } = {}) {
+  const file = path.join(__dirname, 'build-pair.cjs');
+  const realRequire = createRequire(file);
+  const events = [];
+  let asset = 'stale pre-existing runtime';
+  const overrides = {
+    'node:child_process': { execFileSync(command, args) {
+      if (command === 'git') return args[0] === 'rev-parse' ? 'a'.repeat(40) : '';
+      if (command === ASSESSMENT_RUNTIME_BUILD[0] && JSON.stringify(args) === JSON.stringify(ASSESSMENT_RUNTIME_BUILD[1])) {
+        events.push('runtime');
+        if (failRuntime) throw new Error('synthetic compiler failure');
+        asset = 'freshly generated runtime';
+      } else events.push('app-bundle');
+    } },
+    'node:fs': { mkdirSync() {}, writeFileSync() {} },
+    '../app-hosting/build.cjs': { buildApplicationArtifact: () => pack('app') },
+    '../marketing-hosting/build.cjs': { buildMarketingArtifact: () => pack('marketing') },
+    './contract.cjs': { ...realRequire('./contract.cjs'), artifactFiles: () => [], verifyPair: () => ({}) },
+    './backend-state.cjs': { releaseIntent() {}, releaseCandidate: () => ({}) },
+  };
+  function pack(target) {
+    assert.equal(asset, 'freshly generated runtime');
+    events.push(target);
+    return { files: [] };
+  }
+  const module = { exports: {} };
+  vm.runInNewContext(fs.readFileSync(file, 'utf8'), {
+    module, require: name => overrides[name] || realRequire(name), process, console,
+  }, { filename: file });
+  return { build: module.exports.buildPair, events };
+}
+
+for (const runBundleBuild of [true, false]) {
+  test(`paired build replaces a stale runtime before packaging (app rebuild: ${runBundleBuild})`, () => {
+    const fixture = isolatedPairBuild();
+    fixture.build({ intent: 'general', runBundleBuild, placementParity: () => ({}), log() {} });
+    assert.deepEqual(fixture.events, [...(runBundleBuild ? ['app-bundle'] : []), 'runtime', 'app', 'marketing']);
+  });
+}
+
+test('a runtime compiler failure aborts release preparation despite an existing asset', () => {
+  const fixture = isolatedPairBuild({ failRuntime: true });
+  assert.throws(() => require('./prepare.cjs').checkAndBuild({
+    intent: 'general', run() {}, build: options => fixture.build({ ...options, runBundleBuild: false, placementParity: () => ({}) }), log() {},
+  }), /synthetic compiler failure/);
+  assert.deepEqual(fixture.events, ['runtime']);
 });
 
 test('directory indexes are requested by their directory URL', () => {

@@ -17,7 +17,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { APP_BUNDLE_BUILD, buildPair } = require('./build-pair.cjs');
+const { APP_BUNDLE_BUILD, ASSESSMENT_RUNTIME_BUILD, buildPair } = require('./build-pair.cjs');
 const {
   TARGETS,
   environmentForProject,
@@ -85,15 +85,14 @@ function preflight({ project, intent, expectSha, allowDirty, offline }, { git = 
   return { contract, environment, source, sites, intent, message: releaseMessage(source.sha, source.dirty) };
 }
 
-// The check commands, in order. The application bundle (ignored build output
-// app/dist/bundle.js) is built FIRST: app verify and the Hosting suites build
-// the app artifact, which requires it, so a pristine release checkout must
-// not depend on a bundle left behind by an earlier run or on test order.
+// Build both bundles before verification: artifact tests must consume current
+// source, including the tracked active runtime, rather than an earlier build.
 function checkCommands() {
   return [
     APP_BUNDLE_BUILD,
+    ASSESSMENT_RUNTIME_BUILD,
     ['npm', ['--prefix', 'app', 'run', 'verify']],
-    [process.execPath, ['--test', ...HOSTING_TEST_FILES]]
+    [process.execPath, ['--test', '--test-concurrency=1', ...HOSTING_TEST_FILES]]
   ];
 }
 
