@@ -8580,7 +8580,9 @@
   }
   function applyRestoredWrittenResponse(doc, text, guard) {
     const input = quizWrittenResponseInput(doc);
-    if (input === null || input.disabled || input.value.trim().length > 0) return;
+    if (input === null || input.disabled) return false;
+    const current = input.value.trim();
+    if (current.length > 0 && current !== text.trim()) return false;
     guard.restoring = true;
     try {
       input.value = text;
@@ -8588,9 +8590,11 @@
     } finally {
       guard.restoring = false;
     }
+    return true;
   }
   function applyRestoredSelections(doc, selections, guard) {
     const buttons = quizOptionButtons(doc);
+    let restored = false;
     guard.restoring = true;
     try {
       for (const { qi, oi } of selections) {
@@ -8605,10 +8609,19 @@
         const button = buttons.get(`${qi}:${oi}`);
         if (button === void 0 || button.disabled) continue;
         button.click();
+        restored = true;
       }
     } finally {
       guard.restoring = false;
     }
+    return restored;
+  }
+  function selectedChoiceKeys(doc) {
+    const keys = [];
+    for (const [key, el] of quizOptionButtons(doc)) {
+      if (el.classList.contains("selected")) keys.push(key);
+    }
+    return keys;
   }
   function adoptPersistedForPage(win, state, guard) {
     const doc = documentOf(win);
@@ -8616,9 +8629,6 @@
     const binding = readPresentationBinding(doc);
     if (!presentationMatchesSession(binding, state)) return [];
     const savedText = state.writtenResponse;
-    if (typeof savedText === "string" && savedText.trim().length > 0) {
-      whenDocumentReady(doc, () => applyRestoredWrittenResponse(doc, savedText, guard));
-    }
     const kept = [];
     const selections = [];
     for (const response of state.responses) {
@@ -8627,16 +8637,17 @@
       kept.push(response);
       selections.push(located);
     }
-    if (selections.length > 0) {
-      if (doc.readyState === "loading") {
-        doc.addEventListener(
-          "DOMContentLoaded",
-          () => applyRestoredSelections(doc, selections, guard),
-          { once: true }
-        );
-      } else {
-        applyRestoredSelections(doc, selections, guard);
-      }
+    guard.serverSelections = new Set(selections.map(({ qi, oi }) => `${qi}:${oi}`));
+    const hasText = typeof savedText === "string" && savedText.trim().length > 0;
+    if (hasText || selections.length > 0) {
+      whenDocumentReady(doc, () => {
+        const textRestored = hasText && applyRestoredWrittenResponse(doc, savedText, guard);
+        const answersRestored = applyRestoredSelections(doc, selections, guard);
+        const server = guard.serverSelections ?? /* @__PURE__ */ new Set();
+        const pageText = quizWrittenResponseInput(doc)?.value.trim() ?? "";
+        const matchesServer = selectedChoiceKeys(doc).every((key) => server.has(key)) && pageText === (hasText ? savedText.trim() : "");
+        if ((textRestored || answersRestored) && matchesServer) guard.onRestored?.();
+      });
     }
     return kept;
   }
@@ -8781,7 +8792,9 @@
     return new Promise(() => void 0);
   }
   var SAVE_STATUS_ID = "lyfelabz-save-status";
+  var SAVE_STATUS_LABEL_ID = "lyfelabz-save-status-label";
   var SAVE_STATUS_STYLE_ID = "lyfelabz-save-status-style";
+  var COMPACT_SAVE_STATUSES = /* @__PURE__ */ new Set(["pending", "saving", "saved"]);
   var SAVE_STATUS_MESSAGES = {
     idle: "",
     pending: "Saving...",
@@ -8793,16 +8806,17 @@
     signedOut: "Not saved. You appear to be signed out. Sign in and reopen the assignment to save your work.",
     tooLong: `Your explanation is not saved. It is over ${WRITTEN_RESPONSE_MAX_LENGTH.toLocaleString("en-US")} characters. Shorten it to keep saving.`
   };
-  var SAVE_STATUS_CSS = `#${SAVE_STATUS_ID}{margin:.6rem auto 0;text-align:center;font-size:.85rem;line-height:1.4;color:var(--text-muted,#7ab4cc);min-height:1.2em}#${SAVE_STATUS_ID}[data-save-status="failed"],#${SAVE_STATUS_ID}[data-save-status="blocked"],#${SAVE_STATUS_ID}[data-save-status="signedOut"],#${SAVE_STATUS_ID}[data-save-status="tooLong"]{color:var(--orange,#e67e22);font-weight:600}#${SAVE_STATUS_ID} button{margin-left:.5rem;min-height:2.2rem;padding:.3rem .9rem;border-radius:8px;border:1.5px solid currentColor;background:transparent;color:inherit;font:inherit;cursor:pointer}`;
+  var SAVE_STATUS_SELECTOR = `#${SAVE_STATUS_ID}`;
+  var SAVE_STATUS_CSS = `${SAVE_STATUS_SELECTOR}{box-sizing:border-box;font-size:.8rem;line-height:1.35;color:var(--text-muted,#7ab4cc);text-align:right}${SAVE_STATUS_SELECTOR}[data-save-anchor="tray"]{position:absolute;top:100%;right:max(.75rem,env(safe-area-inset-right));margin-top:.45rem;max-width:min(22rem,calc(100% - 1.5rem));padding:.3rem .8rem;border-radius:999px;background:var(--dark2,#111a24);border:1px solid var(--border,rgba(255,255,255,.12));box-shadow:0 4px 12px rgba(0,0,0,.25);pointer-events:none}${SAVE_STATUS_SELECTOR}[data-save-anchor="inline"]{margin:.6rem auto 0;text-align:center;min-height:1.2em}${SAVE_STATUS_SELECTOR}[data-save-status="idle"],${SAVE_STATUS_SELECTOR}[data-save-status="hidden"]{padding:0;border-color:transparent;background:transparent;box-shadow:none}${SAVE_STATUS_SELECTOR}[data-save-status="failed"],${SAVE_STATUS_SELECTOR}[data-save-status="blocked"],${SAVE_STATUS_SELECTOR}[data-save-status="signedOut"],${SAVE_STATUS_SELECTOR}[data-save-status="tooLong"]{color:var(--orange,#e67e22);font-weight:600;border-radius:12px}${SAVE_STATUS_SELECTOR} button{margin-left:.5rem;min-height:2.2rem;padding:.3rem .9rem;border-radius:8px;border:1.5px solid currentColor;background:transparent;color:inherit;font:inherit;cursor:pointer;pointer-events:auto}${SAVE_STATUS_SELECTOR}[data-save-compact="true"]{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;box-shadow:none}#${SAVE_STATUS_LABEL_ID}{flex:none;font-size:.75rem;line-height:1;font-weight:700;white-space:nowrap;color:var(--text-muted,#7ab4cc)}#${SAVE_STATUS_LABEL_ID}:empty{display:none}body:has(nav.menu-open) ${SAVE_STATUS_SELECTOR}[data-save-anchor="tray"]{display:none}`;
   function ensureSaveStatusElement(doc) {
     if (doc === void 0) return null;
     const existing = doc.getElementById(SAVE_STATUS_ID);
     if (existing !== null) return existing;
     const quiz = doc.getElementById("quiz");
-    const submit = quiz?.querySelector(".quiz-submit-btn") ?? null;
-    if (quiz === null || quiz === void 0 || submit === null || submit.parentNode === null) {
-      return null;
-    }
+    if (quiz === null) return null;
+    const tray = quiz.querySelector(".quiz-progress-sticky");
+    const submitRow = quiz.querySelector(".quiz-submit-btn")?.parentElement ?? null;
+    if (tray === null && (submitRow === null || submitRow.parentNode === null)) return null;
     if (doc.getElementById(SAVE_STATUS_STYLE_ID) === null && doc.head !== null) {
       const style = doc.createElement("style");
       style.id = SAVE_STATUS_STYLE_ID;
@@ -8814,7 +8828,20 @@
     el.setAttribute("role", "status");
     el.setAttribute("aria-live", "polite");
     el.setAttribute("data-save-status", "idle");
-    submit.parentNode.insertBefore(el, submit.nextSibling);
+    if (tray !== null) {
+      el.setAttribute("data-save-anchor", "tray");
+      tray.appendChild(el);
+      const row = tray.querySelector(".quiz-progress");
+      if (row !== null) {
+        const label = doc.createElement("span");
+        label.id = SAVE_STATUS_LABEL_ID;
+        label.setAttribute("aria-hidden", "true");
+        row.insertBefore(label, row.querySelector(".progress-text"));
+      }
+    } else if (submitRow !== null && submitRow.parentNode !== null) {
+      el.setAttribute("data-save-anchor", "inline");
+      submitRow.parentNode.insertBefore(el, submitRow.nextSibling);
+    }
     return el;
   }
   function renderSaveStatus(doc, status, onRetry) {
@@ -8822,6 +8849,12 @@
     if (el === null || doc === void 0) return;
     el.setAttribute("data-save-status", status);
     el.textContent = status === "hidden" ? "" : SAVE_STATUS_MESSAGES[status];
+    const label = doc.getElementById(SAVE_STATUS_LABEL_ID);
+    if (label !== null) {
+      const compact = status === "hidden" || status === "idle" || COMPACT_SAVE_STATUSES.has(status);
+      el.setAttribute("data-save-compact", compact ? "true" : "false");
+      label.textContent = compact && status !== "hidden" ? SAVE_STATUS_MESSAGES[status] : "";
+    }
     if (status === "failed" && onRetry !== void 0) {
       const button = doc.createElement("button");
       button.type = "button";
@@ -8862,12 +8895,17 @@
         textOverLimit = over;
         render();
       },
-      isTextOverLimit: () => textOverLimit
+      isTextOverLimit: () => textOverLimit,
+      showRestored() {
+        if (base.getStatus() !== "idle" || base.hasUnsavedChanges() || textOverLimit) return;
+        renderSaveStatus(doc, "saved", retry);
+      }
     };
   }
   function installLessonQuiz(win, runtime, hasAssignmentContext, restoreGuard = { restoring: false }) {
     const mapSelections = (indexSelections) => mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win)));
     const saves = runtime !== null && runtime.hasAssignmentContext ? createPageSaveCoordinator(win, runtime) : null;
+    if (saves !== null) restoreGuard.onRestored = () => saves.showRestored();
     let attemptGeneration = 0;
     const ensureCurrentAttempt = async () => {
       if (runtime === null || !runtime.hasSubmittedAttempt()) return true;
@@ -8882,6 +8920,46 @@
       saves?.resume();
       return true;
     };
+    const saveWrittenResponse = (text) => {
+      if (saves === null) return;
+      const over = text.length > WRITTEN_RESPONSE_MAX_LENGTH;
+      saves.setTextOverLimit(over);
+      if (!over) saves.setWrittenResponse(text);
+    };
+    let earlyInputCaptured = false;
+    const earlyInputWaiting = () => {
+      const doc = documentOf(win);
+      if (earlyInputCaptured || doc === void 0) return false;
+      const text = quizWrittenResponseInput(doc)?.value.trim() ?? "";
+      return text.length > 0 || selectedChoiceKeys(doc).length > 0;
+    };
+    const captureEarlyInput = () => {
+      const doc = documentOf(win);
+      if (saves === null || runtime === null || doc === void 0) return;
+      whenDocumentReady(doc, () => {
+        earlyInputCaptured = true;
+        if (runtime.hasSubmittedAttempt()) return;
+        const server = restoreGuard.serverSelections ?? /* @__PURE__ */ new Set();
+        const chosen = selectedChoiceKeys(doc);
+        if (chosen.some((key) => !server.has(key))) {
+          let count = 0;
+          for (const key of quizOptionButtons(doc).keys()) {
+            count = Math.max(count, Number(key.split(":")[0]) + 1);
+          }
+          const indexSelections = new Array(count).fill(null);
+          for (const key of chosen) {
+            const [qi, oi] = key.split(":").map(Number);
+            indexSelections[qi] = oi;
+          }
+          void helper.autosave(indexSelections);
+        }
+        const input = quizWrittenResponseInput(doc);
+        if (input !== null && !input.disabled) {
+          const text = input.value.trim();
+          if (text.length > 0) saveWrittenResponse(text);
+        }
+      });
+    };
     if (saves !== null && runtime !== null) {
       const doc = documentOf(win);
       if (doc !== void 0) {
@@ -8894,18 +8972,13 @@
               saves.adoptWrittenResponse(text);
               return;
             }
-            const save = () => {
-              const over = text.length > WRITTEN_RESPONSE_MAX_LENGTH;
-              saves.setTextOverLimit(over);
-              if (!over) saves.setWrittenResponse(text);
-            };
             if (runtime.hasSubmittedAttempt()) {
               void ensureCurrentAttempt().then((ok) => {
-                if (ok) save();
+                if (ok) saveWrittenResponse(text);
               });
               return;
             }
-            save();
+            saveWrittenResponse(text);
           });
         });
       }
@@ -8936,7 +9009,7 @@
           if (status === "failed" || status === "retrying") saves.retryNow();
         });
         win.addEventListener("beforeunload", (event) => {
-          if (!saves.hasUnsavedChanges()) return;
+          if (!saves.hasUnsavedChanges() && !earlyInputWaiting()) return;
           saves.flush();
           event.preventDefault();
           event.returnValue = "";
@@ -9008,6 +9081,7 @@
     const ns = win[NAMESPACE] ?? {};
     ns[LESSON_QUIZ_KEY] = helper;
     win[NAMESPACE] = ns;
+    return captureEarlyInput;
   }
   function detectAssignmentId(win) {
     try {
@@ -9262,7 +9336,7 @@
     const ns = win[NAMESPACE] ?? {};
     ns[RUNTIME_KEY] = wrapper;
     win[NAMESPACE] = ns;
-    installLessonQuiz(win, runtime, runtime.hasAssignmentContext, restoreGuard);
+    return installLessonQuiz(win, runtime, runtime.hasAssignmentContext, restoreGuard);
   }
   async function bootstrap(win) {
     const assignmentId = detectAssignmentId(win);
@@ -9309,10 +9383,10 @@
       // Quiz session continuity: keep and restore only what this page displays.
       adoptPersisted: (state) => adoptPersistedForPage(win, state, restoreGuard)
     });
-    attachRuntimeAdapter(runtimeWin, runtime, restoreGuard);
+    const captureEarlyInput = attachRuntimeAdapter(runtimeWin, runtime, restoreGuard);
     void runtime.begin().catch((err) => {
       recordLastError(runtimeWin, "begin", err);
-    });
+    }).then(captureEarlyInput);
   }
   var __internal = {
     installLessonQuiz,

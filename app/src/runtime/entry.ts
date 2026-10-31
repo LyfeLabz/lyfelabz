@@ -330,8 +330,14 @@ function quizOptionButtons(doc: Document): Map<string, HTMLElement> {
 // While restoring, the lesson's own handler calls lessonQuiz.autosave with a
 // partially rebuilt selection; those calls are suppressed (the server already
 // holds every restored answer). A restored written response is likewise
-// adopted as known text without a write.
-type RestoreGuard = { restoring: boolean };
+// adopted as known text without a write. `onRestored` runs after the page
+// shows answers or text the server confirmed it holds; `serverSelections`
+// records which displayed choices ("qi:oi") the server holds.
+type RestoreGuard = {
+  restoring: boolean;
+  onRestored?: () => void;
+  serverSelections?: ReadonlySet<string>;
+};
 
 // Every lesson quiz section (`#quiz`) holds exactly one textarea: the Show
 // Your Thinking explanation the lesson submits as `writtenResponse`. Any other
@@ -359,9 +365,14 @@ function applyRestoredWrittenResponse(
   doc: Document,
   text: string,
   guard: RestoreGuard,
-): void {
+): boolean {
   const input = quizWrittenResponseInput(doc);
-  if (input === null || input.disabled || input.value.trim().length > 0) return;
+  if (input === null || input.disabled) return false;
+  // Text the student already has on this page wins, unless it is exactly
+  // what the server holds (a browser restoring the form, say); then it is
+  // adopted as saved.
+  const current = input.value.trim();
+  if (current.length > 0 && current !== text.trim()) return false;
   guard.restoring = true;
   try {
     input.value = text;
@@ -369,14 +380,16 @@ function applyRestoredWrittenResponse(
   } finally {
     guard.restoring = false;
   }
+  return true;
 }
 
 function applyRestoredSelections(
   doc: Document,
   selections: readonly QuizSelection[],
   guard: RestoreGuard,
-): void {
+): boolean {
   const buttons = quizOptionButtons(doc);
+  let restored = false;
   guard.restoring = true;
   try {
     for (const { qi, oi } of selections) {
@@ -392,10 +405,21 @@ function applyRestoredSelections(
       const button = buttons.get(`${qi}:${oi}`);
       if (button === undefined || (button as HTMLButtonElement).disabled) continue;
       button.click();
+      restored = true;
     }
   } finally {
     guard.restoring = false;
   }
+  return restored;
+}
+
+// The displayed choices ("qi:oi") currently selected on the page.
+function selectedChoiceKeys(doc: Document): string[] {
+  const keys: string[] = [];
+  for (const [key, el] of quizOptionButtons(doc)) {
+    if (el.classList.contains("selected")) keys.push(key);
+  }
+  return keys;
 }
 
 // The orchestrator's `adoptPersisted` hook for a lesson page: answers which
@@ -411,9 +435,6 @@ function adoptPersistedForPage(
   const binding = readPresentationBinding(doc);
   if (!presentationMatchesSession(binding, state)) return [];
   const savedText = state.writtenResponse;
-  if (typeof savedText === "string" && savedText.trim().length > 0) {
-    whenDocumentReady(doc, () => applyRestoredWrittenResponse(doc, savedText, guard));
-  }
   const kept: SessionResponse[] = [];
   const selections: QuizSelection[] = [];
   for (const response of state.responses) {
@@ -422,16 +443,21 @@ function adoptPersistedForPage(
     kept.push(response);
     selections.push(located);
   }
-  if (selections.length > 0) {
-    if (doc.readyState === "loading") {
-      doc.addEventListener(
-        "DOMContentLoaded",
-        () => applyRestoredSelections(doc, selections, guard),
-        { once: true },
-      );
-    } else {
-      applyRestoredSelections(doc, selections, guard);
-    }
+  guard.serverSelections = new Set(selections.map(({ qi, oi }) => `${qi}:${oi}`));
+  const hasText = typeof savedText === "string" && savedText.trim().length > 0;
+  if (hasText || selections.length > 0) {
+    whenDocumentReady(doc, () => {
+      const textRestored = hasText && applyRestoredWrittenResponse(doc, savedText, guard);
+      const answersRestored = applyRestoredSelections(doc, selections, guard);
+      // Saved only when the page now shows exactly what the server holds:
+      // an answer or text the student entered here first may not be saved.
+      const server = guard.serverSelections ?? new Set<string>();
+      const pageText = quizWrittenResponseInput(doc)?.value.trim() ?? "";
+      const matchesServer =
+        selectedChoiceKeys(doc).every((key) => server.has(key)) &&
+        pageText === (hasText ? savedText.trim() : "");
+      if ((textRestored || answersRestored) && matchesServer) guard.onRestored?.();
+    });
   }
   return kept;
 }
@@ -677,11 +703,23 @@ type DeliveryNavigationState = {
   finalizeSettled?: (finalized: boolean) => void;
 };
 
-// Student save status. A compact line beside the quiz Submit button; it never
-// blocks the quiz and never claims "Saved" before the backend acknowledged the
-// latest change.
+// Student save status, carried by the quiz's sticky progress tray so it stays
+// in view while the student answers any question and scrolls away with the
+// quiz. It never claims "Saved" before the backend acknowledged the latest
+// change, and no lesson content moves:
+// - Saving and Saved show as a short label inside the tray's progress row
+//   (beside "x / 10 selected"), so they never cover a question.
+// - The longer problem states (Not saved, Try again) hang as a pill below the
+//   tray, absolutely positioned and click-through except for Try again. They
+//   cover the top of the quiz content while shown; that is deliberate.
+// The status element itself is the one live region for every state (visually
+// hidden while the row label shows its text). A quiz without the tray gets an
+// in-flow line after the Submit row instead (never inside it, so Submit stays
+// centered).
 const SAVE_STATUS_ID = "lyfelabz-save-status";
+const SAVE_STATUS_LABEL_ID = "lyfelabz-save-status-label";
 const SAVE_STATUS_STYLE_ID = "lyfelabz-save-status-style";
+const COMPACT_SAVE_STATUSES: ReadonlySet<string> = new Set(["pending", "saving", "saved"]);
 
 type SaveStatusView = SaveStatus | "signedOut" | "tooLong";
 
@@ -699,20 +737,29 @@ export const SAVE_STATUS_MESSAGES: Readonly<Record<SaveStatusView, string>> = {
   tooLong: `Your explanation is not saved. It is over ${WRITTEN_RESPONSE_MAX_LENGTH.toLocaleString("en-US")} characters. Shorten it to keep saving.`,
 };
 
+const SAVE_STATUS_SELECTOR = `#${SAVE_STATUS_ID}`;
 const SAVE_STATUS_CSS =
-  `#${SAVE_STATUS_ID}{margin:.6rem auto 0;text-align:center;font-size:.85rem;line-height:1.4;color:var(--text-muted,#7ab4cc);min-height:1.2em}` +
-  `#${SAVE_STATUS_ID}[data-save-status="failed"],#${SAVE_STATUS_ID}[data-save-status="blocked"],#${SAVE_STATUS_ID}[data-save-status="signedOut"],#${SAVE_STATUS_ID}[data-save-status="tooLong"]{color:var(--orange,#e67e22);font-weight:600}` +
-  `#${SAVE_STATUS_ID} button{margin-left:.5rem;min-height:2.2rem;padding:.3rem .9rem;border-radius:8px;border:1.5px solid currentColor;background:transparent;color:inherit;font:inherit;cursor:pointer}`;
+  `${SAVE_STATUS_SELECTOR}{box-sizing:border-box;font-size:.8rem;line-height:1.35;color:var(--text-muted,#7ab4cc);text-align:right}` +
+  `${SAVE_STATUS_SELECTOR}[data-save-anchor="tray"]{position:absolute;top:100%;right:max(.75rem,env(safe-area-inset-right));margin-top:.45rem;max-width:min(22rem,calc(100% - 1.5rem));padding:.3rem .8rem;border-radius:999px;background:var(--dark2,#111a24);border:1px solid var(--border,rgba(255,255,255,.12));box-shadow:0 4px 12px rgba(0,0,0,.25);pointer-events:none}` +
+  `${SAVE_STATUS_SELECTOR}[data-save-anchor="inline"]{margin:.6rem auto 0;text-align:center;min-height:1.2em}` +
+  `${SAVE_STATUS_SELECTOR}[data-save-status="idle"],${SAVE_STATUS_SELECTOR}[data-save-status="hidden"]{padding:0;border-color:transparent;background:transparent;box-shadow:none}` +
+  `${SAVE_STATUS_SELECTOR}[data-save-status="failed"],${SAVE_STATUS_SELECTOR}[data-save-status="blocked"],${SAVE_STATUS_SELECTOR}[data-save-status="signedOut"],${SAVE_STATUS_SELECTOR}[data-save-status="tooLong"]{color:var(--orange,#e67e22);font-weight:600;border-radius:12px}` +
+  `${SAVE_STATUS_SELECTOR} button{margin-left:.5rem;min-height:2.2rem;padding:.3rem .9rem;border-radius:8px;border:1.5px solid currentColor;background:transparent;color:inherit;font:inherit;cursor:pointer;pointer-events:auto}` +
+  `${SAVE_STATUS_SELECTOR}[data-save-compact="true"]{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;box-shadow:none}` +
+  `#${SAVE_STATUS_LABEL_ID}{flex:none;font-size:.75rem;line-height:1;font-weight:700;white-space:nowrap;color:var(--text-muted,#7ab4cc)}` +
+  `#${SAVE_STATUS_LABEL_ID}:empty{display:none}` +
+  // The phone menu drops the tray out of sticky positioning; the pill follows it.
+  `body:has(nav.menu-open) ${SAVE_STATUS_SELECTOR}[data-save-anchor="tray"]{display:none}`;
 
 function ensureSaveStatusElement(doc: Document | undefined): HTMLElement | null {
   if (doc === undefined) return null;
   const existing = doc.getElementById(SAVE_STATUS_ID);
   if (existing !== null) return existing;
   const quiz = doc.getElementById("quiz");
-  const submit = quiz?.querySelector(".quiz-submit-btn") ?? null;
-  if (quiz === null || quiz === undefined || submit === null || submit.parentNode === null) {
-    return null;
-  }
+  if (quiz === null) return null;
+  const tray = quiz.querySelector(".quiz-progress-sticky");
+  const submitRow = quiz.querySelector(".quiz-submit-btn")?.parentElement ?? null;
+  if (tray === null && (submitRow === null || submitRow.parentNode === null)) return null;
   if (doc.getElementById(SAVE_STATUS_STYLE_ID) === null && doc.head !== null) {
     const style = doc.createElement("style");
     style.id = SAVE_STATUS_STYLE_ID;
@@ -724,7 +771,20 @@ function ensureSaveStatusElement(doc: Document | undefined): HTMLElement | null 
   el.setAttribute("role", "status");
   el.setAttribute("aria-live", "polite");
   el.setAttribute("data-save-status", "idle");
-  submit.parentNode.insertBefore(el, submit.nextSibling);
+  if (tray !== null) {
+    el.setAttribute("data-save-anchor", "tray");
+    tray.appendChild(el);
+    const row = tray.querySelector(".quiz-progress");
+    if (row !== null) {
+      const label = doc.createElement("span");
+      label.id = SAVE_STATUS_LABEL_ID;
+      label.setAttribute("aria-hidden", "true");
+      row.insertBefore(label, row.querySelector(".progress-text"));
+    }
+  } else if (submitRow !== null && submitRow.parentNode !== null) {
+    el.setAttribute("data-save-anchor", "inline");
+    submitRow.parentNode.insertBefore(el, submitRow.nextSibling);
+  }
   return el;
 }
 
@@ -737,6 +797,12 @@ function renderSaveStatus(
   if (el === null || doc === undefined) return;
   el.setAttribute("data-save-status", status);
   el.textContent = status === "hidden" ? "" : SAVE_STATUS_MESSAGES[status];
+  const label = doc.getElementById(SAVE_STATUS_LABEL_ID);
+  if (label !== null) {
+    const compact = status === "hidden" || status === "idle" || COMPACT_SAVE_STATUSES.has(status);
+    el.setAttribute("data-save-compact", compact ? "true" : "false");
+    label.textContent = compact && status !== "hidden" ? SAVE_STATUS_MESSAGES[status] : "";
+  }
   if (status === "failed" && onRetry !== undefined) {
     const button = doc.createElement("button");
     button.type = "button";
@@ -757,6 +823,9 @@ function renderSaveStatus(
 type PageSaves = SaveCoordinator & {
   setTextOverLimit(over: boolean): void;
   isTextOverLimit(): boolean;
+  // The page now shows what the server confirmed it holds. Says Saved only
+  // when nothing on the page is still waiting to be saved.
+  showRestored(): void;
 };
 
 function createPageSaveCoordinator(
@@ -798,6 +867,10 @@ function createPageSaveCoordinator(
       render();
     },
     isTextOverLimit: () => textOverLimit,
+    showRestored() {
+      if (base.getStatus() !== "idle" || base.hasUnsavedChanges() || textOverLimit) return;
+      renderSaveStatus(doc, "saved", retry);
+    },
   };
 }
 
@@ -806,7 +879,7 @@ function installLessonQuiz(
   runtime: AssessmentRuntime | null,
   hasAssignmentContext: boolean,
   restoreGuard: RestoreGuard = { restoring: false },
-): void {
+): () => void {
   // Read at call time (the lesson DOM is complete by the first answer), so a
   // runtime that loads before the page finishes parsing still sees the block.
   const mapSelections = (indexSelections: ReadonlyArray<number | null | undefined>) =>
@@ -815,6 +888,7 @@ function installLessonQuiz(
     runtime !== null && runtime.hasAssignmentContext
       ? createPageSaveCoordinator(win, runtime)
       : null;
+  if (saves !== null) restoreGuard.onRestored = () => saves.showRestored();
   // New attempts. Every lesson locks its answers once Submit is pressed and only
   // unlocks them by rebuilding the quiz (Try Again), so an answer arriving
   // after a submission is the first answer of a new attempt. The adapter then
@@ -838,6 +912,52 @@ function installLessonQuiz(
     saves?.resume();
     return true;
   };
+  const saveWrittenResponse = (text: string) => {
+    if (saves === null) return;
+    const over = text.length > WRITTEN_RESPONSE_MAX_LENGTH;
+    saves.setTextOverLimit(over);
+    if (!over) saves.setWrittenResponse(text);
+  };
+  // Early input. Until the student is signed in the page has no save queue:
+  // the inert helper drops answers and nothing listens to the explanation.
+  // Once the session has begun (answers and text the server holds are then
+  // restored), whatever the student entered meanwhile and the server does not
+  // hold is saved through the ordinary queue, without another keystroke.
+  // Until then, leaving warns.
+  let earlyInputCaptured = false;
+  const earlyInputWaiting = (): boolean => {
+    const doc = documentOf(win);
+    if (earlyInputCaptured || doc === undefined) return false;
+    const text = quizWrittenResponseInput(doc)?.value.trim() ?? "";
+    return text.length > 0 || selectedChoiceKeys(doc).length > 0;
+  };
+  const captureEarlyInput = (): void => {
+    const doc = documentOf(win);
+    if (saves === null || runtime === null || doc === undefined) return;
+    whenDocumentReady(doc, () => {
+      earlyInputCaptured = true;
+      if (runtime.hasSubmittedAttempt()) return;
+      const server = restoreGuard.serverSelections ?? new Set<string>();
+      const chosen = selectedChoiceKeys(doc);
+      if (chosen.some((key) => !server.has(key))) {
+        let count = 0;
+        for (const key of quizOptionButtons(doc).keys()) {
+          count = Math.max(count, Number(key.split(":")[0]) + 1);
+        }
+        const indexSelections: Array<number | null> = new Array<number | null>(count).fill(null);
+        for (const key of chosen) {
+          const [qi, oi] = key.split(":").map(Number);
+          indexSelections[qi!] = oi!;
+        }
+        void helper.autosave(indexSelections);
+      }
+      const input = quizWrittenResponseInput(doc);
+      if (input !== null && !input.disabled) {
+        const text = input.value.trim();
+        if (text.length > 0) saveWrittenResponse(text);
+      }
+    });
+  };
   if (saves !== null && runtime !== null) {
     const doc = documentOf(win);
     if (doc !== undefined) {
@@ -850,18 +970,13 @@ function installLessonQuiz(
             saves.adoptWrittenResponse(text);
             return;
           }
-          const save = () => {
-            const over = text.length > WRITTEN_RESPONSE_MAX_LENGTH;
-            saves.setTextOverLimit(over);
-            if (!over) saves.setWrittenResponse(text);
-          };
           if (runtime.hasSubmittedAttempt()) {
             void ensureCurrentAttempt().then((ok) => {
-              if (ok) save();
+              if (ok) saveWrittenResponse(text);
             });
             return;
           }
-          save();
+          saveWrittenResponse(text);
         });
       });
     }
@@ -899,7 +1014,7 @@ function installLessonQuiz(
         if (status === "failed" || status === "retrying") saves.retryNow();
       });
       win.addEventListener("beforeunload", (event) => {
-        if (!saves.hasUnsavedChanges()) return;
+        if (!saves.hasUnsavedChanges() && !earlyInputWaiting()) return;
         saves.flush();
         event.preventDefault();
         event.returnValue = "";
@@ -985,6 +1100,7 @@ function installLessonQuiz(
   const ns = win[NAMESPACE] ?? {};
   ns[LESSON_QUIZ_KEY] = helper;
   win[NAMESPACE] = ns;
+  return captureEarlyInput;
 }
 
 function detectAssignmentId(win: Window): string | null {
@@ -1268,7 +1384,7 @@ function attachRuntimeAdapter(
   win: WindowWithRuntime,
   runtime: AssessmentRuntime,
   restoreGuard?: RestoreGuard,
-): void {
+): () => void {
   const wrapper: RuntimeGlobal = {
     version: runtime.version,
     get mode() {
@@ -1285,7 +1401,7 @@ function attachRuntimeAdapter(
   const ns = win[NAMESPACE] ?? {};
   ns[RUNTIME_KEY] = wrapper;
   win[NAMESPACE] = ns;
-  installLessonQuiz(win, runtime, runtime.hasAssignmentContext, restoreGuard);
+  return installLessonQuiz(win, runtime, runtime.hasAssignmentContext, restoreGuard);
 }
 
 async function bootstrap(win: Window): Promise<void> {
@@ -1350,7 +1466,7 @@ async function bootstrap(win: Window): Promise<void> {
     // Quiz session continuity: keep and restore only what this page displays.
     adoptPersisted: (state) => adoptPersistedForPage(win, state, restoreGuard),
   });
-  attachRuntimeAdapter(runtimeWin, runtime, restoreGuard);
+  const captureEarlyInput = attachRuntimeAdapter(runtimeWin, runtime, restoreGuard);
   // Quiz session continuity: the assignment session begins when the assigned
   // page opens (not at the first answer), so "opened" is distinguishable from
   // "never started" for the teacher. Begin is idempotent: a reload or a second
@@ -1358,9 +1474,14 @@ async function bootstrap(win: Window): Promise<void> {
   // restored into the page. A refusal is recorded for diagnostics and leaves
   // the runtime exactly where a first-answer begin would have (a recoverable
   // failure is retried by the first answer).
-  void runtime.begin().catch((err: unknown) => {
-    recordLastError(runtimeWin, "begin", err);
-  });
+  // Early input is saved once begin settles, either way: after a failure the
+  // queue's own retry, refusal, and Not saved handling apply to it.
+  void runtime
+    .begin()
+    .catch((err: unknown) => {
+      recordLastError(runtimeWin, "begin", err);
+    })
+    .then(captureEarlyInput);
 }
 
 // Exported for unit tests of the real lesson adapter and callable payloads.
