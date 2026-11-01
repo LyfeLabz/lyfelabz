@@ -452,8 +452,12 @@ const impersonationUrl = email => `https://iamcredentials.googleapis.com/v1/proj
 const OPERATOR_SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.email'];
 // Explicit standard impersonation config only. Never use ADC, configured token
 // endpoints, delegates, or the source user's token for Firestore/provider calls.
-function operatorCredential(identity, key) {
-  const { GoogleAuth, OAuth2Client, Impersonated } = req('google-auth-library');
+// A source of type CLOUD_SHELL_SOURCE carries no secret: the Cloud Shell session's own short-lived
+// identity (metadata server) only authorizes the pinned impersonation call. Every downstream check
+// (pinned target email, token info, scopes, project identity, IAM permissions, access review) is unchanged.
+const CLOUD_SHELL_SOURCE = 'cloud_shell_ambient';
+function operatorCredential(identity, key, env = process.env) {
+  const { GoogleAuth, OAuth2Client, Compute, Impersonated } = req('google-auth-library');
   if (key.type === 'impersonated_service_account') {
     const fields = ['type', 'source_credentials', 'service_account_impersonation_url'];
     exact(key, [...fields, ...['delegates', 'quota_project_id'].filter(k => Object.hasOwn(key, k))]);
@@ -462,10 +466,17 @@ function operatorCredential(identity, key) {
         key.delegates !== undefined && !equal(key.delegates, []) ||
         key.quota_project_id !== undefined && key.quota_project_id !== identity.projectId) deny('unapproved impersonation target or delegates');
     const source = key.source_credentials;
-    exact(source, ['type', 'client_id', 'client_secret', 'refresh_token']);
-    if (source.type !== 'authorized_user' || ['client_id', 'client_secret', 'refresh_token'].some(k => typeof source[k] !== 'string' || !source[k].trim())) deny('invalid explicit impersonation source');
-    const sourceClient = new OAuth2Client({ clientId: source.client_id, clientSecret: source.client_secret });
-    sourceClient.setCredentials({ refresh_token: source.refresh_token });
+    let sourceClient;
+    if (source?.type === CLOUD_SHELL_SOURCE) {
+      exact(source, ['type']);
+      if (env.CLOUD_SHELL !== 'true') deny('ambient source requires an interactive Cloud Shell session');
+      sourceClient = new Compute();
+    } else {
+      exact(source, ['type', 'client_id', 'client_secret', 'refresh_token']);
+      if (source.type !== 'authorized_user' || ['client_id', 'client_secret', 'refresh_token'].some(k => typeof source[k] !== 'string' || !source[k].trim())) deny('invalid explicit impersonation source');
+      sourceClient = new OAuth2Client({ clientId: source.client_id, clientSecret: source.client_secret });
+      sourceClient.setCredentials({ refresh_token: source.refresh_token });
+    }
     const client = new Impersonated({ sourceClient, targetPrincipal: email, targetScopes: OPERATOR_SCOPES,
       delegates: [], lifetime: 600, endpoint: 'https://iamcredentials.googleapis.com' });
     return { client, email, impersonated: true };

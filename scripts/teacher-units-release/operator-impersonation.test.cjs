@@ -137,3 +137,55 @@ test('production pins its own App Engine operator; cross-project identities and 
   await assert.rejects(prodVerify(prodReview, email));
   await assert.rejects(prodVerify({ ...prodReview, acceptedProjectRoles: ['roles/owner'] }));
 });
+
+// Keyless Cloud Shell source: the short-lived session identity only authorizes the pinned impersonation.
+const shellEnv = { CLOUD_SHELL: 'true' };
+const shellConfig = () => ({ ...config(), source_credentials: { type: 'cloud_shell_ambient' } });
+
+test('Cloud Shell ambient source builds the same pinned Impersonated client with no stored secret', async () => {
+  const c = C.operatorCredential(identity, shellConfig(), shellEnv);
+  assert.equal(c.impersonated, true); assert.equal(c.email, email);
+  assert.ok(c.client instanceof req('google-auth-library').Impersonated);
+  assert.ok(c.client.sourceClient instanceof req('google-auth-library').Compute);
+  assert.equal(c.client.getTargetPrincipal(), email);
+  assert.equal(c.client.lifetime, 600); assert.deepEqual(c.client.delegates, []);
+  assert.equal(c.client.endpoint, 'https://iamcredentials.googleapis.com');
+  assert.deepEqual((await verify()).operator, { principalSubject: email, credentialSubject: email, delegationSubject: null });
+});
+
+test('Cloud Shell ambient source refuses outside Cloud Shell and with extra fields or altered targets', () => {
+  for (const env of [{}, { CLOUD_SHELL: 'false' }, { CLOUD_SHELL: '1' }]) assert.throws(() => C.operatorCredential(identity, shellConfig(), env));
+  for (const change of [c => c.source_credentials.refresh_token = 'x', c => c.source_credentials.client_id = 'x',
+    c => c.service_account_impersonation_url = c.service_account_impersonation_url.replace(email, 'wrong@lyfelabz-staging.iam.gserviceaccount.com'),
+    c => c.delegates = [email], c => c.quota_project_id = 'wrong']) {
+    const c = shellConfig(); change(c); assert.throws(() => C.operatorCredential(identity, c, shellEnv));
+  }
+  assert.throws(() => C.operatorCredential({ ...identity, projectNumber: '0' }, shellConfig(), shellEnv));
+  assert.throws(() => C.operatorCredential({ ...identity, projectId: 'unapproved' }, shellConfig(), shellEnv));
+});
+
+test('Cloud Shell ambient credential cannot bypass the identity, scope, expiry and review checks', async () => {
+  for (const patch of [{ email: 'user@example.test' }, { expiry_date: now }, { scopes: [] }, { email_verified: false }]) {
+    const client = provider(), original = client.getTokenInfo;
+    client.getTokenInfo = async () => ({ ...await original(), ...patch });
+    await assert.rejects(verify(client));
+  }
+  for (const change of [r => delete r.acceptedProjectRoles, r => r.blastRadiusAccepted = false, r => r.approvalRef = '']) {
+    const r = review(); change(r); await assert.rejects(verify(provider(), r));
+  }
+  await assert.rejects(verify(provider(), null));
+});
+
+test('Cloud Shell ambient exchange uses fixed Google issuance and does not serve the session token as operator token', async () => {
+  const { client } = C.operatorCredential(identity, shellConfig(), shellEnv);
+  client.sourceClient.getAccessToken = async () => ({ token: 'synthetic-session-only' });
+  const calls = [];
+  client.sourceClient.request = async request => {
+    calls.push(request);
+    return { data: { accessToken: 'synthetic-issued-target', expireTime: new Date(Date.now() + 600000).toISOString() } };
+  };
+  assert.equal((await client.getAccessToken()).token, 'synthetic-issued-target');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, shellConfig().service_account_impersonation_url);
+  assert.deepEqual(calls[0].data.delegates, []);
+});
