@@ -79,12 +79,12 @@ test('credential command is read-only, token is private, failures refuse',() => 
   assert.throws(() => tokenFromGcloud(() => ''),/missing credentials/);
 });
 test('API transport uses only GET, never redirects credentials or prints error bodies',async () => {
-  const calls=[]; const get=readApi({token:'private-token',fetchImpl:async (url,options) => {calls.push(options);return new Response(JSON.stringify({ok:true}));}});
+  const calls=[]; const get=readApi({project:'lyfelabz-staging',token:'private-token',fetchImpl:async (url,options) => {calls.push(options);return new Response(JSON.stringify({ok:true}));}});
   await get('https://firebase.googleapis.com/v1beta1/projects/lyfelabz-staging');
   assert.equal(calls[0].method,'GET'); assert.equal(calls[0].redirect,'error');
-  for (const status of [401,403,404,500]) await assert.rejects(readApi({token:'secret',fetchImpl:async () => ({ok:false,status})})('https://firebase.googleapis.com/test'),new RegExp(`HTTP ${status}`));
-  await assert.rejects(readApi({token:'secret',fetchImpl:async () => {throw new Error('secret');}})('https://firebase.googleapis.com/test'),/API unavailable/);
-  await assert.rejects(readApi({token:'secret',fetchImpl:async () => ({ok:true,json:async () => {throw new Error('secret');}})})('https://firebase.googleapis.com/test'),/unverifiable/);
+  for (const status of [401,403,404,500]) await assert.rejects(readApi({project:'lyfelabz-staging',token:'secret',fetchImpl:async () => ({ok:false,status})})('https://firebase.googleapis.com/test'),new RegExp(`HTTP ${status}`));
+  await assert.rejects(readApi({project:'lyfelabz-staging',token:'secret',fetchImpl:async () => {throw new Error('secret');}})('https://firebase.googleapis.com/test'),/API unavailable/);
+  await assert.rejects(readApi({project:'lyfelabz-staging',token:'secret',fetchImpl:async () => ({ok:true,json:async () => {throw new Error('secret');}})})('https://firebase.googleapis.com/test'),/unverifiable/);
 });
 test('missing, duplicate, unreachable and wrong-project Functions refuse',async () => {
   for (const mutation of [
@@ -280,9 +280,9 @@ test('meaningful or unknown index differences remain refusals, including global 
 test('retrieval, pagination and archives have explicit size/count bounds and no deployment effects',async()=>{
   await assert.rejects(list(async()=>({functions:[],nextPageToken:Math.random().toString()}),'https://example.test/list','functions'),/pagination limit/);
   await assert.rejects(list(async()=>({functions:new Array(LIMITS.items+1).fill({})}),'https://example.test/list','functions'),/item limit/);
-  const get=readApi({token:'secret',fetchImpl:async()=>new Response('x',{headers:{'content-length':String(LIMITS.jsonBytes+1)}})});
+  const get=readApi({project:'lyfelabz-staging',token:'secret',fetchImpl:async()=>new Response('x',{headers:{'content-length':String(LIMITS.jsonBytes+1)}})});
   await assert.rejects(get('https://firebase.googleapis.com/test'),/oversized/);
-  await assert.rejects(readApi({token:'secret',fetchImpl:async()=>new Response(Buffer.alloc(LIMITS.jsonBytes+1))})('https://firebase.googleapis.com/test'),/oversized/);
+  await assert.rejects(readApi({project:'lyfelabz-staging',token:'secret',fetchImpl:async()=>new Response(Buffer.alloc(LIMITS.jsonBytes+1))})('https://firebase.googleapis.com/test'),/oversized/);
   assert.throws(()=>archiveRuntime(Buffer.alloc(LIMITS.archiveBytes+1)),/size limit/);
   assert.throws(()=>archiveRuntime(Buffer.from('zip'),()=>new Array(LIMITS.entries+1).fill('lib/a.js').join('\n')),/entry limit/);
   const calls=[];
@@ -514,4 +514,25 @@ test('B2-001 prepare requires real rollback versions, sites and UTC timestamps',
       assert.throws(()=>require('./backend-state.cjs').optionBReceipt({phase:'prepared',project:f.candidate.projectId,intent:'teacher-units',...f,candidate:f.candidate,evidence:f.evidence,hosting:bad,recordedAt:f.now}));
     }
   }finally{f.cleanup();}
+});
+test('explicit quota project binds Rules releases and rulesets without changing authentication or target',async()=>{
+  for(const project of ['lyfelabz-staging','lyfelabz-prod']) {
+    const calls=[];
+    const get=readApi({project,token:'private-token',fetchImpl:async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify({name:url}));}});
+    for(const suffix of ['releases/cloud.firestore','rulesets/approved-id']) {
+      const url=`https://firebaserules.googleapis.com/v1/projects/${project}/${suffix}`;
+      assert.equal((await get(url)).name,url);
+    }
+    for(const call of calls){assert.equal(call.options.headers['x-goog-user-project'],project);assert.equal(call.options.headers.Authorization,'Bearer private-token');assert.equal(call.options.method,'GET');assert.equal(call.options.redirect,'error');}
+    const other=project==='lyfelabz-prod'?'lyfelabz-staging':'lyfelabz-prod';
+    await assert.rejects(get(`https://firebaserules.googleapis.com/v1/projects/${other}/releases/cloud.firestore`),/explicit quota project/);
+    assert.equal(calls.length,2);
+  }
+});
+test('missing/invalid quota project refuses before requests, and credentials cannot leave Google APIs',async()=>{
+  let calls=0;
+  for(const project of [undefined,null,'','other-project','lyfelabz-staging/extra'])assert.throws(()=>readApi({project,token:'secret',fetchImpl:async()=>{calls++;}}));
+  const get=readApi({project:'lyfelabz-staging',token:'secret',fetchImpl:async()=>{calls++;}});
+  for(const url of ['https://example.com/projects/lyfelabz-staging','http://firebase.googleapis.com/projects/lyfelabz-staging','https://firebase.googleapis.com/projects/182791689935'])await assert.rejects(get(url));
+  assert.equal(calls,0);
 });

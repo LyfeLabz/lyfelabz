@@ -66,7 +66,7 @@ function pin(e,policy) {
 async function inspect({project,configurationApproval,get,token,fetchImpl,run,unpack,now=()=>new Date().toISOString()}={}) {
   C.environmentForProject(project);
   O.validateConfigurationApproval(configurationApproval,project,now());
-  const read=get || H.readApi({token:token || H.tokenFromGcloud(run),fetchImpl});
+  const read=get || H.readApi({project,token:token || H.tokenFromGcloud(run),fetchImpl});
   const url=`https://firestore.googleapis.com/v1/${policyName(project)}`;
   const before=await read(url);
   const observation=await O.inspectOptionB({project,get:read,plan:configurationApproval,unpack,now});

@@ -216,9 +216,9 @@ test('unknown provider fields are refused, not discarded', async () => {
 });
 
 test('provider permission errors and unreachable resources', async () => {
-  const forbidden = A1.readApi({ token: 't', fetchImpl: async () => ({ ok: false, status: 403, headers: new Map() }) });
+  const forbidden = A1.readApi({project:'lyfelabz-staging', token: 't', fetchImpl: async () => ({ ok: false, status: 403, headers: new Map() }) });
   await assert.rejects(O.observeA3Backend({ project: STAGING, get: forbidden, now: () => NOW }), /HTTP 403 \(credentials or read permission missing\)/);
-  const offline = A1.readApi({ token: 't', fetchImpl: async () => { throw new Error('ENOTFOUND'); } });
+  const offline = A1.readApi({project:'lyfelabz-staging', token: 't', fetchImpl: async () => { throw new Error('ENOTFOUND'); } });
   await assert.rejects(O.observeA3Backend({ project: STAGING, get: offline, now: () => NOW }), /deployment API unavailable/);
   await refused({ mutate: s => { s.onGet = url => url.endsWith('/locations/-/functions') ? { functions: [], unreachable: ['us-east1'] } : undefined; } }, /unreachable locations/);
 });
@@ -297,7 +297,7 @@ test('GET-only transport through the reused A1 reader', async () => {
     return { ok: true, status: 200, headers: new Map(), body: (async function* () { yield bytes; })() };
   };
   try {
-    await O.observeA3Backend({ project: STAGING, get: A1.readApi({ token: 'synthetic-token', fetchImpl }), now: f.now });
+    await O.observeA3Backend({ project: STAGING, get: A1.readApi({project:'lyfelabz-staging', token: 'synthetic-token', fetchImpl }), now: f.now });
   } finally { f.cleanup(); }
   assert.ok(methods.length > 40);
   assert.ok(methods.every(m => m.method === 'GET' && m.redirect === 'error'));

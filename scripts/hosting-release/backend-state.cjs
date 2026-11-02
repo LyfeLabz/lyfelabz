@@ -198,10 +198,16 @@ function tokenFromGcloud(run = execFileSync) {
   if (!token || /\s/.test(token)) refuse('missing credentials: invalid access token');
   return token;
 }
-function readApi({ token, fetchImpl = fetch }) {
+function readApi({ project, token, fetchImpl = fetch }) {
+  environmentForProject(project);
+  const identities = [project, PROJECT_NUMBERS[project]];
   return async (url, binary = false) => {
+    const target = new URL(url);
+    const resource = decodeURIComponent(target.pathname).match(/\/projects\/([^/]+)/);
+    if (target.protocol !== 'https:' || !target.hostname.endsWith('.googleapis.com') || target.username || target.password ||
+        (resource && !identities.includes(resource[1]))) refuse('API target differs from explicit quota project');
     let response;
-    try { response = await fetchImpl(url, { method: 'GET', redirect: 'error', headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(30000) }); }
+    try { response = await fetchImpl(url, { method: 'GET', redirect: 'error', headers: { Authorization: `Bearer ${token}`, 'x-goog-user-project': project }, signal: AbortSignal.timeout(30000) }); }
     catch { refuse(`deployment API unavailable: ${new URL(url).host}`); }
     if (!response.ok) refuse(`deployment API ${new URL(url).host} HTTP ${response.status}${[401,403].includes(response.status) ? ' (credentials or read permission missing)' : ''}`);
     const limit = binary ? LIMITS.archiveBytes : LIMITS.jsonBytes;
@@ -379,7 +385,7 @@ async function verifyBackend(options = {}) {
   const candidate = localCandidate(pair, root);
   if (environmentForProject(project).name === 'production' && candidate.source.dirty !== false) refuse('production candidate must be built from a clean checkout');
   if (!pair.backendCandidate || canonical(pair.backendCandidate) !== canonical(candidate)) refuse('local backend candidate changed since pair build; rebuild the pair');
-  const evidence = await inspectBackend({ project, get: get || readApi({ token: token || tokenFromGcloud(run), fetchImpl }), unpack, now });
+  const evidence = await inspectBackend({ project, get: get || readApi({ project, token: token || tokenFromGcloud(run), fetchImpl }), unpack, now });
   const compatibility = assertCompatible(candidate, evidence, now?.());
   return { candidate, evidence, compatibility };
 }
@@ -480,7 +486,7 @@ async function verifyOptionBBackend({project,pair,get,unpack,now,root,rulesAppro
   if (environmentForProject(project).name === 'production' && candidate.source.dirty !== false) refuse('production requires clean checkout');
   if (canonical(pair.backendCandidate) !== canonical(candidate)) refuse('Option B candidate changed since pair build');
   const observer = require('../teacher-units-release/option-b-observation.cjs');
-  const evidence = await observer.inspectOptionB({project,get:get || readApi({token:token || tokenFromGcloud(run),fetchImpl}),unpack,now,plan:configurationApproval});
+  const evidence = await observer.inspectOptionB({project,get:get || readApi({project,token:token || tokenFromGcloud(run),fetchImpl}),unpack,now,plan:configurationApproval});
   const compatibility = observer.assertCompatible(candidate,evidence,{rulesApproval,rulesReport,approvalDigest,configurationApproval,now:now?.()});
   return {candidate,evidence,compatibility,rulesApproval,rulesReport,approvalDigest,configurationApproval};
 }
@@ -561,7 +567,7 @@ async function main(argv = process.argv.slice(2)) {
   const { parseArgs, writeRecord } = require('./release.cjs');
   const args = parseArgs(argv, { values:['project'], flags:[] });
   environmentForProject(args.project);
-  const evidence = await inspectBackend({ project:args.project, get:readApi({ token:tokenFromGcloud() }) });
+  const evidence = await inspectBackend({ project:args.project, get:readApi({ project:args.project, token:tokenFromGcloud() }) });
   const file = writeRecord(`backend-${args.project}.json`, evidence);
   console.log(`Backend observed for ${args.project}; historical evidence saved to ${file}. This inventory alone does not certify release readiness.`);
 }

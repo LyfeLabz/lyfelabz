@@ -190,7 +190,7 @@ const H=require('./scripts/hosting-release/backend-state.cjs');
 const project=process.argv[2],file=process.argv[3];
 require('./scripts/hosting-release/contract.cjs').environmentForProject(project);
 (async()=>{
-  const get=H.readApi({token:H.tokenFromGcloud()});
+  const get=H.readApi({project,token:H.tokenFromGcloud()});
   const functions=await H.list(get,`https://cloudfunctions.googleapis.com/v2/projects/${project}/locations/-/functions`,'functions');
   const identities=functions.map(f=>({name:f.name,state:f.state,updateTime:f.updateTime,
     build:f.buildConfig?.build??null,service:f.serviceConfig?.service??null,
