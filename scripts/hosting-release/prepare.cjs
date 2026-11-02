@@ -51,6 +51,7 @@ const HOSTING_TEST_FILES = Object.freeze([
   'scripts/hosting-release/pair.test.cjs',
   'scripts/hosting-release/release.test.cjs',
   'scripts/hosting-release/backend-state.test.cjs',
+  'scripts/hosting-release/unchanged-backend.test.cjs',
   'scripts/hosting-release/hosting-identity.test.cjs',
   'scripts/hosting-release/hosting-deployment.test.cjs',
   'scripts/hosting-release/provider-manifest.test.cjs',
@@ -66,6 +67,7 @@ const HOSTING_TEST_FILES = Object.freeze([
 function preflight({ project, intent, expectSha, allowDirty, offline }, { git = gitState } = {}) {
   const contract = loadContract();
   const environment = environmentForProject(project, contract);
+  if (intent === 'teacher-units-hosting-only' && (allowDirty || offline)) throw new Error('[hosting-release] Hosting-only mode requires clean online preparation');
   const production = environment.name === 'production';
   if (production && allowDirty) throw new Error('[hosting-release] --allow-dirty is not permitted for production');
   if (production && offline) throw new Error('[hosting-release] production prepare must record live baselines; --offline is not permitted');
@@ -104,10 +106,10 @@ function runChecks({ run = execFileSync, log = console.log } = {}) {
 }
 
 // Checks, then the pair build that produces the artifacts to deploy.
-function checkAndBuild({ intent, target, run = execFileSync, build = buildPair, log = console.log } = {}) {
+function checkAndBuild({ intent, target, backendBaseline, run = execFileSync, build = buildPair, log = console.log } = {}) {
   releaseIntent(intent);
   runChecks({ run, log });
-  return build({intent,...(target ? {target} : {})});
+  return build({intent,...(target ? {target} : {}),...(backendBaseline ? {backendBaseline} : {})});
 }
 
 async function liveComparison({ environment, sites, built, run }) {
@@ -175,12 +177,13 @@ function verifyBuildSource(source, built) {
 async function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv, { values: ['project', 'intent', 'expect-sha','rules-approval','rules-report','approval-digest','configuration-approval'], flags: ['allow-dirty', 'offline'] });
   const gate = preflight({ project: args.project, intent:args.intent, expectSha: args['expect-sha'], allowDirty: Boolean(args['allow-dirty']), offline: Boolean(args.offline) });
-  const bInputs = gate.intent === 'teacher-units' ? require('./release.cjs').optionBInputs(args) : {};
-  const built = checkAndBuild({intent:gate.intent,...(gate.intent === 'teacher-units' ? {target:require('./backend-state.cjs').optionBTarget(args.project)} : {})});
+  const bInputs = ['teacher-units','teacher-units-hosting-only'].includes(gate.intent) ? require('./release.cjs').optionBInputs(args) : {};
+  const backendBaseline = gate.intent === 'teacher-units-hosting-only' ? await require('./unchanged-backend.cjs').inspect({project:args.project,...bInputs}) : null;
+  const built = checkAndBuild({intent:gate.intent,...(backendBaseline ? {backendBaseline} : {}),...(['teacher-units','teacher-units-hosting-only'].includes(gate.intent) ? {target:require('./backend-state.cjs').optionBTarget(args.project)} : {})});
   verifyBuildSource(gate.source, built);
   const surfaces = args.offline ? null : await liveComparison({ environment: gate.environment, sites: gate.sites, built });
   // Long Hosting comparisons complete before obtaining fresh backend evidence.
-  const backend = !args.offline && gate.intent === 'teacher-units' ? await verifyBackend({ project:gate.environment.project, pair:built.record,...bInputs }) : null;
+  const backend = !args.offline && ['teacher-units','teacher-units-hosting-only'].includes(gate.intent) ? await verifyBackend({ project:gate.environment.project, pair:built.record,...bInputs }) : null;
   const candidate = releaseCandidate(built.record);
   const record = {
     kind: 'lyfelabz.hostingPreparedRelease',

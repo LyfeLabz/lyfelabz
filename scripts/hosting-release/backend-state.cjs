@@ -17,7 +17,7 @@ const REQUIRED_FUNCTIONS = Object.freeze([
 const LIMITS = Object.freeze({ pages: 100, items: 10000, jsonBytes: 8 * 1024 * 1024,
   archiveBytes: 64 * 1024 * 1024, entries: 10000, fileBytes: 16 * 1024 * 1024, runtimeBytes: 64 * 1024 * 1024 });
 function releaseIntent(intent) {
-  if (!['general', 'teacher-units', STAGING_UX_TEST_INTENT].includes(intent)) refuse('explicit release intent required: general, teacher-units or staging-ux-test; unknown intent is never a fallback');
+  if (!['general', 'teacher-units', 'teacher-units-hosting-only', STAGING_UX_TEST_INTENT].includes(intent)) refuse('explicit release intent required: general, teacher-units, teacher-units-hosting-only or staging-ux-test; unknown intent is never a fallback');
   return intent;
 }
 // Staging UX test (docs/platform/TEACHER_UNITS_STAGING_UX_TEST_DESIGN.md):
@@ -48,6 +48,7 @@ function hostingCandidate(pair, root = repositoryRoot) {
   return candidate;
 }
 function releaseCandidate(pair, root = repositoryRoot) {
+  if (pair?.backendFormat === 'teacher-units-hosting-only') return require('./unchanged-backend.cjs').candidate(pair, root);
   if (pair?.backendFormat === OPTION_B_FORMAT) return optionBCandidate(pair, root);
   return releaseIntent(pair?.releaseIntent) === 'teacher-units' ? localCandidate(pair, root) : hostingCandidate(pair, root);
 }
@@ -372,6 +373,7 @@ function assertCompatible(candidate, evidence, now) {
 }
 async function verifyBackend(options = {}) {
   const { project, pair, get, token, fetchImpl, run, unpack, now, root } = options;
+  if (pair?.backendFormat === 'teacher-units-hosting-only') return require('./unchanged-backend.cjs').verify(options);
   if (pair?.backendFormat === OPTION_B_FORMAT) return verifyOptionBBackend(options);
   environmentForProject(project); // before credentials, network, or filesystem reads
   const candidate = localCandidate(pair, root);
@@ -383,6 +385,7 @@ async function verifyBackend(options = {}) {
 }
 function receipt(options) {
   const { phase, project, intent, candidate, evidence, hosting, recordedAt = new Date().toISOString() } = options;
+  if (candidate?.kind === 'lyfelabz.unchangedTeacherUnitsBackendCandidate') return require('./unchanged-backend.cjs').receipt(options);
   if (candidate?.kind === OPTION_B_CANDIDATE) return optionBReceipt({...options, recordedAt});
   assertIntentForProject(intent, project);
   if (!['prepared','certified'].includes(phase) || candidate?.releaseIntent !== intent) refuse('unknown release receipt phase or mismatched intent');
@@ -403,6 +406,7 @@ function receipt(options) {
 // Prepare records bind explicit scope, candidate and rollback observations.
 // Neither a historical backend observation nor a baseline is current authority.
 function verifyPrepared(prepared, project, candidate, now = new Date().toISOString()) {
+  if (candidate?.kind === 'lyfelabz.unchangedTeacherUnitsBackendCandidate') return require('./unchanged-backend.cjs').verifyPrepared(prepared, project, candidate, now);
   if (candidate?.kind === OPTION_B_CANDIDATE) return verifyOptionBPrepared(prepared, project, candidate, now);
   const environment = environmentForProject(project);
   const intent = assertIntentForProject(candidate?.releaseIntent, project);
@@ -546,7 +550,7 @@ function verifyOptionBPrepared(prepared,project,candidate,now) {
       refuse('missing or wrong-project paired rollback baseline');
   }
 }
-module.exports = { OPTION_B_FORMAT, OPTION_B_CANDIDATE, OPTION_B_RECEIPT, optionBTarget, optionBCandidate, verifyOptionBBackend, optionBReceipt, verifyOptionBPrepared, PROJECT_NUMBERS, REQUIRED_FUNCTIONS, LIMITS, MAX_AGE_MS, MAX_PREPARE_AGE_MS, canonical, fingerprint, localCandidate,
+module.exports = { validateOptionBHosting, OPTION_B_FORMAT, OPTION_B_CANDIDATE, OPTION_B_RECEIPT, optionBTarget, optionBCandidate, verifyOptionBBackend, optionBReceipt, verifyOptionBPrepared, PROJECT_NUMBERS, REQUIRED_FUNCTIONS, LIMITS, MAX_AGE_MS, MAX_PREPARE_AGE_MS, canonical, fingerprint, localCandidate,
   releaseIntent, assertIntentForProject, STAGING_UX_TEST_INTENT, hostingCandidate, releaseCandidate, list, normalizeLocalIndexes, normalizeRemoteIndexes, tokenFromGcloud, readApi, archiveRuntime, inspectBackend,
   assertFresh, assertCompatible, verifyBackend, receipt, verifyPrepared,
   // Export-only (A3-6 S4 reuse); behavior unchanged.

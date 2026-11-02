@@ -103,7 +103,7 @@ jobs:
       # B1g checks are credential-free and non-authorizing. No provider capture,
       # live enable, prepare/certify, or deployment command runs in this step.
       - name: Option B release, Rules approval and operator fixtures
-        run: node --test --test-concurrency=1 ../../scripts/teacher-units-release/option-b-observation.test.cjs ../../scripts/teacher-units-release/option-b-rules-evidence.test.cjs ../../scripts/teacher-units-release/availability-control.test.cjs ../../scripts/hosting-release/backend-state.test.cjs ../../scripts/hosting-release/release.test.cjs
+        run: node --test --test-concurrency=1 ../../scripts/teacher-units-release/option-b-observation.test.cjs ../../scripts/teacher-units-release/option-b-rules-evidence.test.cjs ../../scripts/teacher-units-release/availability-control.test.cjs ../../scripts/hosting-release/backend-state.test.cjs ../../scripts/hosting-release/release.test.cjs ../../scripts/hosting-release/unchanged-backend.test.cjs
       - name: Option B controlled compiler (local fixtures)
         working-directory: app
         run: npm test -- --maxWorkers=2 --runTestsByPath scripts/build-application.test.js
