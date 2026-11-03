@@ -14,6 +14,9 @@ function encode(v) {
 }
 async function setup(now=new Date().toISOString()) {
   const f=await currentReleaseFixture({now});
+  // Minimal synthetic provider still supplies the required database identity.
+  const identity={locationId:'nam5',uid:'037a7646-a60f-419a-8263-eea18fef3318'};
+  Object.assign(f.evidence.database,identity);Object.assign(f.provider.state.database,identity);
   const p=f.policy;p.mode='enabled';p.acceptedClientContractVersions=['teacher-units-v3'];p.lastEnabledAt=p.updatedAt;
   const {Timestamp}=require(require.resolve('firebase-admin/firestore',{paths:[path.resolve(__dirname,'../../platform/functions')]}));
   p.lastClosedAt=Timestamp.fromMillis(Date.parse(now)-1000);p.createdAt=p.lastClosedAt;
@@ -166,4 +169,29 @@ test('wrong project and invalid configuration refuse before credential/provider 
   await assert.rejects(U.inspect({project:'lyfelabz-prod',configurationApproval:{},get:async()=>{reads++;}}),/REFUSED/);
   await assert.rejects(U.verify({project:'lyfelabz-prod',pair:{target:{projectId:'lyfelabz-staging'}},get:async()=>{reads++;}}),/project mismatch/);
   assert.equal(reads,0);
+});
+
+test('pin permits only volatile database metadata changes; raw observations and prepared receipt remain intact',async()=>{
+  const f=await setup();try {
+    const original=clone(f.evidence);
+    for(const change of [d=>d.earliestVersionTime='2026-10-01T00:00:00.000Z',d=>d.etag='updated-checksum',d=>{d.etag='other';d.earliestVersionTime='2026-10-02T00:00:00.000Z';}]) {
+      const e=clone(f.evidence);change(e.observation.database);
+      assert.equal(U.pin(e.observation,e.policy),f.c.backendPin);
+      U.compare(f.c,e,f.inputs,f.now);
+      const p=prepared({...f,evidence:e});H.verifyPrepared(p,f.c.projectId,f.c,f.now);
+      assert.deepEqual(p.evidenceReceipt.backend.observation.database,e.observation.database);
+    }
+    assert.deepEqual(f.evidence,original);
+  }finally{f.cleanup();}
+});
+test('database identity, configuration, security and unknown/missing fields still fail closed',async()=>{
+  const f=await setup();try {
+    const mutations=[d=>d.name='projects/lyfelabz-prod/databases/(default)',d=>d.type='DATASTORE_MODE',d=>d.locationId='eur3',d=>d.uid='137a7646-a60f-419a-8263-eea18fef3318',
+      d=>d.concurrencyMode='OPTIMISTIC',d=>d.pointInTimeRecoveryEnablement='POINT_IN_TIME_RECOVERY_ENABLED',d=>d.versionRetentionPeriod='604800s',d=>d.deleteProtectionState='DELETE_PROTECTION_ENABLED',
+      d=>d.cmekConfig={kmsKeyName:'projects/example/locations/us/keyRings/r/cryptoKeys/k'},d=>d.databaseEdition='ENTERPRISE',d=>d.realtimeUpdatesMode='REALTIME_UPDATES_MODE_DISABLED',
+      d=>d.firestoreDataAccessMode='DATA_ACCESS_MODE_DISABLED',d=>d.updateTime='2026-10-01T00:00:00Z'];
+    for(const mutate of mutations){const e=clone(f.evidence);mutate(e.observation.database);assert.throws(()=>U.compare(f.c,e,f.inputs,f.now));}
+    for(const field of ['name','type','uid','locationId']){const e=clone(f.evidence);delete e.observation.database[field];assert.throws(()=>U.pin(e.observation,e.policy));}
+    for(const mutate of [d=>d.unknownSecuritySetting=true,d=>d.etag=17,d=>d.earliestVersionTime='invalid']){const e=clone(f.evidence);mutate(e.observation.database);assert.throws(()=>U.pin(e.observation,e.policy));}
+  }finally{f.cleanup();}
 });

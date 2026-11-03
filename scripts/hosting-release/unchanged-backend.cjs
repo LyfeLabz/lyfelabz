@@ -56,12 +56,35 @@ function backendView(e,{hostingArtifactFingerprint,applicationBuildFingerprint,r
     rulesSourceHash,indexes,functionsArtifactFingerprint:e.functionsArtifactFingerprint,runtimeFiles:e.runtimeFiles,
     releaseIntent:'teacher-units',teacherUnitsAvailability:'server-policy-required',availabilityEvidence:'build-contract-assertion'};
 }
+// Firestore v1 Database contract: earliestVersionTime continuously advances;
+// etag is a checksum/precondition for mutations, not Hosting compatibility.
+// https://docs.cloud.google.com/firestore/docs/reference/rest/v1/projects.databases
+// Keep raw observations in receipts; exclude ONLY these two from pin equality.
+function databaseForPin(database,projectId) {
+  const fields = ['name','uid','createTime','updateTime','deleteTime','locationId','type',
+    'concurrencyMode','versionRetentionPeriod','earliestVersionTime','pointInTimeRecoveryEnablement',
+    'appEngineIntegrationMode','keyPrefix','deleteProtectionState','cmekConfig','previousId',
+    'sourceInfo','tags','etag','databaseEdition','realtimeUpdatesMode','firestoreDataAccessMode',
+    'mongodbCompatibleDataAccessMode','freeTier'];
+  H.onlyKeys(database,fields,'Firestore database pin fields');
+  if (database.name !== `projects/${projectId}/databases/(default)` || database.type !== 'FIRESTORE_NATIVE' ||
+      typeof database.locationId !== 'string' || !/^[a-z][a-z0-9-]*$/.test(database.locationId) ||
+      typeof database.uid !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(database.uid))
+    refuse('database identity/type/location/uid required');
+  if (database.etag !== undefined && (typeof database.etag !== 'string' || !database.etag)) refuse('invalid database etag');
+  if (database.earliestVersionTime !== undefined &&
+      (typeof database.earliestVersionTime !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?Z$/.test(database.earliestVersionTime) ||
+       !Number.isFinite(Date.parse(database.earliestVersionTime)))) refuse('invalid database earliestVersionTime');
+  const {earliestVersionTime,etag,...stable}=database;
+  void earliestVersionTime;void etag;
+  return stable;
+}
 function pin(e,policy) {
   // Include full endpoint provider snapshots, source generations, Rules identity,
   // runtime files and full policy (including updateTime), not merely build ID.
   const {startedAt,observedAt,...stable}=e;
   void startedAt;void observedAt;
-  return H.fingerprint({observation:stable,policy});
+  return H.fingerprint({observation:{...stable,database:databaseForPin(e.database,e.projectId)},policy});
 }
 async function inspect({project,configurationApproval,get,token,fetchImpl,run,unpack,now=()=>new Date().toISOString()}={}) {
   C.environmentForProject(project);
