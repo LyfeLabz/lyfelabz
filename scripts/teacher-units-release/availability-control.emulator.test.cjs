@@ -105,7 +105,8 @@ local('legacy repair remains non-authorizing; verified supersession and uncertai
   const p = await h.controller.review('recoverClosed', recoveryOptions(h, await db.doc(C.POLICY).get())); await h.controller.execute(p, p.confirm);
   const prep = await h.controller.review('prepare', h.options); await h.controller.execute(prep, prep.confirm);
   assert.equal((await h.controller.verify(p)).status, 'committed-superseded');
-  const unreadable = C.createController({ ...h.deps, db: { projectId: PROJECT, databaseId: '(default)', doc: db.doc.bind(db),
+  // Keep the bound audit-reference adapter intact; fail only transaction readback.
+  const unreadable = C.createController({ ...h.deps, db: { projectId: PROJECT, databaseId: '(default)', doc: db.doc.bind(db), collection: db.collection.bind(db),
     runTransaction: () => { throw new Error('unavailable'); } } });
   const r = await unreadable.verify(p); assert.equal(r.status, 'unconfirmed'); assert.equal(r.shutdownConfirmed, false);
 });

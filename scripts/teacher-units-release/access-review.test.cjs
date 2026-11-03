@@ -499,7 +499,7 @@ test('GET-only transport: only documented read URLs, version 3 policies, through
     const bytes = Buffer.from(JSON.stringify(await b.get(url)));
     return { ok: true, status: 200, headers: new Map(), body: (async function* () { yield bytes; })() };
   };
-  await R.reviewA3Access({ project: STAGING, get: A1.readApi({ token: 'synthetic-token', fetchImpl }), observation: b.observation, deploymentPlan: b.deploymentPlan,
+  await R.reviewA3Access({ project: STAGING, get: A1.readApi({project:'lyfelabz-staging', token: 'synthetic-token', fetchImpl }), observation: b.observation, deploymentPlan: b.deploymentPlan,
     expected: expectedFor(b.observation), provenance: 'synthetic-fixture', now: b.now });
   assert.ok(methods.length === TOTAL_READS && methods.every(m => m.method === 'GET' && m.redirect === 'error'));
 });

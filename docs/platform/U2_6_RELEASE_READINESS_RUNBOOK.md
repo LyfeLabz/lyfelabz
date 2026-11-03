@@ -662,3 +662,12 @@ paired rollback commands using the previously verified preparation baselines.
 These baselines are historical rollback evidence, not current backend authority.
 Rolling back Hosting alone does not roll back Functions, Rules or indexes. A1
 does not execute recovery; review both versions and backend compatibility first.
+
+## Hosting-only releases preserving an enabled Teacher Units backend
+
+Use [the autosave Hosting-only release procedure](AUTOSAVE_HOSTING_ONLY_RELEASE.md)
+for the explicit `teacher-units-hosting-only` intent. It binds a new clean Hosting
+source to the unchanged, provider-observed enabled backend and full policy,
+reuses active Option B checks, and requires paired Hosting certification. It
+does not deploy Functions or change policy/generation/secret bindings. Existing
+`general`, `teacher-units` and staging UX release contracts are unchanged.

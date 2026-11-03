@@ -191,7 +191,7 @@ function optionBInputs(args) {
   return {rulesApproval:read('rules-approval'),rulesReport:read('rules-report'),approvalDigest:args['approval-digest'],configurationApproval};
 }
 function optionBReceiptInputs(receipt) {
-  if (receipt?.kind !== 'lyfelabz.teacherUnitsOptionBReleaseReceipt') return {};
+  if (!['lyfelabz.teacherUnitsOptionBReleaseReceipt','lyfelabz.unchangedTeacherUnitsBackendReceipt'].includes(receipt?.kind)) return {};
   return {rulesApproval:receipt.rulesApproval,rulesReport:receipt.rulesReport,approvalDigest:receipt.approvalDigest,
     configurationApproval:receipt.configurationApproval};
 }

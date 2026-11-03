@@ -496,7 +496,8 @@ async function refreshScopedCurrentRelease(raw,{get,now=()=>new Date().toISOStri
   // Reviews, certification, Rules results and rollback clocks are never renewed.
   return {...b,observation,hosting,observedAt:observation.observedAt};
 }
-module.exports={OBSERVATION_KIND,CURRENT_RELEASE_KIND,CONFIGURATION_KIND,ENDPOINTS,
+// Reuse the active scoped validator before Hosting-only provider access.
+module.exports={validateConfigurationApproval:scopedConfiguration,OBSERVATION_KIND,CURRENT_RELEASE_KIND,CONFIGURATION_KIND,ENDPOINTS,
   inspectOptionB:inspectScoped,assertCompatible:assertScopedCompatible,assertObservation:assertScopedObservation,
   validateCurrentRelease:validateScopedCurrentRelease,refreshCurrentRelease:refreshScopedCurrentRelease,
   normalizeEndpoint:scopedEndpoint,unpackOptionB,

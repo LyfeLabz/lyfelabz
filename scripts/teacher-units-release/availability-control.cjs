@@ -511,7 +511,7 @@ async function connect(identity, flags, command) {
       if (bundle?.projectId !== identity.projectId) deny('current-release evidence target mismatch before provider access');
       const token = await client.getAccessToken();
       if (typeof token?.token !== 'string' || !token.token) deny('verified current-release credential token unavailable');
-      const get = require('../hosting-release/backend-state.cjs').readApi({ token: token.token });
+      const get = require('../hosting-release/backend-state.cjs').readApi({ project: identity.projectId, token: token.token });
       return require('./option-b-observation.cjs').refreshCurrentRelease(bundle, { get, now: () => new Date().toISOString() });
     };
     return { controller: createController({ db, identity, authenticate, releaseEvidence }), close };
