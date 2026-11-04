@@ -40,6 +40,10 @@ export function classTitleIncludesBlock(title: string, block: string): boolean {
 }
 
 export type SupportGrant = {
+  readonly authorizationId?: string;
+  readonly relationshipId?: string;
+  readonly invitationOnly?: boolean;
+  readonly status?: "pending" | "pendingActivation" | "active" | "removed" | "superseded";
   readonly grantId: string;
   readonly classId: string;
   readonly studentId: string;
@@ -61,7 +65,7 @@ export type SupportGrantFailureReason =
 export type SupportGrantManyResult = {
   readonly studentId: string;
   readonly granteeEmail: string;
-  readonly outcome: "shared" | "alreadyShared" | "failed";
+  readonly outcome: "shared" | "pending" | "alreadyShared" | "failed";
   readonly reason: SupportGrantFailureReason | null;
 };
 
@@ -71,9 +75,14 @@ export type SupportRevokeManyResult = {
 };
 
 export type StudentSupportSeam = {
+  readonly reconcilePending?: () => Promise<void>;
+  readonly isSupportWorkspaceEligible?: () => boolean;
+  readonly removeRecipient?: (relationshipId: string, grantId?: string, cancelInvitation?: boolean) => Promise<void>;
   // Grantee: students shared with the signed-in teacher.
   readonly listShared: () => Promise<ReadonlyArray<SharedStudent>>;
-  // Owner: active grants on one owned class.
+  // Owner: pending, active and removed authorization rows on one owned class.
+  // Active rows retain canonical grant IDs; authorizationId identifies the
+  // separate server-only lifecycle record for V2.1 removal.
   readonly listForClass: (classId: string) => Promise<ReadonlyArray<SupportGrant>>;
   // Owner: share each student with each recipient. Per-pair results;
   // partial success is normal.

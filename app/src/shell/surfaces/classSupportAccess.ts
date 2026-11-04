@@ -9,16 +9,12 @@ import {
 
 // Student Support Access (PDR-032, STUDENT_SUPPORT_ACCESS.md section 7).
 //
-// 1. `renderShareStudentProgressSection`: the class owner's "Share Student
-//    Progress" section in Settings > Student Services, for the class chosen
-//    there. Check students, add one or more support teachers' emails, and
-//    share in one `supportAccessGrantMany` call. Active grants are listed by
-//    recipient teacher ("Teachers with access"); after confirmation, Remove
-//    teacher revokes all of that teacher's grants in this class, and Remove
-//    access revokes one student's grant (both `supportAccessRevokeMany`).
-//    Every change takes effect when the server confirms it; there is no
-//    Save. Results report each outcome, including partial failures, and the
-//    grant list is re-read from the server afterwards.
+// 1. `renderShareStudentProgressSection`: Settings > Student Services sharing.
+//    Owner authorization can be pending before onboarding. The list shows
+//    pending/active/removed rows grouped by recipient relationship. Individual
+//    removal preserves the relationship; Remove teacher revokes the owner's
+//    whole relationship across classes, without touching another issuer's grants.
+//    Every action reports the server-confirmed result and refreshes the list.
 // 2. `renderSharedStudentsSection`: the support educator's "Shared students"
 //    list on the Classes surface. Choosing a student opens the existing
 //    Student Detail in read-only mode (wired by classes.ts).
@@ -45,20 +41,20 @@ export const MAX_SHARE_STUDENTS = 40;
 export const MAX_SHARE_RECIPIENTS = 10;
 export const MAX_REVOKE_GRANTS = 200;
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_PATTERN = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@weston\.org$/;
 
 export function normalizeRecipientEmail(raw: string): string {
   return raw.trim().toLowerCase();
 }
 
 export function isValidRecipientEmail(email: string): boolean {
-  return email.length <= 320 && EMAIL_PATTERN.test(email);
+  return email.length <= 320 && EMAIL_PATTERN.test(normalizeRecipientEmail(email));
 }
 
 function failureMessage(reason: SupportGrantFailureReason | null): string {
   switch (reason) {
     case "invalidEmail":
-      return "not an email address";
+      return "use a valid @weston.org address";
     case "granteeUnavailable":
       return "no active teacher at your school uses this email";
     case "studentNotEnrolled":
@@ -79,6 +75,7 @@ const plural = (n: number, one: string, many: string): string => `${n} ${n === 1
 // are never an identity; a grant id of another shape keys on its email, or
 // stands alone.
 export function recipientTeacherKey(grant: SupportGrant): string {
+  if (grant.relationshipId) return `relationship:${grant.relationshipId}`;
   const prefix = `${grant.classId}__${grant.studentId}__`;
   if (grant.grantId.startsWith(prefix) && grant.grantId.length > prefix.length) {
     return `uid:${grant.grantId.slice(prefix.length)}`;
@@ -131,7 +128,7 @@ export function groupGrantsByTeacher(
 type ShareResult = {
   readonly studentId: string;
   readonly granteeEmail: string;
-  readonly outcome: "shared" | "alreadyShared" | "failed";
+  readonly outcome: "shared" | "pending" | "alreadyShared" | "failed";
 };
 
 // One plain sentence (or a few) for a counted outcome. `who` names the
@@ -159,6 +156,11 @@ function describeTeacherOutcome(shared: number, already: number, failed: number,
 // way that hides a failure. Never reports success for a failed pair.
 export function describeShareResults(results: ReadonlyArray<ShareResult>): string {
   if (results.length === 0) return "Nothing was shared.";
+  const pending = results.filter(r => r.outcome === "pending");
+  if (pending.length > 0) {
+    const other = results.filter(r => r.outcome !== "pending");
+    return `${plural(pending.length, "authorization", "authorizations")} saved. Access is pending onboarding or activation.${other.length ? " " + describeShareResults(other) : ""}`;
+  }
   const byEmail = new Map<string, { shared: number; already: number; failed: number }>();
   for (const r of results) {
     let row = byEmail.get(r.granteeEmail);
@@ -177,7 +179,7 @@ export function describeShareResults(results: ReadonlyArray<ShareResult>): strin
   return [...byEmail].map(([email, row]) => describeTeacherOutcome(row.shared, row.already, row.failed, email)).join(" ");
 }
 
-const teacherLabel = (t: RecipientTeacher): string => (t.email === null ? t.displayName : `${t.displayName} (${t.email})`);
+const teacherLabel = (t: RecipientTeacher): string => (t.email === null || t.email === t.displayName ? t.displayName : `${t.displayName} (${t.email})`);
 
 export function renderShareStudentProgressSection(
   doc: Document,
@@ -349,7 +351,7 @@ export function renderShareStudentProgressSection(
   shareStatus.tabIndex = -1;
   section.appendChild(shareStatus);
 
-  // --- Teachers with access: a disclosure, collapsed, with the number of
+  // --- Support teachers: a disclosure, collapsed, with the number of
   // recipient teachers in its header ---
   const grantsDisclosure = doc.createElement("div");
   grantsDisclosure.className = "shell-ss-share-existing";
@@ -380,7 +382,7 @@ export function renderShareStudentProgressSection(
   const grantList = doc.createElement("ul");
   grantList.className = "shell-classes-settings-support-list shell-ss-access-teachers";
   grantList.setAttribute("data-testid", "ss-access-teachers");
-  grantList.setAttribute("aria-label", "Teachers with access");
+  grantList.setAttribute("aria-label", "Support teachers");
   grantsBody.appendChild(grantList);
 
   // Outside the collapsed body so removal results are always announced.
@@ -565,12 +567,13 @@ export function renderShareStudentProgressSection(
           );
           syncCheckboxes();
           renderRecipients();
-          if (shared > 0) return refreshGrants();
+          if (shared > 0 || results.some(result => result.outcome === "pending")) return refreshGrants();
           return undefined;
         },
-        () => {
+        (err: unknown) => {
           if (!deps.isConnected()) return;
-          setStatus(shareStatus, "We couldn't share access. Nothing was changed. Please try again.");
+          setStatus(shareStatus, err instanceof Error && err.message.startsWith("Refresh LyfeLabz")
+            ? err.message : "We couldn't confirm the share. Please try again.");
         },
       )
       .finally(() => {
@@ -618,10 +621,7 @@ export function renderShareStudentProgressSection(
     readonly grant: SupportGrant | null;
   };
 
-  // Revokes the given grants (all belong to `target.teacher` in this class)
-  // through `supportAccessRevokeMany`, which authorizes each grant on the
-  // server. Batches stay within the server cap. Each outcome is reported;
-  // what failed keeps its access and can be tried again.
+  // The relationship action and individual grant revocations use separate server intents.
   const runRevoke = (target: RevokeTarget, grantIds: ReadonlyArray<string>): void => {
     if (busy || grantIds.length === 0) return;
     const name = target.teacher.displayName;
@@ -631,13 +631,26 @@ export function renderShareStudentProgressSection(
       "Student";
     setStatus(grantStatus, "Removing access…");
     setBusy(true);
-    const batches: string[][] = [];
-    for (let i = 0; i < grantIds.length; i += MAX_REVOKE_GRANTS) batches.push(grantIds.slice(i, i + MAX_REVOKE_GRANTS));
+    const firstGrant = target.teacher.grants[0];
+    const cancelInvitation = target.grant === null && firstGrant?.invitationOnly === true;
+    const relationshipId = target.grant === null ? firstGrant?.relationshipId : undefined;
+    const removeRecipient = deps.seam.removeRecipient;
+    const batches: ReadonlyArray<string>[] = [];
+    if (relationshipId && removeRecipient) {
+      batches.push(grantIds);
+    } else {
+      for (let i = 0; i < grantIds.length; i += MAX_REVOKE_GRANTS) batches.push(grantIds.slice(i, i + MAX_REVOKE_GRANTS));
+    }
     const results: SupportRevokeManyResult[] = [];
     let chain: Promise<void> = Promise.resolve();
     for (const batch of batches) {
       chain = chain.then(() =>
-        deps.seam.revokeMany(batch).then(
+        (relationshipId && removeRecipient
+          ? (cancelInvitation
+            ? removeRecipient(relationshipId, undefined, true)
+            : removeRecipient(relationshipId, firstGrant.authorizationId ? undefined : firstGrant.grantId))
+            .then(() => batch.map(grantId => ({ grantId, outcome: "revoked" as const })))
+          : deps.seam.revokeMany(batch)).then(
           (r) => {
             results.push(...r);
           },
@@ -664,8 +677,10 @@ export function renderShareStudentProgressSection(
           if (failed.length === 0) {
             setStatus(
               grantStatus,
-              target.grant === null
-                ? `Removed ${name}'s access to ${plural(removed, "student", "students")}.`
+              cancelInvitation ? `Canceled the pending invitation for ${name}.` : target.grant === null
+                ? target.teacher.grants[0]?.relationshipId
+                  ? `Removed ${name}'s support relationship and the access you shared across your classes.`
+                  : `Removed ${name}'s access to ${plural(removed, "student", "students")}.`
                 : `Removed ${name}'s access to ${target.grant.studentDisplayName}.`,
             );
           } else if (removed === 0) {
@@ -686,13 +701,20 @@ export function renderShareStudentProgressSection(
           }
           return refreshGrants();
         },
-        () => {
+        async (err: unknown) => {
           if (!deps.isConnected()) return;
           confirming = null;
+          if (err instanceof Error && err.message.startsWith("Refresh LyfeLabz")) {
+            setStatus(grantStatus, err.message);
+            await refreshGrants();
+            return;
+          }
           setStatus(
             grantStatus,
-            target.grant === null
-              ? `We couldn't remove ${name}'s access. Nothing was changed. Please try again.`
+            cancelInvitation ? "We couldn’t confirm the invitation was canceled. Please try again." : target.grant === null
+              ? target.teacher.grants[0]?.relationshipId
+                ? `Removal could not finish. Some access may remain. Please try again.`
+                : `We couldn't remove ${name}'s access. Nothing was changed. Please try again.`
               : `We couldn't remove ${name}'s access to ${target.grant.studentDisplayName}. Nothing was changed. Please try again.`,
           );
           appendRetry(target, grantIds);
@@ -793,7 +815,7 @@ export function renderShareStudentProgressSection(
     li.setAttribute("data-teacher-key", teacher.key);
     const nameId = `ss-access-teacher-${index}`;
     li.setAttribute("aria-labelledby", nameId);
-    const count = plural(teacher.grants.length, "student", "students");
+    const count = plural(teacher.grants.filter(g => g.status !== "removed" && g.status !== "superseded").length, "student", "students");
 
     const row = doc.createElement("div");
     row.className = "shell-ss-access-teacher-row";
@@ -824,8 +846,10 @@ export function renderShareStudentProgressSection(
     removeTeacher.type = "button";
     removeTeacher.className = "shell-ss-ra-action shell-ss-access-remove-teacher";
     removeTeacher.setAttribute("data-testid", "ss-access-remove-teacher");
-    removeTeacher.setAttribute("aria-label", `Remove teacher ${teacherLabel(teacher)}`);
-    removeTeacher.textContent = "Remove teacher";
+    const invitationOnly = teacher.grants[0]?.invitationOnly === true;
+    const relationshipAction = invitationOnly ? "Cancel invitation" : "Remove teacher";
+    removeTeacher.setAttribute("aria-label", `${relationshipAction} ${teacherLabel(teacher)}`);
+    removeTeacher.textContent = relationshipAction;
     removeTeacher.disabled = busy;
     removeTeacher.addEventListener("click", () => {
       if (busy) return;
@@ -838,13 +862,12 @@ export function renderShareStudentProgressSection(
 
     if (confirming?.kind === "teacher" && confirming.key === teacher.key) {
       const target: RevokeTarget = { teacher, grant: null };
-      const one = teacher.grants.length === 1;
-      li.appendChild(
+        li.appendChild(
         confirmBox(
           "ss-access-teacher-confirm",
-          `Remove ${teacher.displayName}'s access to ${count}?`,
-          `${teacherLabel(teacher)} will no longer see ${one ? "this student's" : "these students'"} work in this class. ${one ? "The student remains" : "The students remain"} in your class.`,
-          "Remove teacher",
+          invitationOnly ? `Cancel the pending invitation for ${teacher.displayName}?` : teacher.grants[0]?.relationshipId ? `Remove ${teacher.displayName} as a support teacher?` : `Remove ${teacher.displayName}'s access to ${count}?`,
+          invitationOnly ? "This cancels the pending invitation. Existing access must be removed separately." : `${teacherLabel(teacher)} will lose this teacher relationship and all student access you shared, across your classes. Other teachers’ sharing and class rosters are unchanged.`,
+          relationshipAction,
           () => runRevoke(target, teacher.grants.map((g) => g.grantId)),
           () => {
             if (busy) return;
@@ -865,6 +888,10 @@ export function renderShareStudentProgressSection(
       sli.className = "shell-ss-access-student";
       sli.setAttribute("data-testid", "ss-access-student");
       sli.setAttribute("data-grant-id", grant.grantId);
+      const status = doc.createElement("span");
+      status.className = "shell-ss-access-count";
+      status.setAttribute("data-testid", "ss-access-status");
+      status.textContent = grant.status === "pending" ? "Pending onboarding" : grant.status === "pendingActivation" ? "Pending activation" : grant.status === "superseded" ? "Superseded" : grant.status === "removed" ? "Removed" : "Active";
       const sname = doc.createElement("span");
       sname.className = "shell-ss-access-student-name";
       sname.textContent = grant.studentDisplayName;
@@ -874,14 +901,14 @@ export function renderShareStudentProgressSection(
       remove.setAttribute("data-testid", "ss-access-remove-student");
       remove.setAttribute("aria-label", `Remove ${teacher.displayName}'s access to ${grant.studentDisplayName}`);
       remove.textContent = "Remove access";
-      remove.disabled = busy;
+      remove.disabled = busy || grant.status === "removed" || grant.status === "superseded";
       remove.addEventListener("click", () => {
         if (busy) return;
         confirming = { kind: "student", grantId: grant.grantId };
         renderGrants();
         focusIn("ss-access-student-confirm-cancel");
       });
-      sli.append(sname, remove);
+      sli.append(sname, status, remove);
       if (confirming?.kind === "student" && confirming.grantId === grant.grantId) {
         const target: RevokeTarget = { teacher, grant };
         sli.appendChild(
@@ -910,10 +937,10 @@ export function renderShareStudentProgressSection(
     const teachers = groupGrantsByTeacher(deps.classId, grants);
     grantsToggle.textContent =
       grantsState === "loaded"
-        ? `Teachers with access (${teachers.length})`
+        ? `Support teachers (${teachers.length})`
         : grantsState === "error"
-          ? "Teachers with access (couldn't load)"
-          : "Teachers with access";
+          ? "Support teachers (couldn't load)"
+          : "Support teachers";
     grantList.replaceChildren();
     if (grantsState === "loading" || grantsState === "error") {
       const li = doc.createElement("li");
@@ -1069,11 +1096,11 @@ export function renderStudentSupportLanding(
     return;
   }
   if (input.students.length === 0) {
-    status.textContent = "No students are shared with you right now.";
+    status.textContent = "Your students will appear here soon.";
     const help = doc.createElement("p");
     help.className = "shell-classes-shared-help";
     help.setAttribute("data-testid", "support-empty");
-    help.textContent = "When a classroom teacher shares a student with you, the student appears here.";
+    help.textContent = "Once a science teacher shares students with you, you'll be able to view their progress and learning results.";
     mount.appendChild(help);
     return;
   }

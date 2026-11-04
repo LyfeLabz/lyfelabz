@@ -848,9 +848,11 @@ async function run(): Promise<void> {
       installGradeImprovementsSeam(createGradeImprovementsCallables(functions));
       // Student Support Access (PDR-032): grant management, shared students,
       // the student-scoped attempts read, and question-review revision text.
-      installStudentSupportSeam(
-        createStudentSupportSeam(functions, createFirestoreAssessmentRevisionContentReader(db)),
-      );
+      const studentSupport = createStudentSupportSeam(functions, createFirestoreAssessmentRevisionContentReader(db));
+      installStudentSupportSeam(studentSupport);
+      // Reconcile new shares in the background. The Classes surface reads
+      // canonical grants independently and can retry reconciliation separately.
+      void studentSupport.reconcilePending?.().catch(() => undefined);
       createClass = createFirebaseCreateClass(functions);
       lmsCreateClass = createFirebaseLmsCreateClass(functions);
       activateClass = createFirebaseActivateClass(functions);

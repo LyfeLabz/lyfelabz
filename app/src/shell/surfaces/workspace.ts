@@ -265,6 +265,7 @@ export const WORKSPACE_SURFACES: Readonly<
       deps: WorkspaceDeps,
     ) =>
       renderCurriculumSurface(mount, session, {
+        previewOnly: deps.supportWorkspace?.isSupportOnly() === true,
         listClasses: deps.listClasses,
         integrations: deps.integrations ?? null,
         assignments: deps.assignments ?? null,

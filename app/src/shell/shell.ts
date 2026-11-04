@@ -298,8 +298,8 @@ export function mountTeacherShell(
   // Student Support Workspace (V2 P3, supportWorkspace.ts): true once this
   // shell has proven the teacher owns zero classes and has shared students.
   // Never persisted; a fresh shell always starts false. While true, Classes
-  // is the only destination (navigation, intra-shell seams, and Back/Forward
-  // all refuse the teaching-only surfaces).
+  // and preview-only Curriculum are the destinations. Navigation, intra-shell
+  // seams and Back/Forward refuse teaching-only surfaces.
   let supportOnly = false;
   // True while a fresh direct link to a teaching-only surface waits for the
   // support-only condition to resolve (see `mountInitial` below).
@@ -595,6 +595,11 @@ export function mountTeacherShell(
       enterSupportOnly: (): void => {
         enterSupportOnly();
       },
+      leaveSupportOnly: (): void => {
+        if (!supportOnly) return;
+        supportOnly = false;
+        renderNav();
+      },
     },
   };
 
@@ -630,7 +635,8 @@ export function mountTeacherShell(
     // Fails closed: My Units is never a destination unless it is enabled.
     if (next === "units" && !unitsEnabled) return;
     // A support-only teacher has no teaching-only destinations.
-    if ((supportOnly || workspaceUnresolved) && next !== "classes") return;
+    if (workspaceUnresolved && next !== "classes") return;
+    if (supportOnly && next !== "classes" && next !== "curriculum") return;
     if (next === activeKey && !showingDetail) {
       // Selecting Curriculum while already in Curriculum (on a resource tab
       // or in Lesson Summary) returns to its landing view, Lessons. That is a
@@ -796,7 +802,7 @@ export function mountTeacherShell(
   // twice. Until then the outlet shows a neutral loading status and no
   // navigation. Without the support seam nothing changes.
   const supportSeam = readStudentSupportSeam();
-  if (supportSeam !== null && activeKey !== "classes") {
+  if (supportSeam !== null && (activeKey !== "classes" || supportSeam.isSupportWorkspaceEligible !== undefined)) {
     resolvingWorkspace = true;
     const pending = doc.createElement("p");
     pending.className = "shell-status";
@@ -810,6 +816,7 @@ export function mountTeacherShell(
       resolvingWorkspace = false;
       outletHost.textContent = "";
       if (supportOnlyResult === true) supportOnly = true;
+      if (sharedFailed) workspaceUnresolved = true;
       // Support-only, or zero classes with an unresolved (failed) shared
       // read: Classes, which shows the landing or the neutral retry state.
       if (supportOnlyResult === true || sharedFailed) {
@@ -823,28 +830,57 @@ export function mountTeacherShell(
       primedClasses = null;
       if (activeKey !== "classes") primedShared = null;
     };
-    const owned = deps.listClasses(session.uid);
-    primedClasses = owned;
-    owned.then(
-      (classes) => {
-        if (classes.length > 0) {
-          resolve(false, false);
-          return;
-        }
-        const shared = supportSeam.listShared();
-        primedShared = shared;
-        shared.then(
-          (students) => resolve(isSupportOnlyTeacher(0, students.length), false),
-          () => resolve(null, true),
-        );
-      },
-      // The class list itself failed: mount the request, which reports its
-      // own load failure.
-      () => {
-        primedClasses = null;
-        resolve(null, false);
-      },
-    );
+    const readOwnedWorkspace = (): void => {
+      const owned = deps.listClasses(session.uid);
+      primedClasses = owned;
+      owned.then(
+        (classes) => {
+          if (classes.length > 0) {
+            resolve(false, false);
+            return;
+          }
+          const shared = supportSeam.listShared();
+          primedShared = shared;
+          shared.then(
+            (students) => {
+              const eligible = supportSeam.isSupportWorkspaceEligible?.() ?? isSupportOnlyTeacher(0, students.length);
+              resolve(eligible, false);
+              if (eligible || activeKey === "classes" || !supportSeam.reconcilePending) return;
+              // The Classes surface handles its own post-reconciliation refresh.
+              // A teacher arriving through another route needs the same redirect
+              // if a new authorization activates after the initial grant read.
+              void supportSeam.reconcilePending().then(async () => {
+                if (!body.isConnected || activeKey === "classes") return;
+                await supportSeam.listShared();
+                if (body.isConnected && supportSeam.isSupportWorkspaceEligible?.()) enterSupportOnly();
+              }).catch(() => undefined);
+            },
+            () => resolve(null, true),
+          );
+        },
+        // The class list itself failed: mount the request, which reports its
+        // own load failure.
+        () => {
+          primedClasses = null;
+          if (supportSeam.isSupportWorkspaceEligible !== undefined) {
+            pending.textContent = "We could not finish loading your workspace.";
+            const retry = doc.createElement("button");
+            retry.type = "button";
+            retry.textContent = "Try again";
+            retry.setAttribute("data-testid", "shell-workspace-retry");
+            retry.addEventListener("click", () => {
+              retry.remove();
+              pending.textContent = "Loading your workspace";
+              readOwnedWorkspace();
+            });
+            outletHost.appendChild(retry);
+            return;
+          }
+          resolve(null, false);
+        },
+      );
+    };
+    readOwnedWorkspace();
   } else {
     mountInitial();
   }
@@ -938,8 +974,9 @@ export function mountTeacherShell(
       // is replaced, so it cannot be reached again by Back/Forward.
       if (
         (supportOnly || workspaceUnresolved) &&
-        !(parsed.kind === "shell-surface" && parsed.surface === "classes") &&
-        parsed.kind !== "shell-student-detail"
+        !(parsed.kind === "shell-surface" && (parsed.surface === "classes" || (supportOnly && parsed.surface === "curriculum"))) &&
+        parsed.kind !== "shell-student-detail" &&
+        !(supportOnly && parsed.kind === "shell-curriculum-tab")
       ) {
         navigateTo("classes", { fromPopstate: true });
         classesDetailController?.restoreToTopList();

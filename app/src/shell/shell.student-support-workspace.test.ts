@@ -131,7 +131,7 @@ describe("support-only detection", () => {
     installStudentSupportSeam(makeSeam().seam);
     const mount = await mountShell(makeShellDeps([]));
     expect(headline(mount)).toBe("Student Support");
-    expect(navKeys(mount)).toEqual(["lyfelabz", "classes"]);
+    expect(navKeys(mount)).toEqual(["classes", "curriculum"]);
     expect(q(mount, "nav-classes")!.textContent).toBe("Student Support");
     expect(q(mount, "sign-out")).not.toBeNull();
     const row = q(mount, "classes-shared-student")!;
@@ -211,7 +211,7 @@ describe("failed load and retry", () => {
     expect(control.listShared).toHaveBeenCalledTimes(2);
     expect(q(mount, "workspace-unresolved")).toBeNull();
     expect(headline(mount)).toBe("Student Support");
-    expect(navKeys(mount)).toEqual(["lyfelabz", "classes"]);
+    expect(navKeys(mount)).toEqual(["classes", "curriculum"]);
   });
 
   test("a teacher with classes sees the error beneath their classes, not a blank section", async () => {
@@ -270,10 +270,10 @@ describe("shared Student Detail", () => {
     q(mount, "student-detail-back")!.click();
     await settle();
     expect(headline(mount)).toBe("Student Support");
-    expect(q(mount, "support-status")!.textContent).toBe("No students are shared with you right now.");
+    expect(q(mount, "support-status")!.textContent).toBe("Your students will appear here soon.");
     expect(q(mount, "support-empty")).not.toBeNull();
     // Still the support workspace for this page life; no onboarding.
-    expect(navKeys(mount)).toEqual(["lyfelabz", "classes"]);
+    expect(navKeys(mount)).toEqual(["classes", "curriculum"]);
     expect(q(mount, "classes-empty")).toBeNull();
   });
 });
@@ -321,7 +321,7 @@ describe("navigation and history guards", () => {
     const mount = await mountShell(makeShellDeps([], { initialState }));
     expect(activeSurface(mount)).toBe("classes");
     expect(headline(mount)).toBe("Student Support");
-    expect(navKeys(mount)).toEqual(["lyfelabz", "classes"]);
+    expect(navKeys(mount)).toEqual(["classes", "curriculum"]);
     expect(window.history.state).toEqual({ kind: "shell-surface", surface: "classes" });
   });
 
@@ -329,7 +329,7 @@ describe("navigation and history guards", () => {
     installStudentSupportSeam(makeSeam().seam);
     // A stale entry beneath the shell (e.g. recorded before the last class
     // was archived elsewhere and the account became support-only).
-    window.history.replaceState({ kind: "shell-surface", surface: "curriculum" }, "", "/app/teacher#curriculum");
+    window.history.replaceState({ kind: "shell-surface", surface: "settings" }, "", "/app/teacher#settings");
     window.history.pushState(null, "", "/app/teacher");
     const mount = await mountShell(makeShellDeps([]));
     expect(headline(mount)).toBe("Student Support");
@@ -444,7 +444,7 @@ describe("direct links resolve before any teaching-only surface paints", () => {
     expect(seen.filter((v) => v !== null && v !== "classes")).toEqual([]);
     expect(activeSurface(mount)).toBe("classes");
     expect(headline(mount)).toBe("Student Support");
-    expect(navKeys(mount)).toEqual(["lyfelabz", "classes"]);
+    expect(navKeys(mount)).toEqual(["classes", "curriculum"]);
     expect(window.history.state).toEqual({ kind: "shell-surface", surface: "classes" });
     // The resolution reads are handed to Classes, not repeated.
     expect(listClasses).toHaveBeenCalledTimes(1);
@@ -480,7 +480,7 @@ describe("direct links resolve before any teaching-only surface paints", () => {
     q(mount, "workspace-unresolved-retry")!.click();
     await settle();
     expect(headline(mount)).toBe("Student Support");
-    expect(navKeys(mount)).toEqual(["lyfelabz", "classes"]);
+    expect(navKeys(mount)).toEqual(["classes", "curriculum"]);
   });
 
   test("a failed class list mounts the requested surface (its own error path)", async () => {
@@ -577,7 +577,7 @@ describe("unresolved workspace hides all navigation", () => {
     succeed([JORDAN]);
     q(mount, "workspace-unresolved-retry")!.click();
     await settle();
-    expect(navKeys(mount)).toEqual(["lyfelabz", "classes"]);
+    expect(navKeys(mount)).toEqual(["classes", "curriculum"]);
     expect(headline(mount)).toBe("Student Support");
   });
 
@@ -621,4 +621,71 @@ describe("unresolved workspace hides all navigation", () => {
     expect(navKeys(mount)).toEqual([]);
     expect(window.history.state).toEqual({ kind: "shell-surface", surface: "classes" });
   });
+});
+
+describe("V2.1 server-derived support workspace", () => {
+  test("a recognized recipient with zero students sees the waiting state and exactly two destinations", async () => {
+    installStudentSupportSeam({ ...makeSeam(() => Promise.resolve([])).seam, isSupportWorkspaceEligible: () => true });
+    const mount = await mountShell(makeShellDeps([]));
+    expect(headline(mount)).toBe("Student Support");
+    expect(navKeys(mount)).toEqual(["classes", "curriculum"]);
+    expect(mount.textContent).toContain("Your students will appear here soon.");
+    expect(mount.textContent).toContain("Once a science teacher shares students with you, you'll be able to view their progress and learning results.");
+    expect(q(mount, "classes-empty")).toBeNull();
+  });
+  test("Curriculum reuses lesson previews without assignment, class or unit controls", async () => {
+    installStudentSupportSeam({ ...makeSeam().seam, isSupportWorkspaceEligible: () => true });
+    const mount = await mountShell(makeShellDeps([]));
+    q(mount, "nav-curriculum")!.click(); await settle();
+    expect(activeSurface(mount)).toBe("curriculum");
+    const previews = Array.from(mount.querySelectorAll<HTMLAnchorElement>('[data-testid^="lesson-preview-"]'));
+    expect(previews.length).toBeGreaterThan(0);
+    expect(previews.every(link => !link.href.includes("assignment=") && link.target === "_blank")).toBe(true);
+    expect(mount.querySelector('[data-testid^="lesson-assign-"]')).toBeNull();
+    expect(mount.querySelector('[data-testid^="lesson-toggle-"]')).toBeNull();
+    expect(mount.querySelector('[data-testid^="lesson-select-"]')).toBeNull();
+    expect(q(mount, "nav-settings")).toBeNull();
+    await realBack(); expect(headline(mount)).toBe("Student Support");
+    await realForward(); expect(activeSurface(mount)).toBe("curriculum");
+  });
+  test.each(["curriculum", "settings", "units"] as const)("a fresh %s URL defaults to Student Support for a recognized waiting recipient", async surface => {
+    installStudentSupportSeam({ ...makeSeam(() => Promise.resolve([])).seam, isSupportWorkspaceEligible: () => true });
+    const mount = await mountShell(makeShellDeps([], { initialState: { kind: "shell-surface", surface } }));
+    expect(activeSurface(mount)).toBe("classes"); expect(headline(mount)).toBe("Student Support");
+  });
+  test("failed workspace authorization never paints Curriculum and retries", async () => {
+    installStudentSupportSeam({ ...makeSeam(() => Promise.resolve([])).seam, isSupportWorkspaceEligible: () => true });
+    let fail = true;
+    const mount = await mountShell(makeShellDeps([], { initialState: { kind: "shell-surface", surface: "curriculum" }, listClasses: () => fail ? Promise.reject(new Error("offline")) : Promise.resolve([]) }));
+    expect(navKeys(mount)).toEqual([]); expect(q(mount, "curriculum-surface")).toBeNull();
+    expect(mount.textContent).toContain("We could not finish loading your workspace.");
+    fail = false; q(mount, "shell-workspace-retry")!.click(); await settle();
+    expect(headline(mount)).toBe("Student Support");
+  });
+});
+
+
+test("V2.1 preview catalog tabs are safe browser-history destinations", async () => {
+  installStudentSupportSeam({ ...makeSeam().seam, isSupportWorkspaceEligible: () => true });
+  const mount = await mountShell(makeShellDeps([]));
+  window.history.pushState({ kind: "shell-curriculum-tab", surface: "curriculum", tab: "investigations" }, "", "/app/teacher#curriculum/investigations");
+  window.history.pushState({ kind: "shell-surface", surface: "classes" }, "", "/app/teacher#classes");
+  await realBack();
+  expect(activeSurface(mount)).toBe("curriculum");
+  expect(window.history.state.kind).toBe("shell-curriculum-tab");
+  expect(mount.querySelector('[data-testid^="lesson-assign-"]')).toBeNull();
+});
+
+
+test("V2.1 ending the final relationship ends the designation after authorization refresh", async () => {
+  let eligible = true;
+  installStudentSupportSeam({ ...makeSeam(() => Promise.resolve(eligible ? [JORDAN] : [])).seam, isSupportWorkspaceEligible: () => eligible });
+  const mount = await mountShell(makeShellDeps([]));
+  q(mount, "classes-shared-student")!.click(); await settle();
+  eligible = false;
+  q(mount, "student-detail-back")!.click(); await settle();
+  expect(headline(mount)).toBe("Classes");
+  expect(navKeys(mount)).toEqual(["lyfelabz", "classes", "curriculum", "settings"]);
+  expect(q(mount, "classes-empty")).not.toBeNull();
+  expect(q(mount, "support-empty")).toBeNull();
 });

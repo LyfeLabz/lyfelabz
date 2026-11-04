@@ -204,6 +204,7 @@ type GradeFilter = "all" | LessonGrade;
 type TopicFilter = "all" | LessonTopic;
 
 export type CurriculumSurfaceDeps = {
+  readonly previewOnly?: boolean;
   readonly listClasses: ListClasses;
   // Sprint 8D authorized scope expansion. When absent-or-null the
   // Assignment Dialog renders every class row unchanged
@@ -1073,10 +1074,11 @@ export function renderCurriculumSurface(
     assignments: null,
   },
 ): void {
-  const integrations = deps.integrations ?? null;
-  const assignments = deps.assignments ?? null;
-  const assignmentDetail = deps.assignmentDetail ?? null;
-  const lessonSummary = deps.lessonSummary ?? null;
+  const previewOnly = deps.previewOnly === true;
+  const integrations = previewOnly ? null : deps.integrations ?? null;
+  const assignments = previewOnly ? null : deps.assignments ?? null;
+  const assignmentDetail = previewOnly ? null : deps.assignmentDetail ?? null;
+  const lessonSummary = previewOnly ? null : deps.lessonSummary ?? null;
   const doc = mount.ownerDocument;
 
   // Sprint 28.6E: the Curriculum lesson grid and the lesson-level View
@@ -1415,7 +1417,7 @@ export function renderCurriculumSurface(
   const lessonsPanel = doc.createElement("div");
   lessonsPanel.className = "shell-curriculum-lessons-panel";
   // Milestone 2A: the resource selection, only while My Units is available.
-  const unitsSeam = deps.teacherUnits ?? null;
+  const unitsSeam = previewOnly ? null : deps.teacherUnits ?? null;
   if (unitsSeam !== null && teacherUnitsSurfaceEnabled(unitsSeam)) void unitsSeam.capability?.enter("curriculum");
   const selection: CurriculumSelection | null =
     unitsSeam !== null && teacherUnitsSurfaceEnabled(unitsSeam)
@@ -1593,6 +1595,7 @@ export function renderCurriculumSurface(
   }
 
   const openAssignDialog = (lesson: SurfaceableLesson, card: HTMLElement): void => {
+    if (previewOnly) return;
     void openDialog({
       doc,
       lesson,
@@ -1633,7 +1636,7 @@ export function renderCurriculumSurface(
     const card = renderLessonCard(doc, lesson, state.activation, openAssignDialog, {
       showResults: lessonSummary !== null,
       onResults: openLessonSummary,
-    }, selection);
+    }, selection, previewOnly);
     refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
     grid.appendChild(card);
   }
@@ -1642,8 +1645,10 @@ export function renderCurriculumSurface(
 
   // Prefetch classes and their LMS link status so the dialog opens
   // with the class list and the LMS-linked class row shape ready.
-  void ensureClasses(session.uid, deps.listClasses);
-  void ensureClassLinks(session.uid, integrations);
+  if (!previewOnly) {
+    void ensureClasses(session.uid, deps.listClasses);
+    void ensureClassLinks(session.uid, integrations);
+  }
 
   // Shell one-shot: open a lesson's Results on this mount (My Units' Results
   // action, or Back from a class's Assignment Detail, which re-enters the
@@ -2274,6 +2279,7 @@ function renderLessonCard(
   onAssign: (lesson: SurfaceableLesson, card: HTMLElement) => void,
   results?: ResultsOptions,
   selection: CurriculumSelection | null = null,
+  previewOnly = false,
 ): HTMLElement {
   // Milestone 2A: a lesson's canonical resource id is its slug.
   const selectable = selection !== null && isSelectableResourceId(lesson.slug);
@@ -2348,7 +2354,7 @@ function renderLessonCard(
     setActivationState(next);
     renderToggle(next);
   });
-  actions.appendChild(toggle);
+  if (!previewOnly) actions.appendChild(toggle);
 
   // Sprint 28.6H.2 (Finding 2 / Tasks 8-10): Assign and Preview live in their
   // OWN dedicated paired row - a container that holds exactly these two
@@ -2398,7 +2404,7 @@ function renderLessonCard(
     }
     onAssign(lesson, card);
   });
-  actionPair.appendChild(assign);
+  if (!previewOnly) actionPair.appendChild(assign);
 
   // Sprint 28.6D (Task 7): teacher-safe Preview. Opens the current v2
   // lesson artifact (override-aware `buildLessonBasePath`) with NO

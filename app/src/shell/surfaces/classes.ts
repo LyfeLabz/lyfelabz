@@ -955,7 +955,8 @@ export function renderClassesSurface(
     if (studentSupport === null || sharedStudentsLoad !== null) return;
     const settle = (students: ReadonlyArray<SharedStudent>, failed: boolean): void => {
       const changed =
-        students.length > 0 || sharedStudents.length > 0 || failed !== sharedStudentsFailed;
+        students.length > 0 || sharedStudents.length > 0 || failed !== sharedStudentsFailed ||
+        studentSupport.isSupportWorkspaceEligible?.() !== supportOnly();
       const wasHeld = !sharedStudentsSettled;
       sharedStudents = students;
       sharedStudentsFailed = failed;
@@ -982,6 +983,39 @@ export function renderClassesSurface(
     rerender();
   };
 
+  let reconciliationStarted = false;
+  let reconciliationFailed = false;
+  const reconcileShared = (): void => {
+    if (reconciliationStarted || !studentSupport?.reconcilePending) return;
+    reconciliationStarted = true;
+    reconciliationFailed = false;
+    void studentSupport.reconcilePending().then(async () => {
+      await sharedStudentsLoad;
+      if (mount.isConnected && state.kind === "list") {
+        sharedStudentsLoad = null;
+        loadSharedStudents();
+      }
+    }, () => {
+      reconciliationFailed = true;
+      if (mount.isConnected && state.kind === "list") rerender();
+    });
+  };
+  const renderReconciliationError = (): void => {
+    if (!reconciliationFailed) return;
+    const status = doc.createElement("p");
+    status.setAttribute("role", "status");
+    status.textContent = "We couldn't check for newly shared students.";
+    const retry = doc.createElement("button");
+    retry.type = "button";
+    retry.textContent = "Retry checking for new shares";
+    retry.addEventListener("click", () => {
+      reconciliationStarted = false;
+      reconcileShared();
+      rerender();
+    });
+    mount.append(status, retry);
+  };
+
   const rerender = (): void => {
     if (!mount.isConnected) return;
     mount.textContent = "";
@@ -995,9 +1029,14 @@ export function renderClassesSurface(
         return;
       case "list": {
         loadSharedStudents();
+        reconcileShared();
         // Both authoritative reads (owned classes of every status, and the
         // server-authorized shared list) prove the support-only condition.
-        if (isSupportOnlyTeacher(s.classes.length, sharedStudents.length)) {
+        const serverEligibility = studentSupport?.isSupportWorkspaceEligible;
+        if (serverEligibility !== undefined && sharedStudentsSettled && !sharedStudentsFailed) {
+          if (serverEligibility()) supportWorkspace?.enterSupportOnly();
+          else supportWorkspace?.leaveSupportOnly?.();
+        } else if (serverEligibility === undefined && isSupportOnlyTeacher(s.classes.length, sharedStudents.length)) {
           supportWorkspace?.enterSupportOnly();
         }
         // Zero owned classes and a failed (or retrying) shared read: the
@@ -1018,6 +1057,7 @@ export function renderClassesSurface(
             onOpen: onOpenSharedStudent,
             onRetry: retrySharedStudents,
           });
+          renderReconciliationError();
           return;
         }
         // Zero owned classes and a failed shared read: whether this is a
@@ -1073,6 +1113,7 @@ export function renderClassesSurface(
         } else if (sharedStudentsFailed) {
           mount.appendChild(renderSharedStudentsError(doc, retrySharedStudents));
         }
+        renderReconciliationError();
         return;
       }
       case "shared": {
