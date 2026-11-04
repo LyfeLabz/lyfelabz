@@ -1117,3 +1117,184 @@ test("Slice 2 origin correction: Students -> Student A -> Next -> Back returns t
   expect(mount.querySelector("[data-testid=roster-list]")).not.toBeNull();
   expect(mount.querySelector("[data-testid=student-detail]")).toBeNull();
 });
+
+// ---------------------------------------------------------------------------
+// Navigation performance: one per-student assignment read per Student Detail
+// visit. A rerender that does not change the selection (the roster arriving
+// after Student Detail opened from an Assignment Detail name click) reuses
+// the request already in flight; every new visit still reads anew.
+// ---------------------------------------------------------------------------
+
+type Deferred<T> = {
+  readonly promise: Promise<T>;
+  readonly resolve: (value: T) => void;
+  readonly reject: (err: unknown) => void;
+};
+
+function deferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
+  let reject!: (err: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+type RosterResult = {
+  readonly classId: string;
+  readonly students: ReadonlyArray<{ studentId: string; studentDisplayName: string }>;
+};
+type ExpectedResult = Awaited<ReturnType<AssessmentStudentAssignmentsForClassCallable>>;
+
+function assignmentOriginDeps(
+  roster: Deferred<RosterResult>,
+  expected: AssessmentStudentAssignmentsForClassCallable,
+): ClassesSurfaceDeps {
+  let intent: {
+    classId: string;
+    studentId: string;
+    studentDisplayName: string;
+    returnToAssignmentId: string;
+  } | null = {
+    classId: CLASS_ID,
+    studentId: STUDENT_A.studentId,
+    studentDisplayName: STUDENT_A.studentDisplayName,
+    returnToAssignmentId: ASSIGNMENT_ID,
+  };
+  return {
+    listClasses: mockListClasses,
+    loadRoster: () => () => roster.promise,
+    loadAttempts: () => noAttempts,
+    loadExpectedAssignments: () => expected,
+    getClassesStudentIntent: () => intent,
+    setClassesStudentIntent: (next) => {
+      intent = next;
+    },
+  };
+}
+
+const inProgressFor = (input: { classId: string; studentId: string }): ExpectedResult => ({
+  classId: input.classId,
+  studentId: input.studentId,
+  assignments: [{ assignmentId: ASSIGN_IN_PROGRESS, hasLiveSession: true }],
+});
+
+test("navigation performance: the roster arriving while the per-student read is in flight does not issue a second read", async () => {
+  const mount = mkMount();
+  const roster = deferred<RosterResult>();
+  const response = deferred<ExpectedResult>();
+  const expected = jest.fn<Promise<ExpectedResult>, [{ classId: string; studentId: string }]>(
+    () => response.promise,
+  );
+  renderClassesSurface(mount, teacher, assignmentOriginDeps(roster, expected));
+  await flush();
+  await flush();
+
+  expect(mount.querySelector("[data-testid=student-detail]")).not.toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail-nav]")).toBeNull();
+  expect(expected).toHaveBeenCalledTimes(1);
+
+  // Roster arrives first: Student Detail rerenders to show Previous/Next.
+  roster.resolve({ classId: CLASS_ID, students: [STUDENT_A, STUDENT_B] });
+  await flush();
+  await flush();
+  expect(mount.querySelector("[data-testid=student-detail-next]")).not.toBeNull();
+  expect(expected).toHaveBeenCalledTimes(1);
+  expect(mount.querySelector("[data-testid=student-detail-loading]")).not.toBeNull();
+
+  // The single in-flight read's response renders on the current Student Detail.
+  response.resolve(inProgressFor({ classId: CLASS_ID, studentId: STUDENT_A.studentId }));
+  await flush();
+  await flush();
+  expect(mount.querySelector("[data-testid=student-detail-loading]")).toBeNull();
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-in-progress]"),
+  ).not.toBeNull();
+  expect(expected).toHaveBeenCalledTimes(1);
+  expect(expected).toHaveBeenCalledWith({ classId: CLASS_ID, studentId: STUDENT_A.studentId });
+});
+
+test("navigation performance: the roster arriving after the per-student read resolved re-renders from the same response", async () => {
+  const mount = mkMount();
+  const roster = deferred<RosterResult>();
+  const expected = jest.fn(async (input: { classId: string; studentId: string }) =>
+    inProgressFor(input),
+  );
+  renderClassesSurface(mount, teacher, assignmentOriginDeps(roster, expected));
+  await flush();
+  await flush();
+  await flush();
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-in-progress]"),
+  ).not.toBeNull();
+  expect(expected).toHaveBeenCalledTimes(1);
+
+  roster.resolve({ classId: CLASS_ID, students: [STUDENT_A, STUDENT_B] });
+  await flush();
+  await flush();
+  expect(mount.querySelector("[data-testid=student-detail-next]")).not.toBeNull();
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-in-progress]"),
+  ).not.toBeNull();
+  expect(mount.querySelector("[data-testid=student-detail-loading]")).toBeNull();
+  expect(expected).toHaveBeenCalledTimes(1);
+});
+
+test("navigation performance: a failed per-student read is never reused by a later rerender", async () => {
+  const mount = mkMount();
+  const roster = deferred<RosterResult>();
+  const expected = jest
+    .fn<Promise<ExpectedResult>, [{ classId: string; studentId: string }]>()
+    .mockRejectedValueOnce(new Error("unavailable"))
+    .mockImplementation(async (input) => inProgressFor(input));
+  renderClassesSurface(mount, teacher, assignmentOriginDeps(roster, expected));
+  await flush();
+  await flush();
+  await flush();
+  expect(expected).toHaveBeenCalledTimes(1);
+
+  roster.resolve({ classId: CLASS_ID, students: [STUDENT_A, STUDENT_B] });
+  await flush();
+  await flush();
+  expect(expected).toHaveBeenCalledTimes(2);
+  expect(
+    mount.querySelector("[data-testid=student-detail-assignment-in-progress]"),
+  ).not.toBeNull();
+});
+
+test("navigation performance: every Student Detail visit reads anew, including a previously viewed student", async () => {
+  const mount = mkMount();
+  const expected = jest.fn(async (input: { classId: string; studentId: string }) =>
+    inProgressFor(input),
+  );
+  await openStudentsTab(mount, {
+    ...threeStudentDeps(),
+    loadExpectedAssignments: () => expected,
+  });
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+  expect(expected).toHaveBeenCalledTimes(1);
+
+  mount.querySelector<HTMLButtonElement>("[data-testid=student-detail-next]")!.click();
+  await flush();
+  mount.querySelector<HTMLButtonElement>("[data-testid=student-detail-prev]")!.click();
+  await flush();
+  expect(
+    mount.querySelector("[data-testid=student-detail-name]")!.textContent,
+  ).toBe(STUDENT_A.studentDisplayName);
+
+  // Back to Students, then the same student again: a new visit.
+  mount.querySelector<HTMLButtonElement>("[data-testid=student-detail-back]")!.click();
+  await flush();
+  await clickStudent(mount, STUDENT_A.studentId);
+  await flush();
+
+  const studentIds = expected.mock.calls.map(([input]) => input.studentId);
+  expect(studentIds).toEqual([
+    STUDENT_A.studentId,
+    STUDENT_B.studentId,
+    STUDENT_A.studentId,
+    STUDENT_A.studentId,
+  ]);
+});

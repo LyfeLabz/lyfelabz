@@ -762,8 +762,16 @@ export function renderClassesSurface(
   type RosterEntry =
     | { readonly classId: string; readonly status: "pending"; readonly promise: Promise<RosterStudents> }
     | { readonly classId: string; readonly status: "ready"; readonly students: RosterStudents }
-    | { readonly classId: string; readonly status: "error" };
+    // Keeps the failed read so a later rerender shows the same error
+    // instead of starting another request.
+    | { readonly classId: string; readonly status: "error"; readonly promise: Promise<RosterStudents> };
   let currentRoster: RosterEntry | null = null;
+  // Navigation performance: a failed roster read is retried only after a
+  // deliberate teacher action (showing Students, Back to Students, a
+  // history restore, or Try again), never because the surface rerendered.
+  // Armed by those actions and consumed by the next workspace render. Lives
+  // in this Classes mount only.
+  let rosterRetryRequested = false;
 
   const startClassRosterFetch = (classId: string): RosterEntry | null => {
     const loader = loadRoster?.() ?? null;
@@ -790,7 +798,7 @@ export function renderClassesSurface(
         }
       },
       () => {
-        if (currentRoster === entry) currentRoster = { classId, status: "error" };
+        if (currentRoster === entry) currentRoster = { classId, status: "error", promise };
       },
     );
     return entry;
@@ -798,6 +806,7 @@ export function renderClassesSurface(
 
   // Returns the open class's roster entry, starting a fetch when there is
   // none for this class (or, when `retryError`, when the last fetch failed).
+  // A fetch already in flight is always reused, so retries never overlap.
   const ensureClassRoster = (
     classId: string,
     retryError: boolean,
@@ -844,6 +853,63 @@ export function renderClassesSurface(
     });
     return promise;
   };
+
+  // Student Detail's per-student assignment read for the CURRENT Student
+  // Detail visit only (at most one entry, in memory, never persisted). A
+  // visit begins each time the teacher opens Student Detail (a Students-list
+  // click, Previous/Next, or a Back/Forward restore), so every visit reads
+  // anew and a previously viewed student is never served from here. Within
+  // one visit, a rerender that does not change the selection (for example
+  // the roster arriving after Student Detail opened from an Assignment
+  // Detail name click) reuses the request already in flight instead of
+  // discarding it and issuing a second identical read. A failed read is
+  // never kept. Authorization and grouping stay entirely server-side; this
+  // only prevents a duplicate of the same read.
+  type StudentWorkEntry = {
+    readonly visit: number;
+    readonly classId: string;
+    readonly studentId: string;
+    readonly promise: ReturnType<AssessmentStudentAssignmentsForClassCallable>;
+  };
+  let studentDetailVisit = 0;
+  let currentStudentWork: StudentWorkEntry | null = null;
+  const beginStudentDetailVisit = (): void => {
+    studentDetailVisit += 1;
+    currentStudentWork = null;
+  };
+
+  const studentWorkForVisit = (
+    callable: AssessmentStudentAssignmentsForClassCallable,
+  ): AssessmentStudentAssignmentsForClassCallable => (input) => {
+    const held = currentStudentWork;
+    if (
+      held !== null &&
+      held.visit === studentDetailVisit &&
+      held.classId === input.classId &&
+      held.studentId === input.studentId
+    ) {
+      return held.promise;
+    }
+    const promise = callable(input);
+    const entry: StudentWorkEntry = {
+      visit: studentDetailVisit,
+      classId: input.classId,
+      studentId: input.studentId,
+      promise,
+    };
+    currentStudentWork = entry;
+    promise.catch(() => {
+      if (currentStudentWork === entry) currentStudentWork = null;
+    });
+    return promise;
+  };
+  const loadStudentWork =
+    loadExpectedAssignments === null
+      ? null
+      : (): AssessmentStudentAssignmentsForClassCallable | null => {
+          const callable = loadExpectedAssignments();
+          return callable === null ? null : studentWorkForVisit(callable);
+        };
 
   // Sprint 28.6H (Finding 1): whether the minimized "+ Add class" disclosure is
   // revealed in a populated Classes list. Closure-scoped (not part of the
@@ -1137,22 +1203,30 @@ export function renderClassesSurface(
           return;
         }
         // Students-tab roster: served from the open class's in-memory entry;
-        // a failed fetch is retried only when Students is actually shown.
+        // a failed fetch is retried only when Students is shown by a
+        // deliberate action (see `rosterRetryRequested`). Any other rerender
+        // re-shows the same failure without a new request.
+        const retryRequested = rosterRetryRequested;
+        rosterRetryRequested = false;
         let rosterView: RosterView = { kind: "unwired" };
         if (loadRoster !== null) {
           const entry =
             summary.status === "active"
               ? ensureClassRoster(
                   summary.id,
-                  s.tab === "roster" && s.selectedStudentId === null,
+                  retryRequested && s.tab === "roster" && s.selectedStudentId === null,
                 )
               : null;
+          const retry = (): void => {
+            rosterRetryRequested = true;
+            rerender();
+          };
           rosterView =
-            entry === null || entry.status === "error"
+            entry === null
               ? { kind: "notReady" }
               : entry.status === "ready"
                 ? { kind: "ready", students: entry.students }
-                : { kind: "pending", promise: entry.promise };
+                : { kind: "pending", promise: entry.promise, retry };
         }
         // Student Detail's class-wide attempts: start reading them as soon as
         // the Students section is shown (one read per class session, never
@@ -1184,7 +1258,7 @@ export function renderClassesSurface(
           onBackFromStudent,
           onNavigateToNeighbor,
           classAttempts,
-          loadExpectedAssignments,
+          loadStudentWork,
           listAllAssignments,
           loadAttemptDetail,
           rosterSort,
@@ -1706,6 +1780,8 @@ export function renderClassesSurface(
       // entry, so switching tabs never refetches).
       rosterSnapshot: state.rosterSnapshot,
     };
+    // Showing Students is deliberate: a failed roster read may retry.
+    if (tab === "roster") rosterRetryRequested = true;
     rerender();
     // Browser Back/Forward: every class section is its own history entry
     // (see StudentDetailHistorySeam), so switching Assignments <-> Students
@@ -1719,6 +1795,7 @@ export function renderClassesSurface(
   const onSelectStudent = (studentId: string, displayName: string): void => {
     if (state.kind !== "workspace") return;
     const classId = state.selectedId;
+    beginStudentDetailVisit();
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -1755,6 +1832,7 @@ export function renderClassesSurface(
   ): void => {
     if (state.kind !== "workspace") return;
     const classId = state.selectedId;
+    beginStudentDetailVisit();
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -1806,6 +1884,8 @@ export function renderClassesSurface(
       // nothing read `rosterSnapshot` while Detail was closed.
       rosterSnapshot: state.rosterSnapshot,
     };
+    // Back to Students deliberately re-enters the list.
+    rosterRetryRequested = true;
     rerender();
     // Browser Back/Forward support: keeps the URL/history entry in sync
     // with what is now on screen whether this ran from the in-app "Back to
@@ -2000,6 +2080,8 @@ export function renderClassesSurface(
           ? state.rosterSnapshot
           : undefined,
     };
+    // A Back/Forward restore is a deliberate navigation into the section.
+    rosterRetryRequested = true;
     rerender();
     return true;
   };
@@ -2053,6 +2135,7 @@ export function renderClassesSurface(
         (s) => s.studentId === studentId,
       );
       if (!match) return false;
+      beginStudentDetailVisit();
       state = {
         kind: "workspace",
         classes: state.classes,
@@ -2316,6 +2399,7 @@ export function renderClassesSurface(
           (c) => c.id === studentIntent.classId && c.status === "active",
         );
         if (target !== undefined) {
+          beginStudentDetailVisit();
           state = {
             kind: "workspace",
             classes,
@@ -4071,7 +4155,12 @@ type RosterView =
   // Reader wired but not initialized yet: loading, never a false empty state.
   | { readonly kind: "notReady" }
   | { readonly kind: "ready"; readonly students: RosterStudents }
-  | { readonly kind: "pending"; readonly promise: Promise<RosterStudents> };
+  // In flight or failed: a failure shows the error with a Try again button.
+  | {
+      readonly kind: "pending";
+      readonly promise: Promise<RosterStudents>;
+      readonly retry?: () => void;
+    };
 
 function renderClassWorkspaceState(
   doc: Document,
@@ -4786,6 +4875,16 @@ function renderRosterSurface(
         errorMsg.textContent =
           "We couldn't load your students. Please try again.";
         error.appendChild(errorMsg);
+        const onRetry = view.retry;
+        if (onRetry !== undefined) {
+          const retry = doc.createElement("button");
+          retry.type = "button";
+          retry.className = "shell-classes-import-retry";
+          retry.setAttribute("data-testid", "roster-retry");
+          retry.textContent = "Try again";
+          retry.addEventListener("click", () => onRetry());
+          error.appendChild(retry);
+        }
         body.appendChild(error);
       });
     },
