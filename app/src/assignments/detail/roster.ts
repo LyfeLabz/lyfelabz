@@ -25,7 +25,8 @@ export type SubmittedRow = {
   // attempt set the representative percentage is selected from).
   readonly attemptCount: number;
   // Present when the student has a Live retake session, e.g.
-  // "Retake In Progress · 4/10". The score above stays the best attempt.
+  // "Retake In Progress · 4 of 10 answered". The score above stays the best
+  // attempt.
   readonly retakeStatus?: string;
 };
 
@@ -35,7 +36,8 @@ export type NamedRow = {
 };
 
 export type InProgressRow = NamedRow & {
-  // "Started · 0/10", "In Progress · 4/10", or "Ready to Submit · 10/10".
+  // "Opened · No questions answered", "In Progress · 4 of 10 answered", or
+  // "All 10 answered · Not submitted".
   readonly status: string;
 };
 
@@ -88,17 +90,26 @@ export type RosterProgress = {
 };
 
 // Teacher-facing status text for a Live session. `total` comes from the
-// assignment's frozen assessment; it is never assumed.
+// assignment's frozen assessment; it is never assumed. The text counts
+// answered questions only, worded so it cannot be read as a score (no
+// unsubmitted answer is ever graded).
 export function formatProgressStatus(progress: {
   readonly answered: number;
   readonly total: number | null;
   readonly retake: boolean;
 }): string {
   const { answered, total } = progress;
-  const count = total === null ? `${answered} answered` : `${answered}/${total}`;
+  const count =
+    answered === 0
+      ? "No questions answered"
+      : total === null
+        ? `${answered} answered`
+        : total > 0 && answered >= total
+          ? `All ${total} answered`
+          : `${answered} of ${total} answered`;
   if (progress.retake) return `Retake In Progress · ${count}`;
-  if (answered === 0) return total === null ? "Started" : `Started · ${count}`;
-  if (total !== null && answered >= total) return `Ready to Submit · ${count}`;
+  if (answered === 0) return `Opened · ${count}`;
+  if (total !== null && total > 0 && answered >= total) return `${count} · Not submitted`;
   return `In Progress · ${count}`;
 }
 

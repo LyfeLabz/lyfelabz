@@ -7895,7 +7895,7 @@
       await restartPromise?.catch(() => void 0);
     }
     function adoptPersisted(state) {
-      if (state.responses.length === 0) {
+      if (state.responses.length === 0 && state.writtenResponse === void 0) {
         persisted = [];
         return;
       }
@@ -7956,7 +7956,8 @@
           if (adoptOnBegin) {
             adoptPersisted({
               responses: outcome.responses ?? [],
-              ...isNonEmptyString(outcome.assessmentPresentationRevisionId) ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId } : {}
+              ...isNonEmptyString(outcome.assessmentPresentationRevisionId) ? { assessmentPresentationRevisionId: outcome.assessmentPresentationRevisionId } : {},
+              ...isNonEmptyString(outcome.writtenResponse) ? { writtenResponse: outcome.writtenResponse } : {}
             });
           }
         } catch (err) {
@@ -8000,8 +8001,14 @@
       if (lastAutosaveSerialized === serialized) {
         return { persisted: false };
       }
-      if (inflightAutosave !== null) {
+      while (inflightAutosave !== null) {
         await inflightAutosave;
+      }
+      if (lastAutosaveSerialized === serialized) {
+        return { persisted: false };
+      }
+      if (sessionId === null) {
+        throw new Error("session was not established");
       }
       const activeSessionId = sessionId;
       inflightAutosave = (async () => {
@@ -8165,6 +8172,190 @@
       return null;
     }
     return null;
+  }
+
+  // src/runtime/saveCoordinator.ts
+  var DEFAULT_TEXT_DEBOUNCE_MS = 1500;
+  var DEFAULT_RETRY_DELAYS_MS = [2e3, 5e3, 1e4];
+  function createSaveCoordinator(options) {
+    const debounceMs = options.textDebounceMs ?? DEFAULT_TEXT_DEBOUNCE_MS;
+    const retryDelays = options.retryDelaysMs ?? DEFAULT_RETRY_DELAYS_MS;
+    const setTimer = options.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
+    const clearTimer = options.clearTimer ?? ((h) => clearTimeout(h));
+    let responses = [];
+    let writtenResponse;
+    let version5 = 0;
+    let queued = 0;
+    let acked = 0;
+    let status = "idle";
+    let running = false;
+    let paused = false;
+    let blocked = false;
+    let retryIndex = 0;
+    let debounceHandle = null;
+    let retryHandle = null;
+    let idleWaiters = [];
+    let waiters = [];
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      try {
+        options.onStatus?.(next);
+      } catch {
+      }
+    }
+    function settleWaiters(upTo, result) {
+      const keep = [];
+      for (const w of waiters) {
+        if (w.version <= upTo) w.resolve(result);
+        else keep.push(w);
+      }
+      waiters = keep;
+    }
+    function notifyIdle() {
+      const pending = idleWaiters;
+      idleWaiters = [];
+      for (const fn of pending) fn();
+    }
+    function clearRetry() {
+      if (retryHandle !== null) {
+        clearTimer(retryHandle);
+        retryHandle = null;
+      }
+    }
+    function kick() {
+      if (running || paused || blocked || retryHandle !== null) return;
+      if (acked >= queued) return;
+      running = true;
+      void loop();
+    }
+    async function loop() {
+      try {
+        while (!paused && !blocked && acked < queued) {
+          const sending = queued;
+          const snapshotResponses = responses;
+          const snapshotText = writtenResponse;
+          setStatus("saving");
+          try {
+            const result = await options.send(snapshotResponses, snapshotText);
+            acked = Math.max(acked, sending);
+            retryIndex = 0;
+            settleWaiters(sending, result);
+          } catch (err) {
+            try {
+              options.onError?.(err);
+            } catch {
+            }
+            settleWaiters(sending, null);
+            if (options.isPermanentFailure(err)) {
+              blocked = true;
+              settleWaiters(Number.POSITIVE_INFINITY, null);
+              setStatus("blocked");
+              return;
+            }
+            if (retryIndex < retryDelays.length) {
+              const delay = retryDelays[retryIndex];
+              retryIndex += 1;
+              setStatus("retrying");
+              retryHandle = setTimer(() => {
+                retryHandle = null;
+                kick();
+              }, delay);
+            } else {
+              setStatus("failed");
+            }
+            return;
+          }
+        }
+      } finally {
+        running = false;
+        if (!blocked && retryHandle === null && status !== "failed") {
+          if (acked >= version5) setStatus("saved");
+          else if (debounceHandle !== null || paused) setStatus("pending");
+        }
+        if (!running) notifyIdle();
+      }
+    }
+    function release() {
+      queued = version5;
+      if (status === "failed" || retryHandle !== null) {
+        clearRetry();
+        retryIndex = 0;
+      }
+      kick();
+      if (!running && !blocked && acked < version5) setStatus("pending");
+    }
+    function cancelDebounce() {
+      if (debounceHandle !== null) {
+        clearTimer(debounceHandle);
+        debounceHandle = null;
+      }
+    }
+    return {
+      setResponses(next) {
+        responses = next;
+        if (blocked) return Promise.resolve(null);
+        version5 += 1;
+        const mine = version5;
+        cancelDebounce();
+        const result = new Promise((resolve) => {
+          waiters.push({ version: mine, resolve });
+        });
+        release();
+        return result;
+      },
+      setWrittenResponse(text) {
+        if (text === writtenResponse) return;
+        writtenResponse = text;
+        if (blocked) return;
+        version5 += 1;
+        cancelDebounce();
+        if (!running) setStatus("pending");
+        debounceHandle = setTimer(() => {
+          debounceHandle = null;
+          release();
+        }, debounceMs);
+      },
+      adoptWrittenResponse(text) {
+        writtenResponse = text;
+      },
+      resetForNewAttempt() {
+        cancelDebounce();
+        clearRetry();
+        retryIndex = 0;
+        responses = [];
+        writtenResponse = void 0;
+        acked = version5;
+        queued = version5;
+        settleWaiters(Number.POSITIVE_INFINITY, null);
+        if (!blocked) setStatus("idle");
+      },
+      flush() {
+        if (debounceHandle === null) return;
+        cancelDebounce();
+        release();
+      },
+      pause() {
+        paused = true;
+        cancelDebounce();
+        if (!running) return Promise.resolve();
+        return new Promise((resolve) => idleWaiters.push(resolve));
+      },
+      resume() {
+        paused = false;
+        if (version5 > queued) queued = version5;
+        kick();
+      },
+      retryNow() {
+        if (blocked) return;
+        clearRetry();
+        retryIndex = 0;
+        queued = Math.max(queued, version5);
+        kick();
+      },
+      getStatus: () => status,
+      hasUnsavedChanges: () => acked < version5
+    };
   }
 
   // src/firebase-config.ts
@@ -8373,8 +8564,37 @@
     }
     return out;
   }
+  function quizWrittenResponseInput(doc) {
+    if (doc === void 0) return null;
+    const quiz = doc.getElementById("quiz");
+    if (quiz === null) return null;
+    const inputs = quiz.querySelectorAll("textarea");
+    return inputs.length === 1 ? inputs[0] : null;
+  }
+  function whenDocumentReady(doc, fn) {
+    if (doc.readyState === "loading") {
+      doc.addEventListener("DOMContentLoaded", fn, { once: true });
+    } else {
+      fn();
+    }
+  }
+  function applyRestoredWrittenResponse(doc, text, guard) {
+    const input = quizWrittenResponseInput(doc);
+    if (input === null || input.disabled) return false;
+    const current = input.value.trim();
+    if (current.length > 0 && current !== text.trim()) return false;
+    guard.restoring = true;
+    try {
+      input.value = text;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    } finally {
+      guard.restoring = false;
+    }
+    return true;
+  }
   function applyRestoredSelections(doc, selections, guard) {
     const buttons = quizOptionButtons(doc);
+    let restored = false;
     guard.restoring = true;
     try {
       for (const { qi, oi } of selections) {
@@ -8389,16 +8609,26 @@
         const button = buttons.get(`${qi}:${oi}`);
         if (button === void 0 || button.disabled) continue;
         button.click();
+        restored = true;
       }
     } finally {
       guard.restoring = false;
     }
+    return restored;
+  }
+  function selectedChoiceKeys(doc) {
+    const keys = [];
+    for (const [key, el] of quizOptionButtons(doc)) {
+      if (el.classList.contains("selected")) keys.push(key);
+    }
+    return keys;
   }
   function adoptPersistedForPage(win, state, guard) {
     const doc = documentOf(win);
     if (doc === void 0) return [];
     const binding = readPresentationBinding(doc);
     if (!presentationMatchesSession(binding, state)) return [];
+    const savedText = state.writtenResponse;
     const kept = [];
     const selections = [];
     for (const response of state.responses) {
@@ -8407,16 +8637,17 @@
       kept.push(response);
       selections.push(located);
     }
-    if (selections.length > 0) {
-      if (doc.readyState === "loading") {
-        doc.addEventListener(
-          "DOMContentLoaded",
-          () => applyRestoredSelections(doc, selections, guard),
-          { once: true }
-        );
-      } else {
-        applyRestoredSelections(doc, selections, guard);
-      }
+    guard.serverSelections = new Set(selections.map(({ qi, oi }) => `${qi}:${oi}`));
+    const hasText = typeof savedText === "string" && savedText.trim().length > 0;
+    if (hasText || selections.length > 0) {
+      whenDocumentReady(doc, () => {
+        const textRestored = hasText && applyRestoredWrittenResponse(doc, savedText, guard);
+        const answersRestored = applyRestoredSelections(doc, selections, guard);
+        const server = guard.serverSelections ?? /* @__PURE__ */ new Set();
+        const pageText = quizWrittenResponseInput(doc)?.value.trim() ?? "";
+        const matchesServer = selectedChoiceKeys(doc).every((key) => server.has(key)) && pageText === (hasText ? savedText.trim() : "");
+        if ((textRestored || answersRestored) && matchesServer) guard.onRestored?.();
+      });
     }
     return kept;
   }
@@ -8560,9 +8791,232 @@
   function supersededSubmission() {
     return new Promise(() => void 0);
   }
+  var SAVE_STATUS_ID = "lyfelabz-save-status";
+  var SAVE_STATUS_LABEL_ID = "lyfelabz-save-status-label";
+  var SAVE_STATUS_STYLE_ID = "lyfelabz-save-status-style";
+  var COMPACT_SAVE_STATUSES = /* @__PURE__ */ new Set(["pending", "saving", "saved"]);
+  var SAVE_STATUS_MESSAGES = {
+    idle: "",
+    pending: "Saving...",
+    saving: "Saving...",
+    saved: "Saved",
+    retrying: "Connection problem. Trying to save again...",
+    failed: "Not saved. Check your connection. Your work is still on this page.",
+    blocked: "Not saved. Copy your written explanation somewhere safe, then reload this page to keep saving.",
+    signedOut: "Not saved. You appear to be signed out. Sign in and reopen the assignment to save your work.",
+    tooLong: `Your explanation is not saved. It is over ${WRITTEN_RESPONSE_MAX_LENGTH.toLocaleString("en-US")} characters. Shorten it to keep saving.`
+  };
+  var SAVE_STATUS_SELECTOR = `#${SAVE_STATUS_ID}`;
+  var SAVE_STATUS_CSS = `${SAVE_STATUS_SELECTOR}{box-sizing:border-box;font-size:.8rem;line-height:1.35;color:var(--text-muted,#7ab4cc);text-align:right}${SAVE_STATUS_SELECTOR}[data-save-anchor="tray"]{position:absolute;top:100%;right:max(.75rem,env(safe-area-inset-right));margin-top:.45rem;max-width:min(22rem,calc(100% - 1.5rem));padding:.3rem .8rem;border-radius:999px;background:var(--dark2,#111a24);border:1px solid var(--border,rgba(255,255,255,.12));box-shadow:0 4px 12px rgba(0,0,0,.25);pointer-events:none}${SAVE_STATUS_SELECTOR}[data-save-anchor="inline"]{margin:.6rem auto 0;text-align:center;min-height:1.2em}${SAVE_STATUS_SELECTOR}[data-save-status="idle"],${SAVE_STATUS_SELECTOR}[data-save-status="hidden"]{padding:0;border-color:transparent;background:transparent;box-shadow:none}${SAVE_STATUS_SELECTOR}[data-save-status="failed"],${SAVE_STATUS_SELECTOR}[data-save-status="blocked"],${SAVE_STATUS_SELECTOR}[data-save-status="signedOut"],${SAVE_STATUS_SELECTOR}[data-save-status="tooLong"]{color:var(--orange,#e67e22);font-weight:600;border-radius:12px}${SAVE_STATUS_SELECTOR} button{margin-left:.5rem;min-height:2.2rem;padding:.3rem .9rem;border-radius:8px;border:1.5px solid currentColor;background:transparent;color:inherit;font:inherit;cursor:pointer;pointer-events:auto}${SAVE_STATUS_SELECTOR}[data-save-compact="true"]{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;box-shadow:none}#${SAVE_STATUS_LABEL_ID}{flex:none;font-size:.75rem;line-height:1;font-weight:700;white-space:nowrap;color:var(--text-muted,#7ab4cc)}#${SAVE_STATUS_LABEL_ID}:empty{display:none}body:has(nav.menu-open) ${SAVE_STATUS_SELECTOR}[data-save-anchor="tray"]{display:none}`;
+  function ensureSaveStatusElement(doc) {
+    if (doc === void 0) return null;
+    const existing = doc.getElementById(SAVE_STATUS_ID);
+    if (existing !== null) return existing;
+    const quiz = doc.getElementById("quiz");
+    if (quiz === null) return null;
+    const tray = quiz.querySelector(".quiz-progress-sticky");
+    const submitRow = quiz.querySelector(".quiz-submit-btn")?.parentElement ?? null;
+    if (tray === null && (submitRow === null || submitRow.parentNode === null)) return null;
+    if (doc.getElementById(SAVE_STATUS_STYLE_ID) === null && doc.head !== null) {
+      const style = doc.createElement("style");
+      style.id = SAVE_STATUS_STYLE_ID;
+      style.textContent = SAVE_STATUS_CSS;
+      doc.head.appendChild(style);
+    }
+    const el = doc.createElement("div");
+    el.id = SAVE_STATUS_ID;
+    el.setAttribute("role", "status");
+    el.setAttribute("aria-live", "polite");
+    el.setAttribute("data-save-status", "idle");
+    if (tray !== null) {
+      el.setAttribute("data-save-anchor", "tray");
+      tray.appendChild(el);
+      const row = tray.querySelector(".quiz-progress");
+      if (row !== null) {
+        const label = doc.createElement("span");
+        label.id = SAVE_STATUS_LABEL_ID;
+        label.setAttribute("aria-hidden", "true");
+        row.insertBefore(label, row.querySelector(".progress-text"));
+      }
+    } else if (submitRow !== null && submitRow.parentNode !== null) {
+      el.setAttribute("data-save-anchor", "inline");
+      submitRow.parentNode.insertBefore(el, submitRow.nextSibling);
+    }
+    return el;
+  }
+  function renderSaveStatus(doc, status, onRetry) {
+    const el = ensureSaveStatusElement(doc);
+    if (el === null || doc === void 0) return;
+    el.setAttribute("data-save-status", status);
+    el.textContent = status === "hidden" ? "" : SAVE_STATUS_MESSAGES[status];
+    const label = doc.getElementById(SAVE_STATUS_LABEL_ID);
+    if (label !== null) {
+      const compact = status === "hidden" || status === "idle" || COMPACT_SAVE_STATUSES.has(status);
+      el.setAttribute("data-save-compact", compact ? "true" : "false");
+      label.textContent = compact && status !== "hidden" ? SAVE_STATUS_MESSAGES[status] : "";
+    }
+    if (status === "failed" && onRetry !== void 0) {
+      const button = doc.createElement("button");
+      button.type = "button";
+      button.textContent = "Try again";
+      button.addEventListener("click", onRetry);
+      el.appendChild(button);
+    }
+  }
+  function createPageSaveCoordinator(win, runtime) {
+    const doc = documentOf(win);
+    let coordinator = null;
+    let textOverLimit = false;
+    const retry = () => coordinator?.retryNow();
+    const render = () => {
+      if (coordinator === null) return;
+      const status = coordinator.getStatus();
+      const urgent = status === "blocked" || status === "failed" || status === "retrying";
+      renderSaveStatus(doc, textOverLimit && !urgent ? "tooLong" : status, retry);
+    };
+    coordinator = createSaveCoordinator({
+      send: (responses, writtenResponse) => writtenResponse === void 0 ? runtime.autosave(responses) : runtime.autosave(responses, writtenResponse),
+      // The runtime refuses every later call until a reload once it is in its
+      // error state (authentication, permission, integrity, refusal).
+      isPermanentFailure: () => runtime.getStatus().mode === "error",
+      onError: (err) => recordLastError(win, "autosave", err),
+      onStatus: () => render()
+    });
+    const base = coordinator;
+    return {
+      ...base,
+      hasUnsavedChanges: () => textOverLimit || base.hasUnsavedChanges(),
+      resetForNewAttempt: () => {
+        textOverLimit = false;
+        base.resetForNewAttempt();
+      },
+      setTextOverLimit(over) {
+        if (over === textOverLimit) return;
+        textOverLimit = over;
+        render();
+      },
+      isTextOverLimit: () => textOverLimit,
+      showRestored() {
+        if (base.getStatus() !== "idle" || base.hasUnsavedChanges() || textOverLimit) return;
+        renderSaveStatus(doc, "saved", retry);
+      }
+    };
+  }
   function installLessonQuiz(win, runtime, hasAssignmentContext, restoreGuard = { restoring: false }) {
     const mapSelections = (indexSelections) => mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win)));
+    const saves = runtime !== null && runtime.hasAssignmentContext ? createPageSaveCoordinator(win, runtime) : null;
+    if (saves !== null) restoreGuard.onRestored = () => saves.showRestored();
     let attemptGeneration = 0;
+    const ensureCurrentAttempt = async () => {
+      if (runtime === null || !runtime.hasSubmittedAttempt()) return true;
+      attemptGeneration += 1;
+      try {
+        await runtime.restart();
+      } catch (err) {
+        recordLastError(win, "begin", err);
+        return false;
+      }
+      saves?.resetForNewAttempt();
+      saves?.resume();
+      return true;
+    };
+    const saveWrittenResponse = (text) => {
+      if (saves === null) return;
+      const over = text.length > WRITTEN_RESPONSE_MAX_LENGTH;
+      saves.setTextOverLimit(over);
+      if (!over) saves.setWrittenResponse(text);
+    };
+    let earlyInputCaptured = false;
+    const earlyInputWaiting = () => {
+      const doc = documentOf(win);
+      if (earlyInputCaptured || doc === void 0) return false;
+      const text = quizWrittenResponseInput(doc)?.value.trim() ?? "";
+      return text.length > 0 || selectedChoiceKeys(doc).length > 0;
+    };
+    const captureEarlyInput = () => {
+      const doc = documentOf(win);
+      if (saves === null || runtime === null || doc === void 0) return;
+      whenDocumentReady(doc, () => {
+        earlyInputCaptured = true;
+        if (runtime.hasSubmittedAttempt()) return;
+        const server = restoreGuard.serverSelections ?? /* @__PURE__ */ new Set();
+        const chosen = selectedChoiceKeys(doc);
+        if (chosen.some((key) => !server.has(key))) {
+          let count = 0;
+          for (const key of quizOptionButtons(doc).keys()) {
+            count = Math.max(count, Number(key.split(":")[0]) + 1);
+          }
+          const indexSelections = new Array(count).fill(null);
+          for (const key of chosen) {
+            const [qi, oi] = key.split(":").map(Number);
+            indexSelections[qi] = oi;
+          }
+          void helper.autosave(indexSelections);
+        }
+        const input = quizWrittenResponseInput(doc);
+        if (input !== null && !input.disabled) {
+          const text = input.value.trim();
+          if (text.length > 0) saveWrittenResponse(text);
+        }
+      });
+    };
+    if (saves !== null && runtime !== null) {
+      const doc = documentOf(win);
+      if (doc !== void 0) {
+        whenDocumentReady(doc, () => {
+          const input = quizWrittenResponseInput(doc);
+          if (input === null) return;
+          input.addEventListener("input", () => {
+            const text = input.value.trim();
+            if (restoreGuard.restoring) {
+              saves.adoptWrittenResponse(text);
+              return;
+            }
+            if (runtime.hasSubmittedAttempt()) {
+              void ensureCurrentAttempt().then((ok) => {
+                if (ok) saveWrittenResponse(text);
+              });
+              return;
+            }
+            saveWrittenResponse(text);
+          });
+        });
+      }
+      doc?.addEventListener(
+        "click",
+        (event) => {
+          if (!saves.isTextOverLimit()) return;
+          const target = event.target;
+          const submit = target?.closest?.("#quiz .quiz-submit-btn");
+          if (submit === null || submit === void 0) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const input = quizWrittenResponseInput(doc);
+          try {
+            input?.focus();
+          } catch {
+          }
+        },
+        true
+      );
+      try {
+        win.addEventListener("pagehide", () => saves.flush());
+        doc?.addEventListener("visibilitychange", () => {
+          if (doc.visibilityState === "hidden") saves.flush();
+        });
+        win.addEventListener("online", () => {
+          const status = saves.getStatus();
+          if (status === "failed" || status === "retrying") saves.retryNow();
+        });
+        win.addEventListener("beforeunload", (event) => {
+          if (!saves.hasUnsavedChanges() && !earlyInputWaiting()) return;
+          saves.flush();
+          event.preventDefault();
+          event.returnValue = "";
+        });
+      } catch {
+      }
+    }
     const helper = {
       version: VERSION,
       optionLetters: OPTION_LETTERS,
@@ -8571,15 +9025,7 @@
       autosave: async (indexSelections) => {
         if (runtime === null || !runtime.hasAssignmentContext) return null;
         if (restoreGuard.restoring) return null;
-        if (runtime.hasSubmittedAttempt()) {
-          attemptGeneration += 1;
-          try {
-            await runtime.restart();
-          } catch (err) {
-            recordLastError(win, "begin", err);
-            return null;
-          }
-        }
+        if (!await ensureCurrentAttempt()) return null;
         let responses;
         try {
           responses = mapSelections(indexSelections);
@@ -8588,12 +9034,7 @@
           return null;
         }
         if (responses.length === 0) return null;
-        try {
-          return await runtime.autosave(responses);
-        } catch (err) {
-          recordLastError(win, "autosave", err);
-          return null;
-        }
+        return saves === null ? null : saves.setResponses(responses);
       },
       finalize: async (indexSelections, options) => {
         if (runtime === null) {
@@ -8616,12 +9057,16 @@
         const deliveryNav = win[NAMESPACE]?.deliveryNavigation;
         deliveryNav?.finalizeStarted?.();
         const generation = attemptGeneration;
+        if (saves !== null) await saves.pause();
         try {
           const result = await runtime.finalize(responses, writtenResponse);
           deliveryNav?.finalizeSettled?.(true);
           if (generation !== attemptGeneration) return supersededSubmission();
+          saves?.resetForNewAttempt();
+          renderSaveStatus(documentOf(win), "hidden");
           return { ok: true, result };
         } catch (err) {
+          saves?.resume();
           deliveryNav?.finalizeSettled?.(false);
           recordLastError(win, "finalize", err);
           if (generation !== attemptGeneration) return supersededSubmission();
@@ -8636,6 +9081,7 @@
     const ns = win[NAMESPACE] ?? {};
     ns[LESSON_QUIZ_KEY] = helper;
     win[NAMESPACE] = ns;
+    return captureEarlyInput;
   }
   function detectAssignmentId(win) {
     try {
@@ -8783,7 +9229,12 @@
         }
       }
       const apId = data.assessmentPresentationRevisionId;
-      return typeof apId === "string" && apId.length > 0 ? { responses, assessmentPresentationRevisionId: apId } : { responses };
+      const text = data.writtenResponse;
+      return {
+        responses,
+        ...typeof apId === "string" && apId.length > 0 ? { assessmentPresentationRevisionId: apId } : {},
+        ...typeof text === "string" && text.trim().length > 0 ? { writtenResponse: text } : {}
+      };
     };
     return {
       begin: async (assignmentId, launchRef) => {
@@ -8855,7 +9306,10 @@
       optionLetters: OPTION_LETTERS,
       hasAssignmentContext: () => true,
       mapIndexSelectionsToResponses: (indexSelections) => mapSelectionsForBinding(indexSelections, readPresentationBinding(documentOf(win))),
-      autosave: async () => null,
+      autosave: async () => {
+        renderSaveStatus(documentOf(win), "signedOut");
+        return null;
+      },
       finalize: async () => ({
         ok: false,
         message: "You appear to be signed out. Sign in and reopen the assignment to submit your work.",
@@ -8882,7 +9336,7 @@
     const ns = win[NAMESPACE] ?? {};
     ns[RUNTIME_KEY] = wrapper;
     win[NAMESPACE] = ns;
-    installLessonQuiz(win, runtime, runtime.hasAssignmentContext, restoreGuard);
+    return installLessonQuiz(win, runtime, runtime.hasAssignmentContext, restoreGuard);
   }
   async function bootstrap(win) {
     const assignmentId = detectAssignmentId(win);
@@ -8929,10 +9383,10 @@
       // Quiz session continuity: keep and restore only what this page displays.
       adoptPersisted: (state) => adoptPersistedForPage(win, state, restoreGuard)
     });
-    attachRuntimeAdapter(runtimeWin, runtime, restoreGuard);
+    const captureEarlyInput = attachRuntimeAdapter(runtimeWin, runtime, restoreGuard);
     void runtime.begin().catch((err) => {
       recordLastError(runtimeWin, "begin", err);
-    });
+    }).then(captureEarlyInput);
   }
   var __internal = {
     installLessonQuiz,

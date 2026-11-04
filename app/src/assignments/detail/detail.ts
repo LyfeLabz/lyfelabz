@@ -1971,7 +1971,8 @@ function appendRosterGroup(
         li.appendChild(summary);
       }
       // Quiz progress visibility: a Live session's actual answered/total
-      // ("In Progress · 4/10"), or a retake beside the unchanged best score.
+      // ("In Progress · 4 of 10 answered"), or a retake beside the unchanged best
+      // score.
       const progressText =
         "retakeStatus" in row && typeof row.retakeStatus === "string"
           ? row.retakeStatus

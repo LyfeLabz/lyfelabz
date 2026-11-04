@@ -5,7 +5,7 @@
 // deploy) builds and gates both artifacts from the same checkout:
 //
 //   1. the committed homepage catalog matches the curriculum registry;
-//   2. the application bundle is built;
+//   2. the application bundle and active assessment runtime are built;
 //   3. Teacher Units intent alone rebuilds Functions for backend comparison;
 //   4. the app and marketing artifacts are built from their manifests;
 //   5. the pair ownership/parity gate passes;
@@ -40,6 +40,7 @@ const {
 
 const FUNCTIONS_BUILD = Object.freeze(['npm', ['--prefix', 'platform/functions', 'run', 'build']]);
 const APP_BUNDLE_BUILD = Object.freeze(['npm', ['--prefix', 'app', 'run', 'build']]);
+const ASSESSMENT_RUNTIME_BUILD = Object.freeze(['npm', ['--prefix', 'app', 'run', 'build:runtime']]);
 const recordDirectory = path.join(repositoryRoot, 'dist', 'hosting-release');
 const pairRecordPath = path.join(recordDirectory, 'pair-build.json');
 
@@ -57,8 +58,8 @@ function hashInventory(directory) {
   return Object.fromEntries(artifactFiles(directory).map((file) => [file, sha256(fs.readFileSync(path.join(directory, file)))]));
 }
 
-function buildPair({ intent, target, runBundleBuild = true, runFunctionsBuild = true, log = console.log, placementParity = assertUnitPlacementParity } = {}) {
-  if (target && (intent !== 'teacher-units' || require('./backend-state.cjs').canonical(target) !==
+function buildPair({ intent, target, backendBaseline, runBundleBuild = true, runFunctionsBuild = true, log = console.log, placementParity = assertUnitPlacementParity } = {}) {
+  if (target && (!['teacher-units','teacher-units-hosting-only'].includes(intent) || require('./backend-state.cjs').canonical(target) !==
       require('./backend-state.cjs').canonical(require('./backend-state.cjs').optionBTarget(target.projectId))))
     throw new Error('[hosting-release] invalid explicit Option B build target');
   const config = readConfigFile(productionConfigFile);
@@ -69,8 +70,12 @@ function buildPair({ intent, target, runBundleBuild = true, runFunctionsBuild = 
   if (runBundleBuild) {
     // General stays closed. The explicit target-bound Option B profile is
     // policy-capable only; backend eligibility remains authoritative.
-    execFileSync(process.execPath, [path.join(repositoryRoot, 'app/scripts/build-application.cjs'), '--build', repositoryRoot, intent, ...(target ? [target.projectId,target.environment,target.origin] : [])], { cwd:repositoryRoot, stdio:['ignore','ignore','inherit'] });
+    execFileSync(process.execPath, [path.join(repositoryRoot, 'app/scripts/build-application.cjs'), '--build', repositoryRoot, intent === 'teacher-units-hosting-only' ? 'teacher-units' : intent, ...(target ? [target.projectId,target.environment,target.origin] : [])], { cwd:repositoryRoot, stdio:['ignore','ignore','inherit'] });
   }
+  // Both manifests copy this tracked generated asset. Always overwrite it
+  // from this checkout before either packager runs, even when reusing the
+  // app bundle. A failed runtime build must abort the paired release.
+  execFileSync(ASSESSMENT_RUNTIME_BUILD[0], ASSESSMENT_RUNTIME_BUILD[1], { cwd: repositoryRoot, stdio: 'inherit' });
   if (intent === 'teacher-units' && runFunctionsBuild) {
     // Rebuild the packaged runtime locally, without deploying Functions.
     fs.rmSync(path.join(repositoryRoot, 'platform/functions/lib'), { recursive: true, force: true });
@@ -95,6 +100,7 @@ function buildPair({ intent, target, runBundleBuild = true, runFunctionsBuild = 
   if (intent === 'teacher-units' && target) {
     record.backendFormat = require('./backend-state.cjs').OPTION_B_FORMAT; record.target = target;
   }
+  if (intent === 'teacher-units-hosting-only') { record.backendFormat = intent; record.target = target; record.backendBaseline = backendBaseline; }
   record.candidate = require('./backend-state.cjs').releaseCandidate(record);
   if (intent === 'teacher-units') record.backendCandidate = record.candidate;
   fs.mkdirSync(recordDirectory, { recursive: true });
@@ -134,18 +140,20 @@ async function hostingPredeploy({ project = process.env.GCLOUD_PROJECT, build = 
   const intent = assertIntentForProject(prepared?.releaseIntent, project);
   verifyPrepared(prepared, project, prepared.candidate);
   verifyExisting({prepared, project, read, candidateFor});
-  const built = build({intent,...(prepared.candidate?.kind === require('./backend-state.cjs').OPTION_B_CANDIDATE ?
-    {target:require('./backend-state.cjs').optionBTarget(project)} : {})});
+  const built = build({intent,...([require('./backend-state.cjs').OPTION_B_CANDIDATE,'lyfelabz.unchangedTeacherUnitsBackendCandidate'].includes(prepared.candidate?.kind) ?
+    {target:require('./backend-state.cjs').optionBTarget(project),...(intent === 'teacher-units-hosting-only' ? {backendBaseline:prepared.candidate.backendBaseline} : {})} : {})});
   if (built.record.schemaVersion !== 3 || built.record.releaseIntent !== intent) throw new Error('[hosting-release] rebuilt pair intent/schema differs from preparation');
   const candidate = candidateFor(built.record);
   verifyPrepared(prepared, project, candidate);
   if (environmentForProject(project).name === 'production' && candidate.source.dirty !== false) throw new Error('[hosting-release] production requires a clean candidate');
   // Independently prove project/site membership even for a general release.
   const hosting = Object.fromEntries(Object.entries(readTargetSites(project)).map(([target,site]) => [target,discover({project,site})]));
-  const backend = intent === 'teacher-units' ? await verify({project,pair:built.record,...require('./release.cjs').optionBReceiptInputs(prepared.evidenceReceipt)}) : null;
-  if (intent === 'teacher-units') {
+  const backend = ['teacher-units','teacher-units-hosting-only'].includes(intent) ? await verify({project,pair:built.record,...require('./release.cjs').optionBReceiptInputs(prepared.evidenceReceipt)}) : null;
+  if (['teacher-units','teacher-units-hosting-only'].includes(intent)) {
     if (!backend || canonical(backend.candidate) !== canonical(candidate)) throw new Error('[hosting-release] missing or changed Teacher Units backend candidate');
-    if (candidate.kind === require('./backend-state.cjs').OPTION_B_CANDIDATE) {
+    if (intent === 'teacher-units-hosting-only') {
+      require('./unchanged-backend.cjs').compare(candidate,backend.evidence,require('./release.cjs').optionBReceiptInputs(prepared.evidenceReceipt));
+    } else if (candidate.kind === require('./backend-state.cjs').OPTION_B_CANDIDATE) {
       require('../teacher-units-release/option-b-observation.cjs').assertCompatible(candidate,backend.evidence,
         {...require('./release.cjs').optionBReceiptInputs(prepared.evidenceReceipt)});
     } else { assertFresh(backend.evidence, project); assertCompatible(candidate, backend.evidence); }
@@ -159,4 +167,4 @@ if (require.main === module) {
   hostingPredeploy().catch(error => { console.error(error.message); process.exitCode = 1; });
 }
 
-module.exports = { APP_BUNDLE_BUILD, FUNCTIONS_BUILD, buildPair, hostingPredeploy, verifyPreparedPair, gitSource, pairRecordPath, recordDirectory };
+module.exports = { APP_BUNDLE_BUILD, ASSESSMENT_RUNTIME_BUILD, FUNCTIONS_BUILD, buildPair, hostingPredeploy, verifyPreparedPair, gitSource, pairRecordPath, recordDirectory };

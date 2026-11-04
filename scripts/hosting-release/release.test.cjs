@@ -139,13 +139,14 @@ test('prepare runs every Hosting suite, including these release tests', () => {
   for (const suite of suites) assert.ok(HOSTING_TEST_FILES.includes(suite), suite);
 });
 
-test('prepare builds the application bundle before app verify, then the Hosting suites, then the pair build', () => {
+test('prepare rebuilds both bundles before app verify, then sequential Hosting suites, then the pair build', () => {
   // A pristine checkout has no app/dist/bundle.js; app verify and the Hosting
   // suites build the app artifact, which requires it.
   assert.deepEqual(checkCommands(), [
     APP_BUNDLE_BUILD,
+    require('./build-pair.cjs').ASSESSMENT_RUNTIME_BUILD,
     ['npm', ['--prefix', 'app', 'run', 'verify']],
-    [process.execPath, ['--test', ...HOSTING_TEST_FILES]]
+    [process.execPath, ['--test', '--test-concurrency=1', ...HOSTING_TEST_FILES]]
   ]);
   const order = [];
   const run = (command, args, options) => {
@@ -156,6 +157,7 @@ test('prepare builds the application bundle before app verify, then the Hosting 
   assert.equal(built, 'built');
   assert.deepEqual(order.map((step) => step.split(' --test ')[0]), [
     'npm --prefix app run build',
+    'npm --prefix app run build:runtime',
     'npm --prefix app run verify',
     'node',
     'pair build'
@@ -169,7 +171,7 @@ test('a failing check stops prepare before the pair build', () => {
     if (args.includes('verify')) throw new Error('verify failed');
   };
   assert.throws(() => checkAndBuild({ intent:'general', run, build: () => order.push('pair build'), log: () => {} }), /verify failed/);
-  assert.deepEqual(order, ['--prefix app run build', '--prefix app run verify']);
+  assert.deepEqual(order, ['--prefix app run build', '--prefix app run build:runtime', '--prefix app run verify']);
 });
 
 test('the live release is read from hosting:channel:list, with its version, message, and routing config', () => {

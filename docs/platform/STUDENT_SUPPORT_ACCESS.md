@@ -1,8 +1,13 @@
 # Student Support Access (Student Support V2 / V2.1)
 
-Status: Implemented on `feature/student-support-workspace-v1`, uncommitted,
-not deployed. Bulk sharing backend (V2 P1, section 3.1) on
-`feature/student-support-workspace-v2`, uncommitted, not deployed. Governing decision: PDR-032 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+Status: Student Support V2 (including the bulk sharing backend, section 3.1)
+is deployed and live in production from `3cbfdcf` since 2026-10-30
+(`RELEASE_2026-10-30_STUDENT_SUPPORT_V2.md`). The Support Teacher workflow is
+verified in staging; it was not directly tested in production. Student
+Support V2.1 is implemented locally on `codex/student-support-v2-1` but has
+not been deployed to staging or production; its staging integration (with the
+newer staging autosave, quiz feedback, and release-tooling fixes) and its
+certification remain pending. Governing decision: PDR-032 in `LYFELABZ_PLATFORM_DECISIONS.md`.
 Authorized for implementation by the product owner on 2026-10-27; final
 ratification happens at owner review of this change.
 

@@ -4017,10 +4017,10 @@ describe("renderAssignmentDetail - quiz progress visibility", () => {
     expect(group("submitted")).toEqual(["stu-1"]);
     expect(group("in-progress")).toEqual(["stu-3", "stu-4", "stu-5"]);
     expect(group("not-started")).toEqual(["stu-2"]);
-    expect(text("stu-3")).toBe("Started · 0/10");
-    expect(text("stu-4")).toBe("In Progress · 6/10");
-    expect(text("stu-5")).toBe("Ready to Submit · 10/10");
-    expect(text("stu-1")).toBe("Retake In Progress · 3/10");
+    expect(text("stu-3")).toBe("Opened · No questions answered");
+    expect(text("stu-4")).toBe("In Progress · 6 of 10 answered");
+    expect(text("stu-5")).toBe("All 10 answered · Not submitted");
+    expect(text("stu-1")).toBe("Retake In Progress · 3 of 10 answered");
     expect(text("stu-2")).toBeNull();
   });
 
@@ -4041,7 +4041,7 @@ describe("renderAssignmentDetail - quiz progress visibility", () => {
     expect(
       mount.querySelector("[data-testid=assignment-detail-roster-summary-stu-1]")?.textContent,
     ).toBe("90% 2 attempts");
-    expect(text("stu-1")).toBe("Retake In Progress · 7/10");
+    expect(text("stu-1")).toBe("Retake In Progress · 7 of 10 answered");
   });
 
   test("progress is never inferred from counts when no per-student rows arrive", async () => {
@@ -4187,7 +4187,7 @@ describe("renderAssignmentDetail - roster information hierarchy", () => {
       "shell-assignment-detail-roster-name",
       "shell-assignment-detail-roster-progress",
     ]);
-    expect(row("stu-3").textContent).toBe("Johnson, LiamIn Progress · 4/10");
+    expect(row("stu-3").textContent).toBe("Johnson, LiamIn Progress · 4 of 10 answered");
     // Not Started: the name only.
     expect(row("stu-2").children.length).toBe(1);
     expect(row("stu-2").textContent).toBe("Chen, Maya");

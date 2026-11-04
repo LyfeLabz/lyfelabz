@@ -78,7 +78,7 @@ async function certify({ project, intent, candidateFor = releaseCandidate, fetch
   const message = releaseMessage(sha, dirty);
   const prepared = readJson(path.join(repositoryRoot, 'dist', 'hosting-release', `prepare-${project}.json`));
   verifyPrepared(prepared, project, candidate);
-  if (candidate.kind === require('./backend-state.cjs').OPTION_B_CANDIDATE &&
+  if ([require('./backend-state.cjs').OPTION_B_CANDIDATE,'lyfelabz.unchangedTeacherUnitsBackendCandidate'].includes(candidate.kind) &&
       canonical(optionB) !== canonical(require('./release.cjs').optionBReceiptInputs(prepared.evidenceReceipt)))
     throw new Error('[hosting-release] approved Option B attachments differ from preparation');
   const sites = readTargetSites(project);
@@ -136,7 +136,7 @@ async function certify({ project, intent, candidateFor = releaseCandidate, fetch
   // Fetch after potentially long byte/catalog checks, so their duration does
   // not expire a valid backend observation. Failures never change scope.
   try {
-    const backend = intent === 'teacher-units' ? await backendVerify({project,pair:pairRecord,...optionB}) : null;
+    const backend = ['teacher-units','teacher-units-hosting-only'].includes(intent) ? await backendVerify({project,pair:pairRecord,...optionB}) : null;
     if (backend && canonical(backend.candidate) !== canonical(candidate)) throw new Error('[hosting-release] backend candidate changed during certification');
     const record = {
       kind: 'lyfelabz.hostingCertifiedRelease',
@@ -161,7 +161,7 @@ async function certify({ project, intent, candidateFor = releaseCandidate, fetch
 
 async function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv, { values: ['project', 'intent','rules-approval','rules-report','approval-digest','configuration-approval'], flags: [] });
-  const { record, recordPath } = await certify({ project: args.project, intent:args.intent,optionB:args.intent === 'teacher-units' ? require('./release.cjs').optionBInputs(args) : {} });
+  const { record, recordPath } = await certify({ project: args.project, intent:args.intent,optionB:['teacher-units','teacher-units-hosting-only'].includes(args.intent) ? require('./release.cjs').optionBInputs(args) : {} });
   console.log(`\nCERTIFIED ${record.releaseIntent} paired Hosting release for ${record.project}; Teacher Units: ${record.evidenceReceipt.teacherUnitsReadiness}`);
   console.log(JSON.stringify({ sha: record.source.sha, app: record.app, marketing: record.marketing }, null, 2));
   console.log(`Record: ${path.relative(repositoryRoot, recordPath)} (add the pair to the release ledger; do not commit the record file)`);

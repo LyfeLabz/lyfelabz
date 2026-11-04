@@ -500,6 +500,30 @@ describe("assessmentSessionsBegin", () => {
       expect(result).toMatchObject({ responses: [{ itemId: "q1", response: "A" }] });
     });
 
+    it("an idempotent replay returns the caller's saved written response", async () => {
+      mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+      mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+      mockSessionGet.mockResolvedValueOnce(
+        existingLiveSessionSnapshot({ responses: PERSISTED, writtenResponse: "Density decides it." }),
+      );
+
+      const result = await __assessmentSessionsBeginHandler(makeRequest());
+
+      expect(result).toMatchObject({ responses: PERSISTED, writtenResponse: "Density decides it." });
+    });
+
+    it("omits a blank or non-string stored written response", async () => {
+      for (const writtenResponse of ["   ", 42]) {
+        mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+        mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+        mockSessionGet.mockResolvedValueOnce(existingLiveSessionSnapshot({ writtenResponse }));
+
+        const result = await __assessmentSessionsBeginHandler(makeRequest());
+
+        expect(result).not.toHaveProperty("writtenResponse");
+      }
+    });
+
     it("a reload of a zero-answer session is an idempotent replay with no responses", async () => {
       mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
       mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
