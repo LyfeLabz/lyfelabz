@@ -126,14 +126,24 @@ test('index normalization proves exact overrides including TTL and readiness',()
   const local=normalizeLocalIndexes(config);
   const fields=local.fieldOverrides.map(f => ({name:`projects/lyfelabz-staging/databases/(default)/collectionGroups/${f.collectionGroup}/fields/${f.fieldPath}`,
     ...(f.ttl ? {ttlConfig:{state:'ACTIVE'}} : {}),indexConfig:{indexes:f.indexes.map(i => ({...i,state:'READY'}))}}));
-  assert.deepEqual(normalizeRemoteIndexes([],fields,'lyfelabz-staging'),local);
+  // Remote composites mirror every declared composite (READY, API shape).
+  const composites=local.indexes.map(({collectionGroup,...i},n) => ({...i,name:`projects/lyfelabz-staging/databases/(default)/collectionGroups/${collectionGroup}/indexes/id${n}`,state:'READY'}));
+  assert.ok(composites.length>0,'fixture must exercise the declared composite indexes');
+  assert.deepEqual(normalizeRemoteIndexes(composites,fields,'lyfelabz-staging'),local);
+  // A missing or extra composite is a meaningful difference, never equal.
+  assert.notDeepEqual(normalizeRemoteIndexes(composites.slice(1),fields,'lyfelabz-staging'),local);
+  assert.notDeepEqual(normalizeRemoteIndexes([],fields,'lyfelabz-staging'),local);
+  assert.notDeepEqual(normalizeRemoteIndexes([...composites,{...composites[0],name:composites[0].name+'x'}],fields,'lyfelabz-staging'),local);
+  composites[0].state='CREATING';
+  assert.throws(() => normalizeRemoteIndexes(composites,fields,'lyfelabz-staging'),/index not READY/);
+  composites[0].state='READY';
   fields[0].indexConfig.indexes[0].state='CREATING';
-  assert.throws(() => normalizeRemoteIndexes([],fields,'lyfelabz-staging'),/not READY/);
+  assert.throws(() => normalizeRemoteIndexes(composites,fields,'lyfelabz-staging'),/not READY/);
   fields[0].indexConfig.indexes[0].state='READY';fields.find(f => f.ttlConfig).ttlConfig.state='CREATING';
-  assert.throws(() => normalizeRemoteIndexes([],fields,'lyfelabz-staging'),/not ACTIVE/);
+  assert.throws(() => normalizeRemoteIndexes(composites,fields,'lyfelabz-staging'),/not ACTIVE/);
   fields.find(f => f.ttlConfig).ttlConfig.state='ACTIVE';
   delete fields[0].indexConfig;
-  assert.throws(() => normalizeRemoteIndexes([],fields,'lyfelabz-staging'),/identity uncertain/);
+  assert.throws(() => normalizeRemoteIndexes(composites,fields,'lyfelabz-staging'),/identity uncertain/);
 });
 test('unknown index semantics fail closed instead of dropping them from hash',() => {
   assert.throws(() => normalizeLocalIndexes({indexes:[{collectionGroup:'x',queryScope:'COLLECTION',fields:[{fieldPath:'x',vectorConfig:{}}]}],fieldOverrides:[]}),/unsupported|unknown/);

@@ -9,7 +9,8 @@
  * Node (firebase-tools' dependency graph does not load under Jest's module
  * system). Nothing is ever sent to Firebase.
  *
- * Input (argv[2]): JSON { specPath, project, force, existingFields }.
+ * Input (argv[2]): JSON { specPath, project, force, existingFields,
+ * existingIndexes? } (existingIndexes defaults to none deployed).
  * Output (stdout): JSON { valid: true, calls: ["PATCH <url>", ...] }.
  */
 "use strict";
@@ -30,12 +31,17 @@ async function run() {
     patch: record("PATCH"),
     delete: record("DELETE"),
     post: record("POST"),
-    get: async () => {
+    // Only the composite index inventory read is answered, from the
+    // caller-supplied Admin API shaped list, so firebase-tools' own
+    // listIndexes (including its __name__ handling) runs unmodified.
+    get: async (url) => {
+      if (url === `/projects/${input.project}/databases/(default)/collectionGroups/-/indexes`) {
+        return { body: { indexes: input.existingIndexes || [] } };
+      }
       throw new Error("network access is not allowed in this simulation");
     },
   };
   api.getDatabase = async () => ({ databaseEdition: "STANDARD" });
-  api.listIndexes = async () => [];
   api.listFieldOverrides = async () => input.existingFields;
   utils.logLabeledBullet = () => undefined;
   utils.logBullet = () => undefined;
