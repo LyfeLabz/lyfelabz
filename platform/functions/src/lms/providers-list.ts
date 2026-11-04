@@ -1,6 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
-import { platformCallable, type LmsProviderId } from "../shared";
+import { type LmsProviderId } from "../shared";
 
 import { listRegisteredProviders } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms } from "./shared/actor";
@@ -36,5 +37,5 @@ async function handler(
   };
 }
 
-export const lmsProvidersList = platformCallable(handler);
+export const lmsProvidersList = teachingCallable(handler);
 export const __lmsProvidersListHandler = handler;

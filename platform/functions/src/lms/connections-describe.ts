@@ -1,7 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   lmsConnectionsCollectionRef,
   type LmsConnectionStatus,
@@ -75,5 +75,5 @@ async function handler(
   }
 }
 
-export const lmsConnectionsDescribe = platformCallable(handler);
+export const lmsConnectionsDescribe = teachingCallable(handler);
 export const __lmsConnectionsDescribeHandler = handler;

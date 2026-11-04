@@ -1,3 +1,4 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue, type DocumentReference, type Transaction } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
@@ -647,10 +648,10 @@ async function reverseHandler(
   return mutationResponse(result.status, owned, studentId, result.attempts, events);
 }
 
-export const gradeImprovementsListForAssignment = platformCallable(listForAssignmentHandler);
+export const gradeImprovementsListForAssignment = teachingCallable(listForAssignmentHandler);
 export const gradeImprovementsListForStudent = platformCallable(listForStudentHandler);
-export const gradeImprovementsAcknowledge = platformCallable(acknowledgeHandler);
-export const gradeImprovementsReverse = platformCallable(reverseHandler);
+export const gradeImprovementsAcknowledge = teachingCallable(acknowledgeHandler);
+export const gradeImprovementsReverse = teachingCallable(reverseHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __gradeImprovementHandlers = {

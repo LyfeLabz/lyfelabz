@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   assignmentDocRef,
-  platformCallable,
   PlatformError,
   requireDistrictContext,
   writeAuditEvent,
@@ -213,7 +213,7 @@ async function lmsGradePassbacksRetryHandler(
   };
 }
 
-export const lmsGradePassbacksRetry = platformCallable(
+export const lmsGradePassbacksRetry = teachingCallable(
   { secrets: [...googleClassroomProductionSecrets] },
   lmsGradePassbacksRetryHandler,
 );

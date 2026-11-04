@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   lmsConnectionCreationDocRef,
   lmsConnectionDocRef,
@@ -610,7 +610,7 @@ async function handler(
   };
 }
 
-export const lmsConnectionsComplete = platformCallable(
+export const lmsConnectionsComplete = teachingCallable(
   { secrets: [...googleClassroomProductionSecrets] },
   handler,
 );

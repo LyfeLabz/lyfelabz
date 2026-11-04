@@ -1,10 +1,10 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   isTeacherDefaultGrade,
   log,
-  platformCallable,
   PlatformError,
   requireDistrictContext,
   teacherPreferencesUpdateDocRef,
@@ -119,7 +119,7 @@ async function teacherPreferencesUpdateHandler(
   return { ok: true, defaultGrade: null };
 }
 
-export const teacherPreferencesUpdate = platformCallable(
+export const teacherPreferencesUpdate = teachingCallable(
   teacherPreferencesUpdateHandler,
 );
 

@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   PlatformError,
-  platformCallable,
   runFirestoreTransaction,
   teacherUnitsCollectionRef,
   type TeacherUnitGrade,
@@ -120,7 +120,7 @@ export function createTeacherUnitsListHandler(enforcement: TeacherUnitsEnforceme
 
 const teacherUnitsListHandler = createTeacherUnitsListHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsList = platformCallable({ maxInstances: 20 }, teacherUnitsListHandler);
+export const teacherUnitsList = teachingCallable({ maxInstances: 20 }, teacherUnitsListHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsListHandler = teacherUnitsListHandler;

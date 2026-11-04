@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { Timestamp } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   assignmentDocRef,
   createRequestLaunchPresentationResolver,
@@ -471,7 +471,7 @@ async function lmsDeepLinkResolveHandler(
   };
 }
 
-export const lmsDeepLinkResolve = platformCallable(lmsDeepLinkResolveHandler);
+export const lmsDeepLinkResolve = teachingCallable(lmsDeepLinkResolveHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

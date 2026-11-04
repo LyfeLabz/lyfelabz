@@ -314,6 +314,12 @@ export const AUDIT_ACTIONS = [
   // repeat writes nothing).
   // Target `studentSupportGrant`/{grantId}; payload `classId`, `studentId`,
   // `granteeUid`.
+  "supportAccess.authorizationSaved",
+  "supportAccess.authorizationRevoked",
+  "supportAccess.relationshipBound",
+  "supportAccess.relationshipRevoked",
+  "supportAccess.recipientRevoked",
+  "supportAccess.teachingRestricted",
   "supportAccess.granted",
   "supportAccess.revoked",
 ] as const;

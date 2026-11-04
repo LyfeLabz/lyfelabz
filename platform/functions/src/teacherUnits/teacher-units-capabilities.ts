@@ -1,5 +1,6 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import type { CallableRequest } from "firebase-functions/v2/https";
-import { PlatformError, platformCallable, runFirestoreTransaction } from "../shared";
+import { PlatformError, runFirestoreTransaction } from "../shared";
 import {
   PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
   RUNTIME_PLACEMENT_FINGERPRINT,
@@ -90,7 +91,7 @@ export function createTeacherUnitsCapabilitiesHandler(enforcement: TeacherUnitsE
 
 const teacherUnitsCapabilitiesHandler = createTeacherUnitsCapabilitiesHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsCapabilities = platformCallable({ region: "us-central1", maxInstances: 20 }, teacherUnitsCapabilitiesHandler);
+export const teacherUnitsCapabilities = teachingCallable({ region: "us-central1", maxInstances: 20 }, teacherUnitsCapabilitiesHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsCapabilitiesHandler = teacherUnitsCapabilitiesHandler;

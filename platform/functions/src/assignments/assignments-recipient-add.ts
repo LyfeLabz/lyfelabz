@@ -1,7 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   assignmentDocRef,
   classDocRef,
@@ -372,7 +372,7 @@ async function assignmentsRecipientAddHandler(
   };
 }
 
-export const assignmentsRecipientAdd = platformCallable(
+export const assignmentsRecipientAdd = teachingCallable(
   assignmentsRecipientAddHandler,
 );
 

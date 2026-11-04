@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   assertClassSupports,
-  platformCallable,
   PlatformError,
   classDocRef,
   classMetadataUpdateDocRef,
@@ -299,7 +299,7 @@ async function classesUpdateMetadataHandler(
   return { classId: input.classId, alreadyUpdated: false };
 }
 
-export const classesUpdateMetadata = platformCallable(classesUpdateMetadataHandler);
+export const classesUpdateMetadata = teachingCallable(classesUpdateMetadataHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import type { Timestamp } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   type AssignmentRecord,
   type AssignmentStatus,
   type LmsAssignmentPublicationStatus,
@@ -337,7 +337,7 @@ async function inspectOne(
   };
 }
 
-export const lmsCourseworkInspect = platformCallable(
+export const lmsCourseworkInspect = teachingCallable(
   { secrets: [...googleClassroomProductionSecrets] },
   handler,
 );

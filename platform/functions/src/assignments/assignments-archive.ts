@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type Transaction } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   assignmentArchiveDocRef,
   assignmentDocRef,
@@ -246,7 +246,7 @@ async function assignmentsArchiveHandler(
   return archiveAssignment(request, {});
 }
 
-export const assignmentsArchive = platformCallable(assignmentsArchiveHandler);
+export const assignmentsArchive = teachingCallable(assignmentsArchiveHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

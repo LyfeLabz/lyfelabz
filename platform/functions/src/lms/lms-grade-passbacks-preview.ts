@@ -1,6 +1,6 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
-import { platformCallable } from "../shared";
 
 import {
   evaluateFamilyStudents,
@@ -95,7 +95,7 @@ async function handler(
   };
 }
 
-export const lmsGradePassbacksPreview = platformCallable(
+export const lmsGradePassbacksPreview = teachingCallable(
   { secrets: [...googleClassroomProductionSecrets] },
   handler,
 );

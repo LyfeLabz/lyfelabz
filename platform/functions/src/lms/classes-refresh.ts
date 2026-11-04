@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   lmsClassLinkBreakDocRef,
   lmsClassLinkDocRef,
@@ -444,7 +444,7 @@ async function handleOwnershipDrift(
   };
 }
 
-export const lmsClassesRefresh = platformCallable(
+export const lmsClassesRefresh = teachingCallable(
   { secrets: [...googleClassroomProductionSecrets] },
   handler,
 );

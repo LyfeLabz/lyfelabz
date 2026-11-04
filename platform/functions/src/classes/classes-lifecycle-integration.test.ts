@@ -1,3 +1,9 @@
+// These legacy lifecycle/audit tests isolate the class write boundary.
+// Real support restriction, transaction and race behavior is exercised by
+// recipient-authorizations.emulator.test.ts against Firestore.
+jest.mock("../supportAccess/recipient-policy", () => ({
+  createClassWithSupportBoundary: async (_actor: unknown, ref: { set: (data: unknown) => Promise<void> }, data: unknown) => ref.set(data),
+}));
 import type { CallableRequest } from "firebase-functions/v2/https";
 
 // Sprint 24B Phase 2B.3 lifecycle integration test.

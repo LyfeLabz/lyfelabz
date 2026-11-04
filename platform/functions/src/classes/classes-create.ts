@@ -1,10 +1,11 @@
+import { createClassWithSupportBoundary } from "../supportAccess/recipient-policy";
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { randomBytes } from "node:crypto";
 
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   classCreationDocRef,
   classDocRef,
@@ -279,7 +280,7 @@ async function classesCreateHandler(
       : {}),
   };
 
-  await classCreationDocRef(input.classId).set(creation);
+  await createClassWithSupportBoundary(actor, classCreationDocRef(input.classId), creation);
 
   await writeAuditEvent({
     actorUserId: actor.uid,
@@ -303,7 +304,7 @@ async function classesCreateHandler(
   return { classId: input.classId, joinCode, alreadyCreated: false };
 }
 
-export const classesCreate = platformCallable(classesCreateHandler);
+export const classesCreate = teachingCallable(classesCreateHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

@@ -1,8 +1,9 @@
+import { createClassWithSupportBoundary } from "../supportAccess/recipient-policy";
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   classDocRef,
   classLmsCreationDocRef,
@@ -178,7 +179,7 @@ async function classesLmsCreateHandler(
     createdAt: FieldValue.serverTimestamp(),
   };
 
-  await classLmsCreationDocRef(input.classId).set(creation);
+  await createClassWithSupportBoundary(actor, classLmsCreationDocRef(input.classId), creation);
 
   await writeAuditEvent({
     actorUserId: actor.uid,
@@ -207,7 +208,7 @@ async function classesLmsCreateHandler(
   };
 }
 
-export const classesLmsCreate = platformCallable(classesLmsCreateHandler);
+export const classesLmsCreate = teachingCallable(classesLmsCreateHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

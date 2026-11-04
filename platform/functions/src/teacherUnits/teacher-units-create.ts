@@ -1,3 +1,4 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { createHash } from "node:crypto";
 
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
@@ -10,7 +11,6 @@ import {
   TEACHER_UNIT_INITIAL_REVISION,
   isTransactionContention,
   log,
-  platformCallable,
   runFirestoreTransaction,
   teacherUnitCreateReceiptCreationDocRef,
   teacherUnitCreateReceiptDocRef,
@@ -337,7 +337,7 @@ export function createTeacherUnitsCreateHandler(enforcement: TeacherUnitsEnforce
 
 const teacherUnitsCreateHandler = createTeacherUnitsCreateHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsCreate = platformCallable({ maxInstances: 20 }, teacherUnitsCreateHandler);
+export const teacherUnitsCreate = teachingCallable({ maxInstances: 20 }, teacherUnitsCreateHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsCreateHandler = teacherUnitsCreateHandler;

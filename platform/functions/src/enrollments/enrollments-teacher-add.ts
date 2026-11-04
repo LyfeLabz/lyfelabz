@@ -1,9 +1,9 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   assertClassSupports,
-  platformCallable,
   PlatformError,
   classDocRef,
   enrollmentCreationDocRef,
@@ -333,7 +333,7 @@ async function enrollmentsTeacherAddHandler(
   };
 }
 
-export const enrollmentsTeacherAdd = platformCallable(enrollmentsTeacherAddHandler);
+export const enrollmentsTeacherAdd = teachingCallable(enrollmentsTeacherAddHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

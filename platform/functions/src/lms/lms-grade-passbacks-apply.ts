@@ -1,6 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
-import { PlatformError, platformCallable, writeAuditEvent } from "../shared";
+import { PlatformError, writeAuditEvent } from "../shared";
 
 import {
   synchronizeGradePassback,
@@ -359,7 +360,7 @@ async function handler(
   };
 }
 
-export const lmsGradePassbacksApply = platformCallable(
+export const lmsGradePassbacksApply = teachingCallable(
   { secrets: [...googleClassroomProductionSecrets] },
   handler,
 );

@@ -108,3 +108,5 @@ export {
   teachersRequestVerification,
   teachersSuspend,
 } from "./teachers";
+
+export { supportAccessReconcileMine, supportAccessMutationGeneration, supportAccessV21GrantMany, supportAccessV21RevokeAuthorization, supportAccessV21RemoveRecipient, supportAccessDrainRemovals } from "./supportAccess/recipient-authorizations";

@@ -1,3 +1,4 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
@@ -5,7 +6,6 @@ import {
   PlatformError,
   READING_LEVELS,
   log,
-  platformCallable,
   runFirestoreTransaction,
   studentAccommodationCreationDocRef,
   studentAccommodationDocRef,
@@ -424,7 +424,7 @@ async function accommodationsSetHandler(
   };
 }
 
-export const accommodationsSet = platformCallable(accommodationsSetHandler);
+export const accommodationsSet = teachingCallable(accommodationsSetHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

@@ -1,3 +1,4 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
@@ -5,7 +6,6 @@ import {
   classDocRef,
   isClassColorToken,
   log,
-  platformCallable,
   PlatformError,
   requireDistrictContext,
   teacherPreferencesUpdateDocRef,
@@ -155,7 +155,7 @@ async function teacherClassColorUpdateHandler(
   return { ok: true, classId, color };
 }
 
-export const teacherClassColorUpdate = platformCallable(
+export const teacherClassColorUpdate = teachingCallable(
   teacherClassColorUpdateHandler,
 );
 

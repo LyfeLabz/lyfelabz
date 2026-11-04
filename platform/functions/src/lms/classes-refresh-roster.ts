@@ -1,7 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   log,
   writeAuditEvent,
@@ -192,7 +192,7 @@ async function handler(
   return projectResponse(result);
 }
 
-export const lmsClassesRefreshRoster = platformCallable(
+export const lmsClassesRefreshRoster = teachingCallable(
   { secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
