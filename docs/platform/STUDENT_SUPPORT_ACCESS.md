@@ -1,4 +1,4 @@
-# Student Support Access (Student Support Workspace V1)
+# Student Support Access (Student Support V2 / V2.1)
 
 Status: Implemented on `feature/student-support-workspace-v1`, uncommitted,
 not deployed. Bulk sharing backend (V2 P1, section 3.1) on
@@ -342,3 +342,11 @@ Functions (new and modified callables, including `supportAccessGrantMany`
 and `supportAccessRevokeMany`) and Hosting (paired `app` and
 `marketing` release). No Firestore Rules change (default-deny), no index,
 OAuth, migration, or new infrastructure.
+
+
+## V2.1 security and mixed-version contract
+
+The V2.1 issuer cutoff is part of the canonical grant read decision. An active grant issued at or before a whole-recipient removal cutoff grants no student access, even when asynchronous cleanup has not reached it. The cutoff is scoped to the issuer and recipient. See [V2.1 implementation and rollout](STUDENT_SUPPORT_V2_1_IMPLEMENTATION.md) for the versioned mutation protocol, legacy refresh requirement, cleanup worker, and rollback restrictions.
+
+
+In V2.1, **Cancel invitation** closes an unbound email invitation. **Remove teacher** requires a server-validated UID and commits an immediate issuer-specific cutoff across that issuer's classes. The scheduled worker resumes physical cleanup in pages. A grant-ID revoke records an explicit denial even when an earlier cleanup already marked the grant revoked. Canonical student listing remains available if legacy relationship maintenance fails. See the [V2.1 rollout contract](STUDENT_SUPPORT_V2_1_IMPLEMENTATION.md).
