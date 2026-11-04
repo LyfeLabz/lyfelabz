@@ -193,6 +193,7 @@ async function accommodationsListStudentsHandler(
 }
 
 export const accommodationsListStudents = teachingCallable(
+  { maxInstances: 20 },
   accommodationsListStudentsHandler,
 );
 

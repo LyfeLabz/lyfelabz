@@ -520,7 +520,7 @@ async function assignmentsPublishHandler(
   return publishAssignment(request, PRODUCTION_ASSIGNMENT_PUBLICATION_POLICY);
 }
 
-export const assignmentsPublish = teachingCallable(assignmentsPublishHandler);
+export const assignmentsPublish = teachingCallable({ maxInstances: 20 }, assignmentsPublishHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

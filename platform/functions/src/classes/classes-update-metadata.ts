@@ -299,7 +299,7 @@ async function classesUpdateMetadataHandler(
   return { classId: input.classId, alreadyUpdated: false };
 }
 
-export const classesUpdateMetadata = teachingCallable(classesUpdateMetadataHandler);
+export const classesUpdateMetadata = teachingCallable({ maxInstances: 20 }, classesUpdateMetadataHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

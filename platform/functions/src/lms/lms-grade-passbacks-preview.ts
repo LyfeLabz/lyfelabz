@@ -96,7 +96,7 @@ async function handler(
 }
 
 export const lmsGradePassbacksPreview = teachingCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsGradePassbacksPreviewHandler = handler;

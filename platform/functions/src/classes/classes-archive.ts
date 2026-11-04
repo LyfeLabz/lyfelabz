@@ -180,7 +180,7 @@ async function classesArchiveHandler(
   };
 }
 
-export const classesArchive = teachingCallable(classesArchiveHandler);
+export const classesArchive = teachingCallable({ maxInstances: 20 }, classesArchiveHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

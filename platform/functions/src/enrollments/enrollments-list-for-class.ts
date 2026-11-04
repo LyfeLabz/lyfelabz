@@ -255,6 +255,7 @@ async function enrollmentsListForClassHandler(
 }
 
 export const enrollmentsListForClass = teachingCallable(
+  { maxInstances: 20 },
   enrollmentsListForClassHandler,
 );
 

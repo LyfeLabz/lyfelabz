@@ -120,6 +120,7 @@ async function teacherPreferencesUpdateHandler(
 }
 
 export const teacherPreferencesUpdate = teachingCallable(
+  { maxInstances: 20 },
   teacherPreferencesUpdateHandler,
 );
 

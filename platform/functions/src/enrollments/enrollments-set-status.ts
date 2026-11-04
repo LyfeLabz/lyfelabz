@@ -277,7 +277,7 @@ async function enrollmentsSetStatusHandler(
   };
 }
 
-export const enrollmentsSetStatus = teachingCallable(enrollmentsSetStatusHandler);
+export const enrollmentsSetStatus = teachingCallable({ maxInstances: 20 }, enrollmentsSetStatusHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

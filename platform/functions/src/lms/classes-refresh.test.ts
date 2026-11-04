@@ -252,6 +252,7 @@ describe("lmsClassesRefresh", () => {
   describe("production-binding contract (Sprint 25 B9)", () => {
     it("declares the Google Classroom production secrets on the callable", () => {
       expect(mockCapturedCallableOptions.value).toEqual({
+        maxInstances: 20,
         secrets: ["__gc_secret_sentinel__"],
       });
     });

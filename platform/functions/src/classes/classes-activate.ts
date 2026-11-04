@@ -384,7 +384,7 @@ async function classesActivateHandler(
   };
 }
 
-export const classesActivate = teachingCallable(classesActivateHandler);
+export const classesActivate = teachingCallable({ maxInstances: 20 }, classesActivateHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

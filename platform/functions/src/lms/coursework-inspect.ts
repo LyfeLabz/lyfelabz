@@ -338,7 +338,7 @@ async function inspectOne(
 }
 
 export const lmsCourseworkInspect = teachingCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsCourseworkInspectHandler = handler;

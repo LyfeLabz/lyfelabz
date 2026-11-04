@@ -156,6 +156,7 @@ async function teacherClassColorUpdateHandler(
 }
 
 export const teacherClassColorUpdate = teachingCallable(
+  { maxInstances: 20 },
   teacherClassColorUpdateHandler,
 );
 

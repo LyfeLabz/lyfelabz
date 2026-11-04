@@ -445,7 +445,7 @@ async function handleOwnershipDrift(
 }
 
 export const lmsClassesRefresh = teachingCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsClassesRefreshHandler = handler;

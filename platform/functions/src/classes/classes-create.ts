@@ -304,7 +304,7 @@ async function classesCreateHandler(
   return { classId: input.classId, joinCode, alreadyCreated: false };
 }
 
-export const classesCreate = teachingCallable(classesCreateHandler);
+export const classesCreate = teachingCallable({ maxInstances: 20 }, classesCreateHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

@@ -471,7 +471,7 @@ async function lmsDeepLinkResolveHandler(
   };
 }
 
-export const lmsDeepLinkResolve = teachingCallable(lmsDeepLinkResolveHandler);
+export const lmsDeepLinkResolve = teachingCallable({ maxInstances: 20 }, lmsDeepLinkResolveHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

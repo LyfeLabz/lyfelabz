@@ -246,7 +246,7 @@ async function assignmentsArchiveHandler(
   return archiveAssignment(request, {});
 }
 
-export const assignmentsArchive = teachingCallable(assignmentsArchiveHandler);
+export const assignmentsArchive = teachingCallable({ maxInstances: 20 }, assignmentsArchiveHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

@@ -277,6 +277,7 @@ async function rejectionCode(data?: unknown): Promise<string | undefined> {
 describe("lmsCourseworkInspect authorization", () => {
   it("declares the Google Classroom production secrets", () => {
     expect(mockCapturedCallableOptions.value).toEqual({
+      maxInstances: 20,
       secrets: ["__gc_secret_sentinel__"],
     });
   });

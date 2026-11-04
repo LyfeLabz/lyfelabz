@@ -151,6 +151,7 @@ describe("lmsClassesListTopics production-binding contract (Sprint 25 B9)", () =
     // Captured at module load. The sentinel proves the value came from
     // config-firebase's googleClassroomProductionSecrets.
     expect(mockCapturedCallableOptions.value).toEqual({
+      maxInstances: 20,
       secrets: ["__gc_secret_sentinel__"],
     });
   });

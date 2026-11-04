@@ -193,7 +193,7 @@ async function handler(
 }
 
 export const lmsClassesRefreshRoster = teachingCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsClassesRefreshRosterHandler = handler;

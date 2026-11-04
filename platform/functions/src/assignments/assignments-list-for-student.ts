@@ -534,6 +534,7 @@ async function assignmentsListForStudentHandler(
 }
 
 export const assignmentsListForStudent = teachingCallable(
+  { maxInstances: 20 },
   assignmentsListForStudentHandler,
 );
 

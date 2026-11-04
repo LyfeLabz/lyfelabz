@@ -123,7 +123,7 @@ async function accommodationsGetHandler(
   };
 }
 
-export const accommodationsGet = teachingCallable(accommodationsGetHandler);
+export const accommodationsGet = teachingCallable({ maxInstances: 20 }, accommodationsGetHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

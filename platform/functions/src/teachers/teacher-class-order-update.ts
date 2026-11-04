@@ -174,6 +174,7 @@ async function teacherClassOrderUpdateHandler(
 }
 
 export const teacherClassOrderUpdate = teachingCallable(
+  { maxInstances: 20 },
   teacherClassOrderUpdateHandler,
 );
 

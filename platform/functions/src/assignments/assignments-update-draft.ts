@@ -522,7 +522,7 @@ async function assignmentsUpdateDraftHandler(
   return { assignmentId: input.assignmentId, alreadyUpdated: false };
 }
 
-export const assignmentsUpdateDraft = teachingCallable(assignmentsUpdateDraftHandler);
+export const assignmentsUpdateDraft = teachingCallable({ maxInstances: 20 }, assignmentsUpdateDraftHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

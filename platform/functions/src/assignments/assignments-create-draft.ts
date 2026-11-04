@@ -511,7 +511,7 @@ async function assignmentsCreateDraftHandler(
   };
 }
 
-export const assignmentsCreateDraft = teachingCallable(assignmentsCreateDraftHandler);
+export const assignmentsCreateDraft = teachingCallable({ maxInstances: 20 }, assignmentsCreateDraftHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

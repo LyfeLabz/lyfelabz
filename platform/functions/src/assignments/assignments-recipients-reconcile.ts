@@ -312,6 +312,7 @@ async function assignmentsRecipientsReconcileHandler(
 }
 
 export const assignmentsRecipientsReconcile = teachingCallable(
+  { maxInstances: 20 },
   assignmentsRecipientsReconcileHandler,
 );
 

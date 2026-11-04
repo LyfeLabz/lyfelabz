@@ -305,7 +305,7 @@ async function enrollmentsJoinByCodeHandler(
   return { enrollmentId: id, classId, alreadyEnrolled: false };
 }
 
-export const enrollmentsJoinByCode = teachingCallable(enrollmentsJoinByCodeHandler);
+export const enrollmentsJoinByCode = teachingCallable({ maxInstances: 20 }, enrollmentsJoinByCodeHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

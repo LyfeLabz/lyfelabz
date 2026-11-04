@@ -455,6 +455,7 @@ async function assignmentsLifecycleStateHandler(
 }
 
 export const assignmentsLifecycleState = teachingCallable(
+  { maxInstances: 20 },
   assignmentsLifecycleStateHandler,
 );
 

@@ -430,7 +430,7 @@ async function assignmentsCurrentSetHandler(
   return response;
 }
 
-export const assignmentsCurrentSet = teachingCallable(assignmentsCurrentSetHandler);
+export const assignmentsCurrentSet = teachingCallable({ maxInstances: 20 }, assignmentsCurrentSetHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

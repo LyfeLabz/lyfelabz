@@ -256,7 +256,7 @@ async function assignmentsReopenHandler(
   return reopenAssignment(request, {});
 }
 
-export const assignmentsReopen = teachingCallable(assignmentsReopenHandler);
+export const assignmentsReopen = teachingCallable({ maxInstances: 20 }, assignmentsReopenHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

@@ -169,7 +169,7 @@ async function handler(
 }
 
 export const lmsConnectionsDisconnect = teachingCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsConnectionsDisconnectHandler = handler;

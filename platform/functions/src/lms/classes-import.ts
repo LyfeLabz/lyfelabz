@@ -301,7 +301,7 @@ async function handler(
 }
 
 export const lmsClassesImport = teachingCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsClassesImportHandler = handler;

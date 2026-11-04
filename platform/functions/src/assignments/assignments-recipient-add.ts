@@ -373,6 +373,7 @@ async function assignmentsRecipientAddHandler(
 }
 
 export const assignmentsRecipientAdd = teachingCallable(
+  { maxInstances: 20 },
   assignmentsRecipientAddHandler,
 );
 

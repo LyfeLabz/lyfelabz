@@ -424,7 +424,7 @@ async function accommodationsSetHandler(
   };
 }
 
-export const accommodationsSet = teachingCallable(accommodationsSetHandler);
+export const accommodationsSet = teachingCallable({ maxInstances: 20 }, accommodationsSetHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

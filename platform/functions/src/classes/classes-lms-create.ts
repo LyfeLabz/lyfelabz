@@ -208,7 +208,7 @@ async function classesLmsCreateHandler(
   };
 }
 
-export const classesLmsCreate = teachingCallable(classesLmsCreateHandler);
+export const classesLmsCreate = teachingCallable({ maxInstances: 20 }, classesLmsCreateHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

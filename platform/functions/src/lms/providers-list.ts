@@ -37,5 +37,5 @@ async function handler(
   };
 }
 
-export const lmsProvidersList = teachingCallable(handler);
+export const lmsProvidersList = teachingCallable({ maxInstances: 20 }, handler);
 export const __lmsProvidersListHandler = handler;

@@ -214,7 +214,7 @@ async function lmsGradePassbacksRetryHandler(
 }
 
 export const lmsGradePassbacksRetry = teachingCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   lmsGradePassbacksRetryHandler,
 );
 

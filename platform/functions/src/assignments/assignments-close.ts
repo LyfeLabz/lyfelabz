@@ -168,7 +168,7 @@ async function assignmentsCloseHandler(
   );
 }
 
-export const assignmentsClose = teachingCallable(assignmentsCloseHandler);
+export const assignmentsClose = teachingCallable({ maxInstances: 20 }, assignmentsCloseHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.
