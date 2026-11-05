@@ -43,6 +43,28 @@ test('ordinary user OAuth, different targets, endpoint injection, delegates and 
   assert.throws(() => C.operatorCredential({ ...identity, projectId: 'unapproved' }, config()));
 });
 
+test('current Google Cloud SDK source fields are accepted only in their exact known shapes', async () => {
+  const sdk = () => { const c = config(); delete c.quota_project_id;
+    Object.assign(c.source_credentials, { account: '', universe_domain: 'googleapis.com' }); return c; };
+  for (const c of [config(), sdk(), (() => { const c = sdk(); c.source_credentials.account = 'owner@example.test'; return c; })(),
+    (() => { const c = config(); c.source_credentials.universe_domain = 'googleapis.com'; return c; })()]) {
+    const r = C.operatorCredential(identity, c);
+    assert.equal(r.impersonated, true); assert.equal(r.email, email); assert.equal(r.client.getTargetPrincipal(), email);
+  }
+  assert.deepEqual((await verify()).operator, { principalSubject: email, credentialSubject: email, delegationSubject: null });
+  for (const change of [c => c.source_credentials.universe_domain = 'evil.example', c => c.source_credentials.universe_domain = '',
+    c => c.source_credentials.universe_domain = null, c => c.source_credentials.account = 42, c => c.source_credentials.account = null,
+    c => c.source_credentials.account = 'not an email', c => c.source_credentials.account = 'a@b@c',
+    c => c.source_credentials.quota_project_id = identity.projectId, c => c.source_credentials.extra = 'x', c => c.universe_domain = 'googleapis.com',
+    c => delete c.source_credentials.client_id, c => delete c.source_credentials.client_secret,
+    c => delete c.source_credentials.refresh_token, c => delete c.source_credentials.type, c => delete c.source_credentials,
+    c => c.source_credentials = [], c => delete c.service_account_impersonation_url, c => delete c.type,
+    c => c.service_account_impersonation_url = c.service_account_impersonation_url.replace(email, 'lyfelabz-prod@appspot.gserviceaccount.com'),
+    c => c.service_account_impersonation_url = c.service_account_impersonation_url.replace(email, 'other@lyfelabz-staging.iam.gserviceaccount.com')]) {
+    const c = sdk(); change(c); assert.throws(() => C.operatorCredential(identity, c));
+  }
+});
+
 test('effective token identity, validity, scope, provider target and complete permissions are required', async () => {
   for (const patch of [{ email: 'user@example.test' }, { email: 'wrong@lyfelabz-staging.iam.gserviceaccount.com' },
     { expiry_date: now }, { expiry_date: now + 30000 }, { expiry_date: NaN }, { email_verified: false }, { scopes: [] }]) {

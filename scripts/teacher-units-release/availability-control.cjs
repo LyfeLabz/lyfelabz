@@ -462,8 +462,14 @@ function operatorCredential(identity, key) {
         key.delegates !== undefined && !equal(key.delegates, []) ||
         key.quota_project_id !== undefined && key.quota_project_id !== identity.projectId) deny('unapproved impersonation target or delegates');
     const source = key.source_credentials;
-    exact(source, ['type', 'client_id', 'client_secret', 'refresh_token']);
-    if (source.type !== 'authorized_user' || ['client_id', 'client_secret', 'refresh_token'].some(k => typeof source[k] !== 'string' || !source[k].trim())) deny('invalid explicit impersonation source');
+    // Current Google Cloud SDK impersonated ADC profiles also write optional
+    // `account` (often empty) and `universe_domain`. Neither selects an identity:
+    // the effective operator token is still independently verified below.
+    if (!source || typeof source !== 'object' || Array.isArray(source)) deny('invalid explicit impersonation source');
+    exact(source, ['type', 'client_id', 'client_secret', 'refresh_token', ...['account', 'universe_domain'].filter(k => Object.hasOwn(source, k))]);
+    if (source.type !== 'authorized_user' || ['client_id', 'client_secret', 'refresh_token'].some(k => typeof source[k] !== 'string' || !source[k].trim()) ||
+        Object.hasOwn(source, 'account') && (typeof source.account !== 'string' || source.account !== '' && !/^[^\s@]{1,64}@[^\s@]{1,253}$/.test(source.account)) ||
+        Object.hasOwn(source, 'universe_domain') && source.universe_domain !== 'googleapis.com') deny('invalid explicit impersonation source');
     const sourceClient = new OAuth2Client({ clientId: source.client_id, clientSecret: source.client_secret });
     sourceClient.setCredentials({ refresh_token: source.refresh_token });
     const client = new Impersonated({ sourceClient, targetPrincipal: email, targetScopes: OPERATOR_SCOPES,
