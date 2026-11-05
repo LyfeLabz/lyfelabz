@@ -152,19 +152,21 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
 
   describe("ship-loading investigation", () => {
     const val = (id) => doc.getElementById(id).textContent;
-    const panel = () => [val("ship-total"), val("ship-vol"), val("ship-wmass"), val("ship-state")];
+    const panel = () => [val("ship-total"), val("ship-vol"), val("ship-state")];
     const y = () => Number(doc.getElementById("ship-g").style.transform.match(/translate\([\d.]+px,\s*([\d.]+)px\)/)[1]);
     const add = () => click(doc.getElementById("ship-add"));
     const remove = () => click(doc.getElementById("ship-remove"));
-    const crates = () => [...doc.querySelectorAll("#ship-crates rect")].filter((c) => c.style.visibility === "visible").length;
+    const crates = () => [...doc.querySelectorAll("#ship-crates .ship-crate")].filter((c) => c.style.visibility === "visible").length;
+    const sub = () => Number(doc.getElementById("ship-sub").getAttribute("height"));
 
-    test("the ship is never gated: it works before any prediction, and the prediction is optional", () => {
+    test("the ship is never gated; the challenge and optional prediction sit beside it", () => {
       const lab = doc.getElementById("ship-lab");
       expect(lab.querySelector(".predict-gated")).toBeNull();
       expect(doc.getElementById("ship-svg").closest("[hidden]")).toBeNull();
       const stage = lab.querySelector(".ship-stage");
-      expect(stage.compareDocumentPosition(doc.getElementById("qp-ship")) & 4).toBeTruthy();
+      expect(stage.compareDocumentPosition(lab.querySelector(".ship-goal")) & 4).toBeTruthy();
       expect(stage.contains(doc.getElementById("ship-add")) && stage.contains(doc.getElementById("ship-reset"))).toBe(true);
+      expect(text(lab.querySelector(".ship-goal"))).toBe("Cargo Challenge How much cargo can you load before the ship sinks?");
       expect([...doc.querySelectorAll("#qp-ship .ship-pred")].map((b) => b.textContent)).toEqual(["The ship rises", "The ship sinks lower", "Nothing changes"]);
       add();
       expect(val("ship-total")).toBe("250 g");
@@ -173,74 +175,151 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
       expect(text(doc.getElementById("ship-predict-note"))).toBe("Check your prediction: More cargo makes the ship sink lower.");
     });
 
-    test("no Next Up transition cards remain", () => {
-      expect(html).not.toMatch(/Next up/i);
-      expect(html).not.toContain("mlab-next");
+    test("the prediction can change before testing and is checked once after the first cargo change", () => {
+      const preds = doc.querySelectorAll("#qp-ship .ship-pred");
+      click(preds[0]); click(preds[1]);
+      expect([...preds].map((p) => p.getAttribute("aria-pressed"))).toEqual(["false", "true", "false"]);
+      add();
+      expect(text(doc.getElementById("ship-predict-note"))).toBe("You predicted it. More cargo makes the ship sink lower.");
+      click(preds[2]);
+      expect(preds[1].getAttribute("aria-pressed")).toBe("true");
     });
 
-    test("starts empty: 200 g floats with 200 mL displaced", () => {
-      expect(panel()).toEqual(["200 g", "200 mL", "200 g", "Floating"]);
-      expect(y()).toBe(90);
+    test("starts empty: 200 g, 200 mL, floating; no crates; old labels and outline are gone", () => {
+      expect(panel()).toEqual(["200 g", "200 mL", "Floating"]);
+      expect(val("ship-cargo")).toBe("200 g ship + 0 g cargo");
+      expect(y()).toBe(70);
+      expect(sub()).toBe(20);
       expect(crates()).toBe(0);
       expect(doc.getElementById("ship-remove").getAttribute("aria-disabled")).toBe("true");
+      expect(doc.getElementById("ship-takeaway").hidden).toBe(true);
+      expect(doc.getElementById("ship-svg").textContent).not.toMatch(/mL/);
+      expect(doc.querySelector("#ship-svg [stroke-dasharray]")).toBeNull();
+      expect(doc.querySelectorAll("#ship-crates .ship-crate text")[0].textContent).toBe("50 g");
     });
 
-    test("each crate adds 50 g, lowers the ship, and displaces mL equal to total grams up to 600", () => {
-      click(doc.querySelectorAll("#qp-ship .ship-pred")[1]);
+    test("each crate adds 50 g, one visible crate, lowers the ship, and displaces mL equal to grams up to 600", () => {
       for (let total = 250; total <= 600; total += 50) {
         add();
-        const vol = Number(val("ship-vol").replace(" mL", ""));
         expect(val("ship-total")).toBe(`${total} g`);
-        expect(vol).toBe(total);
-        expect(val("ship-wmass")).toBe(`${total} g`);
-        // waterline fixed at 130; hull 60 tall; draft = 60 x total / 600
-        expect(y()).toBeCloseTo(130 + total / 10 - 60, 6);
-        expect(Number(doc.getElementById("ship-disp").getAttribute("height"))).toBeCloseTo(total / 10, 6);
+        expect(val("ship-vol")).toBe(`${total} mL`);
+        // waterline fixed at 110; hull 60 tall; draft = 60 x total / 600
+        expect(y()).toBeCloseTo(110 + total / 10 - 60, 6);
+        expect(sub()).toBeCloseTo(total / 10, 6);
         expect(crates()).toBe((total - 200) / 50);
       }
       expect(val("ship-state")).toBe("At capacity");
-      expect(text(doc.getElementById("ship-predict-note"))).toBe("You predicted it. More cargo makes the ship sink lower.");
+      expect(val("ship-cargo")).toBe("200 g ship + 400 g cargo");
+      expect(doc.getElementById("ship-takeaway").hidden).toBe(false);
     });
 
-    test("removing cargo reverses the effect exactly", () => {
+    test("removing cargo removes a crate and reverses the effect exactly", () => {
       add(); add(); add();
-      const lowY = y();
-      remove(); remove(); remove();
-      expect(panel()).toEqual(["200 g", "200 mL", "200 g", "Floating"]);
-      expect(y()).toBe(90);
-      expect(lowY).toBeGreaterThan(y());
+      remove();
+      expect(crates()).toBe(2);
+      expect(panel()).toEqual(["300 g", "300 mL", "Floating"]);
+      remove(); remove();
+      expect(panel()).toEqual(["200 g", "200 mL", "Floating"]);
+      expect(y()).toBe(70);
     });
 
-    test("650 g overloads: it never reports 650 mL displaced, floods, sinks, and needs Reset", async () => {
+    test("650 g overloads: never reports 650 mL, floods, sinks inside the scene, and needs Reset", async () => {
       for (let i = 0; i < 9; i++) add();
-      expect(val("ship-total")).toBe("650 g");
-      expect(val("ship-vol")).toBe("Not enough (600 mL max)");
-      expect(val("ship-wmass")).toBe("Less than 650 g");
-      expect(val("ship-state")).toBe("Overloaded: sinking");
-      expect(html.includes("650 mL") || doc.body.textContent.includes("650 mL displaced")).toBe(false);
+      expect(crates()).toBe(9);
+      expect(panel()).toEqual(["650 g", "Not enough (600 mL max)", "Overloaded!"]);
+      expect(doc.getElementById("ship-lab").classList.contains("is-sunk")).toBe(true);
       expect(doc.getElementById("ship-flood").getAttribute("opacity")).toBe("1");
-      expect(y()).toBe(182);
+      expect(y()).toBe(174);
+      expect(y() + 60).toBeLessThanOrEqual(238);
+      expect(y() - 44).toBeGreaterThan(110);
+      expect(val("ship-discover")).toContain("cannot push aside enough water");
+      expect(doc.getElementById("ship-takeaway").hidden).toBe(false);
+      expect(doc.getElementById("ship-reset").classList.contains("ship-reset-urgent")).toBe(true);
       expect(doc.getElementById("ship-add").getAttribute("aria-disabled")).toBe("true");
       expect(doc.getElementById("ship-remove").getAttribute("aria-disabled")).toBe("true");
       add(); remove();
       expect(val("ship-total")).toBe("650 g");
       click(doc.getElementById("ship-reset"));
-      expect(panel()).toEqual(["200 g", "200 mL", "200 g", "Floating"]);
+      expect(panel()).toEqual(["200 g", "200 mL", "Floating"]);
+      expect(doc.getElementById("ship-takeaway").hidden).toBe(true);
       expect(doc.getElementById("ship-flood").getAttribute("opacity")).toBe("0");
       expect(crates()).toBe(0);
+      expect(doc.getElementById("ship-reset").classList.contains("ship-reset-urgent")).toBe(false);
       await wait(150);
       expect(doc.getElementById("ship-announce").textContent).toBe("Reset. The empty ship has a mass of 200 g and pushes aside 200 mL of water.");
     });
 
-    test("the challenge uses choices, and 400 g of cargo is the answer", () => {
+    test("accessibility: native buttons, labeled controls, live announcements, described drawing", async () => {
+      for (const id of ["ship-add", "ship-remove", "ship-reset"]) expect(doc.getElementById(id).tagName).toBe("BUTTON");
+      expect(doc.getElementById("ship-add").getAttribute("aria-label")).toBe("Add 50 g of cargo");
+      expect(doc.getElementById("ship-svg").getAttribute("role")).toBe("img");
+      add();
+      expect(doc.getElementById("ship-svg").getAttribute("aria-label")).toBe("Cargo ship with 1 crate, floating lower as cargo is added, with 250 mL of water pushed aside.");
+      await wait(150);
+      expect(doc.getElementById("ship-announce").textContent).toBe("Ship mass 250 g. More cargo, lower ship, more water pushed aside: 250 mL.");
+    });
+
+    test("reduced motion and responsive layout rules are in place", () => {
+      expect(html).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.ship-g, #ship-sub \{ transition: none; \} \}/);
+      expect(html).toContain(".ship-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);");
+      expect(html).toContain("@media (max-width: 760px) { .ship-layout { grid-template-columns: minmax(0, 1fr); } }");
+    });
+
+    test("the challenge check uses choices, and 400 g of cargo is the answer", () => {
       const opts = doc.querySelectorAll("#ship-challenge .check-opt");
       expect([...opts].map((o) => o.textContent)).toEqual(["300 g", "400 g", "600 g"]);
+      expect(text(doc.getElementById("ship-challenge-q"))).toBe("The empty ship has a mass of 200 g. What is the maximum cargo mass it can carry without sinking?");
+      expect(doc.getElementById("ship-challenge").getAttribute("data-correct")).toBe("1");
+      expect(opts[0].getAttribute("data-fb")).toContain("total mass is 500 g");
+      expect(opts[1].getAttribute("data-fb")).toContain("200 g ship + 400 g of cargo = 600 g total");
+      expect(opts[2].getAttribute("data-fb")).toContain("maximum total mass of ship and cargo together");
+      click(opts[0]);
+      expect(opts[0].classList.contains("wrong")).toBe(true);
       click(opts[2]);
       expect(opts[2].classList.contains("wrong")).toBe(true);
       click(opts[1]);
       expect(opts[1].classList.contains("right")).toBe(true);
     });
+
+    test("refinements: PREDICT heading, no feedback sizers, open explanation below the check, takeaway reveal", async () => {
+      expect(text(doc.getElementById("qp-ship-q"))).toBe("Predict: What happens when you add cargo?");
+      const ch = doc.getElementById("ship-challenge");
+      expect(ch.querySelector(".tm-fb-sizer")).toBeNull();
+      const about = doc.getElementById("ship-about");
+      expect(about.tagName).toBe("DIV");
+      expect(doc.querySelector("#ship-lab details")).toBeNull();
+      expect(ch.compareDocumentPosition(about) & 4).toBeTruthy();
+      expect(text(about.querySelector("h3"))).toBe("Why does it float?");
+      expect(text(about.querySelector(".ship-about-lead"))).toBe("A ship floats because of buoyancy, the upward force of water.");
+      expect([...about.querySelectorAll("li")].map(text)).toEqual([
+        "Displacement: A ship pushes water out of the way as it sinks lower.",
+        "Balance: A floating ship displaces water that weighs the same as the ship.",
+        "Sinking: If the ship becomes too heavy to displace enough water, it sinks.",
+      ]);
+      expect([...about.querySelectorAll("strong")].map(text)).toEqual(["buoyancy", "Displacement:", "Balance:", "Sinking:"]);
+      expect(text(about.querySelector(".ship-about-note"))).toBe("The ship's wide, hollow hull helps it displace enough water to float.");
+      const tk = doc.getElementById("ship-takeaway");
+      click(doc.getElementById("ship-reset"));
+      expect(tk.hidden).toBe(true);
+      for (let i = 0; i < 7; i++) add();
+      expect(tk.hidden).toBe(true);
+      add();
+      expect(tk.hidden).toBe(false);
+      await wait(150);
+      expect(doc.getElementById("ship-announce").textContent).toContain("Takeaway: A floating ship pushes aside water that weighs the same as the ship.");
+      remove();
+      expect(tk.hidden).toBe(false);
+      click(doc.getElementById("ship-reset"));
+      expect(tk.hidden).toBe(true);
+      expect(html).toContain("#buoyancy { padding-bottom: 1.6rem; }");
+    });
+
+    test("no Next Up transition cards remain", () => {
+      expect(html).not.toMatch(/Next up/i);
+      expect(html).not.toContain("mlab-next");
+    });
   });
+
 
   test("the volume-calculation sequence is gone", () => {
     for (const id of ["volume", "vol-lab", "vol-out", "qp-rock", "disp-lab", "disp-drop", "disp-q"]) expect(doc.getElementById(id)).toBeNull();

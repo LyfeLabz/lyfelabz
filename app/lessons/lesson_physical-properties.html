@@ -861,42 +861,66 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .ship-lab .mlab-tag { color: var(--orange); }
 .ship-lab .check-card { max-width: none; margin: 0 0 1rem; padding: 1rem 1.2rem 1.1rem; }
 /* The experiment is always visible: ship and controls on the left (about
-   60%), prediction, measurements, and discovery on the right (about 40%).
+   60%), challenge, prediction, and measurements on the right (about 40%).
    Narrow screens stack them with the ship first. */
 .ship-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1rem 1.4rem; align-items: start; margin-bottom: 0.8rem; }
 @media (max-width: 760px) { .ship-layout { grid-template-columns: minmax(0, 1fr); } }
 .ship-stage { min-width: 0; }
+.ship-figure { margin: 0; min-width: 0; }
+.ship-svg { display: block; width: 100%; height: auto; border-radius: 12px; background: linear-gradient(#20344a, #1a2a3c); overflow: hidden; }
+.ship-g { transition: transform 0.45s ease; transform-box: view-box; }
+#ship-sub { transition: y 0.45s ease, height 0.45s ease; }
+@media (prefers-reduced-motion: reduce) { .ship-g, #ship-sub { transition: none; } }
+.ship-caption { margin-top: 0.35rem; font-size: 0.9rem; line-height: 1.45; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; }
+.ship-key { display: inline-block; width: 1rem; height: 0.8rem; border-radius: 3px; background: #7fd9ea; border: 1px solid #9fe3ff; }
+.ship-side { min-width: 0; }
+.ship-goal { margin-bottom: 0.8rem; padding: 0.7rem 0.9rem; border-radius: 12px; background: rgba(230,126,34,0.1); border: 1px solid var(--buoy-border); }
+.ship-goal-label { font-size: 0.75rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); }
+.ship-goal-q { margin: 0.15rem 0 0; font-family: 'Fredoka One', cursive; font-weight: 400; font-size: 1.15rem; line-height: 1.3; color: var(--text); }
 .ship-predict { margin-bottom: 0.8rem; }
-.ship-predict .check-eyebrow { font-size: 0.8rem; letter-spacing: 0.08em; color: var(--gold); line-height: 1.4; }
-.ship-predict-options { display: grid; gap: 0.4rem; }
-.ship-pred.check-opt { min-height: 44px; padding: 0.5rem 0.8rem; font-size: 0.95rem; }
+.ship-predict-q { font-size: 0.95rem; font-weight: 800; color: var(--text); margin-bottom: 0.35rem; line-height: 1.4; }
+.ship-predict-label { font-size: 0.75rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+.ship-predict-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; }
+.ship-pred.check-opt { min-height: 44px; padding: 0.4rem 0.5rem; font-size: 0.88rem; line-height: 1.25; justify-content: center; text-align: center; }
 .ship-pred.check-opt[aria-pressed="true"] { border-color: var(--gold); background: rgba(245,200,66,0.14); color: var(--gold); }
 .ship-predict-note { margin-top: 0.4rem; font-size: 0.95rem; line-height: 1.45; color: var(--text-muted); }
 .ship-predict-note:empty { display: none; }
 .ship-predict-note strong { color: var(--text); }
-.ship-figure { margin: 0; min-width: 0; }
-.ship-svg { display: block; width: 100%; height: auto; border-radius: 12px; background: rgba(255,255,255,0.02); }
-.ship-g { transition: transform 0.45s ease; transform-box: fill-box; transform-origin: center; }
-.ship-crate { transition: visibility 0s; }
-.ship-caption { margin-top: 0.35rem; font-size: 0.9rem; line-height: 1.45; color: var(--text-muted); }
-.ship-side { min-width: 0; }
 .ship-controls { display: grid; grid-template-columns: 1.2fr 1.2fr 1fr; gap: 0.5rem; margin-top: 0.6rem; }
 .ship-controls .ship-btn { padding: 0.6rem 0.6rem; white-space: nowrap; font-size: 0.95rem; }
 .ship-btn[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
 .ship-btn-alt { background: transparent; color: var(--text); border: 2px solid var(--check-border); }
-.ship-panel { display: grid; gap: 0.3rem; margin: 0 0 0.6rem; }
-.ship-panel > div { display: flex; justify-content: space-between; align-items: baseline; gap: 0.8rem; padding: 0.35rem 0.7rem; border-radius: 10px; background: var(--dark); border: 1px solid var(--border); }
-.ship-panel dt { font-size: 0.95rem; font-weight: 700; color: var(--text-muted); }
-.ship-panel dd { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 900; color: var(--teal); text-align: right; }
-.ship-panel #ship-state { font-family: 'Nunito', sans-serif; font-size: 1rem; color: var(--gold); }
+.ship-btn.ship-reset-urgent { background: linear-gradient(135deg, var(--gold), #ffd97a); color: #0d1f2d; border-color: transparent; }
+.ship-panel { display: grid; gap: 0.35rem; margin: 0 0 0.6rem; }
+.ship-panel > div { display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; padding: 0.45rem 0.8rem; border-radius: 10px; background: var(--dark); border: 1px solid var(--border); }
+.ship-panel dt { font-size: 1rem; font-weight: 800; color: var(--text-muted); }
+.ship-panel dd { font-family: 'Orbitron', sans-serif; font-size: 1.25rem; font-weight: 900; color: var(--teal); text-align: right; }
+.ship-sub-line { display: block; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+.ship-panel #ship-state { font-family: 'Nunito', sans-serif; font-size: 1.15rem; color: var(--green); }
+.ship-lab.is-full #ship-state { color: var(--gold); }
+.ship-lab.is-sunk #ship-state { color: #ff8f80; }
 .ship-discover { font-size: 1rem; line-height: 1.5; color: var(--text); }
-.ship-rule { margin-top: 0; font-size: 0.98rem; line-height: 1.55; color: var(--text-muted); max-width: 760px; }
-.ship-about { margin-top: 0.6rem; }
-.ship-about summary { cursor: pointer; font-weight: 800; color: var(--text-muted); min-height: 44px; display: flex; align-items: center; }
+.ship-takeaway { margin: 0 0 0.6rem; padding: 0.7rem 0.9rem; border-radius: 12px; background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.35); font-size: 1rem; line-height: 1.5; color: var(--text); max-width: 760px; }
+.ship-takeaway[hidden] { display: none; }
+.ship-takeaway strong { color: var(--green); }
+.ship-about { margin: 0; padding: 0.8rem 1rem 0.9rem; border-radius: 12px; background: var(--dark); border: 1px solid var(--border); border-left: 4px solid var(--orange); }
+.ship-about-title { margin: 0 0 0.35rem; font-family: 'Fredoka One', cursive; font-weight: 400; font-size: 1.1rem; color: var(--text); }
+.ship-about-lead { margin: 0 0 0.35rem; font-size: 1rem; line-height: 1.5; color: var(--text); }
+.ship-about-list { margin: 0 0 0 1.2rem; padding: 0; font-size: 0.97rem; line-height: 1.45; color: var(--text-muted); }
+.ship-about-list li + li { margin-top: 0.2rem; }
+.ship-about strong { color: var(--text); }
+.ship-about-note { margin: 0.6rem 0 0; font-size: 0.95rem; line-height: 1.45; color: var(--text-muted); font-style: italic; }
+.ship-lab #ship-challenge { padding-bottom: 1.4rem; }
+.ship-fb-zone .tm-fb { margin-top: 0.7rem; }
+.mlab-card.ship-lab { margin-bottom: 0; }
+#buoyancy { padding-bottom: 1.6rem; }
+#buoyancy + #properties { padding-top: 1.6rem; }
+@media (max-width: 720px) { #buoyancy { padding-bottom: 1rem; } #buoyancy + #properties { padding-top: 1rem; } }
 .ship-challenge-options { grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); }
 @media (max-width: 480px) {
   .ship-controls .ship-btn { font-size: 0.88rem; padding: 0.55rem 0.3rem; }
-  .ship-panel dt, .ship-panel dd { font-size: 0.88rem; }
+  .ship-panel dd { font-size: 1.05rem; }
+  .ship-pred.check-opt { font-size: 0.82rem; padding: 0.35rem 0.3rem; }
 }
 
 /* ── PROPERTY FAMILY CARDS ── */
@@ -1897,29 +1921,28 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="ship-layout">
         <div class="ship-stage">
           <figure class="ship-figure">
-              <svg class="ship-svg" id="ship-svg" viewBox="50 28 300 222" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
-                <g id="ship-g" class="ship-g">
-                  <rect x="150" y="-36" width="40" height="36" rx="3" fill="#d9e4ee"/>
-                  <rect x="156" y="-28" width="8" height="7" rx="1" fill="#243447"/>
-                  <rect x="168" y="-28" width="8" height="7" rx="1" fill="#243447"/>
-                  <rect x="180" y="-28" width="6" height="7" rx="1" fill="#243447"/>
-                  <line x1="170" y1="-36" x2="170" y2="-54" stroke="#d9e4ee" stroke-width="2"/>
-                  <g id="ship-crates"></g>
-                  <rect x="0" y="0" width="200" height="60" rx="4" fill="#3d5a73" stroke="#9fb8cc" stroke-width="2"/>
-                  <rect x="2" y="44" width="196" height="14" rx="2" fill="#a8423a"/>
-                  <rect id="ship-flood" x="2" y="2" width="196" height="56" rx="3" fill="rgba(59,130,246,0.75)" opacity="0"/>
-                  <g fill="#e8f4f8" font-size="11" font-weight="800" font-family="Nunito, sans-serif" text-anchor="end">
-                    <line x1="188" y1="40" x2="198" y2="40" stroke="#e8f4f8" stroke-width="1.5"/><text x="185" y="43">200</text>
-                    <line x1="188" y1="20" x2="198" y2="20" stroke="#e8f4f8" stroke-width="1.5"/><text x="185" y="23">400</text>
-                    <line x1="188" y1="2" x2="198" y2="2" stroke="#e8f4f8" stroke-width="1.5"/><text x="185" y="13">600 mL</text>
-                  </g>
-                  <rect id="ship-disp" x="0" y="40" width="200" height="20" fill="none" stroke="#7cf0ff" stroke-width="2" stroke-dasharray="5 4"/>
-                </g>
-                <rect x="0" y="130" width="400" height="116" fill="rgba(59,130,246,0.35)" pointer-events="none"/>
-                <line x1="0" y1="130" x2="400" y2="130" stroke="rgba(124,200,248,0.9)" stroke-width="2"/>
-                <rect x="0" y="244" width="400" height="6" fill="rgba(255,255,255,0.25)"/>
-              </svg>
-              <figcaption class="ship-caption">Side view in fresh water. Dashed outline: the water the hull pushes aside.</figcaption>
+            <svg class="ship-svg" id="ship-svg" viewBox="0 10 300 236" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+              <defs>
+                <clipPath id="ship-hull-clip"><path d="M0 0 H196 L222 -14 L206 14 V54 Q206 60 200 60 H6 Q0 60 0 54 Z"/></clipPath>
+                <linearGradient id="ship-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d5f9c"/><stop offset="1" stop-color="#0f2f52"/></linearGradient>
+              </defs>
+              <rect x="0" y="110" width="300" height="130" fill="url(#ship-sea)"/>
+              <rect x="0" y="238" width="300" height="8" fill="#3a4a5c"/>
+              <g id="ship-g" class="ship-g">
+                <g id="ship-crates"></g>
+                <rect x="6" y="-34" width="34" height="34" rx="3" fill="#e6edf3"/>
+                <rect x="11" y="-27" width="7" height="7" rx="1" fill="#243447"/>
+                <rect x="22" y="-27" width="7" height="7" rx="1" fill="#243447"/>
+                <rect x="31" y="-27" width="5" height="7" rx="1" fill="#243447"/>
+                <rect x="14" y="-44" width="5" height="10" fill="#e6edf3"/>
+                <path d="M0 0 H196 L222 -14 L206 14 V54 Q206 60 200 60 H6 Q0 60 0 54 Z" fill="#5b6f82" stroke="#c9d6e2" stroke-width="1.5"/>
+                <rect x="0" y="-14" width="226" height="19" fill="#c8553d" clip-path="url(#ship-hull-clip)"/>
+                <rect id="ship-sub" x="0" y="40" width="230" height="20" fill="rgba(110,215,255,0.55)" clip-path="url(#ship-hull-clip)"/>
+                <rect id="ship-flood" x="0" y="0" width="226" height="60" fill="rgba(59,130,246,0.85)" clip-path="url(#ship-hull-clip)" opacity="0"/>
+              </g>
+              <line x1="0" y1="110" x2="300" y2="110" stroke="#9fe3ff" stroke-width="2.5"/>
+            </svg>
+            <figcaption class="ship-caption"><span class="ship-key" aria-hidden="true"></span> Part of the hull below the waterline</figcaption>
           </figure>
           <div class="ship-controls" role="group" aria-label="Cargo controls">
             <button class="ship-btn" id="ship-add" type="button" aria-label="Add 50 g of cargo">+ 50 g cargo</button>
@@ -1928,8 +1951,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           </div>
         </div>
         <div class="ship-side">
+          <div class="ship-goal">
+            <div class="ship-goal-label">Cargo Challenge</div>
+            <p class="ship-goal-q">How much cargo can you load before the ship sinks?</p>
+          </div>
           <div class="ship-predict" id="qp-ship">
-            <div class="check-eyebrow" id="qp-ship-q">Predict: What happens when you add cargo?</div>
+            <div class="ship-predict-q" id="qp-ship-q"><span class="ship-predict-label">Predict:</span> What happens when you add cargo?</div>
             <div class="ship-predict-options" role="group" aria-labelledby="qp-ship-q">
               <button class="check-opt ship-pred" type="button" aria-pressed="false" data-choice="rises">The ship rises</button>
               <button class="check-opt ship-pred" type="button" aria-pressed="false" data-choice="lower">The ship sinks lower</button>
@@ -1938,34 +1965,35 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
             <p class="ship-predict-note" id="ship-predict-note" aria-live="polite"></p>
           </div>
           <dl class="ship-panel">
-            <div><dt>Total mass</dt><dd id="ship-total"></dd></div>
+            <div><dt>Ship mass</dt><dd><span id="ship-total"></span><span class="ship-sub-line" id="ship-cargo"></span></dd></div>
             <div><dt>Water displaced</dt><dd id="ship-vol"></dd></div>
-            <div><dt>Mass of displaced water</dt><dd id="ship-wmass"></dd></div>
             <div><dt>Status</dt><dd id="ship-state"></dd></div>
           </dl>
           <p class="ship-discover" id="ship-discover"></p>
         </div>
       </div>
-      <p class="ship-rule">In fresh water, 1 mL of water has a mass of about 1 g, so a floating ship pushes aside its own mass in water.</p>
+      <p class="ship-takeaway" id="ship-takeaway" hidden><strong>Takeaway:</strong> A floating ship pushes aside water that weighs the same as the ship. When the ship becomes too heavy, it sinks.</p>
       <p class="pp-sr" id="ship-announce" aria-live="polite" aria-atomic="true"></p>
-      <details class="ship-about">
-            <summary>About this model</summary>
-            <ul class="id-limits">
-              <li>A small model ship: 200 g empty, with cargo added in 50 g crates. Its wide, hollow hull can push aside far more water than a solid lump of the same steel.</li>
-              <li>Its box-shaped hull can push aside at most 600 mL of water before the deck reaches the waterline. Real ships differ, and they stop loading long before that.</li>
-              <li>Fresh water only. Salt water is a little denser, so ships float slightly higher in the ocean.</li>
-            </ul>
-      </details>
 
       <div class="check-card qc" id="ship-challenge" data-correct="1">
-          <div class="check-eyebrow">Challenge · Not graded</div>
-          <div class="check-q" id="ship-challenge-q">How much cargo can this ship carry before it sinks?</div>
+          <div class="check-eyebrow">Cargo Challenge · Check your answer</div>
+          <div class="check-q" id="ship-challenge-q">The empty ship has a mass of 200 g. What is the maximum cargo mass it can carry without sinking?</div>
           <div class="check-options ship-challenge-options" role="group" aria-labelledby="ship-challenge-q">
-            <button class="check-opt" type="button" data-fb="Not quite. Load 300 g of cargo and the ship still floats with room to spare. Keep loading and watch the deck. Try again.">300 g</button>
-            <button class="check-opt" type="button" data-fb="Correct! 200 g of ship + 400 g of cargo = 600 g, the most water (600 mL) this hull can push aside. One more crate and it floods.">400 g</button>
-            <button class="check-opt" type="button" data-fb="Not quite. 600 g is the most the whole ship can push aside, but the empty ship already uses 200 g of that. Try again.">600 g</button>
+            <button class="check-opt" type="button" data-fb="Not quite. With 300 g of cargo the total mass is 500 g, so the ship still floats with room to spare. Keep loading and watch the deck. Try again.">300 g</button>
+            <button class="check-opt" type="button" data-fb="Correct! The 200 g ship + 400 g of cargo = 600 g total, the most water (600 mL) this hull can push aside. One more 50 g crate and it sinks.">400 g</button>
+            <button class="check-opt" type="button" data-fb="Not quite. 600 g is the maximum total mass of ship and cargo together. The empty ship already uses 200 g of that, so the cargo limit is less. Try again.">600 g</button>
           </div>
-          <div class="tm-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
+          <div class="ship-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
+      </div>
+      <div class="ship-about" id="ship-about">
+        <h3 class="ship-about-title">Why does it float?</h3>
+        <p class="ship-about-lead">A ship floats because of <strong>buoyancy</strong>, the upward force of water.</p>
+        <ul class="ship-about-list">
+          <li><strong>Displacement:</strong> A ship pushes water out of the way as it sinks lower.</li>
+          <li><strong>Balance:</strong> A floating ship displaces water that weighs the same as the ship.</li>
+          <li><strong>Sinking:</strong> If the ship becomes too heavy to displace enough water, it sinks.</li>
+        </ul>
+        <p class="ship-about-note">The ship's wide, hollow hull helps it displace enough water to float.</p>
       </div>
     </div>
 
@@ -3052,34 +3080,57 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 <!-- ===== SHIP-LOADING INVESTIGATION (ungraded, nothing stored) =====
      Fresh water: 1 mL has a mass of about 1 g. While floating, the ship
      sinks until it pushes aside its own mass in water, so
-     water displaced (mL) = total mass (g). The hull can push aside at most
-     CAPACITY mL; any heavier and it floods and sinks. -->
+     water displaced (mL) = total mass (g). The underwater part of the hull
+     is a straight-sided box, so its depth grows in step with the water
+     displaced. The hull can push aside at most CAPACITY mL; any heavier and
+     it floods and sinks, and only Reset raises it. -->
 <script>
 (function(){
   var lab = document.getElementById('ship-lab');
   if (!lab) return;
   var SHIP = 200, STEP = 50, CAPACITY = 600, MAX_CARGO = 450;
-  var SURFACE = 130, FLOOR = 244, HULL = 60, X = 100;
+  var SURFACE = 110, FLOOR = 238, HULL = 60, X = 30;
   var PX_PER_ML = HULL / CAPACITY;
-  var cargo = 0, sunk = false;
+  var cargo = 0, sunk = false, reachedLimit = false;
   var g = document.getElementById('ship-g');
   var crates = document.getElementById('ship-crates');
-  var disp = document.getElementById('ship-disp');
+  var sub = document.getElementById('ship-sub');
   var flood = document.getElementById('ship-flood');
   var svg = document.getElementById('ship-svg');
   var add = document.getElementById('ship-add');
   var remove = document.getElementById('ship-remove');
+  var reset = document.getElementById('ship-reset');
   var out = {
     total: document.getElementById('ship-total'),
+    cargo: document.getElementById('ship-cargo'),
     vol: document.getElementById('ship-vol'),
-    wmass: document.getElementById('ship-wmass'),
     state: document.getElementById('ship-state')
   };
   var discover = document.getElementById('ship-discover');
+  var takeaway = document.getElementById('ship-takeaway');
   var sr = document.getElementById('ship-announce');
   var note = document.getElementById('ship-predict-note');
   var preds = [].slice.call(document.querySelectorAll('#qp-ship .ship-pred'));
   var choice = null, changed = false, checked = false;
+  var NS = 'http://www.w3.org/2000/svg';
+
+  /* Crates: two rows of five between the bridge and the bow. */
+  for (var i = 0; i < MAX_CARGO / STEP; i++) {
+    var c = document.createElementNS(NS, 'g');
+    c.setAttribute('class', 'ship-crate');
+    c.setAttribute('transform', 'translate(' + (46 + (i % 5) * 28) + ',' + (i < 5 ? -20 : -40) + ')');
+    var box = document.createElementNS(NS, 'rect');
+    box.setAttribute('width', 26); box.setAttribute('height', 19); box.setAttribute('rx', 2);
+    box.setAttribute('fill', '#f5c842'); box.setAttribute('stroke', '#a87f12'); box.setAttribute('stroke-width', 1.5);
+    var label = document.createElementNS(NS, 'text');
+    label.setAttribute('x', 13); label.setAttribute('y', 13); label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('font-size', 8); label.setAttribute('font-weight', 900); label.setAttribute('font-family', 'Nunito, sans-serif');
+    label.setAttribute('fill', '#3a2a00');
+    label.textContent = '50 g';
+    c.appendChild(box); c.appendChild(label);
+    crates.appendChild(c);
+  }
+
   /* The prediction never gates the ship. Once a prediction exists and the
      cargo has changed, the prediction is checked one time. */
   function checkPrediction(){
@@ -3096,20 +3147,6 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     });
   });
 
-  for (var i = 0; i < MAX_CARGO / STEP; i++) {
-    var c = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    c.setAttribute('x', 8 + (i % 5) * 27);
-    c.setAttribute('y', i < 5 ? -18 : -37);
-    c.setAttribute('width', 24);
-    c.setAttribute('height', 17);
-    c.setAttribute('rx', 2);
-    c.setAttribute('fill', '#f5c842');
-    c.setAttribute('stroke', '#b8901f');
-    c.setAttribute('stroke-width', 1.5);
-    c.setAttribute('class', 'ship-crate');
-    crates.appendChild(c);
-  }
-
   function say(msg){
     sr.textContent = '';
     setTimeout(function(){ sr.textContent = msg; }, 100);
@@ -3120,39 +3157,45 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 
   function render(announce){
     var total = SHIP + cargo;
-    var draft, msg;
+    var n = cargo / STEP;
+    var msg;
     sunk = total > CAPACITY;
-    [].forEach.call(crates.children, function(el, i){ el.style.visibility = i < cargo / STEP ? 'visible' : 'hidden'; });
+    var revealed = false;
+    if (total >= CAPACITY && !reachedLimit) { reachedLimit = true; revealed = true; }
+    [].forEach.call(crates.children, function(el, i){ el.style.visibility = i < n ? 'visible' : 'hidden'; });
+    out.total.textContent = total + ' g';
+    out.cargo.textContent = SHIP + ' g ship + ' + cargo + ' g cargo';
+    lab.classList.toggle('is-sunk', sunk);
+    lab.classList.toggle('is-full', total === CAPACITY);
     if (sunk) {
-      g.style.transform = 'translate(' + X + 'px, ' + (FLOOR - HULL - 2) + 'px) rotate(3deg)';
+      g.style.transform = 'translate(' + X + 'px, ' + (FLOOR - HULL - 4) + 'px) rotate(2deg)';
       flood.setAttribute('opacity', '1');
-      disp.setAttribute('visibility', 'hidden');
+      sub.setAttribute('visibility', 'hidden');
       out.vol.textContent = 'Not enough (600 mL max)';
-      out.wmass.textContent = 'Less than ' + total + ' g';
-      out.state.textContent = 'Overloaded: sinking';
-      msg = total + ' g of ship would need ' + total + ' mL of water pushed aside, but this hull can only push aside 600 mL. Water floods over the deck and the ship sinks. Press Reset to try again.';
-      svg.setAttribute('aria-label', 'The overloaded cargo ship has flooded and rests on the bottom.');
+      out.state.textContent = 'Overloaded!';
+      msg = 'The ship cannot push aside enough water to hold up ' + total + ' g. Water floods in and it sinks. Press Reset to try again.';
+      svg.setAttribute('aria-label', 'The overloaded cargo ship has flooded and sunk to the bottom.');
     } else {
-      draft = total * PX_PER_ML;
+      var draft = total * PX_PER_ML;
       g.style.transform = 'translate(' + X + 'px, ' + (SURFACE + draft - HULL) + 'px)';
       flood.setAttribute('opacity', '0');
-      disp.setAttribute('visibility', 'visible');
-      disp.setAttribute('y', HULL - draft);
-      disp.setAttribute('height', draft);
+      sub.setAttribute('visibility', 'visible');
+      sub.setAttribute('y', HULL - draft);
+      sub.setAttribute('height', draft);
       out.vol.textContent = total + ' mL';
-      out.wmass.textContent = total + ' g';
       out.state.textContent = total === CAPACITY ? 'At capacity' : 'Floating';
       msg = total === CAPACITY
-        ? 'The ship pushes aside 600 mL of water, the most this hull can. Its deck is at the waterline.'
-        : (cargo === 0 ? 'The empty ship pushes aside ' + total + ' mL of water, which has a mass of ' + total + ' g.'
-                       : 'More cargo makes the ship sink lower and push aside more water: ' + total + ' mL.');
-      svg.setAttribute('aria-label', 'Cargo ship with ' + (cargo / STEP) + (cargo / STEP === 1 ? ' crate' : ' crates') + ', floating with ' + total + ' mL of water pushed aside.');
+        ? 'The ship pushes aside 600 mL of water, the most this hull can. One more crate is too many.'
+        : (cargo === 0 ? 'The empty ship floats, pushing aside ' + total + ' mL of water.'
+                       : 'More cargo, lower ship, more water pushed aside: ' + total + ' mL.');
+      svg.setAttribute('aria-label', 'Cargo ship with ' + n + (n === 1 ? ' crate' : ' crates') + ', floating lower as cargo is added, with ' + total + ' mL of water pushed aside.');
     }
-    out.total.textContent = total + ' g';
     discover.textContent = msg;
+    takeaway.hidden = !reachedLimit;
     setDisabled(add, sunk);
     setDisabled(remove, sunk || cargo === 0);
-    if (announce) say('Total mass ' + total + ' g. ' + msg);
+    reset.classList.toggle('ship-reset-urgent', sunk);
+    if (announce) say('Ship mass ' + total + ' g. ' + msg + (revealed ? ' Takeaway: ' + takeaway.textContent.replace(/^Takeaway:\s*/, '') : ''));
   }
 
   add.addEventListener('click', function(){
@@ -3165,10 +3208,13 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
   remove.addEventListener('click', function(){
     if (remove.getAttribute('aria-disabled') === 'true') return;
     cargo -= STEP;
+    changed = true;
     render(true);
+    checkPrediction();
   });
-  document.getElementById('ship-reset').addEventListener('click', function(){
+  reset.addEventListener('click', function(){
     cargo = 0;
+    reachedLimit = false;
     render(false);
     say('Reset. The empty ship has a mass of 200 g and pushes aside 200 mL of water.');
   });
