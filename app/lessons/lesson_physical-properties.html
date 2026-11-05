@@ -831,7 +831,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .dz-experiment { margin-top: 0.6rem; animation: predictFadeUp 0.35s ease both; }
 .dz-experiment[hidden] { display: none; }
 .dz-tank-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-bottom: 0.6rem; }
-.dz-drop, .ship-btn {
+.dz-drop, .ship-btn, .pt-go {
   min-height: 48px;
   padding: 0.6rem 1.2rem;
   border-radius: 12px;
@@ -923,48 +923,169 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   .ship-pred.check-opt { font-size: 0.82rem; padding: 0.35rem 0.3rem; }
 }
 
-/* ── PROPERTY FAMILY CARDS ── */
-.prop-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.8rem;
-  margin-bottom: 1.4rem;
+/* ── PROPERTY TEST BENCH: scratch, circuit, heat (ungraded, nothing stored) ──
+   Three short investigations, each with its own visual mechanism. */
+.pt-instr { margin: 0 0 0.9rem; font-size: 1.02rem; line-height: 1.5; color: var(--text); max-width: 760px; }
+.pt-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1rem 1.4rem; align-items: start; }
+@media (max-width: 760px) { .pt-layout { grid-template-columns: minmax(0, 1fr); } }
+.pt-figure { margin: 0; min-width: 0; }
+.pt-svg { display: block; width: 100%; height: auto; border-radius: 12px; background: linear-gradient(#20344a, #1a2a3c); }
+.pt-side { min-width: 0; }
+.pt-label { margin: 0 0 0.35rem; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple); }
+.pt-chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.6rem), 1fr)); gap: 0.4rem; margin: 0 0 0.8rem; }
+.pt-chip.check-opt { min-height: 44px; padding: 0.45rem 0.6rem; gap: 0.45rem; justify-content: center; text-align: center; font-size: 0.95rem; line-height: 1.25; }
+.pt-chip.check-opt[aria-pressed="true"] { border-color: var(--gold); background: rgba(245,200,66,0.14); color: var(--gold); }
+.pt-swatch { flex: none; width: 0.95rem; height: 0.95rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.4); }
+.pt-go { width: 100%; }
+.pt-go[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+.pt-fb { margin: 0.7rem 0 0; padding: 0.6rem 0.85rem; border-radius: 10px; font-size: 1rem; line-height: 1.5; font-weight: 700; color: var(--text); background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+.pt-fb:empty { display: none; }
+.pt-fb.yes { background: rgba(46,204,113,0.1); border-color: rgba(46,204,113,0.35); color: #a8e6c4; }
+.pt-fb.no { background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); color: #f3dc9a; }
+.pt-note { margin: 0.45rem 0 0; font-size: 0.9rem; line-height: 1.45; color: var(--text-muted); }
+.hs-lab .pt-chips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.hs-lab .pt-chips.hs-tools { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 480px) { .hs-lab .pt-chips.hs-tools { grid-template-columns: minmax(0, 1fr); } }
+.hs-tool.hs-moving { transition: transform 1s ease-in-out; }
+#hs-scratch.hs-moving { transition: stroke-dashoffset 1s ease-in-out; }
+/* Height-aware: on short screens the circuit shrinks so the controls and
+   feedback stay on screen with it. 1.579 is the drawing's width-to-height ratio. */
+.ec-figure { max-width: clamp(300px, calc((100vh - 480px) * 1.579), 500px); margin: 0 auto; }
+.mlab-card.ec-lab, .mlab-card.th-lab { padding-top: 1.2rem; padding-bottom: 1.2rem; }
+.ec-lab .pt-instr, .th-lab .pt-instr { margin-bottom: 0.6rem; }
+.ec-controls { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 0.6rem; align-items: end; margin-top: 0.6rem; }
+.ec-controls .pt-chips { margin: 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.2rem), 1fr)); }
+@media (max-width: 720px) { .ec-controls { grid-template-columns: minmax(0, 1fr); } }
+@media (min-width: 900px) { .ec-controls .pt-chips { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+/* Feedback always holds a message and reserves two lines, so testing or
+   switching materials never pushes the rest of the page up or down. */
+.ec-lab .pt-fb { min-height: calc(3em + 1.2rem + 2px); }
+@media (max-width: 480px) { .ec-lab .pt-fb { min-height: calc(6em + 1.2rem + 2px); } }
+@media (min-width: 761px) and (max-width: 1100px) { .th-lab .pt-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.ec-glow { transition: opacity 0.4s ease; }
+.ec-wire { transition: stroke 0.4s ease; }
+.th-readout { display: grid; gap: 0.15rem; margin: 0 0 0.5rem; padding: 0.45rem 0.8rem; border-radius: 10px; background: var(--dark); border: 1px solid var(--border); }
+.th-readout > div { display: flex; justify-content: space-between; align-items: baseline; gap: 0.8rem; }
+.th-readout span { font-size: 1rem; font-weight: 800; color: var(--text-muted); }
+.th-readout strong { font-family: 'Orbitron', sans-serif; font-size: 1.15rem; font-weight: 900; color: var(--orange); }
+.th-readout .th-far { font-family: 'Nunito', sans-serif; font-size: 1.1rem; }
+.th-far.is-cool { color: #7cc8f8; }
+.th-far.is-warm { color: var(--gold); }
+.th-far.is-hot { color: #ff8f80; }
+.th-buttons { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 0.45rem; }
+.th-buttons .pt-go { font-size: 0.95rem; padding: 0.5rem 0.6rem; line-height: 1.2; }
+.th-buttons .pp-reset { line-height: 1.2; padding: 0.4rem 0.6rem; }
+@media (max-width: 480px) { .th-buttons { grid-template-columns: minmax(0, 1fr); } }
+.th-results-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; margin: 0.5rem 0 0.3rem; }
+.th-results-head .pt-label { margin: 0; }
+.th-reset-all { font-size: 0.85rem; padding: 0.3rem 0.8rem; color: var(--text-muted); }
+/* All four materials always have a row, so results never resize the card. */
+.th-results { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.3rem; }
+@media (max-width: 480px) { .th-results { grid-template-columns: minmax(0, 1fr); } }
+.th-results li { padding: 0.22rem 0.6rem; line-height: 1.35; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid transparent; font-size: 0.95rem; color: var(--text-muted); }
+.th-results li strong { color: var(--text); }
+.th-results li span { display: block; }
+.th-tag { margin-left: 0.3rem; font-size: 0.7rem; font-style: normal; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
+.th-tag:empty { display: none; }
+.th-results li.is-testing { border-color: rgba(245,200,66,0.35); }
+.th-results li.is-done span { color: var(--text); }
+.th-discover { margin: 0.4rem 0 0; min-height: 2.9em; font-size: 0.95rem; line-height: 1.45; color: var(--text); }
+.th-discover strong { color: var(--gold); }
+.th-discover.th-wait { color: var(--text-muted); font-style: italic; }
+.th-liquid { transition: y 0.4s ease, height 0.4s ease; }
+@media (prefers-reduced-motion: reduce) { .hs-tool.hs-moving, #hs-scratch.hs-moving, .ec-glow, .ec-wire, .th-liquid { transition: none; } }
+
+/* Magnet, melting, and press investigations: same bench shell. Feedback and
+   discovery lines reserve their height so nothing below them moves. */
+.mlab-card.mg-lab, .mlab-card.mp-lab, .mlab-card.ml-lab, .mlab-card.dw-lab { padding-top: 1.2rem; padding-bottom: 1.2rem; }
+.mg-lab .pt-instr, .mp-lab .pt-instr, .ml-lab .pt-instr, .dw-lab .pt-instr { margin-bottom: 0.6rem; }
+.pt-actions { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 0.45rem; }
+.pt-actions .pt-go { padding: 0.5rem 0.6rem; line-height: 1.2; }
+.pt-actions .pp-reset { line-height: 1.2; padding: 0.4rem 0.6rem; }
+.pt-fb.pt-fb-fixed { margin-top: 0.55rem; min-height: calc(3em + 1.2rem + 2px); }
+.pt-fb.pt-fb-fixed:empty { display: block; }
+.pt-discover { margin: 0.4rem 0 0; min-height: 2.9em; font-size: 0.95rem; line-height: 1.45; color: var(--text); }
+.pt-discover strong { color: var(--gold); }
+.pt-discover.pt-wait { color: var(--text-muted); font-style: italic; }
+.mg-chips, .dw-chips, .mp-chips { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ml-chips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.mg-magnet, .mg-sample, .ml-ram, .ml-solid, .ml-piece, .dw-grip, .dw-tip, .dw-rod { transform-box: view-box; }
+.dw-rod { transform-origin: 172px 80px; }
+.dw-shard { transform-box: fill-box; transform-origin: center; }
+.mg-magnet.pt-moving, .mg-sample.pt-moving { transition: transform 0.7s ease-in-out; }
+.mg-sample.pt-moving { transition-delay: 0.45s; transition-duration: 0.3s; }
+.ml-solid { transform-origin: 180px 138px; }
+.ml-piece { transform-box: fill-box; transform-origin: center; }
+.mp-readout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.6rem; margin: 0 0 0.5rem; padding: 0.4rem 0.8rem; border-radius: 10px; background: var(--dark); border: 1px solid var(--border); }
+.mp-readout > div { display: flex; flex-direction: column; gap: 0.05rem; }
+.mp-readout span { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); }
+.mp-readout strong { font-family: 'Orbitron', sans-serif; font-size: 1.15rem; font-weight: 900; color: var(--orange); }
+.mp-readout .mp-state { font-family: 'Nunito', sans-serif; }
+.mp-state.is-solid { color: #7cc8f8; }
+.mp-state.is-melting { color: var(--gold); }
+.mp-state.is-liquid { color: #a8e6c4; }
+.mp-results { margin: 0.5rem 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.3rem; }
+.mp-results li { padding: 0.25rem 0.5rem; line-height: 1.3; border-radius: 8px; background: rgba(255,255,255,0.04); font-size: 0.88rem; color: var(--text-muted); }
+.mp-results li strong, .mp-results li span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mp-results li strong { color: var(--text); }
+.mp-results li.is-done span { color: var(--text); }
+.mp-discover { min-height: 4.35em; }
+@media (min-width: 761px) { .mp-lab .pt-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.mp-step-row { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0.5rem; }
+.mp-step-row .pt-label { margin: 0; }
+.mp-steps { flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1.5px solid var(--check-border); border-radius: 10px; overflow: hidden; }
+.mp-step { min-height: 44px; border: 0; background: transparent; color: var(--text); font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 900; cursor: pointer; }
+.mp-step + .mp-step { border-left: 1.5px solid var(--check-border); }
+.mp-step[aria-pressed="true"] { background: rgba(245,200,66,0.14); color: var(--gold); }
+.mp-step:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
+#mp-solid, #mp-puddle, #mp-glint, #mp-liquid { transition: y 0.4s ease, height 0.4s ease, width 0.4s ease, x 0.4s ease, fill 0.4s ease; }
+#mp-coil, #mp-waves { transition: stroke 0.4s ease, opacity 0.4s ease; }
+@media (min-width: 761px) and (max-width: 1100px) { .mg-lab .pt-layout, .mp-lab .pt-layout, .ml-lab .pt-layout, .dw-lab .pt-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (min-width: 481px) and (max-width: 760px) { .mg-lab .pt-figure, .mp-lab .pt-figure, .ml-lab .pt-figure, .dw-lab .pt-figure { max-width: 460px; margin: 0 auto; } }
+@media (max-width: 480px) {
+  .mg-chips, .dw-chips, .mp-chips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mp-results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pt-fb.pt-fb-fixed { min-height: calc(4.5em + 1.2rem + 2px); }
 }
-@media (max-width: 860px) { .prop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) {
+  .mg-magnet.pt-moving, .mg-sample.pt-moving, .ml-ram, .ml-solid, .ml-piece, .dw-grip, .dw-tip, .dw-rod, #dw-wire, .dw-shard,
+  #mp-solid, #mp-puddle, #mp-glint, #mp-liquid, #mp-coil, #mp-waves { transition: none; }
+}
+
+/* ── PROPERTY FAMILY CARDS ── */
+/* Eight properties in three behavior groups. Wide screens: force (2x2) on
+   the left, heat and electricity/magnets stacked on the right. */
+.pg-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.1rem 1.4rem; align-items: start; margin: 0 0 1.6rem; }
+.pg-side { display: grid; gap: 1.1rem; min-width: 0; }
+.pg-group { min-width: 0; padding-top: 0.6rem; border-top: 1px solid var(--prop-border); }
+.pg-head { margin: 0 0 0.55rem; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.35; color: var(--text-muted); }
+.pg-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 0.6rem; }
+@media (max-width: 760px) { .pg-wrap { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) {
+  .pg-cards { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
+  .pg-cards .prop-card { padding: 0.55rem 0.8rem 0.6rem; }
+  .pg-cards .prop-card-ex { margin-top: 0.15rem; }
+}
 .prop-card {
   background: var(--prop-dim);
   border: 1px solid var(--prop-border);
-  border-radius: 16px;
-  padding: 1rem 0.9rem 0.95rem;
+  border-radius: 14px;
+  padding: 0.75rem 0.9rem 0.8rem;
   min-width: 0;
   overflow-wrap: break-word;
 }
-.prop-card-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
-.prop-card-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
 .prop-card-name {
+  margin: 0 0 0.25rem;
   font-family: 'Fredoka One', cursive;
   font-weight: 400;
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   line-height: 1.25;
   color: var(--purple);
-  min-width: 0;
 }
-.prop-card-def { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; }
-.prop-card-def strong { color: var(--text); }
-.prop-card-ex { margin-top: 0.4rem; font-size: 0.88rem; font-weight: 800; color: var(--text); }
-@media (max-width: 480px) {
-  .prop-grid { gap: 0.5rem; }
-  .prop-card { padding: 0.8rem 0.7rem; }
-  /* Icon sits above the name, so long single words like "Conductivity"
-     keep the full card width instead of breaking mid-word. */
-  .prop-card-top { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
-  .prop-card-name { font-size: 0.98rem; }
-  .prop-card-def { font-size: 0.9rem; }
-}
-.lookalike.name-it { max-width: none; margin: 0 0 2rem; padding: 1rem 1.3rem; }
-.lookalike ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 0.3rem 1rem; }
-.lookalike li { font-size: 1rem; line-height: 1.5; color: var(--text); }
-.lookalike li strong { color: var(--gold); }
+.prop-card-def { margin: 0; font-size: 0.97rem; line-height: 1.45; color: var(--text); }
+.prop-card-ex { margin: 0.3rem 0 0; font-size: 0.86rem; line-height: 1.4; color: var(--text-muted); }
+.pg-remember { margin: 0.55rem 0 0; font-size: 0.95rem; line-height: 1.5; color: var(--text-muted); }
+.pg-remember strong { color: var(--gold); }
 
 /* ── MYSTERY CUBE INVESTIGATION (ungraded, nothing stored) ── */
 .id-lab { border-color: var(--prop-border); }
@@ -2051,56 +2172,558 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <p>A <strong>chemical property</strong> is different: you can only observe it when a material changes into new substances, like wood burning to ash or iron rusting.</p>
     </div>
 
-    <div class="prop-grid">
-      <div class="prop-card">
-        <div class="prop-card-top"><span class="prop-card-icon" aria-hidden="true">🤸</span><h3 class="prop-card-name">Flexibility</h3></div>
-        <div class="prop-card-def">Bends <strong>without breaking</strong>.</div>
-        <div class="prop-card-ex">Garden hose</div>
+    <!-- Property families: eight properties grouped by how materials
+         behave (force, heat, electricity and magnets). -->
+    <div class="pg-wrap">
+      <div class="pg-group" role="group" aria-labelledby="pg-force-h">
+        <h3 class="pg-head" id="pg-force-h">Force &amp; Shape</h3>
+        <div class="pg-cards pg-cards-4">
+        <div class="prop-card">
+          <h4 class="prop-card-name">Flexibility</h4>
+          <p class="prop-card-def">Bends without breaking.</p>
+          <p class="prop-card-ex">Example: Garden hose</p>
+        </div>
+        <div class="prop-card">
+          <h4 class="prop-card-name">Malleability</h4>
+          <p class="prop-card-def">Can be flattened without breaking.</p>
+          <p class="prop-card-ex">Example: Aluminum foil</p>
+        </div>
+        <div class="prop-card">
+          <h4 class="prop-card-name">Ductility</h4>
+          <p class="prop-card-def">Can be drawn into a wire.</p>
+          <p class="prop-card-ex">Example: Copper wire</p>
+        </div>
+        <div class="prop-card">
+          <h4 class="prop-card-name">Hardness</h4>
+          <p class="prop-card-def">Resists scratching.</p>
+          <p class="prop-card-ex">Example: Diamond drill tip</p>
+        </div>
+        </div>
+        <p class="pg-remember"><strong>Remember:</strong> Flexibility = bend · Ductility = wire · Malleability = flatten</p>
       </div>
-      <div class="prop-card">
-        <div class="prop-card-top"><span class="prop-card-icon" aria-hidden="true">🧵</span><h3 class="prop-card-name">Ductility</h3></div>
-        <div class="prop-card-def">Can be <strong>stretched into a thin wire</strong>.</div>
-        <div class="prop-card-ex">Copper wiring</div>
-      </div>
-      <div class="prop-card">
-        <div class="prop-card-top"><span class="prop-card-icon" aria-hidden="true">💎</span><h3 class="prop-card-name">Hardness</h3></div>
-        <div class="prop-card-def">Resists <strong>scratching or denting</strong>.</div>
-        <div class="prop-card-ex">Diamond drill tip</div>
-      </div>
-      <div class="prop-card">
-        <div class="prop-card-top"><span class="prop-card-icon" aria-hidden="true">🌡️</span><h3 class="prop-card-name">Melting Point</h3></div>
-        <div class="prop-card-def">The temperature where a <strong>solid becomes a liquid</strong>.</div>
-        <div class="prop-card-ex">Ice melts at 0°C</div>
-      </div>
-      <div class="prop-card">
-        <div class="prop-card-top"><span class="prop-card-icon" aria-hidden="true">🔥</span><h3 class="prop-card-name">Thermal Conductivity</h3></div>
-        <div class="prop-card-def">How easily <strong>heat moves through</strong> it.</div>
-        <div class="prop-card-ex">Metal pan heats fast</div>
-      </div>
-      <div class="prop-card">
-        <div class="prop-card-top"><span class="prop-card-icon" aria-hidden="true">⚡</span><h3 class="prop-card-name">Electrical Conductivity</h3></div>
-        <div class="prop-card-def">How easily <strong>electric current flows</strong> through it.</div>
-        <div class="prop-card-ex">Metal wires</div>
-      </div>
-      <div class="prop-card">
-        <div class="prop-card-top"><span class="prop-card-icon" aria-hidden="true">🧲</span><h3 class="prop-card-name">Magnetism</h3></div>
-        <div class="prop-card-def">Is <strong>attracted to a magnet</strong>.</div>
-        <div class="prop-card-ex">Iron and steel</div>
-      </div>
-      <div class="prop-card">
-        <div class="prop-card-top"><span class="prop-card-icon" aria-hidden="true">🔨</span><h3 class="prop-card-name">Malleability</h3></div>
-        <div class="prop-card-def">Can be <strong>hammered or pressed flat</strong> without breaking.</div>
-        <div class="prop-card-ex">Aluminum foil</div>
+      <div class="pg-side">
+        <div class="pg-group" role="group" aria-labelledby="pg-heat-h">
+          <h3 class="pg-head" id="pg-heat-h">Heat</h3>
+          <div class="pg-cards">
+          <div class="prop-card">
+            <h4 class="prop-card-name">Thermal Conductivity</h4>
+            <p class="prop-card-def">How easily heat moves through a material.</p>
+            <p class="prop-card-ex">Example: Metal pan</p>
+          </div>
+          <div class="prop-card">
+            <h4 class="prop-card-name">Melting Point</h4>
+            <p class="prop-card-def">The temperature at which a solid becomes a liquid.</p>
+            <p class="prop-card-ex">Example: Ice melts at 0°C</p>
+          </div>
+          </div>
+        </div>
+        <div class="pg-group" role="group" aria-labelledby="pg-elec-h">
+          <h3 class="pg-head" id="pg-elec-h">Electricity &amp; Magnetism</h3>
+          <div class="pg-cards">
+          <div class="prop-card">
+            <h4 class="prop-card-name">Electrical Conductivity</h4>
+            <p class="prop-card-def">How easily electric current flows through a material.</p>
+            <p class="prop-card-ex">Example: Copper wire</p>
+          </div>
+          <div class="prop-card">
+            <h4 class="prop-card-name">Magnetism</h4>
+            <p class="prop-card-def">Whether a material is attracted to a magnet.</p>
+            <p class="prop-card-ex">Example: Iron or steel</p>
+          </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="name-it lookalike">
-      <div class="name-it-label">Watch out for look-alikes</div>
-      <ul>
-        <li><strong>Ductility:</strong> stretch into a wire</li>
-        <li><strong>Malleability:</strong> flatten into a sheet</li>
-        <li><strong>Flexibility:</strong> bend and spring back</li>
-      </ul>
+
+    <!-- Property Test Bench: seven short investigations for hardness,
+         electrical and thermal conductivity, magnetism, melting point,
+         malleability, and ductility. Every result
+         comes from the classroom models in their scripts. Ungraded;
+         nothing is stored or sent. -->
+    <div class="mlab-card prop-card-lab hs-lab" id="hs-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Investigation · Hardness</span>
+        <h3 class="mlab-title">Can You Scratch It?</h3>
+      </div>
+      <p class="pt-instr">Choose a material and a tool. Test whether the tool leaves a scratch.</p>
+      <div class="pt-layout">
+        <figure class="pt-figure">
+          <svg class="pt-svg" id="hs-svg" viewBox="0 30 320 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+            <defs>
+              <linearGradient id="hs-g-wax" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8efd4"/><stop offset="1" stop-color="#e2cd98"/></linearGradient>
+              <linearGradient id="hs-g-plastic" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#55aef5"/><stop offset="1" stop-color="#2163c0"/></linearGradient>
+              <linearGradient id="hs-g-alu" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfd5dc"/><stop offset="0.5" stop-color="#eef1f4"/><stop offset="1" stop-color="#aeb6bf"/></linearGradient>
+              <linearGradient id="hs-g-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgba(200,240,255,0.5)"/><stop offset="1" stop-color="rgba(120,190,215,0.28)"/></linearGradient>
+              <radialGradient id="hs-g-copper" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#f6b07a"/><stop offset="0.55" stop-color="#c8692f"/><stop offset="1" stop-color="#8a3f18"/></radialGradient>
+              <linearGradient id="hs-g-steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7f8893"/><stop offset="0.5" stop-color="#eef1f4"/><stop offset="1" stop-color="#78818b"/></linearGradient>
+            </defs>
+            <g class="hs-mat" data-mat="wax">
+              <rect x="20" y="95" width="280" height="75" rx="12" fill="url(#hs-g-wax)" stroke="#c4a865" stroke-width="2"/>
+              <ellipse cx="90" cy="112" rx="40" ry="6" fill="#fff" opacity="0.35"/>
+              <text x="290" y="162" text-anchor="end" font-size="13" font-weight="900" fill="#6b5a2e">WAX</text>
+            </g>
+            <g class="hs-mat" data-mat="plastic">
+              <rect x="20" y="95" width="280" height="75" rx="16" fill="url(#hs-g-plastic)" stroke="#174a8f" stroke-width="2"/>
+              <rect x="34" y="101" width="252" height="9" rx="4.5" fill="#fff" opacity="0.28"/>
+              <text x="290" y="162" text-anchor="end" font-size="13" font-weight="900" fill="#fff">HARD PLASTIC</text>
+            </g>
+            <g class="hs-mat" data-mat="aluminum">
+              <rect x="20" y="95" width="280" height="75" rx="4" fill="url(#hs-g-alu)" stroke="#86909a" stroke-width="2"/>
+              <path d="M26 104 H294 M26 114 H294 M26 146 H294 M26 156 H294" stroke="#fff" stroke-width="1" opacity="0.45"/>
+              <text x="290" y="164" text-anchor="end" font-size="13" font-weight="900" fill="#3d454d">ALUMINUM</text>
+            </g>
+            <g class="hs-mat" data-mat="glass">
+              <rect x="20" y="95" width="280" height="75" rx="6" fill="url(#hs-g-glass)" stroke="#bdefff" stroke-width="2"/>
+              <path d="M40 160 L70 100 M58 160 L80 116 M230 160 L258 104" stroke="#fff" stroke-width="2" opacity="0.45" stroke-linecap="round"/>
+              <text x="290" y="162" text-anchor="end" font-size="13" font-weight="900" fill="#e2f8ff">GLASS</text>
+            </g>
+            <path id="hs-scratch" d="M60 132 l15 2 l15 -2 l15 2.5 l15 -1.5 l15 2 l15 -2 l15 1.5 l15 -2 l15 2 l15 -1.5 l15 2 l20 -1.5" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="200" stroke-dashoffset="200"/>
+            <g id="hs-tool" class="hs-tool">
+              <g class="hs-tl" data-tool="fingernail" transform="rotate(22)">
+                <rect x="-17" y="-96" width="34" height="98" rx="17" fill="#d9a07e" stroke="#a8714f" stroke-width="1.5"/>
+                <path d="M-9 -80 Q0 -76 9 -80 M-9 -72 Q0 -68 9 -72" stroke="#b9805e" stroke-width="1.2" fill="none"/>
+                <rect x="-12" y="-34" width="24" height="33" rx="10" fill="#f7ddd5" stroke="#d6a698" stroke-width="1.2"/>
+                <path d="M-10 -7 Q0 -1 10 -7" stroke="#fff" stroke-width="2.2" fill="none"/>
+              </g>
+              <g class="hs-tl" data-tool="coin">
+                <circle cx="0" cy="-26" r="26" fill="url(#hs-g-copper)" stroke="#7a3814" stroke-width="1.5"/>
+                <circle cx="0" cy="-26" r="20" fill="none" stroke="#a5531f" stroke-width="1.5"/>
+                <path d="M-15 -40 A18 18 0 0 1 4 -46" stroke="#ffd6b3" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.85"/>
+                <text x="0" y="-20" text-anchor="middle" font-size="15" font-weight="900" fill="#7a3814">1¢</text>
+              </g>
+              <g class="hs-tl" data-tool="nail" transform="rotate(28)">
+                <path d="M0 0 L-4.5 -14 V-84 H4.5 V-14 Z" fill="url(#hs-g-steel)" stroke="#5f6870" stroke-width="1"/>
+                <path d="M-4.5 -76 H4.5 M-4.5 -72 H4.5 M-4.5 -68 H4.5" stroke="#6c757e" stroke-width="1"/>
+                <rect x="-13" y="-92" width="26" height="8" rx="2.5" fill="url(#hs-g-steel)" stroke="#5f6870" stroke-width="1"/>
+              </g>
+            </g>
+          </svg>
+        </figure>
+        <div class="pt-side">
+          <div class="pt-label" id="hs-mat-l">Material to test</div>
+          <div class="pt-chips" role="group" aria-labelledby="hs-mat-l">
+            <button class="check-opt pt-chip hs-mat-btn" type="button" aria-pressed="true" data-mat="wax"><span class="pt-swatch" style="background:#efe0b4" aria-hidden="true"></span>Wax</button>
+            <button class="check-opt pt-chip hs-mat-btn" type="button" aria-pressed="false" data-mat="plastic"><span class="pt-swatch" style="background:#3a8ee6" aria-hidden="true"></span>Plastic</button>
+            <button class="check-opt pt-chip hs-mat-btn" type="button" aria-pressed="false" data-mat="aluminum"><span class="pt-swatch" style="background:#d7dce2" aria-hidden="true"></span>Aluminum</button>
+            <button class="check-opt pt-chip hs-mat-btn" type="button" aria-pressed="false" data-mat="glass"><span class="pt-swatch" style="background:rgba(190,235,250,0.55)" aria-hidden="true"></span>Glass</button>
+          </div>
+          <div class="pt-label" id="hs-tool-l">Scratch-testing tool</div>
+          <div class="pt-chips hs-tools" role="group" aria-labelledby="hs-tool-l">
+            <button class="check-opt pt-chip hs-tool-btn" type="button" aria-pressed="true" data-tool="fingernail"><span class="pt-swatch" style="background:#f2cfc4" aria-hidden="true"></span>Fingernail</button>
+            <button class="check-opt pt-chip hs-tool-btn" type="button" aria-pressed="false" data-tool="coin"><span class="pt-swatch" style="background:#c8692f;border-radius:50%" aria-hidden="true"></span>Copper coin</button>
+            <button class="check-opt pt-chip hs-tool-btn" type="button" aria-pressed="false" data-tool="nail"><span class="pt-swatch" style="background:#b8c0c8" aria-hidden="true"></span>Steel nail</button>
+          </div>
+          <button class="pt-go" id="hs-test" type="button">Test the Scratch</button>
+          <p class="pt-fb" id="hs-fb" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mlab-card prop-card-lab ec-lab" id="ec-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Investigation · Electrical Conductivity</span>
+        <h3 class="mlab-title">Will the Bulb Light Up?</h3>
+      </div>
+      <p class="pt-instr">Choose a material to complete the circuit.</p>
+      <figure class="pt-figure ec-figure">
+        <svg class="pt-svg" id="ec-svg" viewBox="0 -18 360 228" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+          <defs>
+            <radialGradient id="ec-g-glow"><stop offset="0" stop-color="#ffe680" stop-opacity="0.95"/><stop offset="0.45" stop-color="#ffd23f" stop-opacity="0.45"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient>
+          </defs>
+          <circle class="ec-glow" id="ec-halo" cx="180" cy="34" r="52" fill="url(#ec-g-glow)" opacity="0"/>
+          <path class="ec-wire" d="M60 99 V64 H166 M194 64 H300 V176 H228 M132 176 H60 V161" fill="none" stroke="#8fa3b8" stroke-width="4" stroke-linejoin="round"/>
+          <rect x="54" y="99" width="12" height="6" rx="1.5" fill="#c9ced6"/>
+          <rect x="42" y="105" width="36" height="56" rx="5" fill="#222b36" stroke="#8fa3b8" stroke-width="2"/>
+          <rect x="43" y="106" width="34" height="16" rx="4" fill="#f5c842"/>
+          <text x="60" y="119" text-anchor="middle" font-size="13" font-weight="900" fill="#222b36">+</text>
+          <text x="60" y="154" text-anchor="middle" font-size="15" font-weight="900" fill="#e8eef4">−</text>
+          <text x="86" y="137" font-size="12" font-weight="800" fill="#a9b8c8">Battery</text>
+          <rect x="166" y="56" width="28" height="18" rx="3" fill="#9aa4ae" stroke="#6c7680" stroke-width="1"/>
+          <path d="M168 62 H192 M168 68 H192" stroke="#6c7680" stroke-width="1"/>
+          <circle id="ec-glass" cx="180" cy="34" r="22" fill="#2c3d50" stroke="#a9b8c8" stroke-width="2"/>
+          <path id="ec-filament" d="M173 56 L175 38 Q180 28 185 38 L187 56" fill="none" stroke="#c9a46a" stroke-width="2"/>
+          <g class="ec-glow" id="ec-rays" opacity="0" stroke="#ffd23f" stroke-width="3" stroke-linecap="round">
+            <path d="M180 -6 V-14 M148 6 L141 -1 M212 6 L219 -1 M140 34 H131 M220 34 H229"/>
+          </g>
+          <text x="214" y="22" font-size="12" font-weight="800" fill="#a9b8c8">Bulb</text>
+          <rect x="128" y="168" width="10" height="16" rx="2" fill="#c9ced6"/>
+          <rect x="222" y="168" width="10" height="16" rx="2" fill="#c9ced6"/>
+          <rect id="ec-slot" x="142" y="164" width="76" height="24" rx="4" fill="none" stroke="#7a8fa6" stroke-width="1.5" stroke-dasharray="5 4"/>
+          <g id="ec-sample" visibility="hidden">
+            <rect id="ec-sample-rect" x="138" y="165" width="84" height="22" rx="4" stroke-width="1.5"/>
+            <text id="ec-sample-text" x="180" y="180" text-anchor="middle" font-size="11" font-weight="900"></text>
+          </g>
+          <text id="ec-gap-label" x="180" y="204" text-anchor="middle" font-size="12" font-weight="800" fill="#a9b8c8">Gap for the test material</text>
+        </svg>
+      </figure>
+      <div class="ec-controls">
+        <div>
+          <div class="pt-label" id="ec-mat-l">Material</div>
+          <div class="pt-chips" role="group" aria-labelledby="ec-mat-l">
+            <button class="check-opt pt-chip ec-mat-btn" type="button" aria-pressed="false" data-mat="copper"><span class="pt-swatch" style="background:#c87533" aria-hidden="true"></span>Copper</button>
+            <button class="check-opt pt-chip ec-mat-btn" type="button" aria-pressed="false" data-mat="aluminum"><span class="pt-swatch" style="background:#d7dce2" aria-hidden="true"></span>Aluminum</button>
+            <button class="check-opt pt-chip ec-mat-btn" type="button" aria-pressed="false" data-mat="plastic"><span class="pt-swatch" style="background:#3a8ee6" aria-hidden="true"></span>Plastic</button>
+            <button class="check-opt pt-chip ec-mat-btn" type="button" aria-pressed="false" data-mat="rubber"><span class="pt-swatch" style="background:#2b2b2b" aria-hidden="true"></span>Rubber</button>
+            <button class="check-opt pt-chip ec-mat-btn" type="button" aria-pressed="false" data-mat="wood"><span class="pt-swatch" style="background:#a0703c" aria-hidden="true"></span>Dry wood</button>
+          </div>
+        </div>
+        <button class="pt-go" id="ec-test" type="button" aria-disabled="true">Test Circuit</button>
+      </div>
+      <p class="pt-fb" id="ec-fb" aria-live="polite">Pick a material, then press Test Circuit.</p>
+      <p class="pt-note">Model: a small classroom battery. Very high voltage or wet wood can let some insulators carry current.</p>
+    </div>
+
+    <div class="mlab-card prop-card-lab th-lab" id="th-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Investigation · Thermal Conductivity</span>
+        <h3 class="mlab-title">Which Material Transfers Heat Fastest?</h3>
+      </div>
+      <p class="pt-instr">Heat one end of a material. Watch what happens at the other end.</p>
+      <div class="pt-label" id="th-mat-l">Material</div>
+      <div class="pt-chips" role="group" aria-labelledby="th-mat-l">
+        <button class="check-opt pt-chip th-mat-btn" type="button" aria-pressed="true" data-mat="copper"><span class="pt-swatch" style="background:#c87533" aria-hidden="true"></span>Copper</button>
+        <button class="check-opt pt-chip th-mat-btn" type="button" aria-pressed="false" data-mat="steel"><span class="pt-swatch" style="background:#9aa4ae" aria-hidden="true"></span>Steel</button>
+        <button class="check-opt pt-chip th-mat-btn" type="button" aria-pressed="false" data-mat="glass"><span class="pt-swatch" style="background:rgba(190,235,250,0.55)" aria-hidden="true"></span>Glass</button>
+        <button class="check-opt pt-chip th-mat-btn" type="button" aria-pressed="false" data-mat="wood"><span class="pt-swatch" style="background:#a0703c" aria-hidden="true"></span>Wood</button>
+      </div>
+      <div class="pt-layout">
+        <figure class="pt-figure">
+          <svg class="pt-svg" id="th-svg" viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+            <defs>
+              <linearGradient id="th-g-heat" x1="0" y1="0" x2="1" y2="0">
+                <stop id="th-s1" offset="0" stop-color="#ff3b1f" stop-opacity="0.95"/>
+                <stop id="th-s2" offset="0" stop-color="#ff9a3c" stop-opacity="0.75"/>
+                <stop id="th-s3" offset="0" stop-color="#ffcf6b" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <rect id="th-rod" x="60" y="77" width="244" height="30" rx="6" stroke-width="2"/>
+            <path id="th-grain" d="M70 86 Q150 82 230 87 T300 85 M70 98 Q160 102 240 96 T300 99" fill="none" stroke="#7a5228" stroke-width="1.5" opacity="0.7"/>
+            <rect x="60" y="77" width="244" height="30" rx="6" fill="url(#th-g-heat)"/>
+            <text id="th-rod-text" x="182" y="97" text-anchor="middle" font-size="12" font-weight="900"></text>
+            <g transform="translate(0,-13)">
+              <rect x="60" y="150" width="34" height="8" rx="2" fill="#5b6f82"/>
+              <path d="M77 150 C62 140 64 128 70 120 C74 128 78 130 79 121 C90 131 92 142 77 150 Z" fill="#ff8c32"/>
+              <path d="M77 149 C70 143 71 136 74 130 C77 136 80 137 80 131 C85 138 85 144 77 149 Z" fill="#ffd23f"/>
+            </g>
+            <text x="102" y="141" font-size="12" font-weight="800" fill="#a9b8c8">Heat</text>
+            <rect x="312" y="18" width="12" height="68" rx="6" fill="#e8eef4" opacity="0.9"/>
+            <path d="M326 30 H331 M326 44 H331 M326 58 H331 M326 72 H331" stroke="#a9b8c8" stroke-width="1.5"/>
+            <rect class="th-liquid" id="th-liquid" x="315" y="74" width="6" height="12" rx="3" fill="#e74c3c"/>
+            <circle cx="318" cy="92" r="11" fill="#e74c3c" stroke="#e8eef4" stroke-width="2"/>
+            <text x="318" y="12" text-anchor="middle" font-size="12" font-weight="800" fill="#a9b8c8">Far end</text>
+          </svg>
+          <figcaption class="pt-note">Every rod is the same size, starts at room temperature, and gets the same heat. This is a model, not a measurement.</figcaption>
+        </figure>
+        <div class="pt-side">
+          <div class="th-readout">
+            <div><span>Heating time</span><strong id="th-time">0 s</strong></div>
+            <div><span>Far end</span><strong class="th-far is-cool" id="th-far">Cool</strong></div>
+          </div>
+          <div class="th-buttons">
+            <button class="pt-go" id="th-heat" type="button">Apply 5 Seconds of Heat</button>
+            <button class="pp-reset" id="th-reset" type="button">Cool Down</button>
+          </div>
+          <div class="th-results-head">
+            <div class="pt-label" id="th-results-l">Experiment Results</div>
+            <button class="pp-reset th-reset-all" id="th-reset-all" type="button">Reset All</button>
+          </div>
+          <ul class="th-results" id="th-results" aria-labelledby="th-results-l">
+            <li data-mat="copper"><strong>Copper</strong> <em class="th-tag"></em> <span>Not tested</span></li>
+            <li data-mat="steel"><strong>Steel</strong> <em class="th-tag"></em> <span>Not tested</span></li>
+            <li data-mat="glass"><strong>Glass</strong> <em class="th-tag"></em> <span>Not tested</span></li>
+            <li data-mat="wood"><strong>Wood</strong> <em class="th-tag"></em> <span>Not tested</span></li>
+          </ul>
+          <p class="th-discover" id="th-discover"></p>
+          <p class="pp-sr" id="th-announce" aria-live="polite" aria-atomic="true"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mlab-card prop-card-lab mg-lab" id="mg-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Investigation · Magnetism</span>
+        <h3 class="mlab-title">Will It Stick?</h3>
+      </div>
+      <p class="pt-instr">Choose a material. Move the magnet close and see what happens.</p>
+      <div class="pt-layout">
+        <figure class="pt-figure">
+          <svg class="pt-svg" id="mg-svg" viewBox="0 30 360 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+            <defs>
+              <linearGradient id="mg-g-iron" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a7078"/><stop offset="1" stop-color="#3a3f45"/></linearGradient>
+              <linearGradient id="mg-g-steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a939d"/><stop offset="0.5" stop-color="#d9dee4"/><stop offset="1" stop-color="#7c858f"/></linearGradient>
+              <linearGradient id="mg-g-aluminum" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfd5dc"/><stop offset="0.5" stop-color="#f4f6f8"/><stop offset="1" stop-color="#b5bdc6"/></linearGradient>
+              <linearGradient id="mg-g-copper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8955a"/><stop offset="0.6" stop-color="#b8612b"/><stop offset="1" stop-color="#8a4519"/></linearGradient>
+              <linearGradient id="mg-g-plastic" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4fd18b"/><stop offset="1" stop-color="#1f9a58"/></linearGradient>
+            </defs>
+            <rect x="0" y="136" width="360" height="34" fill="#16222f"/>
+            <g id="mg-magnet" class="mg-magnet">
+              <path d="M140 66 H92 A30 30 0 0 0 92 126 H140" fill="none" stroke="#e0453a" stroke-width="20"/>
+              <path d="M124 66 H140 M124 126 H140" stroke="#d8dde3" stroke-width="20"/>
+              <text x="132" y="70.5" text-anchor="middle" font-size="12" font-weight="900" fill="#1d242b">N</text>
+              <text x="132" y="130.5" text-anchor="middle" font-size="12" font-weight="900" fill="#1d242b">S</text>
+              <text x="88" y="100" text-anchor="middle" font-size="12" font-weight="800" fill="#a9b8c8">Magnet</text>
+            </g>
+            <g id="mg-sample" class="mg-sample">
+              <rect id="mg-block" x="250" y="62" width="60" height="74" rx="4" stroke-width="2"/>
+              <rect id="mg-shine" x="256" y="68" width="8" height="62" rx="4" fill="#fff" opacity="0.22"/>
+              <text id="mg-label" x="280" y="158" text-anchor="middle" font-size="12" font-weight="900" fill="#e8eef4"></text>
+            </g>
+          </svg>
+          <figcaption class="pt-note">Model: ordinary steel, like a steel nail. Some stainless steels are only weakly attracted.</figcaption>
+        </figure>
+        <div class="pt-side">
+          <div class="pt-label" id="mg-mat-l">Material</div>
+          <div class="pt-chips mg-chips" role="group" aria-labelledby="mg-mat-l">
+            <button class="check-opt pt-chip mg-mat-btn" type="button" aria-pressed="true" data-mat="iron"><span class="pt-swatch" style="background:#50565d" aria-hidden="true"></span>Iron</button>
+            <button class="check-opt pt-chip mg-mat-btn" type="button" aria-pressed="false" data-mat="copper"><span class="pt-swatch" style="background:#c87533" aria-hidden="true"></span>Copper</button>
+            <button class="check-opt pt-chip mg-mat-btn" type="button" aria-pressed="false" data-mat="plastic"><span class="pt-swatch" style="background:#34b874" aria-hidden="true"></span>Plastic</button>
+            <button class="check-opt pt-chip mg-mat-btn" type="button" aria-pressed="false" data-mat="steel"><span class="pt-swatch" style="background:#b4bcc5" aria-hidden="true"></span>Steel</button>
+            <button class="check-opt pt-chip mg-mat-btn" type="button" aria-pressed="false" data-mat="aluminum"><span class="pt-swatch" style="background:#e4e8ec" aria-hidden="true"></span>Aluminum</button>
+          </div>
+          <div class="pt-actions">
+            <button class="pt-go" id="mg-test" type="button">Test Magnet</button>
+            <button class="pp-reset" id="mg-reset" type="button">Reset</button>
+          </div>
+          <p class="pt-fb pt-fb-fixed" id="mg-fb" aria-live="polite"></p>
+          <p class="pt-discover pt-wait" id="mg-discover"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mlab-card prop-card-lab mp-lab" id="mp-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Investigation · Melting Point</span>
+        <h3 class="mlab-title">When Will It Melt?</h3>
+      </div>
+      <p class="pt-instr">Choose a substance. Increase the temperature until it melts.</p>
+      <div class="pt-layout">
+        <figure class="pt-figure">
+          <svg class="pt-svg" id="mp-svg" viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+            <defs>
+              <linearGradient id="mp-g-bismuth" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d4d8de"/><stop offset="0.45" stop-color="#9aa1ab"/><stop offset="0.75" stop-color="#b7a9c4"/><stop offset="1" stop-color="#7d8590"/></linearGradient>
+              <linearGradient id="mp-g-bismuth-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#aeb5be"/><stop offset="0.5" stop-color="#eef1f4"/><stop offset="1" stop-color="#9aa1ab"/></linearGradient>
+              <linearGradient id="mp-g-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset="0.45" stop-color="#e8b923"/><stop offset="1" stop-color="#a87a10"/></linearGradient>
+              <linearGradient id="mp-g-gold-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff9f2e"/><stop offset="0.5" stop-color="#ffe27a"/><stop offset="1" stop-color="#f0a020"/></linearGradient>
+            </defs>
+            <g id="mp-waves" fill="none" stroke="#ff9a3c" stroke-width="2" stroke-linecap="round" opacity="0">
+              <path d="M126 92 q-5 -8 0 -16 q5 -8 0 -16 M214 92 q-5 -8 0 -16 q5 -8 0 -16"/>
+            </g>
+            <path d="M104 98 V136 Q104 142 110 142 H230 Q236 142 236 136 V98" fill="rgba(200,240,255,0.08)" stroke="#bdefff" stroke-width="2" stroke-linejoin="round"/>
+            <rect id="mp-puddle" x="106" y="136" width="128" height="4" rx="2"/>
+            <rect id="mp-solid" x="140" y="92" width="60" height="44" rx="5" stroke-width="2"/>
+            <rect id="mp-glint" x="146" y="98" width="7" height="30" rx="3.5" fill="#fff" opacity="0.35"/>
+            <text id="mp-name" x="170" y="40" text-anchor="middle" font-size="13" font-weight="900" fill="#e8eef4"></text>
+            <rect x="92" y="144" width="156" height="12" rx="4" fill="#2a3a4c" stroke="#5b6f82" stroke-width="1.5"/>
+            <path id="mp-coil" d="M104 150 H236" stroke="#5b6f82" stroke-width="3" stroke-dasharray="10 6" stroke-linecap="round"/>
+            <text x="170" y="168" text-anchor="middle" font-size="11" font-weight="800" fill="#a9b8c8">Heater</text>
+            <rect x="300" y="16" width="14" height="112" rx="7" fill="#e8eef4" opacity="0.9"/>
+            <path d="M316 28 H322 M316 48 H322 M316 68 H322 M316 88 H322 M316 108 H322" stroke="#a9b8c8" stroke-width="1.5"/>
+            <rect id="mp-liquid" x="304" y="112" width="6" height="16" rx="3" fill="#e74c3c"/>
+            <circle cx="307" cy="136" r="12" fill="#e74c3c" stroke="#e8eef4" stroke-width="2"/>
+            <text id="mp-temp-svg" x="307" y="166" text-anchor="middle" font-size="14" font-weight="900" fill="#ffcf6b"></text>
+          </svg>
+          <figcaption class="pt-note">Melting changes a substance's state, not what the substance is. Model values: oil and wax are mixtures, so they melt over a small range.</figcaption>
+          <ul class="mp-results" id="mp-results" aria-label="Melting results">
+            <li data-mat="ice"><strong>Ice</strong> <span>Not tested</span></li>
+            <li data-mat="oil"><strong>Coconut oil</strong> <span>Not tested</span></li>
+            <li data-mat="wax"><strong>Paraffin wax</strong> <span>Not tested</span></li>
+            <li data-mat="bismuth"><strong>Bismuth</strong> <span>Not tested</span></li>
+            <li data-mat="gold"><strong>Gold</strong> <span>Not tested</span></li>
+          </ul>
+          <p class="pt-discover pt-wait mp-discover" id="mp-discover"></p>
+        </figure>
+        <div class="pt-side">
+          <div class="pt-label" id="mp-mat-l">Substance</div>
+          <div class="pt-chips mp-chips" role="group" aria-labelledby="mp-mat-l">
+            <button class="check-opt pt-chip mp-mat-btn" type="button" aria-pressed="true" data-mat="ice"><span class="pt-swatch" style="background:#bfe9ff" aria-hidden="true"></span>Ice</button>
+            <button class="check-opt pt-chip mp-mat-btn" type="button" aria-pressed="false" data-mat="oil"><span class="pt-swatch" style="background:#f7f4ea" aria-hidden="true"></span>Coconut oil</button>
+            <button class="check-opt pt-chip mp-mat-btn" type="button" aria-pressed="false" data-mat="wax"><span class="pt-swatch" style="background:#efe0b4" aria-hidden="true"></span>Paraffin wax</button>
+            <button class="check-opt pt-chip mp-mat-btn" type="button" aria-pressed="false" data-mat="bismuth"><span class="pt-swatch" style="background:linear-gradient(135deg,#d4d8de,#9aa1ab 55%,#b7a9c4)" aria-hidden="true"></span>Bismuth</button>
+            <button class="check-opt pt-chip mp-mat-btn" type="button" aria-pressed="false" data-mat="gold"><span class="pt-swatch" style="background:linear-gradient(135deg,#fff0a0,#e8b923 55%,#a87a10)" aria-hidden="true"></span>Gold</button>
+          </div>
+          <div class="mp-readout">
+            <div><span>Temperature</span><strong id="mp-temp">-10°C</strong></div>
+            <div><span>State</span><strong class="mp-state is-solid" id="mp-state">Solid</strong></div>
+          </div>
+          <div class="mp-step-row">
+            <span class="pt-label" id="mp-step-l">Step</span>
+            <div class="mp-steps" role="group" aria-labelledby="mp-step-l">
+              <button class="mp-step" type="button" aria-pressed="true" data-step="5">+5°C</button>
+              <button class="mp-step" type="button" aria-pressed="false" data-step="100">+100°C</button>
+            </div>
+          </div>
+          <div class="pt-actions">
+            <button class="pt-go" id="mp-heat" type="button">Increase Temperature</button>
+            <button class="pp-reset" id="mp-reset" type="button">Reset</button>
+          </div>
+          <p class="pt-fb pt-fb-fixed" id="mp-fb" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mlab-card prop-card-lab ml-lab" id="ml-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Investigation · Malleability</span>
+        <h3 class="mlab-title">Flatten or Break?</h3>
+      </div>
+      <p class="pt-instr">Choose a material. Apply force and watch what happens.</p>
+      <div class="pt-layout">
+        <figure class="pt-figure">
+          <svg class="pt-svg" id="ml-svg" viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+            <defs>
+              <linearGradient id="ml-g-aluminum" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfd5dc"/><stop offset="0.5" stop-color="#f4f6f8"/><stop offset="1" stop-color="#b5bdc6"/></linearGradient>
+              <linearGradient id="ml-g-copper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8955a"/><stop offset="0.6" stop-color="#b8612b"/><stop offset="1" stop-color="#8a4519"/></linearGradient>
+              <linearGradient id="ml-g-press" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6c7680"/><stop offset="0.5" stop-color="#aab3bc"/><stop offset="1" stop-color="#6c7680"/></linearGradient>
+            </defs>
+            <rect x="0" y="150" width="360" height="20" fill="#16222f"/>
+            <rect x="80" y="22" width="10" height="128" fill="#3a4b5e"/>
+            <rect x="270" y="22" width="10" height="128" fill="#3a4b5e"/>
+            <rect x="90" y="138" width="180" height="12" rx="2" fill="#4a5b6e" stroke="#6c7f93" stroke-width="1"/>
+            <g id="ml-ram" class="ml-ram">
+              <rect x="174" y="-60" width="12" height="106" fill="url(#ml-g-press)"/>
+              <rect x="145" y="44" width="70" height="16" rx="3" fill="url(#ml-g-press)" stroke="#4e5862" stroke-width="1.5"/>
+            </g>
+            <rect x="70" y="8" width="220" height="16" rx="3" fill="#3a4b5e" stroke="#5b6f82" stroke-width="1"/>
+            <text x="180" y="20" text-anchor="middle" font-size="11" font-weight="800" fill="#a9b8c8">Press</text>
+            <g id="ml-solid" class="ml-solid">
+              <rect id="ml-solid-rect" x="150" y="108" width="60" height="30" rx="3" fill="url(#ml-g-aluminum)" stroke="#86909a" stroke-width="1.5"/>
+            </g>
+            <g id="ml-pieces" visibility="hidden">
+              <polygon class="ml-piece" data-dx="-40" data-dy="12" data-rot="-18" points="150,108 178,108 172,122 150,126"/>
+              <polygon class="ml-piece" data-dx="34" data-dy="14" data-rot="16" points="178,108 210,108 210,120 186,124 172,122"/>
+              <polygon class="ml-piece" data-dx="-52" data-dy="0" data-rot="-6" points="150,126 172,122 168,138 150,138"/>
+              <polygon class="ml-piece" data-dx="50" data-dy="0" data-rot="8" points="172,122 186,124 210,120 210,138 168,138"/>
+            </g>
+            <text id="ml-label" x="180" y="164" text-anchor="middle" font-size="12" font-weight="900" fill="#e8eef4"></text>
+          </svg>
+          <figcaption class="pt-note">Model: small samples at room temperature. This shows how materials behave, not how strong they are.</figcaption>
+        </figure>
+        <div class="pt-side">
+          <div class="pt-label" id="ml-mat-l">Material</div>
+          <div class="pt-chips ml-chips" role="group" aria-labelledby="ml-mat-l">
+            <button class="check-opt pt-chip ml-mat-btn" type="button" aria-pressed="true" data-mat="aluminum"><span class="pt-swatch" style="background:#e4e8ec" aria-hidden="true"></span>Aluminum</button>
+            <button class="check-opt pt-chip ml-mat-btn" type="button" aria-pressed="false" data-mat="copper"><span class="pt-swatch" style="background:#c87533" aria-hidden="true"></span>Copper</button>
+            <button class="check-opt pt-chip ml-mat-btn" type="button" aria-pressed="false" data-mat="glass"><span class="pt-swatch" style="background:rgba(190,235,250,0.55)" aria-hidden="true"></span>Glass</button>
+            <button class="check-opt pt-chip ml-mat-btn" type="button" aria-pressed="false" data-mat="chalk"><span class="pt-swatch" style="background:#f4f1ea" aria-hidden="true"></span>Chalk</button>
+          </div>
+          <div class="pt-actions">
+            <button class="pt-go" id="ml-test" type="button">Apply Force</button>
+            <button class="pp-reset" id="ml-reset" type="button">Reset</button>
+          </div>
+          <p class="pt-fb pt-fb-fixed" id="ml-fb" aria-live="polite"></p>
+          <p class="pt-discover pt-wait" id="ml-discover"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mlab-card prop-card-lab dw-lab" id="dw-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Investigation · Ductility</span>
+        <h3 class="mlab-title">Can You Make a Wire?</h3>
+      </div>
+      <p class="pt-instr">Choose a material. Pull it through the machine to see if it forms a wire.</p>
+      <div class="pt-layout">
+        <figure class="pt-figure">
+          <svg class="pt-svg" id="dw-svg" viewBox="0 20 360 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+            <defs>
+              <linearGradient id="dw-g-copper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8955a"/><stop offset="0.6" stop-color="#b8612b"/><stop offset="1" stop-color="#8a4519"/></linearGradient>
+              <linearGradient id="dw-g-aluminum" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f6f8"/><stop offset="0.5" stop-color="#cfd5dc"/><stop offset="1" stop-color="#a9b1ba"/></linearGradient>
+              <linearGradient id="dw-g-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset="0.5" stop-color="#e8b923"/><stop offset="1" stop-color="#a87a10"/></linearGradient>
+              <linearGradient id="dw-g-steel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a939d"/><stop offset="0.5" stop-color="#5f6870"/><stop offset="1" stop-color="#454c54"/></linearGradient>
+            </defs>
+            <rect x="0" y="118" width="360" height="32" fill="#16222f"/>
+            <rect x="196" y="98" width="140" height="5" rx="2" fill="#3a4b5e"/>
+            <g id="dw-rod" class="dw-rod">
+              <path id="dw-rod-body" d="M33 68 H150 L172 78 V82 L150 92 H33 Q30 92 30 89 V71 Q30 68 33 68 Z" fill="url(#dw-g-copper)" stroke="#6e3410" stroke-width="1.5" stroke-linejoin="round"/>
+            </g>
+            <path id="dw-crack" d="M163 74 l3 4 l-2 3 l3 4" fill="none" stroke="#1d242b" stroke-width="1.5" visibility="hidden"/>
+            <rect id="dw-wire" x="184" y="78" width="0" height="4"/>
+            <g id="dw-tip" class="dw-tip">
+              <rect id="dw-tip-rect" x="172" y="78" width="16" height="4" fill="url(#dw-g-copper)"/>
+            </g>
+            <g id="dw-shards" visibility="hidden">
+              <polygon class="dw-shard" points="185,76 190,79 186,83"/>
+              <polygon class="dw-shard" points="186,82 192,84 188,88"/>
+            </g>
+            <polygon points="168,48 184,48 184,78 168,70" fill="url(#dw-g-steel)" stroke="#2f363d" stroke-width="1"/>
+            <polygon points="168,90 184,82 184,112 168,112" fill="url(#dw-g-steel)" stroke="#2f363d" stroke-width="1"/>
+            <text x="176" y="42" text-anchor="middle" font-size="11" font-weight="800" fill="#a9b8c8">Die</text>
+            <g id="dw-grip" class="dw-grip" transform="translate(100 0)">
+              <rect x="222" y="78.5" width="200" height="3" fill="#8fa3b8"/>
+              <path d="M192 70 H222 V90 H192 V83 H206 V77 H192 Z" fill="#9aa4ae" stroke="#4e5862" stroke-width="1.5"/>
+              <rect x="206" y="90" width="10" height="8" fill="#6c7680"/>
+            </g>
+            <circle cx="346" cy="80" r="11" fill="#3a4b5e" stroke="#8fa3b8" stroke-width="2"/>
+            <circle cx="346" cy="80" r="3" fill="#8fa3b8"/>
+            <text x="300" y="58" text-anchor="middle" font-size="11" font-weight="800" fill="#a9b8c8">Puller</text>
+            <text id="dw-label" x="90" y="138" text-anchor="middle" font-size="12" font-weight="900" fill="#e8eef4"></text>
+          </svg>
+          <figcaption class="pt-note">Bend = flexible · Flatten = malleable · Pull into a wire = ductile. Model: room-temperature samples. (Hot, softened glass can be pulled into thin fibers.)</figcaption>
+        </figure>
+        <div class="pt-side">
+          <div class="pt-label" id="dw-mat-l">Material</div>
+          <div class="pt-chips dw-chips" role="group" aria-labelledby="dw-mat-l">
+            <button class="check-opt pt-chip dw-mat-btn" type="button" aria-pressed="true" data-mat="copper"><span class="pt-swatch" style="background:#c87533" aria-hidden="true"></span>Copper</button>
+            <button class="check-opt pt-chip dw-mat-btn" type="button" aria-pressed="false" data-mat="glass"><span class="pt-swatch" style="background:rgba(190,235,250,0.55)" aria-hidden="true"></span>Glass</button>
+            <button class="check-opt pt-chip dw-mat-btn" type="button" aria-pressed="false" data-mat="aluminum"><span class="pt-swatch" style="background:#e4e8ec" aria-hidden="true"></span>Aluminum</button>
+            <button class="check-opt pt-chip dw-mat-btn" type="button" aria-pressed="false" data-mat="chalk"><span class="pt-swatch" style="background:#f4f1ea" aria-hidden="true"></span>Chalk</button>
+            <button class="check-opt pt-chip dw-mat-btn" type="button" aria-pressed="false" data-mat="gold"><span class="pt-swatch" style="background:linear-gradient(135deg,#fff0a0,#e8b923 55%,#a87a10)" aria-hidden="true"></span>Gold</button>
+          </div>
+          <div class="pt-actions">
+            <button class="pt-go" id="dw-test" type="button">Draw Wire</button>
+            <button class="pp-reset" id="dw-reset" type="button">Reset</button>
+          </div>
+          <p class="pt-fb pt-fb-fixed" id="dw-fb" aria-live="polite"></p>
+          <p class="pt-discover pt-wait" id="dw-discover"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why these investigations exist</div>
+          <ul class="edu-note-text">
+            <li>Students test seven properties from the family cards (hardness, electrical conductivity, thermal conductivity, magnetism, melting point, malleability, ductility) before using some of the same tests on the Mystery Cube.</li>
+            <li>Each uses its own visual mechanism: a scratch mark, a glowing bulb, a heat front with a thermometer, a magnet pull, a melting sample, a press, and a wire-drawing die.</li>
+            <li>No prediction is required before testing. Each Discovery line appears only after the student has gathered the evidence for it.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Hardness model</div>
+          <ul class="edu-note-text">
+            <li>Representative samples: paraffin wax, hard acrylic plastic, soft (nearly pure) aluminum, ordinary window glass; tools: fingernail, pure copper coin, ordinary steel nail.</li>
+            <li>Ordered comparison, not hardness numbers: wax &lt; fingernail &lt; copper coin, acrylic, and soft aluminum (close in hardness) &lt; steel nail and glass (close in hardness). A tool scratches only a clearly softer sample; close pairs give no clear scratch.</li>
+            <li>Real alloys and plastics vary; a hard aluminum alloy or a different plastic can change the result.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Circuit and heat models</div>
+          <ul class="edu-note-text">
+            <li>Circuit: a low-voltage classroom battery and bulb. Copper and aluminum conduct; plastic, rubber, and dry wood act as insulators here. Moisture or very high voltage can change that.</li>
+            <li>Heat: identical rods, the same heat, and an ordering taken from real thermal conductivities (copper far above steel, steel far above glass and wood). Times are illustrative, not measured.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Magnet, melting, press, and wire models</div>
+          <ul class="edu-note-text">
+            <li>Magnet: iron and ordinary (carbon) steel are attracted; aluminum, copper, and plastic are not. Some stainless steels (austenitic grades) are only weakly attracted, so the model names ordinary steel.</li>
+            <li>Melting: ice starts at -10°C, coconut oil at 10°C, wax, bismuth, and gold at room temperature (20°C). Students choose +5°C or +100°C steps (metals default to +100°C). Pure ice melts at 0°C, pure bismuth at 271.4°C, pure gold at 1,064.2°C. Coconut oil (a fat mixture, about 23 to 26°C) and paraffin wax (a mixture; grades range roughly 46 to 68°C) are shown at about 25°C and 55°C.</li>
+            <li>Melting simplification: the step that reaches or passes the melting point is reported as melting at the melting point, even when the displayed temperature has gone past it; the next step finishes the change. In reality, a pure substance stays at its melting point while it melts, and mixtures melt across a range.</li>
+            <li>Press: aluminum and copper flatten (malleable); glass and chalk crack (brittle). Ordinary room-temperature samples under slow squeezing; not a strength test. Malleability is flattening under squeezing force, not bending (flexibility) or drawing into wire (ductility). The sample responds only when the press reaches it.</li>
+            <li>Wire drawing: a pointed rod is pulled through a narrowing die. Copper, aluminum, and gold draw into wire (gold is the most ductile metal); glass and chalk snap at room temperature. Glass softened by heat can be drawn into fibers, which the caption notes.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Every choice is a labeled button with aria-pressed; results are announced in text, not only by color or glow.</li>
+            <li>Motion is short and switches off with reduced-motion settings.</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <!-- Mystery Cube Investigation: predict, test, identify, explain.
@@ -3219,6 +3842,809 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     say('Reset. The empty ship has a mass of 200 g and pushes aside 200 mL of water.');
   });
   render(false);
+})();
+</script>
+
+<!-- ===== SCRATCH TEST (hardness; ungraded, nothing stored) =====
+     RANK is an ordered classroom comparison, not a hardness scale: a tool
+     leaves a scratch only when its rank is higher than the sample's.
+     Equal ranks are close in hardness and give no clear scratch. -->
+<script>
+(function(){
+  var lab = document.getElementById('hs-lab');
+  if (!lab) return;
+  var RANK = { wax: 1, fingernail: 2, plastic: 3, aluminum: 3, coin: 3, nail: 5, glass: 5 };
+  var NAME = { wax: 'wax', plastic: 'hard plastic', aluminum: 'aluminum', glass: 'glass', fingernail: 'fingernail', coin: 'copper coin', nail: 'steel nail' };
+  var SCRATCH = { wax: '#9c8448', plastic: '#d6ecff', aluminum: '#4c555e', glass: '#ffffff' };
+  var START = 60, END = 245, TIP = 132;
+  var still = !window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var DUR = still ? 0 : 1000;
+  var mat = 'wax', tool = 'fingernail', busy = false, timer = null;
+  var svg = document.getElementById('hs-svg');
+  var scratch = document.getElementById('hs-scratch');
+  var toolG = document.getElementById('hs-tool');
+  var fb = document.getElementById('hs-fb');
+  var test = document.getElementById('hs-test');
+  var matBtns = [].slice.call(lab.querySelectorAll('.hs-mat-btn'));
+  var toolBtns = [].slice.call(lab.querySelectorAll('.hs-tool-btn'));
+
+  function place(x){ toolG.style.transform = 'translate(' + x + 'px, ' + TIP + 'px)'; }
+  function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+  function describe(){
+    svg.setAttribute('aria-label', 'A ' + NAME[tool] + ' resting on a sample of ' + NAME[mat] + '.');
+  }
+  function clear(){
+    if (timer) { clearTimeout(timer); timer = null; }
+    busy = false;
+    toolG.classList.remove('hs-moving');
+    scratch.classList.remove('hs-moving');
+    scratch.setAttribute('visibility', 'hidden');
+    scratch.style.strokeDashoffset = '200';
+    place(START);
+    fb.textContent = '';
+    fb.className = 'pt-fb';
+  }
+  function show(){
+    [].forEach.call(lab.querySelectorAll('.hs-mat'), function(g){ g.style.display = g.getAttribute('data-mat') === mat ? '' : 'none'; });
+    [].forEach.call(lab.querySelectorAll('.hs-tl'), function(g){ g.style.display = g.getAttribute('data-tool') === tool ? '' : 'none'; });
+    matBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-mat') === mat)); });
+    toolBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-tool') === tool)); });
+    scratch.setAttribute('stroke', SCRATCH[mat]);
+    describe();
+  }
+  function finish(){
+    timer = null;
+    busy = false;
+    var made = RANK[tool] > RANK[mat];
+    fb.className = 'pt-fb ' + (made ? 'yes' : 'no');
+    if (made) {
+      fb.textContent = 'A scratch appeared! The tool is harder than the material. The ' + NAME[tool] + ' is harder than ' + NAME[mat] + '.';
+      svg.setAttribute('aria-label', 'The ' + NAME[tool] + ' left a scratch across the ' + NAME[mat] + '.');
+    } else {
+      fb.textContent = 'No scratch! This material resisted the tool. ' + (RANK[tool] === RANK[mat]
+        ? 'The ' + NAME[tool] + ' and ' + NAME[mat] + ' are close in hardness.'
+        : cap(NAME[mat]) + ' is harder than a ' + NAME[tool] + '.');
+      svg.setAttribute('aria-label', 'The ' + NAME[tool] + ' slid across the ' + NAME[mat] + ' without leaving a scratch.');
+    }
+  }
+
+  matBtns.forEach(function(b){ b.addEventListener('click', function(){ mat = b.getAttribute('data-mat'); clear(); show(); }); });
+  toolBtns.forEach(function(b){ b.addEventListener('click', function(){ tool = b.getAttribute('data-tool'); clear(); show(); }); });
+  test.addEventListener('click', function(){
+    if (busy) return;
+    clear();
+    busy = true;
+    var made = RANK[tool] > RANK[mat];
+    if (made) scratch.setAttribute('visibility', 'visible');
+    if (DUR) {
+      void toolG.getBoundingClientRect();
+      toolG.classList.add('hs-moving');
+      scratch.classList.add('hs-moving');
+    }
+    place(END);
+    if (made) scratch.style.strokeDashoffset = '0';
+    if (DUR) timer = setTimeout(finish, DUR); else finish();
+  });
+  clear();
+  show();
+})();
+</script>
+
+<!-- ===== CIRCUIT TEST (electrical conductivity; ungraded, nothing stored) =====
+     A low-voltage classroom battery and bulb. The bulb lights only when the
+     chosen material fills the gap and conducts, closing the loop. -->
+<script>
+(function(){
+  var lab = document.getElementById('ec-lab');
+  if (!lab) return;
+  var MATS = {
+    copper:   { name: 'Copper',   conducts: true,  fill: '#c87533', stroke: '#8a4a1c', ink: '#2a1406' },
+    aluminum: { name: 'Aluminum', conducts: true,  fill: '#d7dce2', stroke: '#86909a', ink: '#2b3238' },
+    plastic:  { name: 'Plastic',  conducts: false, fill: '#3a8ee6', stroke: '#174a8f', ink: '#ffffff' },
+    rubber:   { name: 'Rubber',   conducts: false, fill: '#2b2b2b', stroke: '#6b6b6b', ink: '#ffffff' },
+    wood:     { name: 'Dry wood', conducts: false, fill: '#a0703c', stroke: '#6e4a22', ink: '#ffffff' }
+  };
+  var chosen = null;
+  var btns = [].slice.call(lab.querySelectorAll('.ec-mat-btn'));
+  var test = document.getElementById('ec-test');
+  var fb = document.getElementById('ec-fb');
+  var svg = document.getElementById('ec-svg');
+  var sample = document.getElementById('ec-sample');
+  var rect = document.getElementById('ec-sample-rect');
+  var label = document.getElementById('ec-sample-text');
+  var slot = document.getElementById('ec-slot');
+  var gapLabel = document.getElementById('ec-gap-label');
+  var glass = document.getElementById('ec-glass');
+  var fil = document.getElementById('ec-filament');
+  var wire = lab.querySelector('.ec-wire');
+  var glows = [].slice.call(lab.querySelectorAll('.ec-glow'));
+
+  function light(on){
+    glows.forEach(function(g){ g.setAttribute('opacity', on ? '1' : '0'); });
+    glass.setAttribute('fill', on ? '#fff3b0' : '#2c3d50');
+    fil.setAttribute('stroke', on ? '#ff9a1f' : '#c9a46a');
+    wire.setAttribute('stroke', on ? '#f5c842' : '#8fa3b8');
+    lab.classList.toggle('is-lit', on);
+  }
+  function empty(){
+    light(false);
+    sample.setAttribute('visibility', 'hidden');
+    slot.setAttribute('visibility', 'visible');
+    gapLabel.textContent = 'Gap for the test material';
+    fb.textContent = chosen ? MATS[chosen].name + ' is ready. Press Test Circuit.' : 'Pick a material, then press Test Circuit.';
+    fb.className = 'pt-fb';
+    svg.setAttribute('aria-label', 'A battery, wires, and a dark bulb, with a gap in the bottom wire' + (chosen ? '. ' + MATS[chosen].name + ' is ready to test.' : '.'));
+  }
+
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      chosen = b.getAttribute('data-mat');
+      btns.forEach(function(o){ o.setAttribute('aria-pressed', String(o === b)); });
+      test.removeAttribute('aria-disabled');
+      empty();
+    });
+  });
+  test.addEventListener('click', function(){
+    if (!chosen) { fb.className = 'pt-fb'; fb.textContent = 'Choose a material first.'; return; }
+    var m = MATS[chosen];
+    rect.setAttribute('fill', m.fill);
+    rect.setAttribute('stroke', m.stroke);
+    label.setAttribute('fill', m.ink);
+    label.textContent = m.name;
+    sample.setAttribute('visibility', 'visible');
+    slot.setAttribute('visibility', 'hidden');
+    gapLabel.textContent = m.name + ' fills the gap';
+    light(m.conducts);
+    fb.className = 'pt-fb ' + (m.conducts ? 'yes' : 'no');
+    fb.textContent = m.conducts
+      ? 'The bulb lights up! ' + m.name + ' is a conductor: electric current flows through it and completes the circuit.'
+      : 'The bulb stays dark. ' + m.name + ' is an insulator in this circuit: it does not let current from this small battery flow through.';
+    svg.setAttribute('aria-label', m.conducts
+      ? m.name + ' fills the gap, the circuit is complete, and the bulb is glowing.'
+      : m.name + ' fills the gap, but no current flows and the bulb stays dark.');
+  });
+  empty();
+})();
+</script>
+
+<!-- ===== HEAT TEST (thermal conductivity; ungraded, nothing stored) =====
+     A qualitative model, not a measurement: the far end warms as
+     1 - e^(-t / TAU). TAU follows the real ordering of thermal
+     conductivity (copper far above steel, steel far above glass and wood). -->
+<script>
+(function(){
+  var lab = document.getElementById('th-lab');
+  if (!lab) return;
+  var MATS = {
+    copper: { name: 'Copper', tau: 6,   fill: '#c87533', stroke: '#8a4a1c', ink: '#2a1406' },
+    steel:  { name: 'Steel',  tau: 40,  fill: '#9aa4ae', stroke: '#5f6870', ink: '#1d242b' },
+    glass:  { name: 'Glass',  tau: 300, fill: 'rgba(190,235,250,0.4)', stroke: '#bdefff', ink: '#e2f8ff' },
+    wood:   { name: 'Wood',   tau: 900, fill: '#a0703c', stroke: '#6e4a22', ink: '#ffffff' }
+  };
+  var STEP = 5, MAX = 60, WARM = 0.2, HOT = 0.7;
+  var mat = 'copper', t = 0, results = {};
+  var btns = [].slice.call(lab.querySelectorAll('.th-mat-btn'));
+  var heat = document.getElementById('th-heat');
+  var timeOut = document.getElementById('th-time');
+  var list = document.getElementById('th-results');
+  var discover = document.getElementById('th-discover');
+  var svg = document.getElementById('th-svg');
+  var rod = document.getElementById('th-rod');
+  var grain = document.getElementById('th-grain');
+  var rodText = document.getElementById('th-rod-text');
+  var liquid = document.getElementById('th-liquid');
+  var stops = ['th-s1', 'th-s2', 'th-s3'].map(function(id){ return document.getElementById(id); });
+
+  function level(){ return 1 - Math.exp(-t / MATS[mat].tau); }
+  var METALS = ['copper', 'steel'], OTHERS = ['glass', 'wood'];
+  var LABEL = { cool: 'Cool', warm: 'Warming', hot: 'Hot' };
+  var PHRASE = { cool: 'Still cool', warm: 'Warming', hot: 'Hot' };
+  var resetAll = document.getElementById('th-reset-all');
+  var far = document.getElementById('th-far');
+  var sr = document.getElementById('th-announce');
+  function word(h){ return h >= HOT ? 'hot' : h >= WARM ? 'warm' : 'cool'; }
+  function sentence(h){
+    return h >= HOT ? 'The far end is hot.' : h >= WARM ? 'The far end is warming up.' : 'The far end is still cool.';
+  }
+  function say(msg){ sr.textContent = ''; setTimeout(function(){ sr.textContent = msg; }, 100); }
+  /* One record per material, keeping the strongest evidence: reaching hot
+     is final (the model is deterministic, so the first hot time stands);
+     otherwise the longest heating time wins. */
+  function record(){
+    var w = word(level()), prev = results[mat];
+    if (!prev || (prev.word !== 'hot' && (w === 'hot' || t >= prev.t))) results[mat] = { t: t, word: w };
+  }
+  function testing(k){
+    return k === mat && t > 0 && t < MAX && word(level()) !== 'hot' && results[k] && results[k].word !== 'hot';
+  }
+  function conclusion(){
+    var hotTimes = METALS.filter(function(k){ return results[k] && results[k].word === 'hot'; }).map(function(k){ return results[k].t; });
+    var metalTried = METALS.some(function(k){ return results[k]; });
+    var otherTried = OTHERS.some(function(k){ return results[k]; });
+    if (!metalTried || !otherTried) return null;
+    if (!hotTimes.length) return 'Keep heating the metal until its far end is hot.';
+    var first = Math.min.apply(null, hotTimes);
+    var evidence = OTHERS.some(function(k){ return results[k] && results[k].word !== 'hot' && results[k].t >= first; });
+    return evidence ? true : 'Heat the glass or wood for at least ' + first + ' s to compare.';
+  }
+  function renderResults(){
+    [].forEach.call(list.children, function(li){
+      var k = li.getAttribute('data-mat'), rec = results[k], span = li.lastChild;
+      var live = testing(k);
+      li.className = rec ? (live ? 'is-testing' : 'is-done') : '';
+      li.querySelector('.th-tag').textContent = live ? 'Testing' : '';
+      /* While a run is under way the row shows that run; afterwards it
+         shows the material's recorded result. */
+      span.textContent = !rec ? 'Not tested'
+        : live ? PHRASE[word(level())] + ' at ' + t + ' s'
+        : PHRASE[rec.word] + ' at ' + rec.t + ' s';
+    });
+    var c = conclusion();
+    discover.classList.toggle('th-wait', c !== true);
+    if (c === true) discover.innerHTML = '<strong>Discovery:</strong> Metals generally transfer heat faster than glass or wood.';
+    else discover.textContent = c || 'Test a metal and a nonmetal to compare heat transfer.';
+  }
+  function render(announce){
+    var m = MATS[mat], h = level();
+    var front = Math.min(1, 0.9 * Math.sqrt(t / m.tau));
+    rod.setAttribute('fill', m.fill);
+    rod.setAttribute('stroke', m.stroke);
+    grain.style.display = mat === 'wood' ? '' : 'none';
+    rodText.setAttribute('fill', m.ink);
+    rodText.textContent = m.name.toUpperCase();
+    stops[1].setAttribute('offset', (front * 0.55).toFixed(3));
+    stops[2].setAttribute('offset', front.toFixed(3));
+    stops[0].setAttribute('stop-opacity', t ? '0.95' : '0');
+    stops[1].setAttribute('stop-opacity', t ? '0.75' : '0');
+    var H = 12 + Math.round(h * 56);
+    liquid.setAttribute('height', H);
+    liquid.setAttribute('y', 86 - H);
+    timeOut.textContent = t >= MAX ? t + ' s (limit)' : t + ' s';
+    var w = word(h);
+    far.textContent = LABEL[w];
+    far.className = 'th-far is-' + w;
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-mat') === mat)); });
+    if (t >= MAX) heat.setAttribute('aria-disabled', 'true'); else heat.removeAttribute('aria-disabled');
+    if (announce) say(t + ' seconds. Far end: ' + LABEL[w] + '.' + (t >= MAX ? ' Heating limit reached.' : ''));
+    svg.setAttribute('aria-label', m.name + ' rod heated at one end for ' + t + ' seconds. ' + (t ? sentence(h) : 'The far end is at room temperature.'));
+  }
+
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){ mat = b.getAttribute('data-mat'); t = 0; render(false); renderResults(); });
+  });
+  heat.addEventListener('click', function(){
+    if (heat.getAttribute('aria-disabled') === 'true') return;
+    t += STEP;
+    record();
+    render(true);
+    renderResults();
+  });
+  document.getElementById('th-reset').addEventListener('click', function(){
+    t = 0;
+    render(false);
+    renderResults();
+    say('Cooled down. ' + MATS[mat].name + ' is back to room temperature. Your results are kept.');
+  });
+  resetAll.addEventListener('click', function(){
+    t = 0;
+    results = {};
+    mat = 'copper';
+    render(false);
+    renderResults();
+    say('All results cleared.');
+  });
+  render(false);
+  renderResults();
+})();
+</script>
+
+<!-- ===== MAGNET TEST (magnetism; ungraded, nothing stored) =====
+     Iron and ordinary steel are attracted; aluminum, copper, and plastic
+     are not. The discovery appears only after the student has tested one
+     attracted metal and one metal that is not attracted. -->
+<script>
+(function(){
+  var lab = document.getElementById('mg-lab');
+  if (!lab) return;
+  var MATS = {
+    iron:     { name: 'Iron',     metal: true,  sticks: true,  fill: 'url(#mg-g-iron)',     stroke: '#2a2e33' },
+    steel:    { name: 'Steel',    metal: true,  sticks: true,  fill: 'url(#mg-g-steel)',    stroke: '#5f6870' },
+    aluminum: { name: 'Aluminum', metal: true,  sticks: false, fill: 'url(#mg-g-aluminum)', stroke: '#86909a' },
+    copper:   { name: 'Copper',   metal: true,  sticks: false, fill: 'url(#mg-g-copper)',   stroke: '#6e3410' },
+    plastic:  { name: 'Plastic',  metal: false, sticks: false, fill: 'url(#mg-g-plastic)',  stroke: '#14683b' }
+  };
+  var REACH = 50, PULL = -60;
+  var still = !window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var DUR = still ? 0 : 800;
+  var mat = 'iron', busy = false, timer = null, seen = {};
+  var btns = [].slice.call(lab.querySelectorAll('.mg-mat-btn'));
+  var test = document.getElementById('mg-test');
+  var fb = document.getElementById('mg-fb');
+  var discover = document.getElementById('mg-discover');
+  var svg = document.getElementById('mg-svg');
+  var magnet = document.getElementById('mg-magnet');
+  var sample = document.getElementById('mg-sample');
+  var block = document.getElementById('mg-block');
+  var label = document.getElementById('mg-label');
+
+  function move(g, x){ g.style.transform = 'translateX(' + x + 'px)'; }
+  function ready(){
+    if (timer) { clearTimeout(timer); timer = null; }
+    busy = false;
+    magnet.classList.remove('pt-moving');
+    sample.classList.remove('pt-moving');
+    move(magnet, 0);
+    move(sample, 0);
+    var m = MATS[mat];
+    block.setAttribute('fill', m.fill);
+    block.setAttribute('stroke', m.stroke);
+    label.textContent = m.name;
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-mat') === mat)); });
+    fb.className = 'pt-fb pt-fb-fixed';
+    fb.textContent = m.name + ' is ready. Press Test Magnet.';
+    svg.setAttribute('aria-label', 'A horseshoe magnet on the left and a block of ' + m.name.toLowerCase() + ' on the right, not touching.');
+  }
+  function renderDiscovery(){
+    var found = (seen.iron || seen.steel) && (seen.aluminum || seen.copper);
+    discover.classList.toggle('pt-wait', !found);
+    if (found) discover.innerHTML = '<strong>Discovery:</strong> Not all metals are magnetic.';
+    else discover.textContent = 'Test more than one metal to compare.';
+  }
+  function finish(){
+    timer = null;
+    busy = false;
+    var m = MATS[mat];
+    seen[mat] = true;
+    fb.className = 'pt-fb pt-fb-fixed ' + (m.sticks ? 'yes' : 'no');
+    fb.textContent = m.name + (m.sticks ? ' is attracted to the magnet.' : ' is not attracted to the magnet.');
+    svg.setAttribute('aria-label', m.sticks
+      ? 'The magnet moved close, and the ' + m.name.toLowerCase() + ' block slid over and stuck to it.'
+      : 'The magnet moved close, but the ' + m.name.toLowerCase() + ' block stayed where it was.');
+    renderDiscovery();
+  }
+
+  btns.forEach(function(b){ b.addEventListener('click', function(){ mat = b.getAttribute('data-mat'); ready(); }); });
+  test.addEventListener('click', function(){
+    if (busy) return;
+    ready();
+    busy = true;
+    fb.textContent = 'Testing...';
+    if (DUR) {
+      void magnet.getBoundingClientRect();
+      magnet.classList.add('pt-moving');
+      sample.classList.add('pt-moving');
+    }
+    move(magnet, REACH);
+    if (MATS[mat].sticks) move(sample, PULL);
+    if (DUR) timer = setTimeout(finish, DUR); else finish();
+  });
+  document.getElementById('mg-reset').addEventListener('click', ready);
+  ready();
+  renderDiscovery();
+})();
+</script>
+
+<!-- ===== MELTING TEST (melting point; ungraded, nothing stored) =====
+     Model values: pure ice 0°C, bismuth about 271°C, gold about 1,064°C.
+     Coconut oil and paraffin wax are mixtures that melt over a range; the
+     model uses about 25°C and about 55°C. Steps are +5°C or +100°C. The
+     press that reaches or crosses the melting point is the melting event
+     (reported at the melting point, not at the displayed temperature); the
+     next press finishes the change to liquid (a simplification). -->
+<script>
+(function(){
+  var lab = document.getElementById('mp-lab');
+  if (!lab) return;
+  var MATS = {
+    ice:     { name: 'Ice', lower: 'ice', start: -10, melt: 0, about: false, metal: false, step: 5, top: 70, liquidName: 'liquid water',
+               solid: 'rgba(205,240,255,0.75)', edge: '#e6f8ff', liquid: 'rgba(80,170,240,0.6)' },
+    oil:     { name: 'Coconut oil', lower: 'coconut oil', start: 10, melt: 25, about: true, metal: false, step: 5, top: 70, liquidName: 'liquid oil',
+               solid: '#f7f4ea', edge: '#d8d2bf', liquid: 'rgba(250,228,140,0.55)' },
+    wax:     { name: 'Paraffin wax', lower: 'paraffin wax', start: 20, melt: 55, about: true, metal: false, step: 5, top: 70, liquidName: 'liquid wax',
+               solid: '#efe0b4', edge: '#c4a865', liquid: 'rgba(245,215,140,0.6)' },
+    bismuth: { name: 'Bismuth', lower: 'bismuth', start: 20, melt: 271, about: true, metal: true, step: 100, top: 500, liquidName: 'liquid bismuth',
+               solid: 'url(#mp-g-bismuth)', edge: '#6c737c', liquid: 'url(#mp-g-bismuth-l)' },
+    gold:    { name: 'Gold', lower: 'gold', start: 20, melt: 1064, about: true, metal: true, step: 100, top: 1300, liquidName: 'liquid gold',
+               solid: 'url(#mp-g-gold)', edge: '#8a6408', liquid: 'url(#mp-g-gold-l)' }
+  };
+  var mat = 'ice', temp = MATS.ice.start, phase = 'solid', step = 5, results = {};
+  var btns = [].slice.call(lab.querySelectorAll('.mp-mat-btn'));
+  var stepBtns = [].slice.call(lab.querySelectorAll('.mp-step'));
+  var heat = document.getElementById('mp-heat');
+  var fb = document.getElementById('mp-fb');
+  var discover = document.getElementById('mp-discover');
+  var list = document.getElementById('mp-results');
+  var svg = document.getElementById('mp-svg');
+  var tempOut = document.getElementById('mp-temp');
+  var stateOut = document.getElementById('mp-state');
+  var solid = document.getElementById('mp-solid');
+  var glint = document.getElementById('mp-glint');
+  var puddle = document.getElementById('mp-puddle');
+  var nameT = document.getElementById('mp-name');
+  var coil = document.getElementById('mp-coil');
+  var waves = document.getElementById('mp-waves');
+  var column = document.getElementById('mp-liquid');
+  var tempSvg = document.getElementById('mp-temp-svg');
+
+  function deg(t){ return String(t).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '°C'; }
+  function at(m){ return (m.about ? 'about ' : '') + deg(m.melt); }
+  function render(){
+    var m = MATS[mat];
+    var f = phase === 'solid' ? 0 : phase === 'melting' ? 0.5 : 1;
+    var w = 60 - 16 * f, h = 44 * (1 - f), p = 4 + 10 * f;
+    solid.setAttribute('x', 170 - w / 2);
+    solid.setAttribute('width', w);
+    solid.setAttribute('height', h);
+    solid.setAttribute('y', 140 - p - h + (f ? 2 : 0));
+    solid.setAttribute('rx', f ? 10 : 5);
+    solid.setAttribute('fill', m.solid);
+    solid.setAttribute('stroke', m.edge);
+    solid.style.display = f === 1 ? 'none' : '';
+    glint.style.display = f === 0 ? '' : 'none';
+    glint.setAttribute('x', 170 - w / 2 + 6);
+    glint.setAttribute('y', 140 - p - h + 6);
+    /* The puddle is only drawn once melting has begun, so nothing looks
+       liquid below the melting point. */
+    puddle.style.display = f ? '' : 'none';
+    puddle.setAttribute('fill', m.liquid);
+    puddle.setAttribute('y', 140 - p);
+    puddle.setAttribute('height', p);
+    nameT.textContent = m.name.toUpperCase();
+    var warm = temp > m.start ? 1 : 0;
+    coil.setAttribute('stroke', warm ? '#ff6a2a' : '#5b6f82');
+    waves.setAttribute('opacity', warm ? '0.8' : '0');
+    var frac = Math.max(0, Math.min(1, (temp - m.start + 10) / (m.top - m.start + 10)));
+    var H = 16 + Math.round(frac * 92);
+    column.setAttribute('height', H);
+    column.setAttribute('y', 128 - H);
+    tempSvg.textContent = deg(temp);
+    tempOut.textContent = deg(temp);
+    stateOut.textContent = phase === 'solid' ? 'Solid' : phase === 'melting' ? 'Melting' : 'Liquid';
+    stateOut.className = 'mp-state is-' + phase;
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-mat') === mat)); });
+    stepBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-step')) === step)); });
+    if (phase === 'liquid') heat.setAttribute('aria-disabled', 'true'); else heat.removeAttribute('aria-disabled');
+    svg.setAttribute('aria-label', 'A dish of ' + m.lower + ' on a heater at ' + deg(temp) + '. ' +
+      (phase === 'solid' ? 'It is still solid.' : phase === 'melting' ? 'It is melting into a liquid.' : 'It has all melted into ' + m.liquidName + '.'));
+  }
+  function message(fresh){
+    var m = MATS[mat];
+    fb.className = 'pt-fb pt-fb-fixed' + (phase === 'solid' ? '' : ' yes');
+    if (fresh) fb.textContent = m.name + ' is solid at ' + deg(temp) + '. Press Increase Temperature.';
+    else if (phase === 'solid') fb.textContent = deg(temp) + ': the ' + m.lower + ' is warming, but it is still solid.';
+    else if (phase === 'melting') fb.textContent = m.name + ' begins melting at ' + at(m) + '.';
+    else fb.textContent = deg(temp) + ': all of it is ' + m.liquidName + ' now. Press Reset to test again.';
+  }
+  function renderResults(){
+    [].forEach.call(list.children, function(li){
+      var k = li.getAttribute('data-mat');
+      li.className = results[k] ? 'is-done' : '';
+      li.lastElementChild.textContent = results[k] ? at(MATS[k]) : 'Not tested';
+    });
+    var keys = Object.keys(results);
+    var many = keys.length >= 2;
+    var metal = keys.some(function(k){ return MATS[k].metal; });
+    discover.classList.toggle('pt-wait', !many && !metal);
+    if (many || metal) {
+      discover.innerHTML = '<strong>Discovery:</strong> ' +
+        (many ? 'Different substances melt at different temperatures.' : '') +
+        (many && metal ? ' ' : '') + (metal ? 'Even metals can melt.' : '');
+    } else discover.textContent = 'Melt two substances to compare.';
+  }
+  function restart(){ temp = MATS[mat].start; phase = 'solid'; render(); message(true); }
+
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){ mat = b.getAttribute('data-mat'); step = MATS[mat].step; restart(); });
+  });
+  stepBtns.forEach(function(b){
+    b.addEventListener('click', function(){ step = Number(b.getAttribute('data-step')); render(); });
+  });
+  heat.addEventListener('click', function(){
+    if (heat.getAttribute('aria-disabled') === 'true') return;
+    var m = MATS[mat];
+    temp += step;
+    if (phase === 'melting') phase = 'liquid';
+    else if (temp >= m.melt) { phase = 'melting'; results[mat] = true; }
+    render();
+    message(false);
+    renderResults();
+  });
+  document.getElementById('mp-reset').addEventListener('click', restart);
+  restart();
+  renderResults();
+})();
+</script>
+
+<!-- ===== PRESS TEST (malleability; ungraded, nothing stored) =====
+     Room-temperature classroom samples. Aluminum and copper flatten
+     (malleable); glass and chalk crack (brittle). The press moves in two
+     phases: it descends to the contact point (TOUCH) with the sample left
+     intact, and only at contact does the sample respond. Crack lines are
+     drawn at contact, never before. The discovery appears only after one
+     malleable and one brittle material have been tested. -->
+<script>
+(function(){
+  var lab = document.getElementById('ml-lab');
+  if (!lab) return;
+  var MATS = {
+    aluminum: { name: 'Aluminum', flattens: true,  fill: 'url(#ml-g-aluminum)', stroke: '#86909a' },
+    copper:   { name: 'Copper',   flattens: true,  fill: 'url(#ml-g-copper)',   stroke: '#6e3410' },
+    glass:    { name: 'Glass',    flattens: false, fill: 'rgba(190,235,250,0.45)', stroke: '#bdefff' },
+    chalk:    { name: 'Chalk',    flattens: false, fill: '#f4f1ea', stroke: '#c9c3b5' }
+  };
+  /* Press plate bottom starts at y=60; the sample top is y=108, so the
+     plate touches the sample after 48 units of travel. */
+  var TOUCH = 48, FLAT = 67, CRUSH = 70;
+  var still = !window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var DESCEND = still ? 0 : 550, RESPOND = still ? 0 : 400;
+  var mat = 'aluminum', busy = false, timer = null, seen = {};
+  var btns = [].slice.call(lab.querySelectorAll('.ml-mat-btn'));
+  var test = document.getElementById('ml-test');
+  var fb = document.getElementById('ml-fb');
+  var discover = document.getElementById('ml-discover');
+  var svg = document.getElementById('ml-svg');
+  var ram = document.getElementById('ml-ram');
+  var solidG = document.getElementById('ml-solid');
+  var solidR = document.getElementById('ml-solid-rect');
+  var piecesG = document.getElementById('ml-pieces');
+  var pieces = [].slice.call(lab.querySelectorAll('.ml-piece'));
+  var label = document.getElementById('ml-label');
+  var moving = [ram, solidG].concat(pieces);
+  /* Run fn when el's transform transition ends (the modeled contact or
+     grip), with a fallback in case no transitionend arrives. A Reset or
+     material change bumps run, which cancels any pending step. */
+  var run = 0;
+  function after(el, ms, fn){
+    if (!ms) { fn(); return; }
+    var mine = run, done = false;
+    function go(){
+      if (done) return;
+      done = true;
+      el.removeEventListener('transitionend', onEnd);
+      if (mine === run) fn();
+    }
+    function onEnd(e){ if (e.target === el && e.propertyName === 'transform') go(); }
+    el.addEventListener('transitionend', onEnd);
+    timer = setTimeout(go, ms + 250);
+  }
+
+  function motion(g, ms, ease){ g.style.transition = ms ? 'transform ' + ms + 'ms ' + ease : 'none'; }
+  /* Every sample starts as ONE solid shape. Tiled fragments are never
+     shown while the sample is whole: with a translucent fill (glass) the
+     overlapping fragment edges would read as cracks. */
+  function intact(){
+    var m = MATS[mat];
+    pieces.forEach(function(p){ p.setAttribute('fill', m.fill); p.setAttribute('stroke', m.stroke); p.setAttribute('stroke-width', '1'); });
+    solidG.style.display = '';
+    piecesG.setAttribute('visibility', 'hidden');
+  }
+  function ready(){
+    run++;
+    if (timer) { clearTimeout(timer); timer = null; }
+    busy = false;
+    moving.forEach(function(g){ motion(g, 0); g.style.transform = ''; });
+    var m = MATS[mat];
+    solidR.setAttribute('fill', m.fill);
+    solidR.setAttribute('stroke', m.stroke);
+    intact();
+    lab.classList.remove('is-pressing', 'is-flat', 'is-broken');
+    label.textContent = m.name;
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-mat') === mat)); });
+    fb.className = 'pt-fb pt-fb-fixed';
+    fb.textContent = m.name + ' is ready. Press Apply Force.';
+    svg.setAttribute('aria-label', 'A press raised above a small block of ' + m.name.toLowerCase() + '.');
+  }
+  function renderDiscovery(){
+    var found = (seen.aluminum || seen.copper) && (seen.glass || seen.chalk);
+    discover.classList.toggle('pt-wait', !found);
+    if (found) discover.innerHTML = '<strong>Discovery:</strong> Materials respond differently when force is applied.';
+    else discover.textContent = 'Test more materials to compare.';
+  }
+  /* Phase 2, at contact: the sample responds while the press finishes. */
+  function contact(){
+    var m = MATS[mat];
+    lab.classList.remove('is-pressing');
+    motion(ram, RESPOND, 'ease-out');
+    ram.style.transform = 'translateY(' + (m.flattens ? FLAT : CRUSH) + 'px)';
+    if (m.flattens) {
+      motion(solidG, RESPOND, 'ease-out');
+      solidG.style.transform = 'scale(1.9, 0.35)';
+      lab.classList.add('is-flat');
+    } else {
+      /* Contact: the whole sample is replaced by its fragments, which
+         then separate. */
+      solidG.style.display = 'none';
+      piecesG.setAttribute('visibility', 'visible');
+      pieces.forEach(function(p){
+        motion(p, RESPOND, 'ease-out');
+        p.style.transform = 'translate(' + p.getAttribute('data-dx') + 'px, ' + p.getAttribute('data-dy') + 'px) rotate(' + p.getAttribute('data-rot') + 'deg)';
+      });
+      lab.classList.add('is-broken');
+    }
+    after(ram, RESPOND, finish);
+  }
+  function finish(){
+    timer = null;
+    busy = false;
+    var m = MATS[mat];
+    seen[mat] = true;
+    fb.className = 'pt-fb pt-fb-fixed ' + (m.flattens ? 'yes' : 'no');
+    fb.textContent = m.flattens
+      ? m.name + ' flattens without breaking. It is malleable.'
+      : m.name + ' breaks instead of flattening. It is brittle.';
+    svg.setAttribute('aria-label', m.flattens
+      ? 'The press squeezed the ' + m.name.toLowerCase() + ' into a thin, wide sheet. It did not break.'
+      : 'The press cracked the ' + m.name.toLowerCase() + ' into several pieces.');
+    renderDiscovery();
+  }
+
+  btns.forEach(function(b){ b.addEventListener('click', function(){ mat = b.getAttribute('data-mat'); ready(); }); });
+  test.addEventListener('click', function(){
+    if (busy) return;
+    ready();
+    busy = true;
+    fb.textContent = 'Pressing...';
+    /* Phase 1: the press descends to the contact point. The sample is
+       untouched and still whole. */
+    lab.classList.add('is-pressing');
+    if (DESCEND) void ram.getBoundingClientRect();
+    motion(ram, DESCEND, 'ease-in');
+    ram.style.transform = 'translateY(' + TOUCH + 'px)';
+    after(ram, DESCEND, contact);
+  });
+  document.getElementById('ml-reset').addEventListener('click', ready);
+  ready();
+  renderDiscovery();
+})();
+</script>
+
+<!-- ===== WIRE TEST (ductility; ungraded, nothing stored) =====
+     Room-temperature classroom samples pulled through a narrowing die.
+     Copper, aluminum, and gold draw into wire (gold thinnest); glass and
+     chalk snap at the die. Two phases: the puller moves in and grips the
+     pointed tip (the sample is untouched), then it pulls back and only
+     then does the sample respond. The discovery needs one ductile and
+     one brittle result. -->
+<script>
+(function(){
+  var lab = document.getElementById('dw-lab');
+  if (!lab) return;
+  var MATS = {
+    copper:   { name: 'Copper',   ductile: true,  thin: false, fill: 'url(#dw-g-copper)',   stroke: '#6e3410' },
+    glass:    { name: 'Glass',    ductile: false, thin: false, fill: 'rgba(190,235,250,0.45)', stroke: '#bdefff' },
+    aluminum: { name: 'Aluminum', ductile: true,  thin: false, fill: 'url(#dw-g-aluminum)', stroke: '#86909a' },
+    chalk:    { name: 'Chalk',    ductile: false, thin: false, fill: '#f4f1ea', stroke: '#c9c3b5' },
+    gold:     { name: 'Gold',     ductile: true,  thin: true,  fill: 'url(#dw-g-gold)',     stroke: '#8a6408' }
+  };
+  /* Starter tip ends at x=188, 4 units past the die exit (184). The jaw is
+     drawn with its mouth at x=192; GRIP moves it onto the tip. */
+  var AWAY = 100, GRIP = -6, WIRE = 94;
+  var still = !window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var ENGAGE = still ? 0 : 600, PULL = still ? 0 : 900;
+  var mat = 'copper', busy = false, timer = null, seen = {};
+  var btns = [].slice.call(lab.querySelectorAll('.dw-mat-btn'));
+  var test = document.getElementById('dw-test');
+  var fb = document.getElementById('dw-fb');
+  var discover = document.getElementById('dw-discover');
+  var svg = document.getElementById('dw-svg');
+  var grip = document.getElementById('dw-grip');
+  var rod = document.getElementById('dw-rod');
+  var body = document.getElementById('dw-rod-body');
+  var tip = document.getElementById('dw-tip');
+  var tipR = document.getElementById('dw-tip-rect');
+  var wire = document.getElementById('dw-wire');
+  var crack = document.getElementById('dw-crack');
+  var shards = document.getElementById('dw-shards');
+  var shardEls = [].slice.call(lab.querySelectorAll('.dw-shard'));
+  var label = document.getElementById('dw-label');
+  /* Run fn when el's transform transition ends (the modeled contact or
+     grip), with a fallback in case no transitionend arrives. A Reset or
+     material change bumps run, which cancels any pending step. */
+  var run = 0;
+  function after(el, ms, fn){
+    if (!ms) { fn(); return; }
+    var mine = run, done = false;
+    function go(){
+      if (done) return;
+      done = true;
+      el.removeEventListener('transitionend', onEnd);
+      if (mine === run) fn();
+    }
+    function onEnd(e){ if (e.target === el && e.propertyName === 'transform') go(); }
+    el.addEventListener('transitionend', onEnd);
+    timer = setTimeout(go, ms + 250);
+  }
+
+  function motion(el, ms, props){ el.style.transition = ms ? props.map(function(p){ return p + ' ' + ms + 'ms ease-in-out'; }).join(', ') : 'none'; }
+  function ready(){
+    run++;
+    if (timer) { clearTimeout(timer); timer = null; }
+    busy = false;
+    var m = MATS[mat];
+    [grip, rod, tip, wire].concat(shardEls).forEach(function(el){ motion(el, 0); });
+    grip.style.transform = 'translateX(' + AWAY + 'px)';
+    rod.style.transform = '';
+    tip.style.transform = '';
+    shardEls.forEach(function(el){ el.style.transform = ''; });
+    [body, tipR].forEach(function(el){ el.setAttribute('fill', m.fill); el.setAttribute('stroke', m.stroke); });
+    tipR.setAttribute('stroke-width', '0');
+    shardEls.forEach(function(el){ el.setAttribute('fill', m.fill); el.setAttribute('stroke', m.stroke); });
+    wire.setAttribute('fill', m.fill);
+    wire.setAttribute('width', '0');
+    wire.style.width = '0px';
+    wire.setAttribute('height', m.thin ? '2' : '4');
+    wire.setAttribute('y', m.thin ? '79' : '78');
+    crack.setAttribute('visibility', 'hidden');
+    shards.setAttribute('visibility', 'hidden');
+    lab.classList.remove('is-gripping', 'is-drawn', 'is-broken');
+    label.textContent = m.name;
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-mat') === mat)); });
+    fb.className = 'pt-fb pt-fb-fixed';
+    fb.textContent = m.name + ' is ready. Press Draw Wire.';
+    svg.setAttribute('aria-label', 'A rod of ' + m.name.toLowerCase() + ' with its pointed end through a narrowing die. The puller waits on the other side.');
+  }
+  function renderDiscovery(){
+    var found = (seen.copper || seen.aluminum || seen.gold) && (seen.glass || seen.chalk);
+    discover.classList.toggle('pt-wait', !found);
+    if (found) discover.innerHTML = '<strong>Discovery:</strong> Ductile materials can be drawn into wires without breaking.';
+    else discover.textContent = 'Test more materials to compare.';
+  }
+  /* Phase 2: the puller has gripped the tip and pulls it away. */
+  function pull(){
+    var m = MATS[mat];
+    lab.classList.remove('is-gripping');
+    motion(grip, PULL, ['transform']);
+    motion(tip, PULL, ['transform']);
+    grip.style.transform = 'translateX(' + AWAY + 'px)';
+    tip.style.transform = 'translateX(' + (AWAY - GRIP) + 'px)';
+    if (m.ductile) {
+      motion(wire, PULL, ['width']);
+      motion(rod, PULL, ['transform']);
+      wire.setAttribute('width', WIRE);
+      wire.style.width = WIRE + 'px';
+      rod.style.transform = 'scaleX(0.85)';
+      lab.classList.add('is-drawn');
+    } else {
+      crack.setAttribute('visibility', 'visible');
+      shards.setAttribute('visibility', 'visible');
+      shardEls.forEach(function(el, i){ motion(el, PULL, ['transform']); el.style.transform = 'translate(' + (i ? 6 : -4) + 'px, ' + (i ? 30 : 36) + 'px) rotate(' + (i ? 40 : -30) + 'deg)'; });
+      lab.classList.add('is-broken');
+    }
+    after(grip, PULL, finish);
+  }
+  function finish(){
+    timer = null;
+    busy = false;
+    var m = MATS[mat];
+    seen[mat] = true;
+    fb.className = 'pt-fb pt-fb-fixed ' + (m.ductile ? 'yes' : 'no');
+    fb.textContent = mat === 'gold' ? 'Gold can be drawn into a very thin wire. It is highly ductile.'
+      : mat === 'glass' ? 'Glass breaks instead of forming a wire under these conditions.'
+      : mat === 'chalk' ? 'Chalk breaks when the machine tries to draw it into a wire.'
+      : m.name + ' can be drawn into a wire. It is ductile.';
+    svg.setAttribute('aria-label', m.ductile
+      ? 'The puller drew the ' + m.name.toLowerCase() + ' through the die into a long, thin wire.'
+      : 'The ' + m.name.toLowerCase() + ' snapped at the die. Only the broken tip was pulled away.');
+    renderDiscovery();
+  }
+
+  btns.forEach(function(b){ b.addEventListener('click', function(){ mat = b.getAttribute('data-mat'); ready(); }); });
+  test.addEventListener('click', function(){
+    if (busy) return;
+    ready();
+    busy = true;
+    fb.textContent = 'Pulling...';
+    /* Phase 1: the puller moves in and grips the tip. The sample does
+       not change yet. */
+    lab.classList.add('is-gripping');
+    if (ENGAGE) void grip.getBoundingClientRect();
+    motion(grip, ENGAGE, ['transform']);
+    grip.style.transform = 'translateX(' + GRIP + 'px)';
+    after(grip, ENGAGE, pull);
+  });
+  document.getElementById('dw-reset').addEventListener('click', ready);
+  ready();
+  renderDiscovery();
 })();
 </script>
 
