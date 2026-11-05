@@ -2766,8 +2766,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
            whether it was recorded are in view together, even on short screens. -->
       <div id="pp-submit-status"></div>
       <div class="mystery-loop">
-        <span class="ml-label">🔍 The Mystery You Came In With</span>
-        You started this lesson with one question: <strong>"Why does a giant steel ship float while a tiny steel coin sinks?"</strong> If you can explain it with density, volume, and buoyancy, you've solved the mystery.
+        <span class="ml-label">🔍 The Big Idea</span>
+        Different materials have different <strong>physical properties</strong>. Scientists and engineers test those properties to <strong>identify materials</strong> and choose the best ones for a job.
       </div>
       <button class="reset-btn" onclick="ppResetQuiz()">Try Again</button>
       <!-- LYFELABZ:V2-ONLY:BEGIN o3-return-markup -->
@@ -4203,124 +4203,114 @@ var ppQuizMode  = 'practice';
 // ── QUIZ QUESTIONS ────────────────────────────────────────────────────
 var ppQuizQuestions = [
   {
-    // Q1 - Density concept
-    q: "Two cubes are exactly the same size. Cube X sinks in water; Cube Y floats. What must be true?",
-    options: [
-      "Cube X has more matter packed into the same space, so it is denser than water",
-      "Cube X is heavier, and heavy objects always sink",
-      "Cube Y is hollow - only hollow objects can float",
-      "Cube Y is smaller, and small objects always float"
-    ],
-    correct: 0,
-    explanation: "Density is how much matter is packed in a space. Same size means same volume, so the sinker must pack more matter into that space - it is denser than water, while the floater is less dense than water. Weight alone doesn't decide it; remember the giant ship and the tiny coin."
-  },
-  {
-    // Q2 - Regular volume
-    q: "A cereal box measures 8 cm long, 3 cm wide, and 10 cm tall. What is its volume?",
-    options: [
-      "21 cm³ - add the three measurements together",
-      "240 cm³ - multiply length x width x height",
-      "80 cm³ - multiply only the two largest numbers",
-      "It can't be calculated without the water displacement method"
-    ],
-    correct: 1,
-    explanation: "For regular objects, volume = length x width x height: 8 x 3 x 10 = 240 cm³. Water displacement is only needed for irregular objects with no straight edges to measure."
-  },
-  {
-    // Q3 - Water displacement
-    q: "A graduated cylinder holds 50 mL of water. After a toy dinosaur is gently dropped in, the water reads 82 mL. What is the dinosaur's volume?",
-    options: [
-      "82 mL - the new water level is the volume",
-      "132 mL - add the two readings together",
-      "32 mL - the difference between the levels is the volume",
-      "50 mL - the starting level is the volume"
-    ],
-    correct: 2,
-    explanation: "The water displacement method: record the starting level, drop the object in, record the new level, and subtract. 82 mL - 50 mL = 32 mL. The dinosaur pushed exactly 32 mL of water out of its way."
-  },
-  {
-    // Q4 - Buoyancy
-    q: "Why does a huge steel cargo ship float while a small solid steel coin sinks?",
-    options: [
-      "The ship's engines push it up against gravity",
-      "The ship's hull is full of air, so it pushes aside water that weighs more than the ship does",
-      "Saltwater can only hold up large objects",
-      "The coin spins as it falls, which breaks the water's upward force"
-    ],
-    correct: 1,
-    explanation: "Buoyancy is the upward force from the water an object pushes aside. The ship's wide, air-filled hull displaces an enormous weight of water - more than the ship itself weighs - so it floats. The solid coin displaces only a tiny bit of water, far less than its own weight, so it sinks."
-  },
-  {
-    // Q5 - Physical properties
-    q: "An electrician chooses copper for wiring because electricity flows through it easily, and it can be stretched into long thin wires. Which TWO physical properties is she relying on?",
-    options: [
-      "Hardness and magnetism",
-      "Melting point and flexibility",
-      "Electrical conductivity and ductility",
-      "Thermal conductivity and malleability"
-    ],
-    correct: 2,
-    explanation: "Electrical conductivity is how easily electric current flows through a material, and ductility is the ability to be stretched into a thin wire. Both are physical properties - you can observe them without changing what copper is."
-  },
-  {
-    // Q6 - physical property definition (DOK 1)
+    // Q1 - Physical property definition (DOK 1)
     q: "What is a physical property?",
     options: [
-      "A characteristic you can observe or measure without changing what the material is",
-      "A change that creates a brand-new substance with new properties",
-      "The cost of buying the material at a hardware store",
-      "A trait that only liquids and gases can ever have"
-    ],
-    correct: 0,
-    explanation: "A physical property is something you can observe or measure - like density, color, hardness, or magnetism - without changing the material into something else. Forming a new substance would be a chemical change instead."
-  },
-  {
-    // Q7 - why ice floats (DOK 2)
-    q: "Ice floats on its own liquid water. What does this tell you about ice compared to liquid water?",
-    options: [
-      "Ice is heavier than the water sitting beneath it",
-      "Ice is less dense than liquid water, because its particles lock into a spread-out pattern",
-      "Ice has no volume at all until it melts back into water",
-      "Ice is warmer than the liquid water around it"
+      "A change that turns a material into a brand-new substance with new properties",
+      "Something you can observe or measure without changing what the material is",
+      "The price of a material"
     ],
     correct: 1,
-    explanation: "Floating means less dense. When water freezes, its particles lock into a spread-out crystal pattern, so the same matter takes up more space. That makes ice less dense than liquid water, so it floats."
+    explanation: "Testing a physical property does not change a material into a different substance."
   },
   {
-    // Q8 - when to use displacement (DOK 2)
-    q: "Why would you use the water displacement method instead of a ruler to measure a volume?",
+    // Q2 - Malleability (DOK 1)
+    q: "Which property describes a material that can be flattened into a thin sheet without breaking?",
     options: [
-      "Because rulers cannot measure distances in centimeters at all",
-      "Because displacement is the only way to find the volume of a cube",
-      "Because the method works only on objects that already float",
-      "Because the object has an irregular shape with no straight edges to measure"
+      "Malleability",
+      "Ductility",
+      "Flexibility"
     ],
-    correct: 3,
-    explanation: "A ruler works for regular shapes (length x width x height). For an irregular object like a rock or a toy dinosaur, you drop it in water and measure how much the water rises - that rise is its volume."
+    correct: 0,
+    explanation: "Malleability means a material can be flattened. Ductility means it can be drawn into wire, and flexibility means it bends."
   },
   {
-    // Q9 - identify the property (DOK 1)
-    q: "A scientist tests an unknown silvery metal and finds that it is attracted to a magnet. Which physical property did she just observe?",
+    // Q3 - Hardness (scratch test) (DOK 2)
+    q: "A steel nail scratches a copper coin, but a fingernail does not. What does this show?",
     options: [
-      "Its density",
-      "Its melting point",
-      "Its magnetism",
-      "Its volume"
+      "The fingernail is harder than the coin",
+      "The coin is harder than a fingernail but softer than steel",
+      "The coin and nail are equally hard"
+    ],
+    correct: 1,
+    explanation: "A harder material can scratch a softer material."
+  },
+  {
+    // Q4 - Electrical conductivity (circuit test) (DOK 2)
+    q: "A copper strip lights the bulb, but a rubber strip leaves it dark. What should cover the outside of an electrical wire?",
+    options: [
+      "Rubber, because it stops electric current from passing through the covering",
+      "Copper, because it carries electric current",
+      "Either material, because both are solids"
+    ],
+    correct: 0,
+    explanation: "Rubber is an electrical insulator. It helps keep current in the conducting wire and protects people from contact with the conductor."
+  },
+  {
+    // Q5 - Thermal conductivity (heat test) (DOK 2)
+    q: "Why do metal pans often have wooden handles?",
+    options: [
+      "Wood melts at a lower temperature than metal",
+      "Wood is attracted to heat",
+      "Wood transfers heat slowly, so the handle stays cooler"
     ],
     correct: 2,
-    explanation: "Being attracted to a magnet is magnetism, a physical property. Scientists use properties like this to help identify an unknown material without changing it."
+    explanation: "Wood is a poor thermal conductor compared with most metals."
   },
   {
-    // Q10 - shape and buoyancy (DOK 2)
-    q: "A ball of modeling clay sinks, but the same clay shaped into a wide boat floats. Why does the shape change the result?",
+    // Q6 - Magnetism (magnet test) (DOK 2)
+    q: "Which tool could separate iron from a mixture of iron, aluminum, and copper scraps?",
     options: [
-      "Changing the shape turns the clay into a brand-new material",
-      "The boat shape makes the clay weigh less than the ball did",
-      "Wide shapes are pulled upward by gravity instead of down",
-      "The boat shape pushes aside more water, so the upward buoyant force is large enough to hold it up"
+      "A magnet",
+      "A battery and bulb",
+      "A thermometer"
     ],
-    correct: 3,
-    explanation: "It is the same clay and the same weight, so density of the material did not change - but the boat shape spreads out and pushes aside much more water. That extra displaced water creates a larger buoyant force, enough to keep it afloat."
+    correct: 0,
+    explanation: "Iron is attracted to magnets, while aluminum and copper are not attracted in this investigation."
+  },
+  {
+    // Q7 - Melting point (melting test) (DOK 2)
+    q: "Three substances have different melting points: ice (0°C), wax (about 55°C), and gold (about 1,064°C). Which requires the highest temperature to begin melting?",
+    options: [
+      "Ice",
+      "Gold",
+      "Wax"
+    ],
+    correct: 1,
+    explanation: "Gold has the highest melting point of the three substances."
+  },
+  {
+    // Q8 - Ductility (pull test) (DOK 1)
+    q: "Copper formed a wire, but glass snapped when pulled. Which property does copper demonstrate?",
+    options: [
+      "Magnetism",
+      "Hardness",
+      "Ductility"
+    ],
+    correct: 2,
+    explanation: "Ductility is the ability to be drawn into a wire without breaking."
+  },
+  {
+    // Q9 - Identifying a material (Mystery Cube) (DOK 2)
+    q: "A mystery cube could be steel, glass, copper, or plastic. It is not attracted to a magnet, but it lights a bulb in a circuit. Which material is it?",
+    options: [
+      "Steel",
+      "Glass",
+      "Copper"
+    ],
+    correct: 2,
+    explanation: "Copper conducts electricity but is not attracted to the magnet. The other materials do not match both observations."
+  },
+  {
+    // Q10 - Floating and displacement (Cargo Ship) (DOK 2)
+    q: "A cargo ship floats while carrying 300 g of cargo. The ship and its cargo have a combined mass of 800 g. What mass of water does the floating ship displace?",
+    options: [
+      "300 g",
+      "800 g",
+      "1,100 g"
+    ],
+    correct: 1,
+    explanation: "A floating object displaces water with a weight equal to its total weight, including cargo."
   }
 ];
 
