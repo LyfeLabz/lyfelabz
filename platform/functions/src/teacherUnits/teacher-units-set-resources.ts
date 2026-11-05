@@ -1,4 +1,4 @@
-import { teachingCallable } from "../supportAccess/teaching-callable";
+import { teacherUnitsCallable } from "./teacher-units-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import { PlatformError, TEACHER_UNIT_RESOURCES_MAX, } from "../shared";
@@ -148,7 +148,7 @@ const teacherUnitsSetResourcesHandler = createTeacherUnitsSetResourcesHandler(
   PRODUCTION_TEACHER_UNITS_ENFORCEMENT,
 );
 
-export const teacherUnitsSetResources = teachingCallable({ maxInstances: 20 }, teacherUnitsSetResourcesHandler);
+export const teacherUnitsSetResources = teacherUnitsCallable({ maxInstances: 20 }, "teacherUnitsSetResources", teacherUnitsSetResourcesHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsSetResourcesHandler = teacherUnitsSetResourcesHandler;

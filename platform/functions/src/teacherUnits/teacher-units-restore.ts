@@ -1,4 +1,4 @@
-import { teachingCallable } from "../supportAccess/teaching-callable";
+import { teacherUnitsCallable } from "./teacher-units-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
@@ -62,7 +62,7 @@ export function createTeacherUnitsRestoreHandler(enforcement: TeacherUnitsEnforc
 
 const teacherUnitsRestoreHandler = createTeacherUnitsRestoreHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsRestore = teachingCallable({ maxInstances: 20 }, teacherUnitsRestoreHandler);
+export const teacherUnitsRestore = teacherUnitsCallable({ maxInstances: 20 }, "teacherUnitsRestore", teacherUnitsRestoreHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsRestoreHandler = teacherUnitsRestoreHandler;

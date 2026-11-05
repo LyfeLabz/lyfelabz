@@ -1,4 +1,4 @@
-import { teachingCallable } from "../supportAccess/teaching-callable";
+import { teacherUnitsCallable } from "./teacher-units-callable";
 import { createHash } from "node:crypto";
 
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
@@ -337,7 +337,7 @@ export function createTeacherUnitsCreateHandler(enforcement: TeacherUnitsEnforce
 
 const teacherUnitsCreateHandler = createTeacherUnitsCreateHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsCreate = teachingCallable({ maxInstances: 20 }, teacherUnitsCreateHandler);
+export const teacherUnitsCreate = teacherUnitsCallable({ maxInstances: 20 }, "teacherUnitsCreate", teacherUnitsCreateHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsCreateHandler = teacherUnitsCreateHandler;

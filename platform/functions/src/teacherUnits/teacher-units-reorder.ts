@@ -1,4 +1,4 @@
-import { teachingCallable } from "../supportAccess/teaching-callable";
+import { teacherUnitsCallable } from "./teacher-units-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
@@ -312,7 +312,7 @@ export function createTeacherUnitsReorderHandler(enforcement: TeacherUnitsEnforc
 
 const teacherUnitsReorderHandler = createTeacherUnitsReorderHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsReorder = teachingCallable({ maxInstances: 20 }, teacherUnitsReorderHandler);
+export const teacherUnitsReorder = teacherUnitsCallable({ maxInstances: 20 }, "teacherUnitsReorder", teacherUnitsReorderHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsReorderHandler = teacherUnitsReorderHandler;
