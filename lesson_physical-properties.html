@@ -19,7 +19,7 @@ Regenerate: npm --prefix app run lessons:build -- --only=physical-properties --t
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://lyfelabz.com/lesson_physical-properties.html">
-<meta name="description" content="Why does a giant steel ship float while a tiny steel coin sinks? Discover density, volume, water displacement, buoyancy, and the physical properties of matter. Grade 6 physical science aligned to Massachusetts STE standards.">
+<meta name="description" content="Why are wires made of copper and pans made of metal? Test hardness, conductivity, magnetism, melting point, malleability, and ductility, then apply buoyancy and identify a mystery material. Grade 6 physical science aligned to Massachusetts STE standards.">
 <title>LyfeLabz | Physical Properties of Matter</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 
@@ -801,37 +801,8 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 }
 .pp-reset:hover { border-color: var(--teal); }
 
-/* ── DENSITY REVIEW (particle-packing model; ungraded) ── */
-/* Sized to its blocks: no full-width card with empty space around them. */
-.mlab-card.dz-lab { border-color: var(--density-border); max-width: 760px; padding: 1.1rem 1.2rem 1.2rem; margin-bottom: 0; }
-.dz-lab .pp-step-head { margin-bottom: 0.3rem; }
-.dz-lab .check-q { margin-bottom: 0.7rem; }
-.dz-blocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
-.dz-col { min-width: 0; }
-.dz-block.check-opt {
-  flex-direction: column;
-  justify-content: center;
-  padding: 0.8rem 0.7rem 0.7rem;
-  text-align: center;
-}
-.dz-block svg { width: 100%; max-width: 132px; height: auto; display: block; margin: 0 auto 0.35rem; }
-.dz-name { font-family: 'Fredoka One', cursive; font-weight: 400; font-size: 1.05rem; }
-.dz-block.check-opt.right::after { top: 0.9rem; right: 0.8rem; transform: none; }
-.dz-block.check-opt.chosen { color: var(--text); }
-.dz-block.check-opt.chosen.right { border-color: var(--green); }
-.dz-data { margin: 0.55rem 0 0; display: grid; gap: 0.25rem; animation: predictFadeUp 0.35s ease both; }
-.dz-data[hidden] { display: none; }
-.dz-data > div { display: flex; justify-content: space-between; gap: 0.4rem; font-size: 0.95rem; line-height: 1.35; }
-.dz-data dt { color: var(--text-muted); font-weight: 700; }
-.dz-data dd { color: var(--text); font-weight: 900; text-align: right; white-space: nowrap; }
-.dz-data > div.dz-bar { display: block; height: 8px; border-radius: 99px; background: rgba(255,255,255,0.08); overflow: hidden; }
-.dz-bar span { display: block; height: 100%; border-radius: 99px; background: var(--teal); }
-.dz-fb:empty { display: none; }
-.dz-fb { margin: 0.7rem 0 0; font-size: 1rem; font-weight: 800; line-height: 1.5; color: var(--text); }
-.dz-experiment { margin-top: 0.6rem; animation: predictFadeUp 0.35s ease both; }
-.dz-experiment[hidden] { display: none; }
-.dz-tank-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-bottom: 0.6rem; }
-.dz-drop, .ship-btn, .pt-go {
+/* Primary action buttons shared by the Cargo Ship and the property tests. */
+.ship-btn, .pt-go {
   min-height: 48px;
   padding: 0.6rem 1.2rem;
   border-radius: 12px;
@@ -843,17 +814,14 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   font-weight: 900;
   cursor: pointer;
 }
-.dz-water-label { font-size: 0.95rem; font-weight: 800; color: #7cc8f8; }
-.dz-tank { display: block; width: 100%; max-width: 520px; height: auto; }
-.dz-tb { transition: transform 0.6s ease; }
-.dz-discover { margin-top: 0.6rem; font-size: 1rem; line-height: 1.55; color: var(--text-muted); max-width: 760px; }
-@media (max-width: 480px) {
-  .dz-blocks { gap: 0.4rem; }
-  .dz-block.check-opt { padding: 0.55rem 0.3rem 0.5rem; }
-  .dz-block.check-opt.right::after { top: 0.4rem; right: 0.4rem; font-size: 0.95rem; }
-  .dz-name { font-size: 0.95rem; }
-  .dz-data > div { flex-direction: column; gap: 0; font-size: 0.85rem; }
-  .dz-data dd { text-align: left; }
+/* Small uppercase label (used by the quiz's model answer). */
+.tm-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.35rem;
 }
 
 /* ── SHIP-LOADING INVESTIGATION (ungraded, nothing stored) ── */
@@ -914,8 +882,8 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .ship-fb-zone .tm-fb { margin-top: 0.7rem; }
 .mlab-card.ship-lab { margin-bottom: 0; }
 #buoyancy { padding-bottom: 1.6rem; }
-#buoyancy + #properties { padding-top: 1.6rem; }
-@media (max-width: 720px) { #buoyancy { padding-bottom: 1rem; } #buoyancy + #properties { padding-top: 1rem; } }
+#buoyancy + #mystery { padding-top: 1.6rem; }
+@media (max-width: 720px) { #buoyancy { padding-bottom: 1rem; } #buoyancy + #mystery { padding-top: 1rem; } }
 .ship-challenge-options { grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); }
 @media (max-width: 480px) {
   .ship-controls .ship-btn { font-size: 0.88rem; padding: 0.55rem 0.3rem; }
@@ -1144,164 +1112,9 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .id-predict-note { margin-top: 0.6rem; font-size: 0.95rem; line-height: 1.5; color: var(--text-muted); }
 .id-predict-note strong { color: var(--text); }
 
-/* ── ENGINEER'S PROPERTY MATCH ── */
-.match-scenario {
-  background: rgba(180,127,255,0.06);
-  border: 1px solid var(--prop-border);
-  border-left: 4px solid var(--purple);
-  border-radius: 12px;
-  padding: 0.9rem 1.1rem;
-  font-size: 1.02rem;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.55;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-.match-scenario-icon { font-size: 1.7rem; flex-shrink: 0; }
-.match-options { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(13rem, calc((100% - 1.2rem) / 3))), 1fr)); }
-.match-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem 1rem; margin-top: 0.9rem; }
-.match-progress { font-size: 0.95rem; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 0.6rem; }
-.match-dots { display: inline-flex; gap: 0.35rem; }
-.match-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.25); }
-.match-dot.done { background: rgba(46,204,113,0.45); border-color: var(--green); }
-.match-next {
-  min-height: 48px;
-  padding: 0.6rem 1.3rem;
-  border-radius: 12px;
-  border: none;
-  background: var(--purple);
-  color: #160d24;
-  font-family: 'Nunito', sans-serif;
-  font-size: 1rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-.match-next[hidden] { display: none; }
-.match-success {
-  display: none;
-  margin-top: 1rem;
-  padding: 0.9rem 1.2rem;
-  border-radius: 12px;
-  background: rgba(46,204,113,0.1);
-  border: 1px solid rgba(46,204,113,0.35);
-  color: #a8e6c4;
-  font-size: 1rem;
-  font-weight: 700;
-}
-.match-success.visible { display: block; animation: predictFadeUp 0.4s ease both; }
-
-/* ── QUICK RECALL (two questions side by side, stacked on phones) ── */
-.recall-card.check-card { max-width: 1100px; }
-.tm-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
-  gap: 1rem;
-}
-.tm-question {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1rem 1.1rem 1.1rem;
-  overflow-wrap: break-word;
-  min-width: 0;
-}
-.tm-label {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 0.35rem;
-}
-.tm-question .check-q { margin-bottom: 0.7rem; }
-.tm-question .check-options { gap: 0.5rem; }
-@media (max-width: 480px) { .tm-question { padding: 0.85rem 0.75rem 0.9rem; } }
-
-/* ── WRAP-UP BEATS ── */
-.wrapup-beats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  max-width: 100%;
-  margin: 0 auto;
-}
-@media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
-
-.wrapup-beat {
-  border-radius: 16px;
-  padding: 1.4rem 1.3rem;
-  position: relative;
-}
-.wrapup-beat::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  border-radius: 16px 16px 0 0;
-}
-.wrapup-beat-1 {
-  background: rgba(245,200,66,0.06);
-  border: 1px solid rgba(245,200,66,0.25);
-}
-.wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
-.wrapup-beat-2 {
-  background: rgba(59,200,232,0.05);
-  border: 1px solid rgba(59,200,232,0.2);
-}
-.wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
-.wrapup-beat-3 {
-  background: rgba(180,127,255,0.05);
-  border: 1px solid rgba(180,127,255,0.22);
-}
-.wrapup-beat-3::before { background: linear-gradient(90deg, var(--purple), rgba(180,127,255,0.3)); }
-
-.wrapup-beat-label {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  margin-bottom: 0.6rem;
-}
-.wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
-.wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
-.wrapup-beat-3 .wrapup-beat-label { color: var(--purple); }
-
-.wrapup-beat-answer {
-  font-family: 'Fredoka One', cursive;
-  font-weight: 400;
-  font-size: 1.1rem;
-  line-height: 1.3;
-  margin-bottom: 0.75rem;
-  color: var(--text);
-}
-.wrapup-beat-body {
-  font-size: 1rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-.wrapup-beat-body strong { color: var(--text); font-weight: 800; }
-.wrapup-behavior-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
-}
-.wbc {
-  font-size: 0.85rem;
-  font-weight: 800;
-  padding: 0.22rem 0.65rem;
-  border-radius: 99px;
-  border: 1px solid;
-}
-.wbc-density { color: var(--teal);   background: var(--density-dim); border-color: var(--density-border); }
-.wbc-volume  { color: var(--green);  background: var(--volume-dim);  border-color: var(--volume-border);  }
-.wbc-buoy    { color: var(--orange); background: var(--buoy-dim);    border-color: var(--buoy-border);    }
 </style>
 
-<!-- ── Learning Goals + Vocabulary Explorer ── -->
+<!-- ── Learning Goals ── -->
 <style>
 .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
 @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
@@ -1329,84 +1142,6 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   border-radius: 99px;
 }
 
-/* Vocabulary Explorer (shared with Measuring Matter): eight term selectors
-   above one definition panel. Exactly one term is selected; choosing another
-   swaps the panel. Ungraded and stateless: nothing is stored or submitted.
-   Selected = term-color fill and check; keyboard focus = gold ring.
-   #vx-announce is the only live region: it reads the new definition. */
-.gc-teal   { --vx: var(--teal);   }
-.gc-orange { --vx: var(--orange); }
-.gc-blue   { --vx: #7cc8f8;       }
-.gc-green  { --vx: var(--green);  }
-.gc-purple { --vx: var(--purple); }
-.vx-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-/* At most four columns (two on phones); each word keeps a rem-based
-   minimum, so enlarged text drops to fewer, wider columns instead of
-   breaking words. */
-.vx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, max(12rem, calc((100% - 2.25rem) / 4))), 1fr)); grid-auto-rows: 1fr; gap: 0.75rem; }
-@media (max-width: 720px) { .vx-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(9rem, calc((100% - 0.75rem) / 2))), 1fr)); } }
-.vx-term {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  min-height: 60px;
-  padding: 0.7rem 1rem 0.7rem 1.1rem;
-  background: var(--card);
-  border: 2px solid rgba(255,255,255,0.08);
-  border-left: 5px solid var(--vx);
-  border-radius: 14px;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-.vx-term .gc-term { min-width: 0; overflow-wrap: anywhere; font-family: 'Fredoka One', cursive; font-size: 1.2rem; line-height: 1.25; color: var(--vx); }
-.vx-check {
-  flex-shrink: 0;
-  display: inline-grid;
-  place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  visibility: hidden;
-  font-size: 0.85rem;
-  font-weight: 900;
-  line-height: 1;
-}
-.vx-term:hover { border-color: color-mix(in srgb, var(--vx) 55%, transparent); border-left-color: var(--vx); }
-.vx-term[aria-pressed="true"] {
-  border-color: var(--vx);
-  background: color-mix(in srgb, var(--vx) 20%, var(--card));
-}
-.vx-term[aria-pressed="true"] .vx-check { visibility: visible; background: var(--vx); color: var(--dark); }
-.vx-term:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
-@media (max-width: 480px) {
-  .vx-term { position: relative; padding: 0.6rem 1.9rem 0.6rem 0.75rem; }
-  .vx-term .gc-term { font-size: 1rem; }
-  .vx-check { position: absolute; top: 0.45rem; right: 0.45rem; width: 1.2rem; height: 1.2rem; font-size: 0.7rem; }
-}
-.vx-panels { margin-top: 1rem; }
-.vx-panel {
-  background: var(--card);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-top: 4px solid var(--vx);
-  border-radius: 16px;
-  padding: 1.1rem 1.3rem 1.25rem;
-  animation: predictFadeUp 0.25s ease both;
-}
-.vx-panel[hidden] { display: none; }
-.vx-panel-term {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.3rem;
-  font-weight: 400;
-  line-height: 1.3;
-  color: var(--vx);
-  margin: 0 0 0.8rem;
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid rgba(255,255,255,0.14);
-}
-.gc-lead { margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.55; color: var(--text); }
-.gc-support { margin: 0.7rem 0 0; font-size: 1rem; line-height: 1.6; color: var(--text); }
 </style>
 <style id="nav-hamburger-style">
   /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
@@ -1572,7 +1307,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
   <ul class="nav-links" id="navLinks">
     <li><a href="#vocab">Vocab</a></li>
-    <li><a href="#density">Explore</a></li>
+    <li><a href="#properties">Explore</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
     <li><a href="#connections">Connections</a></li>
@@ -1591,12 +1326,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <span class="hero-float">⚓</span>
   <div class="hero-badge">Lesson</div>
   <h1>Physical Properties of Matter</h1>
-  <p class="hero-sub">A 100,000-ton steel ship floats across the ocean, but a steel coin dropped overboard sinks instantly. Same material, opposite results. Why?</p>
+  <p class="hero-sub">Copper wires. Metal pans. Steel ships. Every material is chosen because of what it can do.</p>
   <div class="driving-question">
     <div class="dq-icon">🔍</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">How can we use properties like density and buoyancy to predict what matter will do, and to identify what a material is?</div>
+      <div class="dq-text">How can we test physical properties to identify a material and choose the right one for a job?</div>
     </div>
   </div>
 </header>
@@ -1604,10 +1339,10 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="After a brief vocabulary preview, the lesson opens with three harbor puzzles, including a floating steel ship and a sinking steel coin, before any explanation. Encountering a genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
-  <span class="ls-badge" data-tip="Eight key terms are previewed one at a time before the lesson begins, then revisited in context as students use them. A brief preview lowers the load of new words when they reappear in explanations and tasks. (Beck, McKeown, &amp; Kucan, 2013)">🔤 Vocabulary Preview</span>
-  <span class="ls-badge" data-tip="Each investigation moves from a prediction to one change at a time to a short discovery: the density blocks, the cargo ship loaded one crate at a time, and the mystery cube tested one property at a time. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
-  <span class="ls-badge" data-tip="Students compare particle models, load a model ship until it floods, and run physical tests to identify a mystery material themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
+  <span class="ls-badge" data-tip="The lesson opens with three everyday objects, a wire, a pan, and a cargo ship, and asks why each is made of its material before any explanation. A genuine question activates curiosity and primes attention for the investigations that follow. (Loewenstein, 1994)">🔍 Phenomenon First</span>
+  <span class="ls-badge" data-tip="Eight property words are previewed in three groups (force and shape, heat, electricity and magnetism) before students test them. A brief preview lowers the load of new words when they reappear in the investigations. (Beck, McKeown, &amp; Kucan, 2013)">🔤 Vocabulary Preview</span>
+  <span class="ls-badge" data-tip="Each investigation changes one thing at a time and ends with a short discovery: one material or tool per property test, one crate at a time on the cargo ship, and one test at a time on the mystery cube. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
+  <span class="ls-badge" data-tip="Students run seven property tests, load a model ship until it floods, and identify a mystery material themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
   <span class="ls-badge" data-tip="The quiz asks students to apply density, displacement, and property reasoning to new objects and scenarios rather than recall definitions. Transfer tasks reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
 </div>
 
@@ -1622,24 +1357,16 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">🧊</span>
-        <div class="goal-text">Explain density as how much matter is packed in a space, and use it to predict whether an object will sink or float.</div>
-        <span class="goal-std">6.MS-PS1-7(MA)</span>
-      </div>
-      <div class="goal-card">
-        <span class="goal-icon">🚢</span>
-        <div class="goal-text">Explain how a floating ship pushes aside water equal to its own mass, and why too much cargo makes it sink.</div>
-        <span class="goal-std">6.MS-PS1-7(MA)</span>
-      </div>
-      <div class="goal-card">
-        <span class="goal-icon">⚓</span>
-        <div class="goal-text">Describe buoyancy as the upward push of water on anything placed in it.</div>
-        <span class="goal-std">6.MS-PS1-7(MA)</span>
+        <span class="goal-icon">🔬</span>
+        <div class="goal-text">Investigate and compare how materials behave when scratched, heated, squeezed, pulled, or tested with electricity and magnets.</div>
       </div>
       <div class="goal-card">
         <span class="goal-icon">🧲</span>
-        <div class="goal-text">Use physical properties, like magnetism, conductivity, hardness, and melting point, to identify and choose materials.</div>
-        <span class="goal-std">6.MS-PS1-8(MA)</span>
+        <div class="goal-text">Use evidence from physical property tests to identify materials and choose the right material for a job.</div>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🚢</span>
+        <div class="goal-text">Explain how buoyancy allows a cargo ship to float and how adding cargo affects it.</div>
       </div>
     </div>
 
@@ -1649,28 +1376,28 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Names the four outcomes up front: density, displacement, buoyancy, and using physical properties to identify and choose materials.</li>
-            <li>Anchors every goal to 6.MS-PS1-7 and 6.MS-PS1-8 so the lesson stays in scope.</li>
+            <li>Names the three outcomes up front: investigating how materials behave, using evidence to identify or choose a material, and applying buoyancy in the Cargo Ship challenge.</li>
+            <li>No goal carries a standard code. The property-testing goals build on Grade 5 property identification, and the buoyancy goal only supports 6.MS-PS1-7(MA) without the particle model, so no Grade 6 performance expectation is claimed here.</li>
           </ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
           <ul class="edu-note-text">
             <li>Advance organizer: students see the target before the content.</li>
-            <li>Goal setting primes attention for the predict-then-identify arc.</li>
+            <li>Goal setting primes attention for the test-then-apply arc.</li>
           </ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
           <ul class="edu-note-text">
             <li>Understand to Analyze</li>
-            <li>DOK 2 to 3 (goals ask students to explain density and identify a material from evidence)</li>
+            <li>DOK 1 to 2 (compare properties, then apply them to identify a material and load a ship)</li>
           </ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
           <ul class="edu-note-text">
-            <li>Four icon-led cards, large targets, low text load.</li>
+            <li>Three icon-led cards, large targets, low text load.</li>
             <li>Plain "be able to" wording.</li>
             <li>Standard codes shown but not required reading.</li>
           </ul>
@@ -1682,157 +1409,48 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     KEY VOCABULARY - Vocabulary Explorer, matching Measuring Matter.
-     Intentional, documented exception to the CLAUDE.md VOCABULARY card
-     pattern (Measuring Matter decision 2026-10-21, extended to Physical
-     Properties by the 2026-11-04 modernization so the two lessons share one
-     vocabulary experience): one definition at a time through pressed-state
-     word buttons, with the intro "Select a word to explore its meaning."
-     It keeps the canonical one-open-at-a-time behavior. Do not convert to
-     glossary cards without a new decision.
+     ENGAGE - WHY THAT MATERIAL? (one phenomenon, three everyday examples)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+<section id="hook" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.4rem;">Select a word to explore its meaning.</p>
-    <div class="vx" id="vocab-explorer">
-      <p class="vx-sr" id="vx-announce" aria-live="polite" aria-atomic="true"></p>
-      <div class="vx-grid" role="group" aria-label="Vocabulary words">
-        <button class="vx-term gc-purple" type="button" aria-pressed="true" aria-controls="vx-def-property" data-term="property"><span class="gc-term">Physical Property</span><span class="vx-check" aria-hidden="true">✓</span></button>
-        <button class="vx-term gc-teal" type="button" aria-pressed="false" aria-controls="vx-def-density" data-term="density"><span class="gc-term">Density</span><span class="vx-check" aria-hidden="true">✓</span></button>
-        <button class="vx-term gc-green" type="button" aria-pressed="false" aria-controls="vx-def-volume" data-term="volume"><span class="gc-term">Volume</span><span class="vx-check" aria-hidden="true">✓</span></button>
-        <button class="vx-term gc-green" type="button" aria-pressed="false" aria-controls="vx-def-displacement" data-term="displacement"><span class="gc-term">Water Displacement</span><span class="vx-check" aria-hidden="true">✓</span></button>
-        <button class="vx-term gc-orange" type="button" aria-pressed="false" aria-controls="vx-def-buoyancy" data-term="buoyancy"><span class="gc-term">Buoyancy</span><span class="vx-check" aria-hidden="true">✓</span></button>
-        <button class="vx-term gc-purple" type="button" aria-pressed="false" aria-controls="vx-def-hardness" data-term="hardness"><span class="gc-term">Hardness</span><span class="vx-check" aria-hidden="true">✓</span></button>
-        <button class="vx-term gc-blue" type="button" aria-pressed="false" aria-controls="vx-def-conductivity" data-term="conductivity"><span class="gc-term">Conductivity</span><span class="vx-check" aria-hidden="true">✓</span></button>
-        <button class="vx-term gc-blue" type="button" aria-pressed="false" aria-controls="vx-def-magnetism" data-term="magnetism"><span class="gc-term">Magnetism</span><span class="vx-check" aria-hidden="true">✓</span></button>
-      </div>
-      <div class="vx-panels">
-        <div class="vx-panel gc-purple" id="vx-def-property" data-term="property">
-          <h3 class="vx-panel-term">Physical Property</h3>
-          <p class="gc-lead">A characteristic of a material that you can observe or measure without changing what the material is.</p>
-          <p class="gc-support">Color, hardness, density, and magnetism are all physical properties.</p>
-        </div>
-        <div class="vx-panel gc-teal" id="vx-def-density" data-term="density" hidden>
-          <h3 class="vx-panel-term">Density</h3>
-          <p class="gc-lead">How much matter is packed into a space.</p>
-          <p class="gc-support">Objects that are denser than water sink. Objects that are less dense than water float.</p>
-        </div>
-        <div class="vx-panel gc-green" id="vx-def-volume" data-term="volume" hidden>
-          <h3 class="vx-panel-term">Volume</h3>
-          <p class="gc-lead">The amount of space an object takes up.</p>
-          <p class="gc-support">For a box shape, volume = length × width × height, in cubic centimeters (cm³).</p>
-        </div>
-        <div class="vx-panel gc-green" id="vx-def-displacement" data-term="displacement" hidden>
-          <h3 class="vx-panel-term">Water Displacement</h3>
-          <p class="gc-lead">The water pushed out of the way when an object goes into it.</p>
-          <p class="gc-support">The water pushed aside takes up the same space as the part of the object that is underwater.</p>
-        </div>
-        <div class="vx-panel gc-orange" id="vx-def-buoyancy" data-term="buoyancy" hidden>
-          <h3 class="vx-panel-term">Buoyancy</h3>
-          <p class="gc-lead">The upward push that water (or another fluid) gives an object placed in it.</p>
-          <p class="gc-support">An object floats when this upward push is strong enough to balance its weight.</p>
-        </div>
-        <div class="vx-panel gc-purple" id="vx-def-hardness" data-term="hardness" hidden>
-          <h3 class="vx-panel-term">Hardness</h3>
-          <p class="gc-lead">How well a material resists being scratched or dented.</p>
-          <p class="gc-support">Diamond is hard enough to scratch glass. Chalk is soft enough to scratch with a fingernail.</p>
-        </div>
-        <div class="vx-panel gc-blue" id="vx-def-conductivity" data-term="conductivity" hidden>
-          <h3 class="vx-panel-term">Conductivity</h3>
-          <p class="gc-lead">How easily heat or electric current moves through a material.</p>
-          <p class="gc-support">Metals conduct heat and electricity well. Plastic and wood do not.</p>
-        </div>
-        <div class="vx-panel gc-blue" id="vx-def-magnetism" data-term="magnetism" hidden>
-          <h3 class="vx-panel-term">Magnetism</h3>
-          <p class="gc-lead">Whether a material is attracted to a magnet.</p>
-          <p class="gc-support">Iron and steel are attracted to magnets. Aluminum, copper, plastic, and wood are not.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text">
-            <li>Pre-loads the eight terms students use in the density review, the cargo ship, and the mystery cube investigation.</li>
-            <li>Leads with physical property, the idea that ties every other term together.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text">
-            <li>Pre-teaching vocabulary</li>
-            <li>Reduced extraneous load (one definition at a time, definition first, example beneath)</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text">
-            <li>Remember to Understand</li>
-            <li>DOK 1</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text">
-            <li>Word buttons report pressed state; full keyboard use</li>
-            <li>Definition panel announced politely without moving focus</li>
-            <li>Ungraded and optional; nothing is stored</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     ENGAGE - THE MYSTERY
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="hook" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Engage · Mystery</span>
-    <h2 class="section-title">One Harbor. Three Puzzles.</h2>
-    <p class="section-desc">Picture Boston Harbor on a summer day. Select each card and think about the question.</p>
+    <span class="section-label">Engage · Phenomenon</span>
+    <h2 class="section-title">Why That Material?</h2>
+    <p class="section-desc">Every object is made from a material chosen for a reason. Select each card.</p>
 
     <div class="hook-grid">
 
       <div class="hook-card c1">
-        <span class="hook-card-icon" aria-hidden="true">🚢</span>
-        <h3 class="hook-card-name" id="hook-name-1">The Steel Giant</h3>
+        <span class="hook-card-icon" aria-hidden="true">🔌</span>
+        <h3 class="hook-card-name" id="hook-name-1">The Wire</h3>
         <div class="hook-card-reveal" id="hook-reveal-1" tabindex="-1">
           <div class="hook-card-observation">
-            A container ship made of thousands of tons of steel glides across the harbor without sinking.
+            Electrical wires are copper on the inside and plastic on the outside.
           </div>
-          <div class="hook-card-question">Steel is heavy. Why doesn't the ship sink?</div>
+          <div class="hook-card-question">Why use two different materials?</div>
         </div>
         <button class="hook-card-prompt" type="button" aria-expanded="false" aria-controls="hook-reveal-1" aria-describedby="hook-name-1">Select to look closer</button>
       </div>
 
       <div class="hook-card c2">
-        <span class="hook-card-icon" aria-hidden="true">🪙</span>
-        <h3 class="hook-card-name" id="hook-name-2">The Tiny Coin</h3>
+        <span class="hook-card-icon" aria-hidden="true">🍳</span>
+        <h3 class="hook-card-name" id="hook-name-2">The Pan</h3>
         <div class="hook-card-reveal" id="hook-reveal-2" tabindex="-1">
           <div class="hook-card-observation">
-            A sailor drops a small steel coin over the railing. It sinks straight to the bottom.
+            A cooking pan is metal, but its handle is often wood or plastic.
           </div>
-          <div class="hook-card-question">The coin is far lighter than the ship. Why does it sink?</div>
+          <div class="hook-card-question">Why not make the whole pan from metal?</div>
         </div>
         <button class="hook-card-prompt" type="button" aria-expanded="false" aria-controls="hook-reveal-2" aria-describedby="hook-name-2">Select to look closer</button>
       </div>
 
       <div class="hook-card c3">
-        <span class="hook-card-icon" aria-hidden="true">🧊</span>
-        <h3 class="hook-card-name" id="hook-name-3">The Floating Ice</h3>
+        <span class="hook-card-icon" aria-hidden="true">🚢</span>
+        <h3 class="hook-card-name" id="hook-name-3">The Ship</h3>
         <div class="hook-card-reveal" id="hook-reveal-3" tabindex="-1">
           <div class="hook-card-observation">
-            Chunks of ice bob at the surface. But ice is just frozen water, the same stuff it is floating in.
+            A steel cargo ship carries thousands of tons of cargo across the ocean.
           </div>
-          <div class="hook-card-question">How can water float on water?</div>
+          <div class="hook-card-question">How much can it carry before it sinks?</div>
         </div>
         <button class="hook-card-prompt" type="button" aria-expanded="false" aria-controls="hook-reveal-3" aria-describedby="hook-name-3">Select to look closer</button>
       </div>
@@ -1840,9 +1458,9 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <div class="hook-transition">
-      <div class="hook-transition-label">The Mystery Continues</div>
-      <h3 class="hook-transition-title">What do these puzzles have in common?</h3>
-      <p class="hook-transition-body">Weight alone can't explain any of them. As you explore density and buoyancy, look for the rule that decides what sinks and what floats.</p>
+      <div class="hook-transition-label">Your Mission</div>
+      <h3 class="hook-transition-title">What makes a material the right choice?</h3>
+      <p class="hook-transition-body">Test seven physical properties. Then use what you learn to load a cargo ship and identify a mystery cube.</p>
     </div>
 
     <div class="edu-note">
@@ -1851,22 +1469,22 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Opens a discrepant event: a heavy ship floats while a light coin sinks.</li>
-            <li>Confronts the misconception that heavier objects always sink, without giving the answer away.</li>
+            <li>Opens with familiar objects whose materials were chosen for their physical properties.</li>
+            <li>Each question is answered later by an investigation: the wire by the circuit and wire tests, the pan by the heat test, the ship by the Cargo Ship challenge.</li>
           </ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
           <ul class="edu-note-text">
-            <li>Curiosity gap: the puzzle creates a need-to-know before instruction.</li>
-            <li>Cognitive conflict makes the upcoming density rule more memorable.</li>
+            <li>Curiosity gap: a short question creates a need-to-know before the investigations.</li>
+            <li>Concrete, everyday objects anchor abstract property words.</li>
           </ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
           <ul class="edu-note-text">
             <li>Understand</li>
-            <li>DOK 2 (students notice a pattern and form a question, not yet justify)</li>
+            <li>DOK 1 to 2 (notice that materials are chosen for a reason; no response required)</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -1874,7 +1492,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <ul class="edu-note-text">
             <li>A real button per card, with the title as a heading; focus moves to the revealed text</li>
             <li>Cards reserve their revealed height, so the page never jumps</li>
-            <li>Concrete, everyday objects lower the entry barrier</li>
+            <li>Two short lines per card; nothing to type</li>
           </ul>
         </div>
       </div>
@@ -1884,294 +1502,18 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1 - DENSITY REVIEW (particle-packing model)
+     KEY VOCABULARY - the eight physical properties in three behavior groups
+     (force and shape, heat, electricity and magnetism). Teacher-approved
+     Phase 3 layout (2026-11-05): all eight short definitions stay visible so
+     students can compare look-alike words side by side; this replaces the
+     Vocabulary Explorer in this lesson only. Measuring Matter keeps its
+     explorer. Do not duplicate these definitions inside the investigations.
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="density" style="background: var(--dark);">
+<section id="vocab" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label" style="color: var(--teal); background: var(--density-dim); border-color: var(--density-border);">Explore · The Hidden Rule</span>
-    <h2 class="section-title">What Is Density?</h2>
-    <p class="section-desc">Three blocks, exactly the same size. The dots show the matter packed inside each one.</p>
-
-    <!-- Density review: predict, then compare measurements and drop the
-         blocks in water. Every number and position comes from BLOCKS in
-         its script. Ungraded; nothing is stored or sent. -->
-    <div class="mlab-card dz-lab" id="dz-lab">
-      <div class="pp-step-head">
-        <div class="pp-step-label" id="dz-step">Step 1 · Predict</div>
-        <button class="pp-reset" id="dz-reset" type="button" hidden>Try Again</button>
-      </div>
-      <div class="check-q" id="dz-q">Which block is the most dense?</div>
-      <div class="dz-blocks" role="group" aria-labelledby="dz-q">
-        <div class="dz-col">
-          <button class="dz-block check-opt" type="button" aria-pressed="false" data-block="a">
-            <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-              <rect x="4" y="4" width="112" height="82" rx="10" fill="rgba(59,200,232,0.05)" stroke="rgba(59,200,232,0.45)" stroke-width="2"/>
-              <circle cx="32" cy="30" r="5" fill="#3bc8e8"/><circle cx="84" cy="26" r="5" fill="#3bc8e8"/>
-              <circle cx="58" cy="58" r="5" fill="#3bc8e8"/><circle cx="92" cy="66" r="5" fill="#3bc8e8"/>
-            </svg>
-            <span class="dz-name">Block A</span><span class="pp-sr">: 4 particles, spread far apart</span>
-          </button>
-          <dl class="dz-data" hidden>
-            <div><dt>Mass</dt><dd>4 g</dd></div>
-            <div class="dz-bar" aria-hidden="true"><span style="width: 25%;"></span></div>
-            <div><dt>Volume</dt><dd>10 cm³</dd></div>
-            <div><dt>Density</dt><dd>0.4 g/cm³</dd></div>
-          </dl>
-        </div>
-        <div class="dz-col">
-          <button class="dz-block check-opt" type="button" aria-pressed="false" data-block="b">
-            <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-              <rect x="4" y="4" width="112" height="82" rx="10" fill="rgba(59,200,232,0.12)" stroke="rgba(59,200,232,0.6)" stroke-width="2"/>
-              <circle cx="26" cy="24" r="5" fill="#3bc8e8"/><circle cx="60" cy="20" r="5" fill="#3bc8e8"/><circle cx="94" cy="26" r="5" fill="#3bc8e8"/>
-              <circle cx="38" cy="48" r="5" fill="#3bc8e8"/><circle cx="76" cy="46" r="5" fill="#3bc8e8"/>
-              <circle cx="28" cy="70" r="5" fill="#3bc8e8"/><circle cx="62" cy="68" r="5" fill="#3bc8e8"/><circle cx="94" cy="70" r="5" fill="#3bc8e8"/>
-            </svg>
-            <span class="dz-name">Block B</span><span class="pp-sr">: 8 particles, medium spacing</span>
-          </button>
-          <dl class="dz-data" hidden>
-            <div><dt>Mass</dt><dd>8 g</dd></div>
-            <div class="dz-bar" aria-hidden="true"><span style="width: 50%;"></span></div>
-            <div><dt>Volume</dt><dd>10 cm³</dd></div>
-            <div><dt>Density</dt><dd>0.8 g/cm³</dd></div>
-          </dl>
-        </div>
-        <div class="dz-col">
-          <button class="dz-block check-opt" type="button" aria-pressed="false" data-block="c">
-            <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-              <rect x="4" y="4" width="112" height="82" rx="10" fill="rgba(59,200,232,0.22)" stroke="rgba(59,200,232,0.8)" stroke-width="2"/>
-              <circle cx="20" cy="18" r="5" fill="#3bc8e8"/><circle cx="44" cy="16" r="5" fill="#3bc8e8"/><circle cx="68" cy="18" r="5" fill="#3bc8e8"/><circle cx="92" cy="16" r="5" fill="#3bc8e8"/>
-              <circle cx="32" cy="34" r="5" fill="#3bc8e8"/><circle cx="56" cy="33" r="5" fill="#3bc8e8"/><circle cx="80" cy="34" r="5" fill="#3bc8e8"/><circle cx="102" cy="33" r="5" fill="#3bc8e8"/>
-              <circle cx="20" cy="51" r="5" fill="#3bc8e8"/><circle cx="44" cy="50" r="5" fill="#3bc8e8"/><circle cx="68" cy="51" r="5" fill="#3bc8e8"/><circle cx="92" cy="50" r="5" fill="#3bc8e8"/>
-              <circle cx="32" cy="68" r="5" fill="#3bc8e8"/><circle cx="56" cy="67" r="5" fill="#3bc8e8"/><circle cx="80" cy="68" r="5" fill="#3bc8e8"/><circle cx="102" cy="67" r="5" fill="#3bc8e8"/>
-            </svg>
-            <span class="dz-name">Block C</span><span class="pp-sr">: 16 particles, tightly packed</span>
-          </button>
-          <dl class="dz-data" hidden>
-            <div><dt>Mass</dt><dd>16 g</dd></div>
-            <div class="dz-bar" aria-hidden="true"><span style="width: 100%;"></span></div>
-            <div><dt>Volume</dt><dd>10 cm³</dd></div>
-            <div><dt>Density</dt><dd>1.6 g/cm³</dd></div>
-          </dl>
-        </div>
-      </div>
-      <p class="dz-fb" id="dz-fb" aria-live="polite"></p>
-
-      <div class="dz-experiment" id="dz-experiment" hidden>
-        <div class="dz-tank-head">
-          <button class="dz-drop" id="dz-drop" type="button">💧 Drop them in water</button>
-          <span class="dz-water-label">Water: 1 g/cm³</span>
-        </div>
-        <svg class="dz-tank" id="dz-tank" viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tank of water with Blocks A, B, and C held above the surface.">
-          <rect x="6" y="70" width="348" height="104" rx="6" fill="rgba(59,130,246,0.22)"/>
-          <line x1="6" y1="70" x2="354" y2="70" stroke="rgba(124,200,248,0.7)" stroke-width="2"/>
-          <g class="dz-tb" data-block="a" style="transform: translate(40px, 2px);">
-            <rect width="60" height="60" rx="6" fill="#1e2f42" stroke="rgba(59,200,232,0.45)" stroke-width="2"/>
-            <text x="30" y="37" text-anchor="middle" font-size="18" font-weight="800" font-family="Nunito, sans-serif" fill="#e8f4f8">A</text>
-          </g>
-          <g class="dz-tb" data-block="b" style="transform: translate(150px, 2px);">
-            <rect width="60" height="60" rx="6" fill="#244a63" stroke="rgba(59,200,232,0.6)" stroke-width="2"/>
-            <text x="30" y="37" text-anchor="middle" font-size="18" font-weight="800" font-family="Nunito, sans-serif" fill="#e8f4f8">B</text>
-          </g>
-          <g class="dz-tb" data-block="c" style="transform: translate(260px, 2px);">
-            <rect width="60" height="60" rx="6" fill="#2f7f98" stroke="rgba(59,200,232,0.8)" stroke-width="2"/>
-            <text x="30" y="37" text-anchor="middle" font-size="18" font-weight="800" font-family="Nunito, sans-serif" fill="#e8f4f8">C</text>
-          </g>
-          <rect x="6" y="70" width="348" height="104" rx="6" fill="rgba(59,130,246,0.18)" pointer-events="none"/>
-          <rect x="4" y="8" width="352" height="168" rx="8" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
-        </svg>
-        <p class="dz-discover" id="dz-discover">Same volume, different mass: more matter packed into the same space means a higher density.</p>
-      </div>
-    </div>
-
-
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text">
-            <li>A brief review of density (taught fully in Measuring Matter) that carries this lesson's particle-packing task for 6.MS-PS1-7.</li>
-            <li>Shows that the same volume can hold different masses, then links density to sinking and floating.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text">
-            <li>Predict, experiment, discover: any prediction unlocks the measurements and the water test.</li>
-            <li>Particle count, mass bar, and float depth all show the same 1 : 2 : 4 pattern.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text">
-            <li>Understand to Apply</li>
-            <li>DOK 2 (compare same-volume blocks and predict sinking from density)</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text">
-            <li>Each block names its particle count for screen readers; all measurements are text.</li>
-            <li>The tank drawing's description updates with every drop.</li>
-            <li>No calculations or typing required.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2 - BUOYANCY: SHIP-LOADING INVESTIGATION
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="buoyancy" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label" style="color: var(--orange); background: var(--buoy-dim); border-color: var(--buoy-border);">Explore · The Upward Push</span>
-    <h2 class="section-title">What Is Buoyancy?</h2>
-    <p class="section-desc">Water pushes up on anything placed in it. That upward push is called <strong style="color:var(--orange);">buoyancy</strong>.</p>
-
-    <!-- Ship-loading investigation. Every number and every position comes
-         from the model in its script (fresh water, 1 mL has a mass of about
-         1 g). Ungraded; nothing is stored or sent. -->
-    <div class="mlab-card ship-lab" id="ship-lab">
-      <div class="mlab-head">
-        <span class="mlab-tag">Investigation</span>
-        <h3 class="mlab-title">Load the Cargo Ship</h3>
-      </div>
-
-      <div class="ship-layout">
-        <div class="ship-stage">
-          <figure class="ship-figure">
-            <svg class="ship-svg" id="ship-svg" viewBox="0 10 300 236" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
-              <defs>
-                <clipPath id="ship-hull-clip"><path d="M0 0 H196 L222 -14 L206 14 V54 Q206 60 200 60 H6 Q0 60 0 54 Z"/></clipPath>
-                <linearGradient id="ship-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d5f9c"/><stop offset="1" stop-color="#0f2f52"/></linearGradient>
-              </defs>
-              <rect x="0" y="110" width="300" height="130" fill="url(#ship-sea)"/>
-              <rect x="0" y="238" width="300" height="8" fill="#3a4a5c"/>
-              <g id="ship-g" class="ship-g">
-                <g id="ship-crates"></g>
-                <rect x="6" y="-34" width="34" height="34" rx="3" fill="#e6edf3"/>
-                <rect x="11" y="-27" width="7" height="7" rx="1" fill="#243447"/>
-                <rect x="22" y="-27" width="7" height="7" rx="1" fill="#243447"/>
-                <rect x="31" y="-27" width="5" height="7" rx="1" fill="#243447"/>
-                <rect x="14" y="-44" width="5" height="10" fill="#e6edf3"/>
-                <path d="M0 0 H196 L222 -14 L206 14 V54 Q206 60 200 60 H6 Q0 60 0 54 Z" fill="#5b6f82" stroke="#c9d6e2" stroke-width="1.5"/>
-                <rect x="0" y="-14" width="226" height="19" fill="#c8553d" clip-path="url(#ship-hull-clip)"/>
-                <rect id="ship-sub" x="0" y="40" width="230" height="20" fill="rgba(110,215,255,0.55)" clip-path="url(#ship-hull-clip)"/>
-                <rect id="ship-flood" x="0" y="0" width="226" height="60" fill="rgba(59,130,246,0.85)" clip-path="url(#ship-hull-clip)" opacity="0"/>
-              </g>
-              <line x1="0" y1="110" x2="300" y2="110" stroke="#9fe3ff" stroke-width="2.5"/>
-            </svg>
-            <figcaption class="ship-caption"><span class="ship-key" aria-hidden="true"></span> Part of the hull below the waterline</figcaption>
-          </figure>
-          <div class="ship-controls" role="group" aria-label="Cargo controls">
-            <button class="ship-btn" id="ship-add" type="button" aria-label="Add 50 g of cargo">+ 50 g cargo</button>
-            <button class="ship-btn ship-btn-alt" id="ship-remove" type="button" aria-label="Remove 50 g of cargo">− 50 g cargo</button>
-            <button class="ship-btn ship-btn-alt" id="ship-reset" type="button">Reset</button>
-          </div>
-        </div>
-        <div class="ship-side">
-          <div class="ship-goal">
-            <div class="ship-goal-label">Cargo Challenge</div>
-            <p class="ship-goal-q">How much cargo can you load before the ship sinks?</p>
-          </div>
-          <div class="ship-predict" id="qp-ship">
-            <div class="ship-predict-q" id="qp-ship-q"><span class="ship-predict-label">Predict:</span> What happens when you add cargo?</div>
-            <div class="ship-predict-options" role="group" aria-labelledby="qp-ship-q">
-              <button class="check-opt ship-pred" type="button" aria-pressed="false" data-choice="rises">The ship rises</button>
-              <button class="check-opt ship-pred" type="button" aria-pressed="false" data-choice="lower">The ship sinks lower</button>
-              <button class="check-opt ship-pred" type="button" aria-pressed="false" data-choice="same">Nothing changes</button>
-            </div>
-            <p class="ship-predict-note" id="ship-predict-note" aria-live="polite"></p>
-          </div>
-          <dl class="ship-panel">
-            <div><dt>Ship mass</dt><dd><span id="ship-total"></span><span class="ship-sub-line" id="ship-cargo"></span></dd></div>
-            <div><dt>Water displaced</dt><dd id="ship-vol"></dd></div>
-            <div><dt>Status</dt><dd id="ship-state"></dd></div>
-          </dl>
-          <p class="ship-discover" id="ship-discover"></p>
-        </div>
-      </div>
-      <p class="ship-takeaway" id="ship-takeaway" hidden><strong>Takeaway:</strong> A floating ship pushes aside water that weighs the same as the ship. When the ship becomes too heavy, it sinks.</p>
-      <p class="pp-sr" id="ship-announce" aria-live="polite" aria-atomic="true"></p>
-
-      <div class="check-card qc" id="ship-challenge" data-correct="1">
-          <div class="check-eyebrow">Cargo Challenge · Check your answer</div>
-          <div class="check-q" id="ship-challenge-q">The empty ship has a mass of 200 g. What is the maximum cargo mass it can carry without sinking?</div>
-          <div class="check-options ship-challenge-options" role="group" aria-labelledby="ship-challenge-q">
-            <button class="check-opt" type="button" data-fb="Not quite. With 300 g of cargo the total mass is 500 g, so the ship still floats with room to spare. Keep loading and watch the deck. Try again.">300 g</button>
-            <button class="check-opt" type="button" data-fb="Correct! The 200 g ship + 400 g of cargo = 600 g total, the most water (600 mL) this hull can push aside. One more 50 g crate and it sinks.">400 g</button>
-            <button class="check-opt" type="button" data-fb="Not quite. 600 g is the maximum total mass of ship and cargo together. The empty ship already uses 200 g of that, so the cargo limit is less. Try again.">600 g</button>
-          </div>
-          <div class="ship-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
-      </div>
-      <div class="ship-about" id="ship-about">
-        <h3 class="ship-about-title">Why does it float?</h3>
-        <p class="ship-about-lead">A ship floats because of <strong>buoyancy</strong>, the upward force of water.</p>
-        <ul class="ship-about-list">
-          <li><strong>Displacement:</strong> A ship pushes water out of the way as it sinks lower.</li>
-          <li><strong>Balance:</strong> A floating ship displaces water that weighs the same as the ship.</li>
-          <li><strong>Sinking:</strong> If the ship becomes too heavy to displace enough water, it sinks.</li>
-        </ul>
-        <p class="ship-about-note">The ship's wide, hollow hull helps it displace enough water to float.</p>
-      </div>
-    </div>
-
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text">
-            <li>Students discover that a floating ship pushes aside its own mass in water, and that more cargo means a deeper ship and more displaced water.</li>
-            <li>Shows a coherent limit: past 600 g this hull cannot push aside enough water, so it floods and sinks.</li>
-            <li>The hollow-hull line answers the steel ship puzzle and supports the quiz's clay-boat item.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text">
-            <li>The ship is visible and usable at once; the optional prediction is checked after the first cargo change and never gates the experiment.</li>
-            <li>Immediate cause and effect: the hull drops a fixed step per crate while the waterline stays still.</li>
-            <li>The challenge asks students to find the limit by experimenting, not by reading.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text">
-            <li>Apply to Analyze</li>
-            <li>DOK 2 (relate mass to displaced water and predict a floating limit)</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text">
-            <li>Large add, remove, and reset buttons; no dragging.</li>
-            <li>Every measurement and the ship's status are written as text and announced politely.</li>
-            <li>The drawing's description updates with each change.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3 - PHYSICAL PROPERTIES OF MATTER
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="properties" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label" style="color: var(--purple); background: var(--prop-dim); border-color: var(--prop-border);">Explore · The Whole Family</span>
-    <h2 class="section-title">Physical Properties of Matter</h2>
-    <p class="section-desc">Scientists describe and identify materials by their properties. Here is what makes a property <strong style="color:var(--purple);">physical</strong>.</p>
-
-    <div class="name-it purple-it">
-      <div class="name-it-label">Key idea: Physical Property</div>
-      <p>A <strong>physical property</strong> is a characteristic you can observe or measure <strong>without changing what the material is</strong>. Bending a paperclip doesn't turn it into a new metal. Melted ice is still water.</p>
-      <p>A <strong>chemical property</strong> is different: you can only observe it when a material changes into new substances, like wood burning to ash or iron rusting.</p>
-    </div>
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.4rem;">A <strong style="color:var(--purple);">physical property</strong> is something you can observe or measure without changing what a material is.</p>
 
     <!-- Property families: eight properties grouped by how materials
          behave (force, heat, electricity and magnets). -->
@@ -2236,6 +1578,52 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
     </div>
 
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Previews the eight properties students test next, grouped by what acts on the material: force, heat, or electricity and magnets.</li>
+            <li>The Remember line separates the three look-alike force words.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Grouping and side-by-side comparison of related terms</li>
+            <li>One short definition and one familiar example per word</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Understand</li>
+            <li>DOK 1</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>All definitions visible at once; nothing to open or remember</li>
+            <li>Groups stack to one column on phones</li>
+            <li>Plain cards: no emojis or bolding inside definitions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE - SEVEN PROPERTY INVESTIGATIONS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="properties" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--purple); background: var(--prop-dim); border-color: var(--prop-border);">Explore · Property Tests</span>
+    <h2 class="section-title">Test the Properties</h2>
+    <p class="section-desc">Seven quick tests. Choose a material, run the test, and watch what happens.</p>
 
     <!-- Property Test Bench: seven short investigations for hardness,
          electrical and thermal conductivity, magnetism, melting point,
@@ -2727,6 +2115,155 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
     </div>
 
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ELABORATE - CARGO SHIP: BUOYANCY CHALLENGE (application)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="buoyancy" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--orange); background: var(--buoy-dim); border-color: var(--buoy-border);">Challenge · Buoyancy</span>
+    <h2 class="section-title">Cargo Ship Challenge</h2>
+    <p class="section-desc">Water pushes up on anything placed in it. That upward push is called <strong style="color:var(--orange);">buoyancy</strong>. A steel ship can float because its hollow shape allows it to displace enough water to support its weight.</p>
+
+    <!-- Ship-loading investigation. Every number and every position comes
+         from the model in its script (fresh water, 1 mL has a mass of about
+         1 g). Ungraded; nothing is stored or sent. -->
+    <div class="mlab-card ship-lab" id="ship-lab">
+      <div class="mlab-head">
+        <span class="mlab-tag">Investigation</span>
+        <h3 class="mlab-title">Load the Cargo Ship</h3>
+      </div>
+
+      <div class="ship-layout">
+        <div class="ship-stage">
+          <figure class="ship-figure">
+            <svg class="ship-svg" id="ship-svg" viewBox="0 10 300 236" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="">
+              <defs>
+                <clipPath id="ship-hull-clip"><path d="M0 0 H196 L222 -14 L206 14 V54 Q206 60 200 60 H6 Q0 60 0 54 Z"/></clipPath>
+                <linearGradient id="ship-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d5f9c"/><stop offset="1" stop-color="#0f2f52"/></linearGradient>
+              </defs>
+              <rect x="0" y="110" width="300" height="130" fill="url(#ship-sea)"/>
+              <rect x="0" y="238" width="300" height="8" fill="#3a4a5c"/>
+              <g id="ship-g" class="ship-g">
+                <g id="ship-crates"></g>
+                <rect x="6" y="-34" width="34" height="34" rx="3" fill="#e6edf3"/>
+                <rect x="11" y="-27" width="7" height="7" rx="1" fill="#243447"/>
+                <rect x="22" y="-27" width="7" height="7" rx="1" fill="#243447"/>
+                <rect x="31" y="-27" width="5" height="7" rx="1" fill="#243447"/>
+                <rect x="14" y="-44" width="5" height="10" fill="#e6edf3"/>
+                <path d="M0 0 H196 L222 -14 L206 14 V54 Q206 60 200 60 H6 Q0 60 0 54 Z" fill="#5b6f82" stroke="#c9d6e2" stroke-width="1.5"/>
+                <rect x="0" y="-14" width="226" height="19" fill="#c8553d" clip-path="url(#ship-hull-clip)"/>
+                <rect id="ship-sub" x="0" y="40" width="230" height="20" fill="rgba(110,215,255,0.55)" clip-path="url(#ship-hull-clip)"/>
+                <rect id="ship-flood" x="0" y="0" width="226" height="60" fill="rgba(59,130,246,0.85)" clip-path="url(#ship-hull-clip)" opacity="0"/>
+              </g>
+              <line x1="0" y1="110" x2="300" y2="110" stroke="#9fe3ff" stroke-width="2.5"/>
+            </svg>
+            <figcaption class="ship-caption"><span class="ship-key" aria-hidden="true"></span> Part of the hull below the waterline</figcaption>
+          </figure>
+          <div class="ship-controls" role="group" aria-label="Cargo controls">
+            <button class="ship-btn" id="ship-add" type="button" aria-label="Add 50 g of cargo">+ 50 g cargo</button>
+            <button class="ship-btn ship-btn-alt" id="ship-remove" type="button" aria-label="Remove 50 g of cargo">− 50 g cargo</button>
+            <button class="ship-btn ship-btn-alt" id="ship-reset" type="button">Reset</button>
+          </div>
+        </div>
+        <div class="ship-side">
+          <div class="ship-goal">
+            <div class="ship-goal-label">Cargo Challenge</div>
+            <p class="ship-goal-q">How much cargo can you load before the ship sinks?</p>
+          </div>
+          <div class="ship-predict" id="qp-ship">
+            <div class="ship-predict-q" id="qp-ship-q"><span class="ship-predict-label">Predict:</span> What happens when you add cargo?</div>
+            <div class="ship-predict-options" role="group" aria-labelledby="qp-ship-q">
+              <button class="check-opt ship-pred" type="button" aria-pressed="false" data-choice="rises">The ship rises</button>
+              <button class="check-opt ship-pred" type="button" aria-pressed="false" data-choice="lower">The ship sinks lower</button>
+              <button class="check-opt ship-pred" type="button" aria-pressed="false" data-choice="same">Nothing changes</button>
+            </div>
+            <p class="ship-predict-note" id="ship-predict-note" aria-live="polite"></p>
+          </div>
+          <dl class="ship-panel">
+            <div><dt>Ship mass</dt><dd><span id="ship-total"></span><span class="ship-sub-line" id="ship-cargo"></span></dd></div>
+            <div><dt>Water displaced</dt><dd id="ship-vol"></dd></div>
+            <div><dt>Status</dt><dd id="ship-state"></dd></div>
+          </dl>
+          <p class="ship-discover" id="ship-discover"></p>
+        </div>
+      </div>
+      <p class="ship-takeaway" id="ship-takeaway" hidden><strong>Takeaway:</strong> A floating ship pushes aside water that weighs the same as the ship. When the ship becomes too heavy, it sinks.</p>
+      <p class="pp-sr" id="ship-announce" aria-live="polite" aria-atomic="true"></p>
+
+      <div class="check-card qc" id="ship-challenge" data-correct="1">
+          <div class="check-eyebrow">Cargo Challenge · Check your answer</div>
+          <div class="check-q" id="ship-challenge-q">The empty ship has a mass of 200 g. What is the maximum cargo mass it can carry without sinking?</div>
+          <div class="check-options ship-challenge-options" role="group" aria-labelledby="ship-challenge-q">
+            <button class="check-opt" type="button" data-fb="Not quite. With 300 g of cargo the total mass is 500 g, so the ship still floats with room to spare. Keep loading and watch the deck. Try again.">300 g</button>
+            <button class="check-opt" type="button" data-fb="Correct! The 200 g ship + 400 g of cargo = 600 g total, the most water (600 mL) this hull can push aside. One more 50 g crate and it sinks.">400 g</button>
+            <button class="check-opt" type="button" data-fb="Not quite. 600 g is the maximum total mass of ship and cargo together. The empty ship already uses 200 g of that, so the cargo limit is less. Try again.">600 g</button>
+          </div>
+          <div class="ship-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
+      </div>
+      <div class="ship-about" id="ship-about">
+        <h3 class="ship-about-title">Why does it float?</h3>
+        <p class="ship-about-lead">A ship floats because of <strong>buoyancy</strong>, the upward force of water.</p>
+        <ul class="ship-about-list">
+          <li><strong>Displacement:</strong> A ship pushes water out of the way as it sinks lower.</li>
+          <li><strong>Balance:</strong> A floating ship displaces water that weighs the same as the ship.</li>
+          <li><strong>Sinking:</strong> If the ship becomes too heavy to displace enough water, it sinks.</li>
+        </ul>
+        <p class="ship-about-note">The ship's wide, hollow hull helps it displace enough water to float.</p>
+      </div>
+    </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Students discover that a floating ship pushes aside its own mass in water, and that more cargo means a deeper ship and more displaced water.</li>
+            <li>Shows a coherent limit: past 600 g this hull cannot push aside enough water, so it floods and sinks.</li>
+            <li>The hollow-hull line and the intro's displacement sentence answer the hook's ship question; density itself is taught in Measuring Matter.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>The ship is visible and usable at once; the optional prediction is checked after the first cargo change and never gates the experiment.</li>
+            <li>Immediate cause and effect: the hull drops a fixed step per crate while the waterline stays still.</li>
+            <li>The challenge asks students to find the limit by experimenting, not by reading.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Analyze</li>
+            <li>DOK 2 (relate mass to displaced water and predict a floating limit)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Large add, remove, and reset buttons; no dragging.</li>
+            <li>Every measurement and the ship's status are written as text and announced politely.</li>
+            <li>The drawing's description updates with each change.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ELABORATE - MYSTERY CUBE: EVIDENCE-BASED REASONING CHALLENGE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="mystery" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--purple); background: var(--prop-dim); border-color: var(--prop-border);">Challenge · Evidence</span>
+    <h2 class="section-title">Mystery Cube Challenge</h2>
+
     <!-- Mystery Cube Investigation: predict, test, identify, explain.
          Every result comes from the reference chart in its script.
          Ungraded; nothing is stored or sent. -->
@@ -2814,36 +2351,14 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       </div>
     </div>
 
-    <!-- Engineer's Property Match: one problem at a time; the student moves
-         on with the Next button, never on a timer. -->
-    <div class="mlab-card prop-card-lab" id="match-lab">
-      <div class="mlab-head">
-        <span class="mlab-tag">Engineering Challenge · Not graded</span>
-        <h3 class="mlab-title">The Engineer's Property Match</h3>
-      </div>
-      <p class="mlab-text">Engineers choose materials by their physical properties. For each design problem, pick the one property that matters most.</p>
-      <div class="match-scenario">
-        <span class="match-scenario-icon" id="match-icon" aria-hidden="true">⚡</span>
-        <span id="match-text">Loading...</span>
-      </div>
-      <div class="check-options match-options" id="matchOpts" role="group" aria-labelledby="match-text"></div>
-      <div class="tm-fb" id="matchFb" aria-live="polite"></div>
-      <div class="match-foot">
-        <div class="match-progress"><span id="match-count">Problem 1 of 5</span><span class="match-dots" id="matchDots" aria-hidden="true"></span></div>
-        <button class="match-next" id="match-next" type="button" hidden>Next problem</button>
-      </div>
-      <div class="match-success" id="matchSuccess" role="status">🏆 Five for five! Choosing materials by their physical properties is exactly how real products get designed.</div>
-    </div>
-
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Generalizes from density to the family of physical properties, and contrasts them with chemical properties.</li>
-            <li>The mystery cube investigation practices identification from evidence: several properties together, never one test alone.</li>
-            <li>The property match practices choosing materials for a purpose.</li>
+            <li>Applies the property tests as evidence: students identify an unknown material by combining results, never one test alone.</li>
+            <li>The water test stays as real but insufficient evidence: aluminum and hard plastic both sink, so it cannot finish the job.</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -2851,7 +2366,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <ul class="edu-note-text">
             <li>Predict, investigate, explain, with elimination made visible in the reference chart.</li>
             <li>Misconception checking: one test (or appearance) is enough to identify a material.</li>
-            <li>Classification practice across five design problems.</li>
           </ul>
         </div>
         <div class="edu-note-item">
@@ -2866,82 +2380,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <ul class="edu-note-text">
             <li>Every result is written in the chart as text; ruled-out rows say so, not just strike through.</li>
             <li>Each test result is announced politely without moving focus.</li>
-            <li>The match moves on only when the student selects Next; there are no timers.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     QUICK RECALL
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
-  <div class="container">
-    <span class="section-label">Quick Recall</span>
-    <h2 class="section-title">Brain Check</h2>
-    <p class="section-desc" style="margin-bottom: 1.6rem;">Two quick questions before we put it all together. Pulling answers from memory now will help them stick.</p>
-
-    <div class="check-card recall-card">
-      <div class="check-eyebrow">Quick Recall · Not graded</div>
-      <div class="tm-grid">
-        <div class="tm-question qc" id="qr1" data-correct="1">
-          <div class="tm-label">Question 1</div>
-          <div class="check-q" id="qr1Q">A solid rubber ball and a hollow rubber ball are the same size. In a pool, the solid one sinks and the hollow one floats. Why?</div>
-          <div class="check-options" role="group" aria-labelledby="qr1Q">
-            <button class="check-opt" type="button" data-fb="Not quite. The balls are the same size. Think about how much matter is packed inside each one. Try again.">The solid ball is bigger, so gravity pulls it harder</button>
-            <button class="check-opt" type="button" data-fb="Correct! Same size means same volume, but the hollow ball has less matter packed inside, so it is less dense than water and floats. The solid ball is denser than water and sinks.">The hollow ball is less dense: same space, less matter packed inside</button>
-            <button class="check-opt" type="button" data-fb="Not quite. Water pushes up on every object in it, even ones that sink. Compare how much matter each ball packs into the same space. Try again.">Water can't push up on solid objects, only hollow ones</button>
-          </div>
-          <div class="tm-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
-        </div>
-
-        <div class="tm-question qc" id="qr2" data-correct="2">
-          <div class="tm-label">Question 2</div>
-          <div class="check-q" id="qr2Q">A junkyard uses a giant electromagnet to lift steel out of mixed scrap, leaving the aluminum and plastic behind. Which physical property makes this possible?</div>
-          <div class="check-options" role="group" aria-labelledby="qr2Q">
-            <button class="check-opt" type="button" data-fb="Not quite. Hardness is about resisting scratches. The magnet only lifts what it can attract. Try again.">Hardness: steel is too hard to stay in the pile</button>
-            <button class="check-opt" type="button" data-fb="Not quite. Aluminum conducts electricity too, but it stays behind. Which property is about being attracted to a magnet? Try again.">Electrical conductivity: current flows through the steel</button>
-            <button class="check-opt" type="button" data-fb="Correct! Steel is attracted to magnets; aluminum and plastic are not. Differences in physical properties are how mixtures get separated.">Magnetism: steel is attracted to magnets, aluminum and plastic are not</button>
-          </div>
-          <div class="tm-fb-zone"><div class="tm-fb" aria-live="polite"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text">
-            <li>Low-stakes retrieval check before the wrap-up and quiz.</li>
-            <li>Surfaces shaky understanding while there is still time to reread.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text">
-            <li>Retrieval practice: recalling now strengthens later recall.</li>
-            <li>Immediate, answer-specific feedback corrects errors before they harden.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text">
-            <li>Remember to Apply</li>
-            <li>DOK 2 (apply a property to a sink-or-float and a sorting scenario)</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text">
-            <li>"Not graded" wording lowers anxiety.</li>
-            <li>One select per attempt; a wrong choice stays marked so the next try is clear.</li>
-            <li>Questions sit side by side on wide screens and stack on phones.</li>
+            <li>The prediction is a single button choice; nothing to type.</li>
           </ul>
         </div>
       </div>
@@ -2949,82 +2388,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   </div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLAIN - WRAP-UP: BACK TO THE HARBOR
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="synthesis" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explain · Wrap-Up</span>
-    <h2 class="section-title">Back to the Harbor</h2>
-    <p class="section-desc">You started with a floating steel giant, a sinking coin, and ice floating on water. Now you can explain all three.</p>
-
-    <div class="wrapup-beats">
-
-      <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">The Answer</div>
-        <div class="wrapup-beat-answer">Sinking and floating depend on density, not weight.</div>
-        <div class="wrapup-beat-body">The ship's hull is full of air, so the whole ship is less dense than water. The coin is solid steel, packed tight and denser than water. Ice particles lock into a spread-out pattern, so ice is less dense than liquid water.</div>
-      </div>
-
-      <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">The Tools</div>
-        <div class="wrapup-beat-answer">Three ideas work together to explain it.</div>
-        <div class="wrapup-behavior-chips">
-          <span class="wbc wbc-density">Density · sink or float?</span>
-          <span class="wbc wbc-volume">Volume · how much space?</span>
-          <span class="wbc wbc-buoy">Buoyancy · how big a push?</span>
-        </div>
-      </div>
-
-      <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">The Bigger Picture</div>
-        <div class="wrapup-beat-answer">Density is one of many physical properties.</div>
-        <div class="wrapup-beat-body">Magnetism, conductivity, hardness, melting point: you can observe or measure each one <strong>without changing the material</strong>. Together they identify a material, like your mystery cube, and help engineers choose the right one.</div>
-      </div>
-
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Essential question:</strong> How can we predict what matter will do and identify what a material is? If you can answer with density, volume, buoyancy, and physical properties, you own this lesson.
-    </div>
-
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text">
-            <li>Returns to the harbor puzzles so students explain all three with the new vocabulary.</li>
-            <li>Connects the floating puzzle to identifying materials by their properties.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text">
-            <li>Elaboration: students connect density, volume, buoyancy, and properties into one explanation.</li>
-            <li>Closing the opening loop aids consolidation and transfer.</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text">
-            <li>Understand to Analyze</li>
-            <li>DOK 2 to 3 (justify each outcome using the linked concepts)</li>
-          </ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text">
-            <li>Three short beats replace the longer recap tables.</li>
-            <li>Essential question restates the target in one sentence.</li>
-            <li>Key terms bolded as memory anchors.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      SECTION 7 - QUIZ
@@ -3542,7 +2905,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
             <li>Extends physical properties into hands-on home tests students can run themselves.</li>
-            <li>Offers transfer beyond the harbor context students started with.</li>
+            <li>Offers transfer to household objects beyond the lesson's investigations.</li>
             <li>Holds the Hidden World of Matter extension, since Connections lists only lessons.</li>
           </ul>
         </div>
@@ -3586,7 +2949,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="cont-icon">⚖️</div>
         <div class="cont-cat">Lesson</div>
         <div class="cont-name">Measuring Matter</div>
-        <div class="cont-desc">Density was the hidden rule in the harbor. Measuring Matter shows where that number comes from: mass divided by volume, measured with real lab tools.</div>
+        <div class="cont-desc">The cargo ship floats because the whole ship is less dense than water. Measuring Matter shows where density comes from: mass divided by volume, measured with real lab tools.</div>
         <span class="cont-link">Explore</span>
       </a>
 
@@ -3594,7 +2957,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <div class="cont-icon">🧂</div>
         <div class="cont-cat">Lesson</div>
         <div class="cont-name">Pure Substances and Mixtures</div>
-        <div class="cont-desc">A magnet pulled steel out of a junk pile because steel and aluminum have different physical properties. Those same differences let scientists separate any mixture into its pure substances.</div>
+        <div class="cont-desc">A magnet attracts steel but not aluminum or copper. Differences in physical properties like this let scientists separate a mixture into its pure substances.</div>
         <span class="cont-link">Explore</span>
       </a>
 
@@ -3617,38 +2980,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 <!-- ===== SESSION TOGGLES (LS bar) ===== -->
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-</script>
-
-<!-- ===== VOCABULARY EXPLORER (one term at a time; ungraded, nothing stored) ===== -->
-<script>
-(function(){
-  var root = document.getElementById('vocab-explorer');
-  if (!root) return;
-  var terms = [].slice.call(root.querySelectorAll('.vx-term'));
-  var panels = [].slice.call(root.querySelectorAll('.vx-panel'));
-  var announcer = document.getElementById('vx-announce');
-  var announceTimer;
-  var picked = 'property';
-  function announce(msg){
-    clearTimeout(announceTimer);
-    announcer.textContent = '';
-    announceTimer = setTimeout(function(){ announcer.textContent = msg; }, 100);
-  }
-  function definitionMessage(key){
-    var panel = document.getElementById('vx-def-' + key);
-    return [].slice.call(panel.children).map(function(el, i){ return el.textContent.trim() + (i === 0 ? '.' : ''); }).join(' ');
-  }
-  terms.forEach(function(t){
-    t.addEventListener('click', function(){
-      var key = t.getAttribute('data-term');
-      if (key === picked) return;
-      picked = key;
-      terms.forEach(function(x){ x.setAttribute('aria-pressed', x === t ? 'true' : 'false'); });
-      panels.forEach(function(p){ p.hidden = p.getAttribute('data-term') !== key; });
-      announce(definitionMessage(key));
-    });
-  });
-})();
 </script>
 
 <!-- ===== HOOK CARDS (button or card click to reveal) ===== -->
@@ -3744,93 +3075,6 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       fb.className = 'tm-fb';
       fb.textContent = '';
     };
-  });
-})();
-</script>
-
-<!-- ===== DENSITY REVIEW (predict, compare, drop in water; ungraded) =====
-     BLOCKS is the model: same 10 cm³ volume, mass follows particle count.
-     A floating block sits with (density ÷ water density) of its height
-     underwater; a block denser than water rests on the bottom. -->
-<script>
-(function(){
-  var lab = document.getElementById('dz-lab');
-  if (!lab) return;
-  var BLOCKS = {
-    a: { name: 'Block A', mass: 4,  x: 40  },
-    b: { name: 'Block B', mass: 8,  x: 150 },
-    c: { name: 'Block C', mass: 16, x: 260 }
-  };
-  var VOLUME = 10, WATER = 1;               /* cm³ and g/cm³ */
-  var SURFACE = 70, FLOOR = 174, SIZE = 60, HELD = 2;
-  var btns = [].slice.call(lab.querySelectorAll('.dz-block'));
-  var datas = [].slice.call(lab.querySelectorAll('.dz-data'));
-  var fb = document.getElementById('dz-fb');
-  var step = document.getElementById('dz-step');
-  var reset = document.getElementById('dz-reset');
-  var exp = document.getElementById('dz-experiment');
-  var drop = document.getElementById('dz-drop');
-  var tank = document.getElementById('dz-tank');
-  var discover = document.getElementById('dz-discover');
-  var COMPARE = 'Same volume, different mass: more matter packed into the same space means a higher density.';
-  var predicted = false, inWater = false;
-
-  function density(k){ return BLOCKS[k].mass / VOLUME; }
-  function top(k){
-    if (!inWater) return HELD;
-    var d = density(k);
-    return d < WATER ? SURFACE - SIZE + SIZE * (d / WATER) : FLOOR - SIZE;
-  }
-  function place(){
-    Object.keys(BLOCKS).forEach(function(k){
-      var g = tank.querySelector('.dz-tb[data-block="' + k + '"]');
-      g.style.transform = 'translate(' + BLOCKS[k].x + 'px, ' + top(k) + 'px)';
-    });
-    tank.setAttribute('aria-label', inWater
-      ? 'Tank of water: Block A floats high, Block B floats low with most of it underwater, and Block C sinks to the bottom.'
-      : 'Tank of water with Blocks A, B, and C held above the surface.');
-    drop.textContent = inWater ? '⬆ Lift them out' : '💧 Drop them in water';
-    discover.textContent = inWater
-      ? 'Blocks less dense than water float, and the denser one floats lower. Block C is denser than water, so it sinks.'
-      : COMPARE;
-  }
-
-  btns.forEach(function(btn){
-    btn.addEventListener('click', function(){
-      if (predicted) return;
-      predicted = true;
-      var key = btn.getAttribute('data-block');
-      btn.classList.add('chosen');
-      btn.setAttribute('aria-pressed', 'true');
-      btns.forEach(function(b){ if (b !== btn) b.setAttribute('aria-disabled', 'true'); });
-      lab.querySelector('.dz-block[data-block="c"]').classList.add('right');
-      datas.forEach(function(d){ d.hidden = false; });
-      fb.textContent = key === 'c'
-        ? 'Your prediction matches: Block C packs the most matter into the same space.'
-        : 'Block C is the most dense: it packs the most matter into the same space.';
-      step.textContent = 'Step 2 · Experiment';
-      exp.hidden = false;
-      reset.hidden = false;
-      place();
-    });
-  });
-
-  drop.addEventListener('click', function(){
-    inWater = !inWater;
-    place();
-  });
-
-  reset.addEventListener('click', function(){
-    predicted = false;
-    inWater = false;
-    btns.forEach(function(b){ b.classList.remove('chosen', 'right'); b.setAttribute('aria-pressed', 'false'); b.removeAttribute('aria-disabled'); });
-    datas.forEach(function(d){ d.hidden = true; });
-    fb.textContent = '';
-    step.textContent = 'Step 1 · Predict';
-    exp.hidden = true;
-    reset.hidden = true;
-    place();
-    btns[0].focus();
   });
 })();
 </script>
@@ -4914,114 +4158,6 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     note.textContent = '';
     say('Investigation reset. All four materials are possible again.');
   });
-})();
-</script>
-
-<!-- ===== ENGINEER'S PROPERTY MATCH (student-paced; no timers) ===== -->
-<script>
-(function(){
-  var scenarios = [
-    {
-      icon: '⚡',
-      text: 'You need to pull a metal into a long, thin strand to carry electricity across a neighborhood. Which property must the metal have?',
-      answer: 'Ductility',
-      explain: 'Ductility is the ability to be stretched into a thin wire, exactly what wire-making needs. Copper is a champion at this.'
-    },
-    {
-      icon: '🍳',
-      text: 'A frying pan needs a handle that stays cool while the pan gets hot. The handle material should be LOW in which property?',
-      answer: 'Thermal conductivity',
-      explain: 'Thermal conductivity is how easily heat moves through a material. A handle with LOW thermal conductivity, like plastic or wood, keeps the heat from reaching your hand.'
-    },
-    {
-      icon: '⛏️',
-      text: 'A drill bit has to cut through stone without getting scratched or worn down. Which property should be as HIGH as possible?',
-      answer: 'Hardness',
-      explain: 'Hardness is how well a material resists scratching and denting. A very hard tip, like diamond, scratches the stone instead of being scratched.'
-    },
-    {
-      icon: '🔨',
-      text: 'A jeweler needs to hammer a lump of gold into a thin, flat sheet without it cracking. Which property makes that possible?',
-      answer: 'Malleability',
-      explain: 'Malleability is the ability to be hammered or pressed flat without breaking. Gold is so malleable it can be hammered thinner than paper.'
-    },
-    {
-      icon: '🌡️',
-      text: 'An engineer is choosing a metal for a rocket engine part that must stay solid at extreme temperatures. Which property should be as HIGH as possible?',
-      answer: 'Melting point',
-      explain: 'Melting point is the temperature where a solid becomes a liquid. A rocket part needs a very high melting point so it stays solid in the heat.'
-    }
-  ];
-  var allOptions = ['Ductility', 'Malleability', 'Magnetism', 'Thermal conductivity', 'Melting point', 'Hardness'];
-  var current = 0;
-  var iconEl = document.getElementById('match-icon');
-  var textEl = document.getElementById('match-text');
-  var optsEl = document.getElementById('matchOpts');
-  var fbEl   = document.getElementById('matchFb');
-  var dotsEl = document.getElementById('matchDots');
-  var countEl = document.getElementById('match-count');
-  var nextBtn = document.getElementById('match-next');
-  var successEl = document.getElementById('matchSuccess');
-  textEl.setAttribute('tabindex', '-1');
-
-  scenarios.forEach(function(){
-    var d = document.createElement('span');
-    d.className = 'match-dot';
-    dotsEl.appendChild(d);
-  });
-
-  function show(i){
-    var s = scenarios[i];
-    current = i;
-    iconEl.textContent = s.icon;
-    textEl.textContent = s.text;
-    countEl.textContent = 'Problem ' + (i + 1) + ' of ' + scenarios.length;
-    fbEl.className = 'tm-fb';
-    fbEl.textContent = '';
-    nextBtn.hidden = true;
-    optsEl.innerHTML = '';
-    allOptions.forEach(function(opt){
-      var b = document.createElement('button');
-      b.className = 'check-opt match-btn';
-      b.type = 'button';
-      b.textContent = opt;
-      b.addEventListener('click', function(){
-        if (b.getAttribute('aria-disabled') === 'true') return;
-        if (opt === s.answer) {
-          b.classList.add('right');
-          fbEl.className = 'tm-fb visible ok';
-          fbEl.textContent = 'Correct! ' + s.explain;
-          optsEl.querySelectorAll('.match-btn').forEach(function(x){ x.setAttribute('aria-disabled', 'true'); });
-          dotsEl.children[i].classList.add('done');
-          if (i + 1 < scenarios.length) {
-            nextBtn.textContent = 'Next problem';
-          } else {
-            nextBtn.textContent = 'Start over';
-            successEl.classList.add('visible');
-          }
-          nextBtn.hidden = false;
-        } else {
-          b.classList.add('wrong');
-          b.setAttribute('aria-disabled', 'true');
-          fbEl.className = 'tm-fb visible no';
-          fbEl.textContent = 'Not quite. Reread the problem: what does the material need to do? Match that action to a property and try again.';
-        }
-      });
-      optsEl.appendChild(b);
-    });
-  }
-  nextBtn.addEventListener('click', function(){
-    if (current + 1 < scenarios.length) {
-      show(current + 1);
-    } else {
-      [].forEach.call(dotsEl.children, function(d){ d.classList.remove('done'); });
-      successEl.classList.remove('visible');
-      show(0);
-    }
-    /* The problem text changed under the student, so read it to them. */
-    textEl.focus();
-  });
-  show(0);
 })();
 </script>
 

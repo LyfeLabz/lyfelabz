@@ -7,12 +7,14 @@
 /*
  * Physical Properties modernization contract.
  *
- * The lesson shares Measuring Matter's student experience: the Vocabulary
- * Explorer (a documented exception to the glossary-card pattern), accessible
- * hook cards, gated predictions, the Quick Check shell, and lab cards. This
+ * Phase 3 sequence: a short phenomenon hook, the three-group property
+ * vocabulary, seven property investigations, the Cargo Ship buoyancy
+ * challenge, the Mystery Cube evidence challenge, then the quiz. The density
+ * review, Brain Check, harbor wrap-up, and property match are removed. This
  * suite runs the lesson's real scripts in jsdom against the source and both
- * generated outputs, and pins the assessment surface: the quiz items still
- * match the published r1 revision and no new revision is configured.
+ * generated outputs, and pins the assessment surface: the quiz block is
+ * byte-identical to the Phase 2B release, the items still match the published
+ * r1 revision, and no new revision is configured.
  */
 
 const fs = require("fs");
@@ -26,11 +28,9 @@ const FILES = [
   "app/lessons/lesson_physical-properties.html",
 ];
 const SCRIPT_HEADERS = [
-  "<!-- ===== VOCABULARY EXPLORER (one term at a time; ungraded, nothing stored) ===== -->",
   "<!-- ===== HOOK CARDS (button or card click to reveal) ===== -->",
   "<!-- ===== PREDICT BEFORE REVEAL ===== -->",
   "<!-- ===== QUICK CHECKS (single-answer, retry until correct; ungraded) =====",
-  "<!-- ===== DENSITY REVIEW (predict, compare, drop in water; ungraded) =====",
   "<!-- ===== SHIP-LOADING INVESTIGATION (ungraded, nothing stored) =====",
   "<!-- ===== SCRATCH TEST (hardness; ungraded, nothing stored) =====",
   "<!-- ===== CIRCUIT TEST (electrical conductivity; ungraded, nothing stored) =====",
@@ -40,7 +40,6 @@ const SCRIPT_HEADERS = [
   "<!-- ===== PRESS TEST (malleability; ungraded, nothing stored) =====",
   "<!-- ===== WIRE TEST (ductility; ungraded, nothing stored) =====",
   "<!-- ===== MYSTERY CUBE INVESTIGATION (ungraded, nothing stored) =====",
-  "<!-- ===== ENGINEER'S PROPERTY MATCH (student-paced; no timers) ===== -->",
 ];
 
 function load(rel, { motion = false } = {}) {
@@ -68,45 +67,48 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
     ({ win, doc, html } = load(rel));
   });
 
-  test("keeps the standard section order and sticky navigation", () => {
+  test("follows the approved Phase 3 sequence, and the sticky navigation points at real sections", () => {
     const ids = [...doc.querySelectorAll("main section")].map((s) => s.id);
-    expect(ids).toEqual(["goals", "vocab", "hook", "density", "buoyancy", "properties", "recall", "synthesis", "quiz", "continue", "connections"]);
+    expect(ids).toEqual(["goals", "hook", "vocab", "properties", "buoyancy", "mystery", "quiz", "continue", "connections"]);
     const nav = new JSDOM(html.match(/<nav>[\s\S]*?<\/nav>/)[0]).window.document;
-    expect([...nav.querySelectorAll("#navLinks a")].map((a) => a.getAttribute("href"))).toEqual(["#vocab", "#density", "#quiz", "#continue", "#connections"]);
+    const hrefs = [...nav.querySelectorAll("#navLinks a")].map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(["#vocab", "#properties", "#quiz", "#continue", "#connections"]);
+    for (const h of hrefs) expect(doc.getElementById(h.slice(1))).not.toBeNull();
+    // Every in-page link resolves to an element that still exists.
+    for (const a of doc.querySelectorAll('main a[href^="#"]')) expect(doc.getElementById(a.getAttribute("href").slice(1))).not.toBeNull();
+    // Section titles in order: hook, vocabulary, investigations, two challenges, quiz.
+    expect(["hook", "vocab", "properties", "buoyancy", "mystery", "quiz"].map((id) => text(doc.querySelector(`#${id} h2.section-title`)))).toEqual([
+      "Why That Material?", "Words You'll Meet", "Test the Properties", "Cargo Ship Challenge", "Mystery Cube Challenge", "Check Your Understanding",
+    ]);
   });
 
-  describe("vocabulary explorer", () => {
-    const TERMS = ["Physical Property", "Density", "Volume", "Water Displacement", "Buoyancy", "Hardness", "Conductivity", "Magnetism"];
-    const terms = () => [...doc.querySelectorAll("#vocab .vx-term")];
-    const shown = () => [...doc.querySelectorAll("#vocab .vx-panel")].filter((p) => !p.hidden).map((p) => p.dataset.term);
+  test("the opening is one short phenomenon with no density instruction and no required response", () => {
+    expect(text(doc.querySelector(".hero-sub"))).toBe("Copper wires. Metal pans. Steel ships. Every material is chosen because of what it can do.");
+    expect(text(doc.querySelector(".dq-text"))).toBe("How can we test physical properties to identify a material and choose the right one for a job?");
+    const hook = doc.getElementById("hook");
+    const studentText = [...hook.children[0].children].filter((el) => !el.classList.contains("edu-note")).map(text).join(" ");
+    expect(studentText).not.toMatch(/densit|volume|g\/cm/i);
+    // Whole hook, including the three revealed lines and button labels.
+    expect(studentText.split(/\s+/).length).toBeLessThan(140);
+    expect(hook.querySelectorAll("input, textarea, .predict-gated, img")).toHaveLength(0);
+  });
 
-    test("matches Measuring Matter's explorer: intro, eight buttons, one panel each", () => {
-      expect(text(doc.querySelector("#vocab .section-desc"))).toBe("Select a word to explore its meaning.");
-      expect(doc.querySelectorAll("#vocab .glossary-card")).toHaveLength(0);
-      expect(terms().map((t) => t.querySelector(".gc-term").textContent)).toEqual(TERMS);
-      for (const t of terms()) {
-        expect(t.tagName).toBe("BUTTON");
-        expect(t.getAttribute("type")).toBe("button");
-        const panel = doc.getElementById(t.getAttribute("aria-controls"));
-        expect(panel.dataset.term).toBe(t.dataset.term);
-        expect(panel.querySelector(".vx-panel-term").textContent).toBe(t.querySelector(".gc-term").textContent);
-        expect(text(panel.querySelector(".gc-lead")).length).toBeGreaterThan(10);
-      }
-      expect(shown()).toEqual(["property"]);
-    });
-
-    test("one definition at a time, announced politely", async () => {
-      click(doc.querySelector('.vx-term[data-term="magnetism"]'));
-      expect(shown()).toEqual(["magnetism"]);
-      expect(terms().filter((t) => t.getAttribute("aria-pressed") === "true").map((t) => t.dataset.term)).toEqual(["magnetism"]);
-      await wait(150);
-      expect(doc.getElementById("vx-announce").textContent).toBe("Magnetism. Whether a material is attracted to a magnet. Iron and steel are attracted to magnets. Aluminum, copper, plastic, and wood are not.");
-    });
+  test("learning goals: three concise goals with no unsupported Grade 6 code", () => {
+    const goals = [...doc.querySelectorAll("#goals .goal-card")];
+    expect(goals.map((g) => text(g.querySelector(".goal-text")))).toEqual([
+      "Investigate and compare how materials behave when scratched, heated, squeezed, pulled, or tested with electricity and magnets.",
+      "Use evidence from physical property tests to identify materials and choose the right material for a job.",
+      "Explain how buoyancy allows a cargo ship to float and how adding cargo affects it.",
+    ]);
+    expect(doc.querySelectorAll("#goals .goal-std")).toHaveLength(0);
+    // Standards appear only beneath the hero and on goal chips: no standalone banners, no invented codes.
+    expect([...html.matchAll(/\b\d\.MS-[A-Z]+\d-\d+(\(MA\))?/g)].map((m) => m[0]).every((c) => c === "6.MS-PS1-7(MA)" || c === "6.MS-PS1-8(MA)")).toBe(true);
+    expect(doc.querySelector("main .ls-focus")).not.toBeNull();
   });
 
   test("hook cards use native buttons and move focus to the revealed text", () => {
     const cards = [...doc.querySelectorAll("#hook .hook-card")];
-    expect(cards.map((c) => c.querySelector("h3.hook-card-name").textContent)).toEqual(["The Steel Giant", "The Tiny Coin", "The Floating Ice"]);
+    expect(cards.map((c) => c.querySelector("h3.hook-card-name").textContent)).toEqual(["The Wire", "The Pan", "The Ship"]);
     expect(doc.querySelectorAll("#hook [onclick]")).toHaveLength(0);
     const btn = cards[0].querySelector("button.hook-card-prompt");
     click(btn);
@@ -116,50 +118,32 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
     expect(cards[1].classList.contains("revealed")).toBe(false);
   });
 
-  describe("density review", () => {
-    const blocks = () => [...doc.querySelectorAll("#dz-lab .dz-block")];
-    const tops = () => [...doc.querySelectorAll("#dz-tank .dz-tb")].map((g) => Number(g.style.transform.match(/,\s*([\d.]+)px/)[1]));
-
-    test("three same-size particle blocks; measurements stay hidden until a prediction", () => {
-      expect(blocks().map((b) => b.querySelectorAll("circle").length)).toEqual([4, 8, 16]);
-      expect(blocks().map((b) => b.querySelector("rect").getAttribute("width"))).toEqual(["112", "112", "112"]);
-      expect([...doc.querySelectorAll("#dz-lab .dz-data")].every((d) => d.hidden)).toBe(true);
-      expect(doc.getElementById("dz-experiment").hidden).toBe(true);
-      expect(doc.querySelectorAll("#dz-lab input")).toHaveLength(0);
-    });
-
-    test("any prediction reveals mass, volume, and density with same volume and mass following particle count", () => {
-      click(blocks()[0]);
-      expect(blocks()[0].getAttribute("aria-pressed")).toBe("true");
-      expect(blocks()[2].classList.contains("right")).toBe(true);
-      expect(doc.getElementById("dz-fb").textContent).toBe("Block C is the most dense: it packs the most matter into the same space.");
-      const rows = [...doc.querySelectorAll("#dz-lab .dz-data")].map((d) => [...d.querySelectorAll("dd")].map((x) => x.textContent));
-      expect(rows).toEqual([["4 g", "10 cm³", "0.4 g/cm³"], ["8 g", "10 cm³", "0.8 g/cm³"], ["16 g", "10 cm³", "1.6 g/cm³"]]);
-      expect(doc.getElementById("dz-experiment").hidden).toBe(false);
-      click(blocks()[1]);
-      expect(blocks()[1].classList.contains("chosen")).toBe(false);
-    });
-
-    test("in water, floaters sit as deep as their density and the denser-than-water block sinks; reset restores", () => {
-      click(blocks()[2]);
-      expect(doc.getElementById("dz-fb").textContent).toMatch(/^Your prediction matches/);
-      expect(tops()).toEqual([2, 2, 2]);
-      click(doc.getElementById("dz-drop"));
-      // surface 70, block 60 tall: underwater depth = 60 x density for floaters; Block C rests on the floor (174).
-      expect(tops()).toEqual([34, 58, 114]);
-      expect(doc.getElementById("dz-discover").textContent).toContain("Block C is denser than water, so it sinks");
-      click(doc.getElementById("dz-drop"));
-      expect(tops()).toEqual([2, 2, 2]);
-      click(doc.getElementById("dz-drop"));
-      click(doc.getElementById("dz-reset"));
-      expect(tops()).toEqual([2, 2, 2]);
-      expect(blocks().every((b) => b.getAttribute("aria-pressed") === "false" && !b.hasAttribute("aria-disabled"))).toBe(true);
-      expect(doc.getElementById("dz-experiment").hidden).toBe(true);
-      expect(doc.activeElement).toBe(blocks()[0]);
-    });
+  test("redundant density and volume instruction is removed", () => {
+    for (const id of ["density", "dz-lab", "dz-tank", "dz-drop", "recall", "qr1", "qr2", "synthesis", "match-lab", "matchOpts", "vocab-explorer", "vx-announce"]) expect(doc.getElementById(id)).toBeNull();
+    const lesson = html.slice(html.indexOf('<main id="main"'), html.indexOf('<section id="quiz"'));
+    expect(lesson).not.toMatch(/What Is Density\?|Back to the Harbor|Brain Check|g\/cm³|length × width × height|Engineer's Property Match/);
+    expect(html).not.toContain("DENSITY REVIEW");
+    expect(html).not.toContain("VOCABULARY EXPLORER");
+    expect(html).not.toContain(".dz-");
+    expect(html).not.toContain(".wrapup-");
+    expect(html).not.toContain(".match-scenario");
+    // Shared rules that used to sit in removed blocks still style what remains.
+    expect(html).toMatch(/\.ship-btn, \.pt-go \{\n  min-height: 48px;[\s\S]*?background: linear-gradient\(135deg, var\(--gold\), #ffd97a\);/);
+    expect(html).toMatch(/\n\.tm-label \{\n  font-size: 0\.72rem;/);
   });
 
   describe("ship-loading investigation", () => {
+    test("Cargo Ship follows the seven investigations with one concise displacement explanation", () => {
+      const section = doc.getElementById("ship-lab").closest("section");
+      expect(section.id).toBe("buoyancy");
+      expect(doc.getElementById("dw-lab").compareDocumentPosition(doc.getElementById("ship-lab")) & 4).toBeTruthy();
+      expect(text(section.querySelector(".section-label"))).toBe("Challenge · Buoyancy");
+      expect(text(section.querySelector(".section-desc"))).toBe("Water pushes up on anything placed in it. That upward push is called buoyancy. A steel ship can float because its hollow shape allows it to displace enough water to support its weight.");
+      // Never claims the ship displaces water weighing more than ship and cargo.
+      expect(text(section)).not.toMatch(/weighs more than the ship/i);
+      expect(html).toContain("#buoyancy + #mystery { padding-top: 1.6rem; }");
+    });
+
     const val = (id) => doc.getElementById(id).textContent;
     const panel = () => [val("ship-total"), val("ship-vol"), val("ship-state")];
     const y = () => Number(doc.getElementById("ship-g").style.transform.match(/translate\([\d.]+px,\s*([\d.]+)px\)/)[1]);
@@ -336,8 +320,8 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
     expect(html).not.toContain("WATER DISPLACEMENT LAB");
   });
 
-  describe("property families", () => {
-    const groups = () => [...doc.querySelectorAll("#properties .pg-group")];
+  describe("property vocabulary (three groups)", () => {
+    const groups = () => [...doc.querySelectorAll("#vocab .pg-group")];
 
     test("eight properties sit in three labeled behavior groups with the approved wording", () => {
       expect(groups().map((g) => text(g.querySelector("h3.pg-head")))).toEqual([
@@ -363,11 +347,14 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
           ["Magnetism", "Whether a material is attracted to a magnet.", "Example: Iron or steel"],
         ],
       ]);
-      expect(doc.querySelectorAll("#properties .prop-card").length).toBe(8);
+      expect(doc.querySelectorAll("#vocab .prop-card").length).toBe(8);
+      expect(doc.querySelectorAll("main .prop-card").length).toBe(8);
+      expect(text(doc.querySelector("#vocab .section-desc"))).toBe("A physical property is something you can observe or measure without changing what a material is.");
+      expect(doc.querySelectorAll("#vocab .vx-term, #vocab .vx-panel")).toHaveLength(0);
     });
 
     test("cards are plain: no emojis, no bolding in definitions; the look-alikes box is replaced by a Remember line", () => {
-      const wrap = doc.querySelector("#properties .pg-wrap");
+      const wrap = doc.querySelector("#vocab .pg-wrap");
       expect(wrap.textContent).not.toMatch(/\p{Extended_Pictographic}/u);
       expect(wrap.querySelectorAll(".prop-card-icon, .prop-card-def strong").length).toBe(0);
       expect(doc.querySelector(".lookalike")).toBeNull();
@@ -377,8 +364,9 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
       expect(groups()[0].querySelector(".pg-cards").compareDocumentPosition(remember) & 4).toBeTruthy();
     });
 
-    test("order: key idea, groups, then the three investigations and the Mystery Cube", () => {
-      const order = [doc.querySelector("#properties .name-it.purple-it"), doc.querySelector("#properties .pg-wrap"), ...["hs-lab", "ec-lab", "th-lab", "id-lab"].map((id) => doc.getElementById(id))];
+    test("order: vocabulary groups, then the investigations, Cargo Ship, and the Mystery Cube", () => {
+      expect(doc.querySelector("#properties .name-it, #properties .pg-wrap")).toBeNull();
+      const order = [doc.querySelector("#vocab .pg-wrap"), ...["hs-lab", "ec-lab", "th-lab", "ship-lab", "id-lab"].map((id) => doc.getElementById(id))];
       for (let i = 0; i < order.length - 1; i++) expect(order[i].compareDocumentPosition(order[i + 1]) & 4).toBeTruthy();
     });
 
@@ -394,11 +382,11 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
     const pick = (sel) => click(doc.querySelector(sel));
     const shown = (sel) => [...doc.querySelectorAll(sel)].filter((g) => g.style.display !== "none").map((g) => g.getAttribute("data-tool") || g.getAttribute("data-mat"));
 
-    test("the three investigations sit in Properties, after the family cards and before the Mystery Cube", () => {
+    test("the three investigations sit in Properties, after the vocabulary groups and before the Mystery Cube", () => {
       const ids = ["hs-lab", "ec-lab", "th-lab", "id-lab"].map((id) => doc.getElementById(id));
-      ids.forEach((el) => expect(el.closest("section").id).toBe("properties"));
+      ids.slice(0, 3).forEach((el) => expect(el.closest("section").id).toBe("properties"));
       for (let i = 0; i < 3; i++) expect(ids[i].compareDocumentPosition(ids[i + 1]) & 4).toBeTruthy();
-      expect(doc.querySelector("#properties .pg-wrap").compareDocumentPosition(ids[0]) & 4).toBeTruthy();
+      expect(doc.querySelector("#vocab .pg-wrap").compareDocumentPosition(ids[0]) & 4).toBeTruthy();
       expect(["hs-lab", "ec-lab", "th-lab"].map((id) => text(doc.querySelector(`#${id} .mlab-title`)))).toEqual(["Can You Scratch It?", "Will the Bulb Light Up?", "Which Material Transfers Heat Fastest?"]);
       expect(text(doc.querySelector("#hs-lab .pt-instr"))).toBe("Choose a material and a tool. Test whether the tool leaves a scratch.");
       expect(text(doc.querySelector("#ec-lab .pt-instr"))).toBe("Choose a material to complete the circuit.");
@@ -631,7 +619,8 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
 
     test("placement: seven investigations in order before the Mystery Cube, with approved titles and directions", () => {
       const order = ["hs-lab", "ec-lab", "th-lab", "mg-lab", "mp-lab", "ml-lab", "dw-lab", "id-lab"].map((id) => doc.getElementById(id));
-      order.forEach((el) => expect(el.closest("section").id).toBe("properties"));
+      expect(order.map((el) => el.closest("section").id)).toEqual([...Array(7).fill("properties"), "mystery"]);
+      expect([...doc.querySelectorAll("#properties .mlab-card")].map((c) => c.id)).toEqual(["hs-lab", "ec-lab", "th-lab", "mg-lab", "mp-lab", "ml-lab", "dw-lab"]);
       for (let i = 0; i < order.length - 1; i++) expect(order[i].compareDocumentPosition(order[i + 1]) & 4).toBeTruthy();
       expect(["mg-lab", "mp-lab", "ml-lab", "dw-lab"].map((id) => text(doc.querySelector(`#${id} .mlab-title`)))).toEqual(["Will It Stick?", "When Will It Melt?", "Flatten or Break?", "Can You Make a Wire?"]);
       expect(text(doc.querySelector("#dw-lab .pt-instr"))).toBe("Choose a material. Pull it through the machine to see if it forms a wire.");
@@ -1064,6 +1053,15 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
       await wait(300);
     }
 
+    test("Mystery Cube is its own challenge after Cargo Ship and right before the quiz", () => {
+      const section = doc.getElementById("id-lab").closest("section");
+      expect(section.id).toBe("mystery");
+      const ids = [...doc.querySelectorAll("main section")].map((s) => s.id);
+      expect(ids.slice(ids.indexOf("mystery") - 1, ids.indexOf("mystery") + 2)).toEqual(["buoyancy", "mystery", "quiz"]);
+      expect(text(section.querySelector(".id-intro"))).toBe("A small cube came from the supply closet with its label missing. The chart says it is iron, aluminum, hard plastic, or pine wood. Run physical tests to find out which.");
+      expect([...doc.querySelectorAll("#mystery .id-test")].map((b) => b.dataset.test)).toEqual(["magnet", "circuit", "water"]);
+    });
+
     test("the prediction gates the tests", async () => {
       const gated = doc.querySelector('.predict-gated[data-gate="qp-id"]');
       expect(gated.contains(doc.getElementById("id-work"))).toBe(true);
@@ -1132,43 +1130,6 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
     });
   });
 
-  test("the property match advances only on Next, with text progress", async () => {
-    const count = () => doc.getElementById("match-count").textContent;
-    const next = doc.getElementById("match-next");
-    const pick = (label) => click([...doc.querySelectorAll("#matchOpts .match-btn")].find((b) => b.textContent === label));
-    expect(count()).toBe("Problem 1 of 5");
-    expect(next.hidden).toBe(true);
-    pick("Malleability");
-    expect(doc.getElementById("matchFb").className).toBe("tm-fb visible no");
-    pick("Ductility");
-    await wait(3000);
-    expect(count()).toBe("Problem 1 of 5");
-    expect(next.hidden).toBe(false);
-    for (const [answer, n] of [["Thermal conductivity", 2], ["Hardness", 3], ["Malleability", 4], ["Melting point", 5]]) {
-      click(next);
-      expect(count()).toBe(`Problem ${n} of 5`);
-      expect(doc.activeElement).toBe(doc.getElementById("match-text"));
-      pick(answer);
-    }
-    expect(doc.getElementById("matchSuccess").classList.contains("visible")).toBe(true);
-    expect(next.textContent).toBe("Start over");
-    click(next);
-    expect(count()).toBe("Problem 1 of 5");
-    expect(doc.getElementById("matchSuccess").classList.contains("visible")).toBe(false);
-  }, 10000);
-
-  test("Quick Recall gives answer-specific feedback with no separate Check step", () => {
-    const qr1 = doc.querySelectorAll("#qr1 .check-opt");
-    click(qr1[0]);
-    expect(qr1[0].classList.contains("wrong")).toBe(true);
-    click(qr1[1]);
-    expect(qr1[1].classList.contains("right")).toBe(true);
-    expect(doc.querySelectorAll("#recall input[type=radio], #recall .qr-check")).toHaveLength(0);
-    const qr2 = doc.querySelectorAll("#qr2 .check-opt");
-    click(qr2[2]);
-    expect(text(doc.querySelector("#qr2 .tm-fb:not(.tm-fb-sizer)"))).toMatch(/^Correct! Steel is attracted to magnets/);
-  });
-
   test("Connections hold only lessons; the extension lives in More Learning", () => {
     expect([...doc.querySelectorAll("#connections .cont-card")].map((c) => [c.className, c.getAttribute("href")])).toEqual([
       ["cont-card lesson", "lesson_measuring-matter.html"],
@@ -1202,6 +1163,32 @@ describe("Physical Properties assessment integrity", () => {
     for (const item of r1.items) {
       expect(quiz).toContain(JSON.stringify(item.stem).slice(1, -1));
       for (const option of item.options) expect(quiz).toContain(option.text);
+    }
+  });
+
+  // Phase 3 must not touch the assessment: the quiz section and quiz script are
+  // pinned to their Phase 2B (7fc27d5) bytes. Assessment r2 is a separate,
+  // teacher-approved operation that updates these hashes deliberately.
+  const QUIZ_PINS = {
+    "lesson-sources/lesson_physical-properties.html": ["bbe101c01167d51d", "3e6e9f5910120bf7"],
+    "lesson_physical-properties.html": ["7659e27afe3f3d09", "6c680f05e1b7322c"],
+    "app/lessons/lesson_physical-properties.html": ["5336f425a1e86146", "472c800041ec3889"],
+  };
+  test.each(FILES)("%s quiz section and quiz script are unchanged", (rel) => {
+    const html = fs.readFileSync(path.join(ROOT, rel), "utf8");
+    const h = (x) => require("crypto").createHash("sha256").update(x).digest("hex").slice(0, 16);
+    const a = html.indexOf('<section id="quiz"');
+    const q = html.indexOf("<!-- ===== QUIZ ===== -->");
+    expect([h(html.slice(a, html.indexOf("</section>", a))), h(html.slice(q, html.indexOf("</script>", q)))]).toEqual(QUIZ_PINS[rel]);
+  });
+
+  test.each(FILES)("%s keeps the identifiers saved progress and launches depend on", (rel) => {
+    const html = fs.readFileSync(path.join(ROOT, rel), "utf8");
+    // Only the quiz persists state (autosave/finalize keyed by the activity, not by section ids).
+    const persisted = html.match(/localStorage|sessionStorage\.setItem|indexedDB/g) || [];
+    expect(persisted).toEqual([]);
+    for (const id of ["goals", "vocab", "hook", "properties", "buoyancy", "quiz", "continue", "connections", "pp-quiz-questions", "pp-submit-btn", "pp-score", "pp-thinking"]) {
+      expect(html).toContain(`id="${id}"`);
     }
   });
 
