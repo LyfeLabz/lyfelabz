@@ -12,10 +12,11 @@
  * challenge, the Mystery Cube evidence challenge, then the quiz. The density
  * review, Brain Check, harbor wrap-up, and property match are removed. This
  * suite runs the lesson's real scripts in jsdom against the source and both
- * generated outputs, and pins the assessment surface: Phase 4 assessment r2
- * (ten teacher-approved three-choice items) is the canonical revision, r1 is
- * preserved for frozen r1 assignments through its own rendition, and the quiz
- * block is pinned to the reviewed r2 bytes.
+ * generated outputs, and pins the assessment surface: assessment r3 (the ten
+ * teacher-approved r2 items, each with one added distractor so every item has
+ * four choices) is the canonical revision; r1 and r2 are preserved for frozen
+ * assignments through their own renditions, and the quiz block is pinned to
+ * the reviewed r3 bytes.
  */
 
 const fs = require("fs");
@@ -1154,40 +1155,73 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
   });
 });
 
-describe("Physical Properties assessment r2", () => {
+describe("Physical Properties assessment r3", () => {
   const PAYLOADS = path.join(ROOT, "platform/functions/src/scripts/assessments");
   const r1 = require(path.join(PAYLOADS, "physical-properties.r1.json"));
   const r2 = require(path.join(PAYLOADS, "physical-properties.r2.json"));
+  const r3 = require(path.join(PAYLOADS, "physical-properties.r3.json"));
   const RENDITIONS = path.join(ROOT, "app/lessons/assessment-revisions");
-  // Teacher-approved answer key and Webb's DOK level for each r2 item.
-  const KEY = ["B", "A", "B", "A", "C", "A", "B", "C", "C", "B"];
+  const sha256 = (buf) => require("crypto").createHash("sha256").update(buf).digest("hex");
+  // r3 answer key (A3 B2 C3 D2) and Webb's DOK level for each item.
+  const KEY = ["B", "A", "D", "C", "A", "D", "B", "A", "C", "C"];
+  const R2_KEY = ["B", "A", "B", "A", "C", "A", "B", "C", "C", "B"];
   const DOK = [1, 1, 2, 2, 2, 2, 2, 1, 2, 2];
+  // The one distractor r3 adds to each r2 item, in item order.
+  const ADDED = [
+    "A property you can only test by mixing the material with another substance to see if it reacts",
+    "Hardness",
+    "The coin is harder than both the fingernail and the steel nail",
+    "Aluminum foil, because it is thin and bends easily around the wire",
+    "Wood conducts heat better than metal, so the heat spreads out before it reaches your hand",
+    "A scale to compare the masses of the scraps",
+    "All three begin melting at the same temperature because they are all solids",
+    "Malleability",
+    "Plastic",
+    "500 g",
+  ];
   const quizLiteral = (html) => {
     const at = html.indexOf("<!-- ===== QUIZ ===== -->");
     return html.slice(at, html.indexOf("</script>", at));
   };
   const declaration = (html) => JSON.parse(html.match(/<script type="application\/json" id="lyfelabz-assessment-revision">([\s\S]*?)<\/script>/)[1]);
 
-  test("r2 has exactly 10 three-choice items with the approved key, one correct answer each, and explanations", () => {
-    expect(r2).toMatchObject({ activityId: "physical-properties", revisionOrdinal: 2, schemaVersion: 1, itemOrderingRule: "authoredOrder" });
-    expect(r2.items).toHaveLength(10);
-    r2.items.forEach((item, i) => {
+  test("r3 has exactly 10 four-choice items with the approved key, one correct answer each, and explanations", () => {
+    expect(r3).toMatchObject({ activityId: "physical-properties", revisionOrdinal: 3, schemaVersion: 1, itemOrderingRule: "authoredOrder" });
+    expect(r3.items).toHaveLength(10);
+    r3.items.forEach((item, i) => {
       expect(item.itemId).toBe(`q${i + 1}`);
       expect(item.itemType).toBe("singleChoice");
       expect(item.points).toBe(1);
-      expect(item.options.map((o) => o.optionId)).toEqual(["A", "B", "C"]);
-      expect(new Set(item.options.map((o) => o.text)).size).toBe(3);
+      expect(item.options.map((o) => o.optionId)).toEqual(["A", "B", "C", "D"]);
+      expect(new Set(item.options.map((o) => o.text)).size).toBe(4);
       expect(item.correctOptionId).toBe(KEY[i]);
       expect(item.explanation.length).toBeGreaterThan(20);
     });
-    // Correct positions are spread evenly (A3 B4 C3) with no run of three.
+    // Correct positions are spread evenly (A3 B2 C3 D2) with no run of three.
     expect(KEY.filter((k) => k === "A")).toHaveLength(3);
-    expect(KEY.filter((k) => k === "B")).toHaveLength(4);
+    expect(KEY.filter((k) => k === "B")).toHaveLength(2);
     expect(KEY.filter((k) => k === "C")).toHaveLength(3);
+    expect(KEY.filter((k) => k === "D")).toHaveLength(2);
+    for (let i = 2; i < KEY.length; i += 1) expect(KEY[i] === KEY[i - 1] && KEY[i] === KEY[i - 2]).toBe(false);
   });
 
-  test("r2 keeps the approved science: displacement equals total floating mass, gold melts highest, copper is the mystery cube", () => {
-    const at = (n) => r2.items[n - 1];
+  test("r3 keeps every r2 stem, correct answer, and distractor, and adds exactly one distractor per item", () => {
+    expect(r2.items.map((it) => it.correctOptionId)).toEqual(R2_KEY);
+    r3.items.forEach((item, i) => {
+      const prior = r2.items[i];
+      const text = (it) => it.options.find((o) => o.optionId === it.correctOptionId).text;
+      expect(item.stem).toBe(prior.stem);
+      expect(text(item)).toBe(text(prior));
+      const priorTexts = prior.options.map((o) => o.text);
+      const added = item.options.map((o) => o.text).filter((t) => !priorTexts.includes(t));
+      expect(added).toEqual([ADDED[i]]);
+      expect(item.options.map((o) => o.text)).toEqual(expect.arrayContaining(priorTexts));
+      expect(text(item)).not.toBe(ADDED[i]);
+    });
+  });
+
+  test("r3 keeps the approved science: displacement equals total floating mass, gold melts highest, copper is the mystery cube", () => {
+    const at = (n) => r3.items[n - 1];
     const correct = (n) => at(n).options.find((o) => o.optionId === at(n).correctOptionId).text;
     expect(correct(10)).toBe("800 g");
     expect(at(10).stem).toContain("combined mass of 800 g");
@@ -1195,10 +1229,13 @@ describe("Physical Properties assessment r2", () => {
     expect(correct(9)).toBe("Copper");
     expect(correct(2)).toBe("Malleability");
     expect(correct(8)).toBe("Ductility");
+    // Owner-approved Q6 explanation: the magnet works; a scale cannot reliably identify iron.
+    expect(correct(6)).toBe("A magnet");
+    expect(at(6).explanation).toBe("Iron is attracted to magnets, while aluminum and copper are not attracted in this investigation. A scale measures mass, but it cannot reliably identify which scraps contain iron.");
     // No density calculation or volume-measurement practice returns.
-    const all = JSON.stringify(r2).toLowerCase();
+    const all = JSON.stringify(r3).toLowerCase();
     for (const banned of ["density", "volume", "graduated cylinder", "cm³", "g/cm"]) expect(all).not.toContain(banned);
-    expect(JSON.stringify(r2)).not.toContain("\u2014");
+    expect(JSON.stringify(r3)).not.toContain("\u2014");
   });
 
   test("the source records 3 DOK 1 and 7 DOK 2 items in authored order", () => {
@@ -1209,28 +1246,31 @@ describe("Physical Properties assessment r2", () => {
     expect(DOK.filter((d) => d === 2)).toHaveLength(7);
   });
 
-  test.each(FILES)("%s displays r2: items, options, keys, and explanations match the payload", (rel) => {
+  test.each(FILES)("%s displays r3: items, options, keys, and explanations match the payload", (rel) => {
     const html = fs.readFileSync(path.join(ROOT, rel), "utf8");
     const win = { };
     new Function("window", quizLiteral(html).replace(/^[\s\S]*?(var ppQuizQuestions = \[[\s\S]*?\n\];)[\s\S]*$/, "$1\nwindow.q = ppQuizQuestions;"))(win);
     expect(win.q.map((q) => ({ q: q.q, options: q.options, correct: q.correct, explanation: q.explanation }))).toEqual(
-      r2.items.map((it) => ({ q: it.stem, options: it.options.map((o) => o.text), correct: it.options.findIndex((o) => o.optionId === it.correctOptionId), explanation: it.explanation })),
+      r3.items.map((it) => ({ q: it.stem, options: it.options.map((o) => o.text), correct: it.options.findIndex((o) => o.optionId === it.correctOptionId), explanation: it.explanation })),
     );
   });
 
-  test("the lesson config and both canonical outputs declare r2 as the canonical revision", () => {
+  test("the lesson config and both canonical outputs declare r3 as the canonical revision", () => {
     const config = require(path.join(ROOT, "app/scripts/lessonBuilder/lessons/physical-properties.cjs"));
-    expect(config.canonicalAssessmentRevisionId).toBe("assessment_physical-properties__r2");
+    expect(config.canonicalAssessmentRevisionId).toBe("assessment_physical-properties__r3");
     for (const rel of ["lesson_physical-properties.html", "app/lessons/lesson_physical-properties.html"]) {
-      expect(declaration(fs.readFileSync(path.join(ROOT, rel), "utf8"))).toEqual({ schemaVersion: 1, lessonSlug: "physical-properties", assessmentRevisionId: "assessment_physical-properties__r2" });
+      expect(declaration(fs.readFileSync(path.join(ROOT, rel), "utf8"))).toEqual({ schemaVersion: 1, lessonSlug: "physical-properties", assessmentRevisionId: "assessment_physical-properties__r3" });
     }
-    expect(fs.readdirSync(PAYLOADS).filter((f) => f.startsWith("physical-properties."))).toEqual(["physical-properties.r1.json", "physical-properties.r2.json"]);
+    expect(fs.readdirSync(PAYLOADS).filter((f) => f.startsWith("physical-properties."))).toEqual(["physical-properties.r1.json", "physical-properties.r2.json", "physical-properties.r3.json"]);
   });
 
-  test("r1 is preserved byte-for-byte and its rendition still displays the four-choice r1 quiz", () => {
-    // The committed r1 payload is immutable; frozen r1 assignments keep routing here.
-    const sha = require("crypto").createHash("sha256").update(fs.readFileSync(path.join(PAYLOADS, "physical-properties.r1.json"))).digest("hex");
-    expect(sha).toBe("ba874cb718b3b8f480ce67a814f85a37238549bf02eafcb64448a58f88fc9edd");
+  test("r1 and r2 are preserved byte-for-byte, and their renditions display their own frozen quizzes", () => {
+    // Committed payloads are immutable; frozen r1/r2 assignments keep routing to their renditions.
+    expect(sha256(fs.readFileSync(path.join(PAYLOADS, "physical-properties.r1.json")))).toBe("ba874cb718b3b8f480ce67a814f85a37238549bf02eafcb64448a58f88fc9edd");
+    expect(sha256(fs.readFileSync(path.join(PAYLOADS, "physical-properties.r2.json")))).toBe("9f69c56ba4121fa89515201fed6ef08c7475d0bd9adb31773851af04e40929a1");
+    // The r1/r2 renditions are byte-identical to the ones generated before r3 existed.
+    expect(sha256(fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r1.html")))).toBe("579716129ef74844c60b9aabb480d001566bb94e7e2e7eacc26730b910ba52e3");
+    expect(sha256(fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r2.html")))).toBe("46a1389221884551d9e62c5ef8bf159c102650b5c66414cfb6cfa203cb9f5ab8");
     expect(r1.revisionOrdinal).toBe(1);
     expect(r1.items).toHaveLength(10);
     const html = fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r1.html"), "utf8");
@@ -1243,6 +1283,15 @@ describe("Physical Properties assessment r2", () => {
     }
     const r2html = fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r2.html"), "utf8");
     expect(declaration(r2html).assessmentRevisionId).toBe("assessment_physical-properties__r2");
+    const r2quiz = quizLiteral(r2html);
+    for (const item of r2.items) {
+      expect(item.options).toHaveLength(3);
+      for (const option of item.options) expect(r2quiz).toContain(option.text);
+    }
+    const r3html = fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r3.html"), "utf8");
+    expect(declaration(r3html).assessmentRevisionId).toBe("assessment_physical-properties__r3");
+    // r2 never displays an r3-only distractor.
+    for (const added of ADDED.filter((t) => !["Hardness", "Malleability", "Plastic"].includes(t))) expect(r2quiz).not.toContain(added);
   });
 
   test("the revision path table routes each frozen revision to its own rendition", () => {
@@ -1250,6 +1299,7 @@ describe("Physical Properties assessment r2", () => {
       expect(JSON.parse(fs.readFileSync(path.join(ROOT, rel), "utf8")).lessons["physical-properties"]).toEqual({
         "assessment_physical-properties__r1": "/app/lessons/assessment-revisions/lesson_physical-properties__r1.html",
         "assessment_physical-properties__r2": "/app/lessons/assessment-revisions/lesson_physical-properties__r2.html",
+        "assessment_physical-properties__r3": "/app/lessons/assessment-revisions/lesson_physical-properties__r3.html",
       });
     }
   });
@@ -1263,9 +1313,9 @@ describe("Physical Properties assessment r2", () => {
     expect(board).toContain('onclick="ppResetQuiz()">Try Again</button>');
   });
 
-  // Runs the real quiz script: three buttons per item, autosave with indexes,
-  // local scoring against the r2 key, and Try Again rebuilding a fresh attempt.
-  test.each(["lesson_physical-properties.html", "app/lessons/lesson_physical-properties.html"])("%s quiz renders, autosaves, scores, and resets with three choices", (rel) => {
+  // Runs the real quiz script: four buttons per item, autosave with indexes,
+  // local scoring against the r3 key, and Try Again rebuilding a fresh attempt.
+  test.each(["lesson_physical-properties.html", "app/lessons/lesson_physical-properties.html"])("%s quiz renders, autosaves, scores, and resets with four choices", (rel) => {
     const html = fs.readFileSync(path.join(ROOT, rel), "utf8");
     const start = html.indexOf('<main id="main"');
     const dom = new JSDOM(`<body>${html.slice(start, html.indexOf("</main>", start))}</main></body>`, { runScripts: "outside-only", url: "https://app.lyfelabz.test/lesson" });
@@ -1279,10 +1329,10 @@ describe("Physical Properties assessment r2", () => {
     const cards = d.querySelectorAll("#pp-quiz-questions .quiz-card");
     expect(cards).toHaveLength(10);
     for (const card of cards) {
-      expect([...card.querySelectorAll(".quiz-option .option-letter")].map((l) => l.textContent)).toEqual(["A", "B", "C"]);
+      expect([...card.querySelectorAll(".quiz-option .option-letter")].map((l) => l.textContent)).toEqual(["A", "B", "C", "D"]);
     }
     // Answer every item correctly except Q10 (choose 300 g).
-    const picks = KEY.map((k) => "ABC".indexOf(k));
+    const picks = KEY.map((k) => "ABCD".indexOf(k));
     picks[9] = 0;
     // Inline onclick attributes do not run under outside-only jsdom; call the page's own handler.
     picks.forEach((oi, qi) => w.ppSelectAnswer(qi, oi));
@@ -1294,25 +1344,25 @@ describe("Physical Properties assessment r2", () => {
     expect(d.getElementById("pp-score-num").textContent).toBe("9/10");
     expect(d.getElementById("pp-score").classList.contains("show")).toBe(true);
     expect(d.getElementById("pp-feedback-9").className).toContain("incorrect-fb");
-    expect(d.getElementById("pp-q-9-1").classList.contains("revealed-correct")).toBe(true);
+    expect(d.getElementById("pp-q-9-2").classList.contains("revealed-correct")).toBe(true);
     expect(finals).toHaveLength(1);
     expect(finals[0][0]).toEqual(picks);
-    // Try Again clears the attempt and rebuilds three-choice items.
+    // Try Again clears the attempt and rebuilds four-choice items.
     w.ppResetQuiz();
     expect(d.getElementById("pp-score").classList.contains("show")).toBe(false);
     expect(d.querySelectorAll("#pp-quiz-questions .quiz-option.selected")).toHaveLength(0);
-    expect(d.querySelectorAll("#pp-quiz-questions .quiz-option")).toHaveLength(30);
+    expect(d.querySelectorAll("#pp-quiz-questions .quiz-option")).toHaveLength(40);
     expect(d.getElementById("pp-thinking").disabled).toBe(false);
   });
 
-  // r2 is a teacher-approved revision of the quiz section and quiz script;
+  // r3 is a reviewed revision of the quiz section and quiz script;
   // these pins move only with a deliberate, reviewed assessment change.
   const QUIZ_PINS = {
-    "lesson-sources/lesson_physical-properties.html": ["0826507882bc16ea", "c58ea8faa332d9c4"],
-    "lesson_physical-properties.html": ["5cc6b8872b311adb", "1fd0bc4933bea9a1"],
-    "app/lessons/lesson_physical-properties.html": ["143572cf6364d503", "933b70fc9f16a2a4"],
+    "lesson-sources/lesson_physical-properties.html": ["0826507882bc16ea", "4b9192b8a98ae8b3"],
+    "lesson_physical-properties.html": ["5cc6b8872b311adb", "5efbf3dc211a624f"],
+    "app/lessons/lesson_physical-properties.html": ["143572cf6364d503", "aea340494e209051"],
   };
-  test.each(FILES)("%s quiz section and quiz script match the r2 pins", (rel) => {
+  test.each(FILES)("%s quiz section and quiz script match the r3 pins", (rel) => {
     const html = fs.readFileSync(path.join(ROOT, rel), "utf8");
     const h = (x) => require("crypto").createHash("sha256").update(x).digest("hex").slice(0, 16);
     const a = html.indexOf('<section id="quiz"');

@@ -367,42 +367,35 @@ describe("authored-variant build integration", () => {
 
 describe("real lesson markup compatibility (in memory, canonical text only)", () => {
   // For every generated v2 lesson: derive the payload from the lesson's own
-  // canonical quiz and render a canonical-language reduced-choice presentation
+  // canonical quiz and render a canonical-language three-choice presentation
   // (canonical wording, first alphabetical distractor omitted). This authors
   // no adapted wording; it proves the renderer's anchors exist in real lesson
   // output and the rendered page still parses. Nothing is written.
   const lessonsDir = path.join(__dirname, "..", "..", "..", "lessons");
   const files = fs.readdirSync(lessonsDir).filter((f) => /^lesson_.+\.html$/.test(f)).sort();
   const POSITIONS = [0, 1, 2, 1, 2, 0, 2, 0, 1, 2, 1, 0, 1, 2, 0];
-  // Balanced two-choice order (A5 B5, no run of three) for a three-choice canonical.
-  const POSITIONS_2 = [0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1];
   const UNSUPPORTED_LITERAL_LESSONS = ["nature-of-waves"];
 
   test("covers every generated v2 lesson", () => {
     expect(files.length).toBeGreaterThanOrEqual(49);
   });
 
-  test.each(files)("%s renders a canonical-language reduced-choice presentation", (file) => {
+  test.each(files)("%s renders a canonical-language three-choice presentation", (file) => {
     const slug = file.slice("lesson_".length, -".html".length);
     const html = fs.readFileSync(path.join(lessonsDir, file), "utf8");
     const payload = fidelity.buildPayload(slug, fidelity.extractCanonicalQuiz(html, slug), "synthetic-compat", 1);
-    // One distractor fewer than the canonical count: three choices for the
-    // four-choice lessons, two for a three-choice canonical (Physical
-    // Properties r2). A presentation equal to the canonical count is refused.
-    const choiceCount = payload.items[0].options.length - 1;
     const record = {
       schemaVersion: 1,
       kind: "lyfelabz.assessmentPresentation",
       lessonSlug: slug,
       assessmentRevisionId: `assessment_${slug}__r1`,
-      traits: { language: "canonical", choiceCount },
+      traits: { language: "canonical", choiceCount: 3 },
       directions: null,
       items: payload.items.map((item, i) => {
         const distractors = item.options.map((o) => o.optionId).filter((id) => id !== item.correctOptionId);
         const [omitted, ...kept] = distractors;
         const shown = kept.map((id) => item.options.find((o) => o.optionId === id));
-        const order = choiceCount === 2 ? POSITIONS_2 : POSITIONS;
-        shown.splice(order[i % order.length], 0, item.options.find((o) => o.optionId === item.correctOptionId));
+        shown.splice(POSITIONS[i % POSITIONS.length], 0, item.options.find((o) => o.optionId === item.correctOptionId));
         return {
           itemId: item.itemId,
           stem: item.stem,
@@ -427,6 +420,6 @@ describe("real lesson markup compatibility (in memory, canonical text only)", ()
     }
     const result = run();
     expect(R.readBindingBlock(result.html).items).toHaveLength(payload.items.length);
-    expect(fidelity.extractCanonicalQuiz(result.html, slug).questions.every((q) => q.options.length === choiceCount)).toBe(true);
+    expect(fidelity.extractCanonicalQuiz(result.html, slug).questions.every((q) => q.options.length === 3)).toBe(true);
   });
 });

@@ -121,7 +121,8 @@ const PAYLOAD_DIR = __dirname;
 // Renewable Resources r2 adds the approved historical-evidence assessment.
 // Measuring Matter r2 adds the teacher-approved buoyancy item (replacing Q7).
 // Physical Properties r2 adds the teacher-approved three-choice modernized quiz.
-const EXPECTED_PAYLOAD_COUNT = 54;
+// Physical Properties r3 restores four choices per item (one added distractor each).
+const EXPECTED_PAYLOAD_COUNT = 55;
 
 function discoverPayloadFiles(): string[] {
   return fs

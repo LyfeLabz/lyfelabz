@@ -219,9 +219,9 @@ function writeRevisionTable(lessons) {
   );
 }
 
-test('the revision path table ships with exactly the Earth\'s Layers, Measuring Matter, Physical Properties, Water Cycle, and Renewable Resources r1 and r2 renditions it names', () => {
+test('the revision path table ships with exactly the Earth\'s Layers, Measuring Matter, Physical Properties, Water Cycle, and Renewable Resources renditions it names (Physical Properties also r3)', () => {
   assert.equal(result.files.includes('app/lessons/assessment-revisions/revision-paths.json'), true);
-  assert.equal(result.assessmentRevisionRenditions, 10);
+  assert.equal(result.assessmentRevisionRenditions, 11);
   assert.deepEqual(result.files.filter((entry) => entry.startsWith('app/lessons/assessment-revisions/')).sort(), [
     'app/lessons/assessment-revisions/lesson_earths-layers__r1.html',
     'app/lessons/assessment-revisions/lesson_earths-layers__r2.html',
@@ -229,6 +229,7 @@ test('the revision path table ships with exactly the Earth\'s Layers, Measuring 
     'app/lessons/assessment-revisions/lesson_measuring-matter__r2.html',
     'app/lessons/assessment-revisions/lesson_physical-properties__r1.html',
     'app/lessons/assessment-revisions/lesson_physical-properties__r2.html',
+    'app/lessons/assessment-revisions/lesson_physical-properties__r3.html',
     'app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r1.html',
     'app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r2.html',
     'app/lessons/assessment-revisions/lesson_water-cycle__r1.html',
@@ -238,7 +239,7 @@ test('the revision path table ships with exactly the Earth\'s Layers, Measuring 
   const shipped = JSON.parse(fs.readFileSync(path.join(outputDirectory, 'app/lessons/assessment-revisions/revision-paths.json'), 'utf8'));
   assert.equal(Object.keys(shipped.lessons).length, 49);
   // 44 single-revision lessons map r1 to their unversioned page; Earth's
-  // Layers, Measuring Matter, Physical Properties, Water Cycle, and Renewable Resources map r1 and r2 to their renditions, which ship as
+  // Layers, Measuring Matter, Physical Properties, Water Cycle, and Renewable Resources map r1 and r2 (Physical Properties also r3) to their renditions, which ship as
   // copies.
   const table = readAssessmentRevisionCopies();
   assert.equal(table.pageTargets.length, 44);
@@ -253,6 +254,7 @@ test('the revision path table ships with exactly the Earth\'s Layers, Measuring 
     'app/lessons/assessment-revisions/lesson_measuring-matter__r2.html',
     'app/lessons/assessment-revisions/lesson_physical-properties__r1.html',
     'app/lessons/assessment-revisions/lesson_physical-properties__r2.html',
+    'app/lessons/assessment-revisions/lesson_physical-properties__r3.html',
     'app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r1.html',
     'app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r2.html',
     'app/lessons/assessment-revisions/lesson_water-cycle__r1.html',
