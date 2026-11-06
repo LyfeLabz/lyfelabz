@@ -33,6 +33,7 @@ module.exports = {
     v2: "app/lessons/lesson_physical-properties.html",
   },
   generatedNotice: { v1: V1_NOTICE, v2: V2_NOTICE },
+  canonicalAssessmentRevisionId: "assessment_physical-properties__r3",
   requiredLabels: {
     v1Only: [
       "legacy-mode-toggle-markup",

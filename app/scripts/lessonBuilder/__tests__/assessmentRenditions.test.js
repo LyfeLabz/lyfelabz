@@ -137,7 +137,7 @@ describe("canonical revision declaration", () => {
     for (const slug of configMod.listConfiguredSlugs()) {
       const cfg = configMod.loadConfig(slug);
       const configured = cfg.canonicalAssessmentRevisionId || `assessment_${slug}__r1`;
-      expect(configured).toBe(slug === EL ? CURRENT : ["water-cycle", "renewable-and-nonrenewable-resources", "measuring-matter"].includes(slug) ? `assessment_${slug}__r2` : `assessment_${slug}__r1`);
+      expect(configured).toBe(slug === EL ? CURRENT : slug === "physical-properties" ? `assessment_${slug}__r3` : ["water-cycle", "renewable-and-nonrenewable-resources", "measuring-matter"].includes(slug) ? `assessment_${slug}__r2` : `assessment_${slug}__r1`);
       for (const target of ["v1", "v2"]) {
         const html = read(cfg.outputs[target]);
         expect(N.readDeclaration(html)).toEqual({ schemaVersion: 1, lessonSlug: slug, assessmentRevisionId: configured });
@@ -457,10 +457,10 @@ describe("revision-to-path table", () => {
     expect(read(N.CLIENT_PATH_TABLE_FILE)).toBe(a);
   });
 
-  test("single-revision lessons use unversioned pages; Earth's Layers, Water Cycle, Renewable Resources, and Measuring Matter use r1 and r2 renditions", () => {
+  test("single-revision lessons use unversioned pages; Earth's Layers, Water Cycle, Renewable Resources, and Measuring Matter use r1 and r2 renditions; Physical Properties uses r1, r2, and r3 renditions", () => {
     const table = builder.buildPathTable();
     expect(Object.keys(table.lessons)).toEqual(configMod.listConfiguredSlugs());
-    for (const slug of configMod.listConfiguredSlugs().filter((s) => s !== EL && s !== "water-cycle" && s !== "renewable-and-nonrenewable-resources" && s !== "measuring-matter")) {
+    for (const slug of configMod.listConfiguredSlugs().filter((s) => s !== EL && s !== "water-cycle" && s !== "renewable-and-nonrenewable-resources" && s !== "measuring-matter" && s !== "physical-properties")) {
       expect(table.lessons[slug]).toEqual({ [`assessment_${slug}__r1`]: `/app/lessons/lesson_${slug}.html` });
     }
     expect(table.lessons[EL]).toEqual({
@@ -475,8 +475,13 @@ describe("revision-to-path table", () => {
       "assessment_measuring-matter__r1": "/app/lessons/assessment-revisions/lesson_measuring-matter__r1.html",
       "assessment_measuring-matter__r2": "/app/lessons/assessment-revisions/lesson_measuring-matter__r2.html",
     });
+    expect(table.lessons["physical-properties"]).toEqual({
+      "assessment_physical-properties__r1": "/app/lessons/assessment-revisions/lesson_physical-properties__r1.html",
+      "assessment_physical-properties__r2": "/app/lessons/assessment-revisions/lesson_physical-properties__r2.html",
+      "assessment_physical-properties__r3": "/app/lessons/assessment-revisions/lesson_physical-properties__r3.html",
+    });
     // No multi-revision entry points at the unversioned (current) page.
-    for (const slug of [EL, "water-cycle", "renewable-and-nonrenewable-resources", "measuring-matter"]) {
+    for (const slug of [EL, "water-cycle", "renewable-and-nonrenewable-resources", "measuring-matter", "physical-properties"]) {
       expect(Object.values(table.lessons[slug])).not.toContain(`/app/lessons/lesson_${slug}.html`);
     }
     expect(N.renditionPathsInTable(table)).toEqual([
@@ -484,6 +489,9 @@ describe("revision-to-path table", () => {
       "app/lessons/assessment-revisions/lesson_earths-layers__r2.html",
       "app/lessons/assessment-revisions/lesson_measuring-matter__r1.html",
       "app/lessons/assessment-revisions/lesson_measuring-matter__r2.html",
+      "app/lessons/assessment-revisions/lesson_physical-properties__r1.html",
+      "app/lessons/assessment-revisions/lesson_physical-properties__r2.html",
+      "app/lessons/assessment-revisions/lesson_physical-properties__r3.html",
       "app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r1.html",
       "app/lessons/assessment-revisions/lesson_renewable-and-nonrenewable-resources__r2.html",
       "app/lessons/assessment-revisions/lesson_water-cycle__r1.html",
@@ -524,13 +532,16 @@ describe("revision-to-path table", () => {
     expect(() => N.buildRevisionPathTable([undeclared(elCfg)], bySlug([e1(), e2()]))).toThrow("must declare canonicalAssessmentRevisionId");
   });
 
-  test("the rendition tree holds the table and exactly the Earth's Layers, Water Cycle, Renewable Resources, and Measuring Matter r1 and r2 renditions", () => {
-    expect(builder.verifyRenditionTree()).toMatchObject({ renditions: 8 });
+  test("the rendition tree holds the table and exactly the Earth's Layers, Water Cycle, Renewable Resources, and Measuring Matter r1 and r2 renditions and the Physical Properties r1, r2, and r3 renditions", () => {
+    expect(builder.verifyRenditionTree()).toMatchObject({ renditions: 11 });
     expect(fs.readdirSync(paths.RENDITION_OUTPUT_ROOT).sort()).toEqual([
       "lesson_earths-layers__r1.html",
       "lesson_earths-layers__r2.html",
       "lesson_measuring-matter__r1.html",
       "lesson_measuring-matter__r2.html",
+      "lesson_physical-properties__r1.html",
+      "lesson_physical-properties__r2.html",
+      "lesson_physical-properties__r3.html",
       "lesson_renewable-and-nonrenewable-resources__r1.html",
       "lesson_renewable-and-nonrenewable-resources__r2.html",
       "lesson_water-cycle__r1.html",
