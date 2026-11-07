@@ -15,7 +15,7 @@ Created for students to explore independently and for teachers to deploy instant
 
 ## Built With
 - HTML and CSS
-- GitHub Pages
+- Firebase Hosting
 - Custom domain hosting
 
 ## Mission
