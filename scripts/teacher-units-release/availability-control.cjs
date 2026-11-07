@@ -1,11 +1,13 @@
 'use strict';
 // Option B operator control. No import of historical authorization or markers.
-// Cloud execution is never implicit. Explicit direct service-account keys or
-// pinned per-project impersonation are supported; user credentials are never the
-// operator identity. Actual external use still requires owner authorization.
+// Cloud execution is never implicit. Explicit direct service-account keys,
+// pinned per-project impersonation configs, or pinned short-lived gcloud
+// impersonation are supported; user credentials are never the operator
+// identity. Actual external use still requires owner authorization.
 const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
+const { execFileSync } = require('node:child_process');
 const ROOT = path.resolve(__dirname, '../../platform/functions');
 const req = name => require(require.resolve(name, { paths: [ROOT] }));
 const lib = name => require(path.join(ROOT, 'lib', name));
@@ -419,7 +421,7 @@ async function verifyCredential({ client, identity, email, accessReview, imperso
 }
 function parse(argv) {
   const command = argv[0]; if (!['show', 'prepare', 'enable', 'close', 'verify', 'recoverClosed', 'checkEnable'].includes(command)) deny('unknown availability command');
-  const booleans = ['execute', 'live'], values = ['project', 'credentials', 'access-review', 'plan', 'out', 'confirm', 'build-root', 'expected-source-sha',
+  const booleans = ['execute', 'live', 'gcloud-impersonation'], values = ['project', 'credentials', 'access-review', 'plan', 'out', 'confirm', 'build-root', 'expected-source-sha',
     'current-release-evidence', 'release-prepared-at', 'reason', 'approval-ref', 'policy-instance-id', 'placement-fingerprint', 'recovery-authorization'];
   const flags = {};
   for (let i = 1; i < argv.length; i++) {
@@ -429,6 +431,7 @@ function parse(argv) {
     else { const v = argv[++i]; if (typeof v !== 'string' || !v || v.startsWith('--')) deny('missing flag value'); flags[key] = v; }
   }
   if (!flags.project) deny('explicit --project required');
+  if (flags['gcloud-impersonation'] && flags.credentials) deny('choose exactly one operator authentication source');
   if (Boolean(flags.execute) !== Boolean(flags.confirm) || flags.execute && !flags.plan) deny('execute requires saved plan and exact confirmation');
   if (['show', 'verify', 'checkEnable'].includes(command) && (flags.execute || flags.confirm)) deny('read-only command');
   if (command === 'verify' && !flags.plan) deny('verify requires the saved command plan');
@@ -450,6 +453,41 @@ const IMPERSONATION = Object.freeze({ 'lyfelabz-staging': 'lyfelabz-staging@apps
   'lyfelabz-prod': 'lyfelabz-prod@appspot.gserviceaccount.com' });
 const impersonationUrl = email => `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${email}:generateAccessToken`;
 const OPERATOR_SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.email'];
+const pinnedOperator = identity => Object.hasOwn(CLOUD, identity.projectId) && Object.hasOwn(IMPERSONATION, identity.projectId) &&
+  identity.projectNumber === CLOUD[identity.projectId][1] ? IMPERSONATION[identity.projectId] : undefined;
+// Short-lived gcloud impersonation. The existing authenticated gcloud
+// installation mints a pinned service-account token of at most 600 seconds; this
+// process never reads ADC, a refresh token or a credential file. Every minted
+// token's identity, scope and expiry come from Google's token-info response,
+// not from gcloud output. Tokens live only in memory and are never logged.
+const GCLOUD_TOKEN_LIFETIME_SECONDS = 600;
+const gcloudImpersonationArgs = email => ['auth', 'print-access-token', `--impersonate-service-account=${email}`,
+  `--lifetime=${GCLOUD_TOKEN_LIFETIME_SECONDS}s`, '--quiet'];
+function gcloudOperatorCredential(identity, { run = execFileSync, env = process.env, now = Date.now } = {}) {
+  const email = pinnedOperator(identity);
+  if (!email) deny('unapproved gcloud impersonation target');
+  // An access-token-file override would make gcloud serve a token it did not mint.
+  if (env.CLOUDSDK_AUTH_ACCESS_TOKEN_FILE !== undefined) deny('ambient gcloud access-token override refused');
+  const { OAuth2Client } = req('google-auth-library');
+  const client = new OAuth2Client();
+  client.refreshHandler = async () => {
+    let token;
+    try {
+      token = String(run('gcloud', gcloudImpersonationArgs(email),
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000, env })).trim();
+    } catch { deny('gcloud impersonation token unavailable'); }
+    if (!token || /\s/.test(token)) deny('gcloud impersonation token unavailable');
+    let info;
+    try { info = await client.getTokenInfo(token); } catch { deny('gcloud impersonation token could not be verified'); }
+    const t = now();
+    if (info?.email !== email || ![true, 'true'].includes(info.email_verified) || !Array.isArray(info.scopes) ||
+        !info.scopes.includes('https://www.googleapis.com/auth/cloud-platform')) deny('ambiguous, expired or wrong effective credential');
+    if (!Number.isSafeInteger(info.expiry_date) || info.expiry_date <= t + 30000 ||
+        info.expiry_date > t + (GCLOUD_TOKEN_LIFETIME_SECONDS + 60) * 1000) deny('gcloud impersonation token lifetime outside approved bounds');
+    return { access_token: token, expiry_date: info.expiry_date };
+  };
+  return { client, email, impersonated: true };
+}
 // Explicit standard impersonation config only. Never use ADC, configured token
 // endpoints, delegates, or the source user's token for Firestore/provider calls.
 function operatorCredential(identity, key) {
@@ -457,7 +495,7 @@ function operatorCredential(identity, key) {
   if (key.type === 'impersonated_service_account') {
     const fields = ['type', 'source_credentials', 'service_account_impersonation_url'];
     exact(key, [...fields, ...['delegates', 'quota_project_id'].filter(k => Object.hasOwn(key, k))]);
-    const email = Object.hasOwn(CLOUD, identity.projectId) && identity.projectNumber === CLOUD[identity.projectId][1] ? IMPERSONATION[identity.projectId] : undefined;
+    const email = pinnedOperator(identity);
     if (!email || key.service_account_impersonation_url !== impersonationUrl(email) ||
         key.delegates !== undefined && !equal(key.delegates, []) ||
         key.quota_project_id !== undefined && key.quota_project_id !== identity.projectId) deny('unapproved impersonation target or delegates');
@@ -495,11 +533,13 @@ function impersonatedFirestore(identity, client) {
   return new Firestore({ projectId: identity.projectId, databaseId: identity.databaseId,
     auth, host: 'firestore.googleapis.com', ssl: true });
 }
-async function connect(identity, flags, command) {
+async function connect(identity, flags, command, deps = {}) {
   if (identity.environment === 'emulator') deny('demo emulator requires an explicitly injected local operator profile; no credential impersonation fallback');
   if (!flags.live) deny('cloud connection requires separate external authorization and explicit --live');
-  const key = readJSON(flags.credentials), accessReview = readJSON(flags['access-review']);
-  const { client, email, impersonated } = operatorCredential(identity, key);
+  const gcloud = flags['gcloud-impersonation'] === true;
+  if (gcloud && flags.credentials) deny('choose exactly one operator authentication source');
+  const key = gcloud ? null : readJSON(flags.credentials), accessReview = readJSON(flags['access-review']);
+  const { client, email, impersonated } = gcloud ? gcloudOperatorCredential(identity, { run: deps.runGcloud }) : operatorCredential(identity, key);
   const authenticate = () => verifyCredential({ client, identity, email, accessReview, impersonated,
     write: !['show', 'verify'].includes(command), list: command === 'show' });
   await authenticate();
@@ -566,5 +606,6 @@ async function main(argv, ctx = {}) {
   } finally { if (connection?.close) { try { await connection.close(); } catch { stderr.write('Option B connection cleanup could not be confirmed\n'); } } }
 }
 module.exports = { POLICY, HISTORY, READ, WRITE, Refusal, target, encode, ts, cas, auditInput, serializePlan, restorePlan,
-  createController, verifyCredential, selectedApp, operatorCredential, impersonatedFirestore, parse, main };
+  createController, verifyCredential, selectedApp, operatorCredential, gcloudOperatorCredential, gcloudImpersonationArgs,
+  GCLOUD_TOKEN_LIFETIME_SECONDS, impersonatedFirestore, connect, parse, main };
 if (require.main === module) main(process.argv.slice(2)).then(code => { process.exitCode = code; });

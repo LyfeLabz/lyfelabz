@@ -159,3 +159,132 @@ test('production pins its own App Engine operator; cross-project identities and 
   await assert.rejects(prodVerify(prodReview, email));
   await assert.rejects(prodVerify({ ...prodReview, acceptedProjectRoles: ['roles/owner'] }));
 });
+
+// Short-lived gcloud impersonation (--gcloud-impersonation). Synthetic gcloud
+// runner and token-info responses only; no live credential or network access.
+const SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
+function gcloudSetup({ project = identity, tokens = ['synthetic-gcloud-token-1', 'synthetic-gcloud-token-2'], info = {}, clock = Date.now } = {}) {
+  const pinned = C.target(project.projectId, {}).projectId === 'lyfelabz-prod' ? 'lyfelabz-prod@appspot.gserviceaccount.com' : email;
+  const calls = [], infoCalls = [];
+  const run = (file, args, options) => { calls.push({ file, args, options }); const t = tokens[calls.length - 1];
+    if (t instanceof Error) throw t; return `${t}\n`; };
+  const c = C.gcloudOperatorCredential(project, { run, env: {}, now: clock });
+  c.client.getTokenInfo = async token => { infoCalls.push(token);
+    return { email: pinned, email_verified: true, expiry_date: clock() + 600000, scopes: [SCOPE], ...(typeof info === 'function' ? info(token) : info) }; };
+  return { ...c, calls, infoCalls, pinned };
+}
+const leaks = text => /synthetic-gcloud-token|synthetic-stderr-secret/.test(text);
+
+test('gcloud impersonation pins the approved operator per project and runs a fixed shell-free 600-second command', async () => {
+  for (const project of [identity, C.target('lyfelabz-prod', {})]) {
+    const s = gcloudSetup({ project });
+    assert.equal(s.email, s.pinned); assert.equal(s.impersonated, true);
+    assert.ok(!(s.client instanceof req('google-auth-library').Impersonated));
+    assert.equal((await s.client.getAccessToken()).token, 'synthetic-gcloud-token-1');
+    assert.equal(s.calls.length, 1);
+    assert.equal(s.calls[0].file, 'gcloud');
+    assert.deepEqual(s.calls[0].args, ['auth', 'print-access-token', `--impersonate-service-account=${s.pinned}`, '--lifetime=600s', '--quiet']);
+    assert.equal(C.GCLOUD_TOKEN_LIFETIME_SECONDS, 600);
+    assert.equal(s.calls[0].options.shell, undefined); assert.equal(s.calls[0].options.stdio[0], 'ignore');
+    assert.ok(s.calls[0].options.timeout > 0);
+    // Identity and expiry come from Google's token-info response for the minted token.
+    assert.deepEqual(s.infoCalls, ['synthetic-gcloud-token-1']);
+    assert.equal(s.client.credentials.refresh_token, undefined);
+  }
+  assert.equal(C.gcloudOperatorCredential(identity, { run: () => 'x', env: {} }).email, email);
+});
+
+test('gcloud impersonation refuses unsupported projects, mismatched numbers and access-token overrides before running gcloud', () => {
+  let ran = false; const run = () => { ran = true; return 'synthetic-gcloud-token'; };
+  for (const project of [C.target('demo-lyfelabz', {}), { ...identity, projectId: 'unapproved' }, { ...identity, projectNumber: '0' },
+    { ...C.target('lyfelabz-prod', {}), projectNumber: identity.projectNumber }]) {
+    assert.throws(() => C.gcloudOperatorCredential(project, { run, env: {} }), C.Refusal);
+  }
+  assert.throws(() => C.gcloudOperatorCredential(identity, { run, env: { CLOUDSDK_AUTH_ACCESS_TOKEN_FILE: '/tmp/x' } }), C.Refusal);
+  assert.equal(ran, false);
+});
+
+test('gcloud tokens with wrong identity, missing scope, unverified email or out-of-bounds expiry fail closed', async () => {
+  const fixed = Date.parse('2026-11-06T12:00:00Z'), clock = () => fixed;
+  for (const info of [{ email: 'cgbreezy-user@example.test' }, { email: 'lyfelabz-prod@appspot.gserviceaccount.com' },
+    { email: 'other@lyfelabz-staging.iam.gserviceaccount.com' }, { email_verified: false }, { scopes: [] },
+    { scopes: ['https://www.googleapis.com/auth/userinfo.email'] }, { scopes: undefined },
+    { expiry_date: fixed }, { expiry_date: fixed + 30000 }, { expiry_date: fixed - 1 }, { expiry_date: NaN },
+    { expiry_date: fixed + 3600000 }, { expiry_date: fixed + 661000 }]) {
+    const s = gcloudSetup({ info, clock });
+    await assert.rejects(s.client.getAccessToken(), C.Refusal);
+    assert.equal(s.client.credentials.access_token, undefined);
+  }
+  const ok = gcloudSetup({ info: { expiry_date: fixed + 600000 }, clock });
+  assert.equal((await ok.client.getAccessToken()).token, 'synthetic-gcloud-token-1');
+});
+
+test('gcloud failures, empty or malformed output and token-info errors refuse without leaking token or stderr', async () => {
+  const failure = Object.assign(new Error('synthetic-stderr-secret synthetic-gcloud-token'), { stdout: 'synthetic-gcloud-token', stderr: 'synthetic-stderr-secret' });
+  for (const setup of [() => gcloudSetup({ tokens: [failure] }), () => gcloudSetup({ tokens: [''] }),
+    () => gcloudSetup({ tokens: ['synthetic-gcloud-token two'] }),
+    () => { const s = gcloudSetup(); s.client.getTokenInfo = async () => { throw new Error('synthetic-gcloud-token rejected'); }; return s; }]) {
+    const s = setup();
+    const error = await s.client.getAccessToken().then(() => null, e => e);
+    assert.ok(error instanceof C.Refusal);
+    assert.ok(!leaks(`${error.message} ${error.code} ${error.stack} ${JSON.stringify(error)}`));
+  }
+  let output = '';
+  const s = gcloudSetup({ tokens: [failure] });
+  const code = await C.main(['show', '--project', identity.projectId, '--live', '--gcloud-impersonation', '--access-review', 'unused.json'], { env: {},
+    connect: async () => { await s.client.getAccessToken(); },
+    stdout: { write: v => output += v }, stderr: { write: v => output += v } });
+  assert.equal(code, 1); assert.equal(output, 'Option B REFUSED: gcloud impersonation token unavailable\n'); assert.ok(!leaks(output));
+});
+
+test('gcloud tokens refresh through gcloud only when missing or near expiry, and are never persisted', async () => {
+  const s = gcloudSetup();
+  assert.equal((await s.client.getAccessToken()).token, 'synthetic-gcloud-token-1');
+  assert.equal((await s.client.getAccessToken()).token, 'synthetic-gcloud-token-1');
+  assert.equal(s.calls.length, 1);
+  s.client.credentials.expiry_date = Date.now() + 1000; // inside the library's eager-refresh window
+  assert.equal((await s.client.getAccessToken()).token, 'synthetic-gcloud-token-2');
+  assert.equal(s.calls.length, 2); assert.deepEqual(s.infoCalls, ['synthetic-gcloud-token-1', 'synthetic-gcloud-token-2']);
+  // A refresh that fails verification fails closed rather than reusing a stale token.
+  s.client.credentials.expiry_date = Date.now() - 1;
+  s.client.getTokenInfo = async () => ({ email: 'wrong@example.test', email_verified: true, expiry_date: Date.now() + 600000, scopes: [SCOPE] });
+  await assert.rejects(s.client.getAccessToken(), C.Refusal);
+});
+
+test('gcloud credential passes the unchanged operator verification and binds the same client to Firestore', async () => {
+  const s = gcloudSetup();
+  s.client.request = provider().request;
+  const r = await C.verifyCredential({ client: s.client, identity, email: s.email, accessReview: review(), impersonated: true, write: true });
+  assert.deepEqual(r.operator, { principalSubject: email, credentialSubject: email, delegationSubject: null });
+  assert.equal(r.source, 'verified-provider');
+  // Existing access-review, Editor acceptance and permission checks still apply.
+  for (const accessReview of [null, { ...review(), acceptedProjectRoles: [] }, { ...review(), principalSubject: 'wrong' }]) {
+    await assert.rejects(C.verifyCredential({ client: s.client, identity, email: s.email, accessReview, impersonated: true, write: true }));
+  }
+  const readOnly = gcloudSetup(); readOnly.client.request = async ({ url }) => ({ data: url.includes(':testIamPermissions') ? { permissions: C.READ } :
+    { projectId: identity.projectId, name: `projects/${identity.projectNumber}`, state: 'ACTIVE' } });
+  await assert.rejects(C.verifyCredential({ client: readOnly.client, identity, email, accessReview: review(), impersonated: true, write: true }));
+  const db = C.impersonatedFirestore(identity, s.client);
+  try { assert.equal(await db._settings.auth.getClient(), s.client); assert.ok(!leaks(JSON.stringify(db._settings))); }
+  finally { await db.terminate(); }
+});
+
+test('conflicting or incomplete authentication flags refuse before gcloud runs or any credential file is read', async () => {
+  const base = ['show', '--project', identity.projectId, '--live'];
+  assert.throws(() => C.parse([...base, '--gcloud-impersonation', '--credentials', 'key.json']), C.Refusal);
+  assert.throws(() => C.parse([...base, '--credentials', 'key.json', '--gcloud-impersonation']), C.Refusal);
+  assert.throws(() => C.parse([...base, '--gcloud-impersonation', 'value']), C.Refusal);
+  assert.throws(() => C.parse([...base, '--gcloud-impersonation', '--gcloud-impersonation']), C.Refusal);
+  assert.equal(C.parse([...base, '--gcloud-impersonation']).flags['gcloud-impersonation'], true);
+  let ran = 0; const runGcloud = () => { ran++; return 'synthetic-gcloud-token'; };
+  const flags = { project: identity.projectId, live: true, 'gcloud-impersonation': true, 'access-review': '/nonexistent/review.json' };
+  for (const [id, f] of [[identity, { ...flags, live: undefined }], [identity, { ...flags, credentials: '/nonexistent/key.json' }],
+    [identity, { ...flags, 'access-review': undefined }], [C.target('demo-lyfelabz', {}), flags]]) {
+    await assert.rejects(C.connect(id, f, 'show', { runGcloud }), C.Refusal);
+  }
+  await assert.rejects(C.connect(identity, flags, 'show', { runGcloud }));
+  assert.equal(ran, 0);
+  // Read-only commands still refuse execution flags with the new source.
+  assert.throws(() => C.parse(['show', '--project', identity.projectId, '--live', '--gcloud-impersonation', '--execute', '--confirm', 'x', '--plan', 'p']), C.Refusal);
+  assert.throws(() => C.parse(['close', '--project', identity.projectId, '--live', '--gcloud-impersonation', '--execute']), C.Refusal);
+});
