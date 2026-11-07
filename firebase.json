@@ -135,7 +135,7 @@
       "source": "platform/functions",
       "codebase": "default",
       "runtime": "nodejs22",
-      "ignore": ["node_modules", ".git", "*.log"],
+      "ignore": ["node_modules", ".git", "*.log", ".env", ".env.*", "*.local", ".runtimeconfig.json"],
       "predeploy": [
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
