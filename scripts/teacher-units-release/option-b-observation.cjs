@@ -155,7 +155,7 @@ function normalizeEndpoint({projectId,id,fn,service,revision,at,archive}) {
   if (running.serviceAccount !== sc.serviceAccountEmail || `${sc.timeoutSeconds}s` !== running.timeout || sc.maxInstanceRequestConcurrency !== running.maxInstanceRequestConcurrency || sc.ingressSettings !== 'ALLOW_ALL') refuse('Functions/Run execution mismatch');
   return {endpointName:id,functionResource:name,serviceResource:sc.service,revisionResource:revisionName,source,backendBuildId:archive.build.backendBuildId,configuration:{fn,service,revision},runtimeUpdate:{kind:automatic?'automatic':'on-deploy',baseImageUri:running.containers[0].baseImageUri ?? null}};
 }
-async function inspectOptionB({project:projectId,get,unpack=unpackOptionB,now=()=>new Date().toISOString(),plan,scoped=false}={}) {
+async function inspectOptionB({project:projectId,get,unpack=unpackOptionB,now=()=>new Date().toISOString(),plan,scoped=false,supportIndexes=false}={}) {
   const environment=project(projectId), startedAt=now();
   (scoped ? scopedConfiguration : configApproval)(plan,projectId,startedAt);
   if (typeof get !== 'function') refuse('explicit independently authenticated GET transport required');
@@ -211,7 +211,7 @@ async function inspectOptionB({project:projectId,get,unpack=unpackOptionB,now=()
     const base=`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/collectionGroups/-`;
     const indexes=await list(read,`${base}/indexes`,'indexes'), fields=[...await list(read,`${base}/fields?filter=indexConfig.usesAncestorConfig%3Dfalse`,'fields'),...await list(read,`${base}/fields?filter=ttlConfig%3A*`,'fields')];
     const byName=new Map(); for (const f of fields) { if (byName.has(f.name)) equal(f,byName.get(f.name),'field configuration changed'); byName.set(f.name,f); }
-    const inScope=value=>SCOPED_INDEX_GROUPS.some(group=>value.name?.includes(`/collectionGroups/${group}/`));
+    const inScope=value=>indexGroups(supportIndexes).some(group=>value.name?.includes(`/collectionGroups/${group}/`));
     return normalizeRemoteIndexes(scoped ? indexes.filter(inScope) : indexes,scoped ? [...byName.values()].filter(inScope) : [...byName.values()],projectId);
   };
   const indexes=await indexSnapshot(); equal(indexes,await indexSnapshot(),'indexes changed'); equal(inventory,await inventoryOf(),'inventory changed');
@@ -300,8 +300,12 @@ async function refreshCurrentRelease(raw,{get,now=()=>new Date().toISOString()}=
 // No Cloud Build, Artifact Registry or checkpoint API is used. Functions source
 // bytes establish application consistency, not a signed source-to-image chain.
 const SCOPED_INDEX_GROUPS=['teacherUnits','teacherUnitCreateReceipts','teacherUnitsAvailabilityHistory'];
-function scopedIndexes(value) {
-  return {indexes:value.indexes.filter(i=>SCOPED_INDEX_GROUPS.includes(i.collectionGroup)),fieldOverrides:value.fieldOverrides.filter(i=>SCOPED_INDEX_GROUPS.includes(i.collectionGroup))};
+function indexGroups(supportIndexes) {
+  return supportIndexes ? [...SCOPED_INDEX_GROUPS,'supportRemovalJobs','supportStudentAuthorizations','studentSupportGrants','supportRecipientRelationships'] : SCOPED_INDEX_GROUPS;
+}
+function scopedIndexes(value,supportIndexes) {
+  const groups=indexGroups(supportIndexes);
+  return {indexes:value.indexes.filter(i=>groups.includes(i.collectionGroup)),fieldOverrides:value.fieldOverrides.filter(i=>groups.includes(i.collectionGroup))};
 }
 function scopedConfiguration(raw, projectId, at, buildId) {
   const p=record(data(raw),['kind','schemaVersion','projectId','backendBuildId','sourceSha','settings','automaticUpdatesAccepted','principalSubject','decisionRef','reviewedAt'],'scoped configuration',true);
@@ -395,14 +399,14 @@ function assertScopedObservation(e,projectId,now) {
   const inventory=e.inventory?.filter(f=>f.name.split('/').pop().startsWith('teacherUnits'));
   if(!inventory || inventory.length!==9 || ENDPOINTS.some(id=>inventory.filter(f=>f.name===`projects/${projectId}/locations/us-central1/functions/${id}` && f.state==='ACTIVE' && f.environment==='GEN_2').length!==1)) refuse('partial/alternate endpoint inventory');
 }
-function assertScopedCompatible(candidate,raw,{rulesApproval,rulesReport,approvalDigest,configurationApproval,now=new Date().toISOString()}={}) {
+function assertScopedCompatible(candidate,raw,{rulesApproval,rulesReport,approvalDigest,configurationApproval,supportIndexes,now=new Date().toISOString()}={}) {
   const c=data(candidate),e=data(raw);
   record(c,['kind','schemaVersion','protocolVersion','projectId','projectNumber','environment','databaseId','source','backendBuildId','hostingArtifactFingerprint','placementFingerprint','rulesSourceHash','functionsArtifactFingerprint','runtimeFiles','indexes','applicationBuildFingerprint','releaseIntent','teacherUnitsAvailability','availabilityEvidence'],'B release candidate',true);
   record(c.source,['sha','dirty'],'candidate source',true);
   assertScopedObservation(e,c.projectId,now);
   if(c.kind!=='lyfelabz.teacherUnitsOptionBCandidate' || c.schemaVersion!==1 || c.protocolVersion!=='teacher-units-v3' || c.source.dirty!==false || c.source.sha!==e.build.sourceSha || c.projectNumber!==e.projectNumber || c.environment!==e.environment || c.databaseId!=='(default)' || c.releaseIntent!=='teacher-units' || c.teacherUnitsAvailability!=='server-policy-required' || c.availabilityEvidence!=='build-contract-assertion') refuse('candidate target/build contract');
   for(const k of ['backendBuildId','placementFingerprint','functionsArtifactFingerprint']) equal(c[k],e[k],k);
-  equal(c.runtimeFiles,e.runtimeFiles,'application files');equal(scopedIndexes(c.indexes),e.indexes,'required ready indexes');
+  equal(c.runtimeFiles,e.runtimeFiles,'application files');equal(scopedIndexes(c.indexes,supportIndexes),e.indexes,'required ready indexes');
   digest(c.hostingArtifactFingerprint,'Hosting bytes');digest(c.applicationBuildFingerprint,'compiler');
   if(configurationApproval!==undefined) equal(configurationApproval,e.configurationApproval,'configuration approval');
   const a=RULES.parseApproval(rulesApproval);if(a.schemaVersion!==2) refuse('source-scoped Rules evidence required');
@@ -410,22 +414,43 @@ function assertScopedCompatible(candidate,raw,{rulesApproval,rulesReport,approva
   const rules=RULES.validateRulesEvidence(a,{projectId:c.projectId,projectNumber:c.projectNumber,databaseId:c.databaseId,localRulesSourceHash:c.rulesSourceHash,observedRulesetResource:e.rules.rulesetResource,observedSourceHash:e.rules.sourceHash,approvalDigest,report:rulesReport});
   return data({kind:'lyfelabz.teacherUnitsOptionBCompatibility',schemaVersion:2,scope:'consistency-evidence-only',authority:'none',backendBuildId:c.backendBuildId,configDigest:e.configDigest,rules});
 }
-function validateScopedCurrentRelease(raw,{target,policy,now=new Date().toISOString(),approvalRef}={}) {
+function validateScopedCurrentRelease(raw,{target,policy,now=new Date().toISOString(),approvalRef,committedClose}={}) {
+  const S9=require('../hosting-release/s9-dual-lineage.cjs'), dual=raw?.kind===S9.CURRENT;
+  if (dual && (!refreshedDual.has(raw) || target?.projectId!==S9.PROJECT)) refuse('fresh provider refresh for staging dual lineage required');
   const b=data(raw);
-  record(b,['kind','schemaVersion','projectId','policyInstanceId','policyGeneration','backendBuildId','placementFingerprint','approvalRef','preparedAt','observedAt','candidate','observation','configurationApproval','rulesApproval','rulesReport','approvalDigest','certifiedReceipt','hosting','review','provenance','rollback','stagingAcceptance'],'scoped current release',true);
-  if(b.kind!==CURRENT_RELEASE_KIND || b.schemaVersion!==2 || b.projectId!==target?.projectId || target.projectNumber!==PROJECT_NUMBERS[b.projectId] || target.environment!==project(b.projectId).name || target.databaseId!=='(default)' || target.region!=='us-central1') refuse('current release target/version');
+  record(b,['kind','schemaVersion','projectId','policyInstanceId','policyGeneration','backendBuildId','placementFingerprint','approvalRef','preparedAt','observedAt','candidate','observation','configurationApproval','rulesApproval','rulesReport','approvalDigest','certifiedReceipt','hosting','review','provenance','rollback','stagingAcceptance',...(dual ? ['closePlan'] : [])],'scoped current release',true);
+  if(b.kind!==(dual ? S9.CURRENT : CURRENT_RELEASE_KIND) || b.schemaVersion!==2 || b.projectId!==target?.projectId || target.projectNumber!==PROJECT_NUMBERS[b.projectId] || target.environment!==project(b.projectId).name || target.databaseId!=='(default)' || target.region!=='us-central1') refuse('current release target/version');
   text(approvalRef,'explicit activation approval');
   const p=P.validateAvailabilityPolicy(policy,target);
   if(!p.ok || p.value.mode!=='closed' || !p.value.approvedBackendBuildId || b.policyInstanceId!==p.value.policyInstanceId || b.policyGeneration!==p.value.generation || b.backendBuildId!==p.value.approvedBackendBuildId || b.placementFingerprint!==p.value.placementFingerprint || b.approvalRef!==approvalRef) refuse('prepared closed policy/CAS binding required');
   if(b.provenance!=='provider-observed') refuse('synthetic/legacy evidence cannot authorize real projects');
   fresh(b.preparedAt,now,MAX_PREPARE_AGE_MS);fresh(b.observedAt,now);equal(b.observedAt,b.observation.observedAt,'observation time');
-  const compatibility=assertScopedCompatible(b.candidate,b.observation,{rulesApproval:b.rulesApproval,rulesReport:b.rulesReport,approvalDigest:b.approvalDigest,configurationApproval:b.configurationApproval,now});
-  if(b.candidate.backendBuildId!==b.backendBuildId || b.candidate.placementFingerprint!==b.placementFingerprint) refuse('candidate/policy mismatch');
   const r=b.certifiedReceipt;
-  if(r?.kind!=='lyfelabz.teacherUnitsOptionBReleaseReceipt' || r.schemaVersion!==2 || r.phase!=='certified' || r.project!==b.projectId) refuse('scoped certified receipt required');
-  fresh(r.recordedAt,now,MAX_PREPARE_AGE_MS);
-  const expected=require('../hosting-release/backend-state.cjs').optionBReceipt({phase:'certified',project:b.projectId,intent:'teacher-units',candidate:b.candidate,evidence:r.backend,hosting:r.hosting,rulesApproval:b.rulesApproval,rulesReport:b.rulesReport,approvalDigest:b.approvalDigest,configurationApproval:b.configurationApproval,recordedAt:r.recordedAt});
-  equal(expected,r,'certified release receipt');
+  fresh(r?.recordedAt,now,MAX_PREPARE_AGE_MS);
+  let compatibility;
+  if (dual) {
+    const U=require('../hosting-release/unchanged-backend.cjs');
+    if (r.kind!==U.RECEIPT || r.schemaVersion!==1 || r.phase!=='certified' || r.project!==b.projectId ||
+        b.backendBuildId!==S9.BUILD || b.placementFingerprint!==b.observation.placementFingerprint) refuse('certified staging Hosting-only receipt required');
+    const inputs={rulesApproval:b.rulesApproval,rulesReport:b.rulesReport,approvalDigest:b.approvalDigest,configurationApproval:b.configurationApproval};
+    equal(b.candidate,r.candidate,'certified Hosting candidate');
+    const expected=U.receipt({phase:'certified',project:b.projectId,intent:U.INTENT,candidate:b.candidate,
+      evidence:r.backend,hosting:r.hosting,...inputs,recordedAt:r.recordedAt});
+    equal(expected,r,'certified Hosting-only receipt');
+    equal(U.backendSnapshot(b.observation),U.backendSnapshot(r.backend.observation),'retained backend provider pin');
+    compatibility=r.compatibility.compatibility;
+    const releaseApproval=U.dualApproval(b.candidate.backendBaseline,b.projectId,b.candidate.source.sha);
+    if (committedClose!==b.closePlan?.confirm || !committedClose || approvalRef===releaseApproval.decisionRef ||
+        approvalRef===p.value.approvalRef || !p.value.approvalRef) refuse('verified committed closure and separate owner re-enable decision required');
+    if (b.rollback?.sourceSha!==r.compatibility.backendSourceSha || b.rollback?.backendBuildId!==S9.ROLLBACK_BUILD ||
+        b.rollback?.artifactSha256!==S9.ROLLBACK_SHA256) refuse('exact retained S9 closed-only rollback required');
+  } else {
+    compatibility=assertScopedCompatible(b.candidate,b.observation,{rulesApproval:b.rulesApproval,rulesReport:b.rulesReport,approvalDigest:b.approvalDigest,configurationApproval:b.configurationApproval,now});
+    if(b.candidate.backendBuildId!==b.backendBuildId || b.candidate.placementFingerprint!==b.placementFingerprint) refuse('candidate/policy mismatch');
+    if(r.kind!=='lyfelabz.teacherUnitsOptionBReleaseReceipt' || r.schemaVersion!==2 || r.phase!=='certified' || r.project!==b.projectId) refuse('scoped certified receipt required');
+    const expected=require('../hosting-release/backend-state.cjs').optionBReceipt({phase:'certified',project:b.projectId,intent:'teacher-units',candidate:b.candidate,evidence:r.backend,hosting:r.hosting,rulesApproval:b.rulesApproval,rulesReport:b.rulesReport,approvalDigest:b.approvalDigest,configurationApproval:b.configurationApproval,recordedAt:r.recordedAt});
+    equal(expected,r,'certified release receipt');
+  }
   const h=record(b.hosting,['projectId','observedAt','app','marketing'],'paired Hosting',true), sites=readTargetSites(b.projectId),env=project(b.projectId),files={};
   if(h.projectId!==b.projectId) refuse('Hosting project mismatch');fresh(h.observedAt,now);
   for(const key of ['app','marketing']) {
@@ -452,7 +477,8 @@ function validateScopedCurrentRelease(raw,{target,policy,now=new Date().toISOStr
   } else if(b.stagingAcceptance!==null) refuse('staging validation must not imply production acceptance');
   // Bind stable release facts. Live observation clocks can advance without
   // invalidating exact intent; a changed revision/config/Rules/pair cannot.
-  const releaseId=K.contentDigest({candidate:b.candidate,configDigest:compatibility.configDigest,rules:compatibility.rules,configurationApproval:b.configurationApproval,
+  const stableHosting=dual ? {projectId:b.hosting.projectId,app:b.hosting.app,marketing:b.hosting.marketing} : b.hosting;
+  const releaseId=K.contentDigest({...(dual ? {committedClose} : {}),candidate:b.candidate,configDigest:compatibility.configDigest,rules:compatibility.rules,configurationApproval:b.configurationApproval,
     certifiedAt:r.recordedAt,hosting:r.hosting,review,rollback,stagingAcceptance:b.stagingAcceptance,preparedAt:b.preparedAt,approvalRef});
   return data({kind:'lyfelabz.teacherUnitsOptionBCurrentReleaseComparison',schemaVersion:2,scope:'scoped-firebase-deployment',authority:'none',activation:'not-approved',projectId:b.projectId,policyInstanceId:b.policyInstanceId,policyGeneration:b.policyGeneration,backendBuildId:b.backendBuildId,placementFingerprint:b.placementFingerprint,approvalRef,preparedAt:b.preparedAt,releaseId,observedAt:b.observedAt});
 }
@@ -460,9 +486,20 @@ function hostingPath(name) {
   if(typeof name!=='string' || !name || /[\\%?#\x00-\x20]/.test(name) || name.split('/').some(s=>!s || s==='.' || s==='..')) refuse('invalid Hosting file path');
   return name.split('/').map(encodeURIComponent).join('/');
 }
-async function refreshScopedCurrentRelease(raw,{get,now=()=>new Date().toISOString(),fetchImpl=fetch,readArtifact=name=>require('node:fs').readFileSync(name)}={}) {
+const refreshedDual = new WeakSet();
+async function refreshScopedCurrentRelease(raw,{get,verifyDualSource,now=()=>new Date().toISOString(),fetchImpl=fetch,readArtifact=name=>require('node:fs').readFileSync(name)}={}) {
   const b=data(raw);
-  if(b.schemaVersion!==2 || b.kind!==CURRENT_RELEASE_KIND || b.provenance!=='provider-observed') refuse('real scoped release record required');
+  const S9=require('../hosting-release/s9-dual-lineage.cjs'), dual=b.kind===S9.CURRENT;
+  if(b.schemaVersion!==2 || (!dual && b.kind!==CURRENT_RELEASE_KIND) || b.provenance!=='provider-observed') refuse('real scoped release record required');
+  if (dual) {
+    const U=require('../hosting-release/unchanged-backend.cjs'), r=b.certifiedReceipt;
+    if (b.projectId!==S9.PROJECT || r?.kind!==U.RECEIPT || r.phase!=='certified' || r.project!==S9.PROJECT)
+      refuse('dual lineage requires certified staging Hosting-only evidence');
+    fresh(b.preparedAt,now(),MAX_PREPARE_AGE_MS);fresh(r.recordedAt,now(),MAX_PREPARE_AGE_MS);
+    equal(b.candidate,r.candidate,'certified Hosting candidate');
+    const approval=U.dualApproval(b.candidate.backendBaseline,b.projectId,b.candidate.source.sha);
+    (verifyDualSource ?? S9.sourceProof)(require('../hosting-release/contract.cjs').repositoryRoot,approval);
+  }
   const env=project(b.projectId),sites=readTargetSites(b.projectId);
   // Recovery must remain closed even if the policy cannot be changed. A
   // policy-controlled archive plus a claimed closed policy is not that fallback.
@@ -471,12 +508,14 @@ async function refreshScopedCurrentRelease(raw,{get,now=()=>new Date().toISOStri
   if(K.sha256Bytes(rollbackBytes)!==b.rollback.artifactSha256) refuse('rollback archive changed or missing');
   const rollbackArtifact=artifact(unpackOptionB(rollbackBytes),'closed-only');
   if(rollbackArtifact.build.backendBuildId!==b.rollback.backendBuildId || rollbackArtifact.build.sourceSha!==b.rollback.sourceSha || rollbackArtifact.placementFingerprint!==b.placementFingerprint || b.rollback.deploymentMode!=='closed-only') refuse('incompatible rollback application');
-  const observation=await inspectScoped({project:b.projectId,get,now,plan:b.configurationApproval});
+  const observation=await inspectScoped({project:b.projectId,get,now,plan:b.configurationApproval,supportIndexes:dual});
   const hosting={projectId:b.projectId,observedAt:now()}, targets=readHostingTargets(readConfigFile(env.config));
   for(const key of ['app','marketing']) {
     const channel=await get(`https://firebasehosting.googleapis.com/v1beta1/sites/${sites[key]}/channels/live`);
     const versionName=channel?.release?.version?.name;
     if(typeof versionName!=='string' || versionName!==`sites/${sites[key]}/versions/${b.certifiedReceipt?.hosting?.[key]?.version}`) refuse('current Hosting live version changed');
+    if (dual && (channel.release.message!==`release ${S9.HOSTING}` ||
+        !require('../hosting-release/contract.cjs').sameRouting(targets[key],channel.release.version.config))) refuse('live Hosting source or routing changed');
     if(b.hosting?.[key]?.site!==sites[key] || b.hosting[key].origin!==env.origins[key] || !b.hosting[key].files || !Object.keys(b.hosting[key].files).length) refuse('expected paired Hosting files required');
     // Hosting-ignored and redirect-shadowed artifact paths are never served, so
     // they have no live bytes (certify skips them the same way); their recorded
@@ -494,7 +533,9 @@ async function refreshScopedCurrentRelease(raw,{get,now=()=>new Date().toISOStri
   }
   hosting.observedAt=now();
   // Reviews, certification, Rules results and rollback clocks are never renewed.
-  return {...b,observation,hosting,observedAt:observation.observedAt};
+  const refreshed={...b,observation,hosting,observedAt:observation.observedAt};
+  if (dual) refreshedDual.add(refreshed);
+  return refreshed;
 }
 // Reuse the active scoped validator before Hosting-only provider access.
 module.exports={validateConfigurationApproval:scopedConfiguration,OBSERVATION_KIND,CURRENT_RELEASE_KIND,CONFIGURATION_KIND,ENDPOINTS,

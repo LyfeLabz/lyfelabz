@@ -259,6 +259,25 @@ function createController({ db, identity, authenticate, writeAudit,
       }, { readOnly: true });
     } catch { return { status: 'unconfirmed', availability: 'unconfirmed', shutdownConfirmed: false }; }
   }
+  async function verifyDualClose(bundle, options) {
+    const U=require('../hosting-release/unchanged-backend.cjs');
+    const closed=restorePlan(bundle.closePlan);
+    const certified=bundle.certifiedReceipt;
+    const policy=U.validatePolicy(certified.backend.policy,certified.backend.observation);
+    const release=U.dualApproval(certified.candidate.backendBaseline,identity.projectId,certified.candidate.source.sha);
+    if (closed.command!=='close' || closed.transition!=='close' || !equal(closed.target,identity) ||
+        closed.next.transitionId!==closed.transitionId || closed.next.mode!=='closed' ||
+        closed.next.generation!==policy.generation+1 || closed.expected.generation!==policy.generation ||
+        closed.expected.policyInstanceId!==policy.policyInstanceId ||
+        !equal(closed.expected.updateTime,U.decode({timestampValue:certified.backend.policy.updateTime})) ||
+        closed.previousPolicyDigest!==K.contentDigest(encode(policy)) ||
+        !closed.next.approvalRef || closed.next.approvalRef===release.decisionRef ||
+        closed.next.approvalRef===options.approvalRef || Date.parse(closed.issuedAt)<Date.parse(certified.recordedAt))
+      deny('close plan must follow certification and match the enabled policy and separate owner decision');
+    const result=await verify(serializePlan(closed));
+    if (result.status!=='committed-current' || !result.shutdownConfirmed) deny('committed-current closure and linked audit required');
+    return closed.confirm;
+  }
   // A read-only validation result is not an enable proposal or release approval.
   async function preEnable(options = {}) {
     const c = await auth(WRITE);
@@ -268,8 +287,10 @@ function createController({ db, identity, authenticate, writeAudit,
     if (policy.mode !== 'closed' || policy.approvedBackendBuildId === null) deny('pre-enable requires a prepared closed policy');
     const before = cas(snapshot, identity);
     const supplied = await releaseEvidence({ target: identity, policy, operator: c.operator, now: now() });
+    const dual=supplied?.kind===require('../hosting-release/s9-dual-lineage.cjs').CURRENT;
+    const committedClose=dual ? await verifyDualClose(supplied,options) : undefined;
     const result = require('./option-b-observation.cjs').validateCurrentRelease(supplied, {
-      target: identity, policy, now: new Date(now()).toISOString(), approvalRef: options.approvalRef,
+      target: identity, policy, now: new Date(now()).toISOString(), approvalRef: options.approvalRef, committedClose,
     });
     // Evidence work may outlast credential/context/policy validity. Re-read the
     // singleton; this does not reserve a generation or commit availability.
@@ -549,6 +570,8 @@ async function connect(identity, flags, command, deps = {}) {
     const releaseEvidence = async () => {
       const bundle = readJSON(flags['current-release-evidence']);
       if (bundle?.projectId !== identity.projectId) deny('current-release evidence target mismatch before provider access');
+      if (bundle.kind===require('../hosting-release/s9-dual-lineage.cjs').CURRENT && bundle.approvalRef!==accessReview.approvalRef)
+        deny('owner access review must name the separate re-enable decision');
       const token = await client.getAccessToken();
       if (typeof token?.token !== 'string' || !token.token) deny('verified current-release credential token unavailable');
       const get = require('../hosting-release/backend-state.cjs').readApi({ project: identity.projectId, token: token.token });

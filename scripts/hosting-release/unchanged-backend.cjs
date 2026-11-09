@@ -10,6 +10,7 @@ const C = require('./contract.cjs');
 const O = require('../teacher-units-release/option-b-observation.cjs');
 const P = require('../../platform/functions/lib/teacherUnits/availability-policy.js');
 const { Timestamp } = require(require.resolve('firebase-admin/firestore',{paths:[path.resolve(__dirname,'../../platform/functions')]}));
+const S9 = require('./s9-dual-lineage.cjs');
 const INTENT = 'teacher-units-hosting-only';
 const KIND = 'lyfelabz.unchangedTeacherUnitsBackendCandidate';
 const RECEIPT = 'lyfelabz.unchangedTeacherUnitsBackendReceipt';
@@ -79,24 +80,31 @@ function databaseForPin(database,projectId) {
   void earliestVersionTime;void etag;
   return stable;
 }
-function pin(e,policy) {
+function backendSnapshot(e) {
   // Include full endpoint provider snapshots, source generations, Rules identity,
   // runtime files and full policy (including updateTime), not merely build ID.
   const {startedAt,observedAt,...stable}=e;
   void startedAt;void observedAt;
-  return H.fingerprint({observation:{...stable,database:databaseForPin(e.database,e.projectId)},policy});
+  return {...stable,database:databaseForPin(e.database,e.projectId)};
 }
-async function inspect({project,configurationApproval,get,token,fetchImpl,run,unpack,now=()=>new Date().toISOString()}={}) {
+function pin(e,policy) {
+  return H.fingerprint({observation:backendSnapshot(e),policy});
+}
+function dualApproval(baseline, project, hostingSha) {
+  const e=baseline.observation, policy=validatePolicy(baseline.policy,e);
+  return S9.approved({project,hostingSha,observation:e,policy,backendPin:pin(e,baseline.policy),authorization:baseline.dualLineage});
+}
+async function inspect({project,configurationApproval,dualLineage,get,token,fetchImpl,run,unpack,now=()=>new Date().toISOString()}={}) {
   C.environmentForProject(project);
   O.validateConfigurationApproval(configurationApproval,project,now());
   const read=get || H.readApi({project,token:token || H.tokenFromGcloud(run),fetchImpl});
   const url=`https://firestore.googleapis.com/v1/${policyName(project)}`;
   const before=await read(url);
-  const observation=await O.inspectOptionB({project,get:read,plan:configurationApproval,unpack,now});
+  const observation=await O.inspectOptionB({project,get:read,plan:configurationApproval,unpack,now,supportIndexes:!!dualLineage});
   const policy=await read(url);
   equal(before,policy,'policy during observation');
   validatePolicy(policy,observation);
-  return {observation,policy};
+  return {observation,policy,...(dualLineage ? {dualLineage} : {})};
 }
 function assertClientSource(root,backendSha,hostingSha) {
   const git=args=>execFileSync('git',args,{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
@@ -109,7 +117,7 @@ function assertClientSource(root,backendSha,hostingSha) {
   if (git(['diff',backendSha,'--',...roots])) refuse('Teacher Units client/backend source changed');
   if (git(['status','--porcelain','--untracked-files=normal'])) refuse('Hosting-only release requires a clean source checkout');
 }
-function candidate(pair,root=C.repositoryRoot,{verifySource=assertClientSource,verifyApplication}={}) {
+function candidate(pair,root=C.repositoryRoot,{verifySource=assertClientSource,verifyApplication,verifyDualSource=S9.sourceProof}={}) {
   if (pair?.releaseIntent!==INTENT || pair.backendFormat!==INTENT || pair.target?.projectId===undefined ||
       pair.source?.dirty!==false || !/^[a-f0-9]{40}$/.test(pair.source?.sha||'')) refuse('clean Hosting-only pair required');
   equal(pair.target,H.optionBTarget(pair.target.projectId),'Hosting target');
@@ -117,7 +125,8 @@ function candidate(pair,root=C.repositoryRoot,{verifySource=assertClientSource,v
   if (!e || e.projectId!==pair.target.projectId) refuse('deployed backend baseline required');
   O.assertObservation(e,e.projectId,e.observedAt);
   validatePolicy(baseline.policy,e);
-  verifySource(root,e.build.sourceSha,pair.source.sha);
+  if (baseline.dualLineage) verifyDualSource(root,dualApproval(baseline,pair.target.projectId,pair.source.sha));
+  else verifySource(root,e.build.sourceSha,pair.source.sha);
   let build;
   try { build=verifyApplication ? verifyApplication() : JSON.parse(execFileSync(process.execPath,[path.join(root,'app/scripts/build-application.cjs'),'--verify',root,'teacher-units',pair.target.projectId,pair.target.environment,pair.target.origin],{encoding:'utf8',stdio:['ignore','pipe','pipe']})); }
   catch { refuse('unverifiable policy-capable application build'); }
@@ -135,6 +144,7 @@ function candidate(pair,root=C.repositoryRoot,{verifySource=assertClientSource,v
 }
 function compare(c,evidence,inputs,now=new Date().toISOString()) {
   if (c?.kind!==KIND || c.schemaVersion!==1 || c.releaseIntent!==INTENT || c.teacherUnitsAvailability!=='server-policy-required' || c.availabilityEvidence!=='build-contract-assertion' || c.source?.dirty!==false || !/^[a-f0-9]{40}$/.test(c.source?.sha||'')) refuse('Hosting-only candidate contract');
+  if (c.backendBaseline?.dualLineage) dualApproval(c.backendBaseline,c.projectId,c.source.sha);
   const e=evidence?.observation;
   O.assertObservation(e,c.projectId,now);
   validatePolicy(evidence.policy,e);
@@ -143,7 +153,7 @@ function compare(c,evidence,inputs,now=new Date().toISOString()) {
   equal(c.backendPin,pin(e,evidence.policy),'deployed backend/policy');
   // Existing exact source/runtime/Rules/configuration/index checks are reused
   // with an explicitly backend-scoped candidate, never a relabeled Hosting SHA.
-  const compatibility=O.assertCompatible(backendView(e,c),e,{...inputs,now});
+  const compatibility=O.assertCompatible(backendView(e,c),e,{...inputs,now,supportIndexes:!!c.backendBaseline.dualLineage});
   equal(inputs.configurationApproval,e.configurationApproval,'reviewed configuration');
   return {kind:'lyfelabz.unchangedTeacherUnitsBackendCompatibility',schemaVersion:1,
     hostingSourceSha:c.source.sha,backendSourceSha:e.build.sourceSha,backendBuildId:e.backendBuildId,
@@ -155,7 +165,7 @@ async function verify(options={}) {
   if (options.pair?.target?.projectId!==options.project) refuse('Hosting/backend project mismatch');
   const c=candidate(options.pair,options.root);
   equal(c,options.pair.candidate,'pair candidate');
-  const evidence=await inspect(options);
+  const evidence=await inspect({...options,dualLineage:c.backendBaseline.dualLineage});
   const compatibility=compare(c,evidence,options,options.now?.());
   return {candidate:c,evidence,compatibility};
 }
@@ -179,4 +189,4 @@ function verifyPrepared(p,project,c,now=new Date().toISOString()) {
   if (!Number.isFinite(age) || age<0 || age>H.MAX_PREPARE_AGE_MS || !Number.isFinite(receiptAge) || receiptAge<0 || receiptAge>H.MAX_AGE_MS) refuse('stale preparation');
   equal(r,receipt({phase:'prepared',project,intent:INTENT,candidate:c,evidence:r.backend,hosting:p.surfaces,...require('./release.cjs').optionBReceiptInputs(r),recordedAt:r.recordedAt}),'prepared receipt');
 }
-module.exports={INTENT,KIND,RECEIPT,inspect,candidate,compare,verify,receipt,verifyPrepared,decode,validatePolicy,pin,assertClientSource};
+module.exports={INTENT,KIND,RECEIPT,inspect,candidate,compare,verify,receipt,verifyPrepared,decode,validatePolicy,pin,backendSnapshot,dualApproval,assertClientSource};

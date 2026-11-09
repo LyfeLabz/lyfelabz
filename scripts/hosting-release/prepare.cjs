@@ -52,6 +52,7 @@ const HOSTING_TEST_FILES = Object.freeze([
   'scripts/hosting-release/release.test.cjs',
   'scripts/hosting-release/backend-state.test.cjs',
   'scripts/hosting-release/unchanged-backend.test.cjs',
+  'scripts/teacher-units-release/s9-dual-lineage.test.cjs',
   'scripts/hosting-release/hosting-identity.test.cjs',
   'scripts/hosting-release/hosting-deployment.test.cjs',
   'scripts/hosting-release/provider-manifest.test.cjs',
@@ -175,10 +176,19 @@ function verifyBuildSource(source, built) {
 }
 
 async function main(argv = process.argv.slice(2)) {
-  const args = parseArgs(argv, { values: ['project', 'intent', 'expect-sha','rules-approval','rules-report','approval-digest','configuration-approval'], flags: ['allow-dirty', 'offline'] });
-  const gate = preflight({ project: args.project, intent:args.intent, expectSha: args['expect-sha'], allowDirty: Boolean(args['allow-dirty']), offline: Boolean(args.offline) });
+  const args = parseArgs(argv, { values: ['project', 'intent', 'expect-sha','rules-approval','rules-report','approval-digest','configuration-approval','s9-owner-release-approval','s9-owner-release-digest'], flags: ['allow-dirty', 'offline'] });
+  const approvalFile=args['s9-owner-release-approval'], digest=args['s9-owner-release-digest'];
+  const S9=approvalFile || digest ? require('./s9-dual-lineage.cjs') : null;
+  if (S9 && (!approvalFile || !/^[a-f0-9]{64}$/.test(digest || '') || args.project!==S9.PROJECT ||
+      args.intent!=='teacher-units-hosting-only' || args['expect-sha']!==S9.HOSTING))
+    throw new Error('[hosting-release] exact S9 staging target, expected SHA and owner approval digest required');
+  if (S9 && (!fs.lstatSync(approvalFile).isFile() || fs.statSync(approvalFile).size>16384))
+    throw new Error('[hosting-release] owner release approval must be a bounded local file');
+  const dualLineage=S9 ? {approval:require('../../platform/functions/lib/teacherUnits/a3-canonical.js').parseStrictJSON(fs.readFileSync(approvalFile,'utf8')),digest} : null;
+  const gate = preflight({ project: args.project, intent:args.intent, expectSha: args['expect-sha'], allowDirty: Boolean(args['allow-dirty']), offline: Boolean(args.offline) }, S9 ? {git:()=>S9.sourceProof(repositoryRoot,dualLineage.approval)} : undefined);
   const bInputs = ['teacher-units','teacher-units-hosting-only'].includes(gate.intent) ? require('./release.cjs').optionBInputs(args) : {};
-  const backendBaseline = gate.intent === 'teacher-units-hosting-only' ? await require('./unchanged-backend.cjs').inspect({project:args.project,...bInputs}) : null;
+  const backendBaseline = gate.intent === 'teacher-units-hosting-only' ? await require('./unchanged-backend.cjs').inspect({project:args.project,...bInputs,dualLineage}) : null;
+  if (S9) require('./unchanged-backend.cjs').dualApproval(backendBaseline,args.project,S9.HOSTING);
   const built = checkAndBuild({intent:gate.intent,...(backendBaseline ? {backendBaseline} : {}),...(['teacher-units','teacher-units-hosting-only'].includes(gate.intent) ? {target:require('./backend-state.cjs').optionBTarget(args.project)} : {})});
   verifyBuildSource(gate.source, built);
   const surfaces = args.offline ? null : await liveComparison({ environment: gate.environment, sites: gate.sites, built });

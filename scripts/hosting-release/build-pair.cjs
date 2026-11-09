@@ -92,7 +92,10 @@ function buildPair({ intent, target, backendBaseline, runBundleBuild = true, run
     schemaVersion: 3,
     releaseIntent: intent,
     builtAt: new Date().toISOString(),
-    source: gitSource(),
+    source: backendBaseline?.dualLineage
+      ? require('./s9-dual-lineage.cjs').sourceProof(repositoryRoot,
+        require('./unchanged-backend.cjs').dualApproval(backendBaseline,target.projectId,require('./s9-dual-lineage.cjs').HOSTING))
+      : gitSource(),
     unitPlacement,
     pair,
     files: { app: hashInventory(appDirectory), marketing: hashInventory(marketingDirectory) }
