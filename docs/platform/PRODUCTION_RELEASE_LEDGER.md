@@ -37,5 +37,21 @@ Rollback compatibility values: `CURRENT` (live), `SAFE` (may be restored with ow
 - **Teacher Units policy:** enabled, generation 6
 - **Certification:** CERTIFIED, `unchanged-enabled-backend-observed` (app 241/241 paths, marketing 84 plus 50 redirects). r3 publication verified: content matches the committed payload, r1 unchanged.
 - **Evidence:** `LyfeLabz-Certification/production-hosting-deployment-16b959e-2026-11-06T17-44-48Z/`
+- **Status:** SUPERSEDED by release fa50cb0 on 2026-11-08.
+- **Rollback compatibility:** SAFE. Both versions remain FINALIZED and preserve the Physical Properties r3 page and route.
+
+## 2026-11-08: release fa50cb0
+
+- **Release SHA:** `fa50cb0152be5dc9ce54d365018f8e5f31489188`
+- **Scope:** navigation and student-read deduplication. Paired Hosting release, intent `teacher-units-hosting-only`.
+- **Hosting app:** `57877ff8acfcb2a1` (released 2026-11-08T23:46:26.796Z)
+- **Hosting marketing:** `3cc89fcdfaf080e7` (released 2026-11-08T23:46:26.802Z)
+- **Verified rollback pair:** app `732c250490ffb2d4`, marketing `a05ef6a6219e5fa5` (release `16b959e`), both FINALIZED and compatible with Physical Properties r3.
+- **Backend pin:** build `5700f199e1c42a061ea681645b9d5c25fd1b361812da078fad17f7626103a0a0` from `3cbfdcf621bb1912c9f3188cbef8696e1b644593`. All 92 Functions and the approved Rules, indexes, configuration, and secret bindings matched PREPARE.
+- **Teacher Units policy:** enabled, generation 6. Student Support V2 and the Physical Properties r3 publication were preserved.
+- **Certification:** CERTIFIED, `unchanged-enabled-backend-observed`. App matched 241 served paths. Marketing matched 84 served paths and retained 50 redirects.
+- **Authenticated production acceptance:** PASS. Read-only teacher navigation, Student Detail, request deduplication, My Units, Unit Results, and Student Services passed. The signed-out teacher route redirected to Sign In.
+- **Staging acceptance:** the owner approved and used a single-use exception scoped to this exact SHA, project, and intent. PREPARE, predeploy, certification, and authenticated production acceptance passed.
+- **Evidence:** `LyfeLabz-Certification/production-hosting-deployment-fa50cb0-2026-11-08T23-46-26Z/` (SHA-256 manifest in archive).
 - **Status:** CURRENT
-- **Rollback compatibility:** CURRENT. A future Hosting correction must keep serving the r3 revision page and route.
+- **Rollback compatibility:** CURRENT
