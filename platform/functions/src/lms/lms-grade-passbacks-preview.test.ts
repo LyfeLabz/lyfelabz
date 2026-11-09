@@ -355,7 +355,7 @@ async function rejectionCode(data?: unknown): Promise<string | undefined> {
 
 describe("lmsGradePassbacksPreview authorization", () => {
   it("declares the Google Classroom production secrets", () => {
-    expect(mockCapturedCallableOptions.value).toEqual({ secrets: ["__gc_secret_sentinel__"] });
+    expect(mockCapturedCallableOptions.value).toEqual({ maxInstances: 20, secrets: ["__gc_secret_sentinel__"] });
   });
 
   it("rejects an unauthenticated caller before reading anything", async () => {

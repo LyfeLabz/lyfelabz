@@ -2,9 +2,10 @@ import type { WorkspaceSurfaceKey } from "./navigation";
 
 // Browser Back/Forward support. The smallest serializable history-state
 // shape needed to restore meaningful teacher-shell navigation. Never
-// carries DOM nodes, Session objects, callables, or display text - only
-// stable identifiers already used elsewhere in the shell
-// (WorkspaceSurfaceKey, classId, studentId) - so a value delivered
+// carries DOM nodes, Session objects, callables, or display text. It holds
+// route identifiers and, for assignment-origin Student Detail, the shell's
+// return key and position in the trail that starts at the original Summary
+// or first student. A value delivered
 // through `popstate.state` can always be independently re-validated
 // before anything acts on it. `event.state` reflects whatever an
 // earlier `pushState`/`replaceState` call in this origin supplied, but
@@ -17,7 +18,7 @@ import type { WorkspaceSurfaceKey } from "./navigation";
 //   Classes list                      shell-surface(classes)
 //   class workspace, per section      shell-classes-workspace(classId, section)
 //   Assignment Summary (from a class) shell-assignment-detail(classId, assignmentId)
-//   Student Detail (from Students)    shell-student-detail(classId, studentId)
+//   Student Detail                    shell-student-detail(classId, studentId, originAssignmentId?)
 //   Curriculum                        shell-surface(curriculum)
 //   Lesson Summary (View summary)     shell-lesson-summary(lessonSlug)
 //   Curriculum resource-type tab      shell-curriculum-tab(tab)
@@ -60,18 +61,23 @@ export type ShellHistoryState =
       readonly surface: "classes";
       readonly classId: string;
       readonly section: ClassWorkspaceSection;
+      // Preserves the identity of a replaced Summary in the fallback slot.
+      readonly returnKey?: string;
     }
   | {
       readonly kind: "shell-student-detail";
       readonly surface: "classes";
       readonly classId: string;
       readonly studentId: string;
+      readonly originAssignmentId?: string;
+      readonly assignmentReturn?: { readonly key: string; readonly steps: number };
     }
   | {
       readonly kind: "shell-assignment-detail";
       readonly surface: "classes";
       readonly classId: string;
       readonly assignmentId: string;
+      readonly returnKey?: string;
     }
   | {
       readonly kind: "shell-lesson-summary";
@@ -170,7 +176,13 @@ export function parseShellHistoryState(
       return null;
     }
     const section = (v.section ?? "roster") as ClassWorkspaceSection;
-    return { kind: "shell-classes-workspace", surface: "classes", classId: v.classId, section };
+    return {
+      kind: "shell-classes-workspace",
+      surface: "classes",
+      classId: v.classId,
+      section,
+      ...(section === "assignments" && isNonEmptyString(v.returnKey) ? { returnKey: v.returnKey } : {}),
+    };
   }
   if (
     v.kind === "shell-assignment-detail" &&
@@ -183,6 +195,7 @@ export function parseShellHistoryState(
       surface: "classes",
       classId: v.classId,
       assignmentId: v.assignmentId,
+      ...(isNonEmptyString(v.returnKey) ? { returnKey: v.returnKey } : {}),
     };
   }
   if (
@@ -228,13 +241,22 @@ export function parseShellHistoryState(
     typeof v.classId === "string" &&
     v.classId.length > 0 &&
     typeof v.studentId === "string" &&
-    v.studentId.length > 0
+    v.studentId.length > 0 &&
+    (v.originAssignmentId === undefined || isNonEmptyString(v.originAssignmentId))
   ) {
+    const back = v.assignmentReturn as Record<string, unknown> | null | undefined;
+    const assignmentReturn = v.originAssignmentId !== undefined &&
+      back != null && isNonEmptyString(back.key) &&
+      typeof back.steps === "number" && Number.isSafeInteger(back.steps) && back.steps > 0
+        ? { key: back.key, steps: back.steps }
+        : undefined;
     return {
       kind: "shell-student-detail",
       surface: "classes",
       classId: v.classId,
       studentId: v.studentId,
+      ...(v.originAssignmentId !== undefined ? { originAssignmentId: v.originAssignmentId } : {}),
+      ...(assignmentReturn !== undefined ? { assignmentReturn } : {}),
     };
   }
   return null;
@@ -273,7 +295,8 @@ export function hashForState(state: ShellHistoryState): string {
     case "shell-classes-workspace":
       return hashForClassesWorkspace(state.classId, state.section);
     case "shell-student-detail":
-      return hashForStudentDetail(state.classId, state.studentId);
+      return hashForStudentDetail(state.classId, state.studentId) +
+        (state.originAssignmentId === undefined ? "" : `/assignment/${encodeURIComponent(state.originAssignmentId)}`);
     case "shell-assignment-detail":
       return `#classes/assignment/${encodeURIComponent(state.classId)}/${encodeURIComponent(state.assignmentId)}`;
     case "shell-lesson-summary":
@@ -291,12 +314,8 @@ export function hashForState(state: ShellHistoryState): string {
   }
 }
 
-// Teacher Units UX Milestone 1A: fresh-load deep links. The strict inverse of
-// `hashForState` for the entries a fresh load can restore synchronously; a
-// class-workspace hash (whose class list loads asynchronously) restores only
-// its surface, Classes. Unknown or malformed hashes return null (the default
-// landing). The result is only a request: the shell still validates it
-// (for example My Units against its availability gate) before using it.
+// Fresh-load destinations are requests. Class-scoped hashes carry only
+// identifiers, so restoration must resolve them through authorized reads.
 export function parseShellHash(hash: string): ShellHistoryState | null {
   const clean = hash.startsWith("#") ? hash.slice(1) : hash;
   if (isWorkspaceSurfaceKey(clean)) return { kind: "shell-surface", surface: clean };
@@ -310,7 +329,30 @@ export function parseShellHash(hash: string): ShellHistoryState | null {
   }
   if (clean === "curriculum/units") return { kind: "shell-curriculum-units", surface: "curriculum" };
   if (clean === "settings/integrations") return { kind: "shell-settings-integrations", surface: "settings" };
-  if (clean.startsWith("classes/")) return { kind: "shell-surface", surface: "classes" };
+  if (clean.startsWith("classes/")) {
+    const surface = "classes";
+    try {
+      const [page, classId, itemId, origin, assignmentId, ...extra] =
+        clean.slice("classes/".length).split("/").map(decodeURIComponent);
+      if (isNonEmptyString(classId) && itemId === undefined && CLASS_WORKSPACE_SECTIONS.has(page ?? "")) {
+        return parseShellHistoryState({ kind: "shell-classes-workspace", surface, classId, section: page });
+      }
+      if (page === "assignment" && origin === undefined) {
+        return parseShellHistoryState({ kind: "shell-assignment-detail", surface, classId, assignmentId: itemId });
+      }
+      if (page === "student" && origin === undefined) {
+        return parseShellHistoryState({ kind: "shell-student-detail", surface, classId, studentId: itemId });
+      }
+      if (page === "student" && origin === "assignment" && extra.length === 0 && isNonEmptyString(assignmentId)) {
+        return parseShellHistoryState({
+          kind: "shell-student-detail", surface, classId, studentId: itemId, originAssignmentId: assignmentId,
+        });
+      }
+    } catch {
+      return null;
+    }
+    return { kind: "shell-surface", surface };
+  }
   if (clean.startsWith("curriculum/summary/")) {
     let slug: string;
     try {

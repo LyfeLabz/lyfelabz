@@ -1,7 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   assignmentsCollectionRef,
   assignmentRecipientsCollectionRef,
@@ -454,7 +454,8 @@ async function assignmentsLifecycleStateHandler(
   return { state, candidates, ...currentResolution };
 }
 
-export const assignmentsLifecycleState = platformCallable(
+export const assignmentsLifecycleState = teachingCallable(
+  { maxInstances: 20 },
   assignmentsLifecycleStateHandler,
 );
 

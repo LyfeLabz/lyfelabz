@@ -33,6 +33,7 @@ import {
   type ShellHistoryState,
   type UnitsHistoryController,
   parseShellHistoryState,
+  parseShellHash,
   hashForState,
   urlWithHash,
 } from "./navigationHistory";
@@ -47,13 +48,13 @@ import type { SnapshotPreview } from "./surfaces/snapshot";
 import type {
   ClassManagementIntent,
   ClassWorkspaceReturn,
+  ClassesStudentIntent,
   StudentDetailHistorySeam,
 } from "./surfaces/classes";
 
 type ClassesHistoryNotify = Parameters<StudentDetailHistorySeam["notify"]>[0];
 import type {
   CurriculumAssignmentDetailSeam,
-  AssignmentDetailStudentSelection,
   LessonResultsIntent,
 } from "./surfaces/curriculum";
 import type { AssignmentSummaryCallable } from "../assignments/summary/types";
@@ -166,19 +167,7 @@ export type ShellDeps = {
 // torn-down shell instance (a leak, and a source of stale restores).
 let activeShellPopstateCleanup: (() => void) | null = null;
 
-type ClassesDetailHistoryController = {
-  readonly restoreWorkspace: (
-    classId: string,
-    section?: ClassWorkspaceSection,
-  ) => boolean;
-  readonly restoreToTopList: () => void;
-  readonly restoreDetail: (classId: string, studentId: string) => boolean;
-  readonly restoreList: () => void;
-  readonly restoreAssignmentDetail: (
-    classId: string,
-    assignmentId: string,
-  ) => boolean;
-};
+type ClassesDetailHistoryController = Parameters<StudentDetailHistorySeam["registerController"]>[0];
 
 export function mountTeacherShell(
   session: ActiveTeacher,
@@ -199,20 +188,8 @@ export function mountTeacherShell(
   body.className = "shell-body";
   body.setAttribute("data-testid", "shell-body");
 
-  // Browser Back/Forward support: the default landing surface is
-  // deliberately never read from `window.location` on mount. (Milestone 1A:
-  // a fresh-load deep link arrives instead as `deps.initialState`, captured
-  // by the entry point before any dispatch rewrote the URL; see below.) `dispatch`
-  // (router.ts) issues its own `replaceState(null, "", path)` immediately
-  // after this function returns, using a bare session-kind pathname with
-  // no hash - it would silently discard any hash-derived initial surface
-  // choice made here on every session `rerun`, and reading ambient
-  // `window.location` state as a mount-time input is also observably
-  // unsafe in a single-page-app test harness, where one jsdom `window` is
-  // reused across sequential shell mounts. Cold refresh/direct-URL
-  // restoration of a specific top-level surface is therefore explicitly
-  // out of scope for this patch; only in-session Back/Forward is
-  // supported. See navigationHistory.ts.
+  // Startup uses the destination captured by the entry point before router
+  // dispatch. A later session rerun must not pick up ambient history state.
   let activeKey: WorkspaceSurfaceKey = "classes";
   // Sprint 28.5D (D2A): true while an overlay surface (Assignment Detail)
   // occupies the outlet in place of the active workspace surface. The active
@@ -229,15 +206,6 @@ export function mountTeacherShell(
   outletHost.className = "shell-outlet-host";
   body.appendChild(outletHost);
 
-  // Sprint 28.6C: shell-owned, ephemeral class-workspace return location. The
-  // Classes surface records where it was (selected class + section) just before
-  // it opens Assignment Detail, so returning from Detail re-lands in that
-  // class's Assignments context instead of the class list or Curriculum. It is
-  // a one-shot: the next Classes mount consumes and clears it. Living on the
-  // shell instance (not module scope) means it cannot leak across sessions or
-  // between tests, and a fresh shell always starts with the class list.
-  let classesReturn: ClassWorkspaceReturn | null = null;
-
   // Sprint 28.6F: shell-owned, ephemeral class-management intent. Settings'
   // "Classes & Google Classroom" section and the Classes `+ Add a class`
   // entry point invoke the SAME workflow (which lives on the Classes
@@ -248,18 +216,6 @@ export function mountTeacherShell(
   // not a router: any later Classes visit shows the plain list. Living on
   // the shell instance means it cannot leak across sessions or tests.
   let classManagementIntent: ClassManagementIntent | null = null;
-
-  // Student Progress & Assignment Membership Phase A, Slice 3: shell-owned,
-  // ephemeral student-selection intent. Assignment Detail has no shared
-  // closure with Classes (it renders into this shell's outlet directly, see
-  // `setOutletController` below), so a roster-name click there hands off
-  // through this one-shot: the entry-point opener records the selection
-  // here and navigates to Classes, and the next Classes mount consumes and
-  // clears it, seeding Student Detail pre-selected with an
-  // assignment-origin `studentDetailOrigin` so Back returns to that exact
-  // assignment. Mirrors `classesReturn`'s one-shot shape exactly. Living on
-  // the shell instance means it cannot leak across sessions or tests.
-  let classesStudentIntent: AssignmentDetailStudentSelection | null = null;
 
   // Browser Back/Forward support: the Classes surface's restore
   // capability for its own nested Student Detail state (see
@@ -298,12 +254,15 @@ export function mountTeacherShell(
   // Student Support Workspace (V2 P3, supportWorkspace.ts): true once this
   // shell has proven the teacher owns zero classes and has shared students.
   // Never persisted; a fresh shell always starts false. While true, Classes
-  // is the only destination (navigation, intra-shell seams, and Back/Forward
-  // all refuse the teaching-only surfaces).
+  // and preview-only Curriculum are the destinations. Navigation, intra-shell
+  // seams and Back/Forward refuse teaching-only surfaces.
   let supportOnly = false;
   // True while a fresh direct link to a teaching-only surface waits for the
   // support-only condition to resolve (see `mountInitial` below).
   let resolvingWorkspace = false;
+  // undefined means no traversal; null means the browser selected a legacy entry.
+  let pendingStartupDestination: ShellHistoryState | null | undefined;
+  let restoreHistoryDestination: ((state: ShellHistoryState | null, fromStartup?: boolean) => void) | undefined;
   // True while Classes shows the unresolved workspace (see
   // SupportWorkspaceSeam.setUnresolved): no navigation, Classes only.
   let workspaceUnresolved = false;
@@ -315,10 +274,59 @@ export function mountTeacherShell(
   // Browser Back/Forward: the single push/replace path for every history
   // state, so each entry's URL is derived by the one mapping in
   // navigationHistory.ts (`hashForState`). No-ops without a window.
+  // Each Summary that opens students owns its own trail. If it is replaced,
+  // the earliest student entry is the safe slot for the fallback Summary.
+  const assignmentReturns = new Map<string, "summary" | "first-student">();
+  type AssignmentDestination = Extract<ShellHistoryState, { kind: "shell-assignment-detail" }> &
+    { readonly returnKey: string };
+  let returningToAssignment: {
+    readonly fallback?: AssignmentDestination;
+    readonly restoredOrigin?: { readonly classId: string; readonly assignmentId: string };
+  } | null = null;
+  // Invalidate the previous destination before handing off to its successor.
+  // The Classes controller owns pending reads for its mount.
+  const cancelNavigationRestore = (): void => {
+    returningToAssignment = null;
+    classesDetailController?.cancelPendingRestore();
+  };
+  const currentHistoryState = (): ShellHistoryState | null => parseShellHistoryState(win?.history.state);
+  const summaryUrl = (classId: string, assignmentId: string): string => {
+    const hash = hashForState({ kind: "shell-assignment-detail", surface: "classes", classId, assignmentId });
+    return win === null ? "" : new URL(urlWithHash(win.location.pathname, hash), win.location.href).href;
+  };
+  const priorEntriesMatchSummary = (classId: string, assignmentId: string, steps: number): boolean => {
+    if (win === null) return false;
+    // The classic History API cannot inspect a preceding entry. Use the
+    // browser's same-document entry list when available; a URL is only
+    // evidence of the destination, not of access to the assignment.
+    const navigation = (win as Window & {
+      readonly navigation?: {
+        readonly currentEntry: Pick<NavigationHistoryEntry, "index"> | null;
+        readonly entries: () => ReadonlyArray<Pick<NavigationHistoryEntry, "url" | "sameDocument">>;
+      };
+    }).navigation;
+    const index = navigation?.currentEntry?.index ?? -1;
+    if (navigation === undefined || index < steps) return false;
+    const entries = navigation.entries();
+    const summary = entries[index - steps];
+    if (summary?.sameDocument !== true || summary.url !== summaryUrl(classId, assignmentId)) return false;
+    return entries.slice(index - steps + 1, index).every((entry) => {
+      if (!entry.sameDocument || entry.url === null) return false;
+      const route = parseShellHash(new URL(entry.url).hash);
+      return route?.kind === "shell-student-detail" && route.classId === classId &&
+        route.originAssignmentId === assignmentId;
+    });
+  };
   const pushShellState = (state: ShellHistoryState): void => {
+    returningToAssignment = null;
     win?.history.pushState(state, "", urlWithHash(win.location.pathname, hashForState(state)));
   };
   const replaceShellState = (state: ShellHistoryState): void => {
+    const previous = currentHistoryState();
+    if (previous?.kind === "shell-assignment-detail" && previous.returnKey !== undefined &&
+        assignmentReturns.has(previous.returnKey)) {
+      assignmentReturns.set(previous.returnKey, "first-student");
+    }
     win?.history.replaceState(state, "", urlWithHash(win.location.pathname, hashForState(state)));
   };
 
@@ -381,11 +389,18 @@ export function mountTeacherShell(
               currentWorkspaceClassId = null;
               replaceShellState({ kind: "shell-surface", surface: "classes" });
             } else if (input.kind === "enter-detail") {
+              const previous = currentHistoryState();
+              const back = previous?.kind === "shell-student-detail" &&
+                previous.classId === input.classId &&
+                previous.originAssignmentId === input.originAssignmentId
+                ? previous.assignmentReturn : undefined;
               pushShellState({
                 kind: "shell-student-detail",
                 surface: "classes",
                 classId: input.classId,
                 studentId: input.studentId,
+                ...(input.originAssignmentId !== undefined ? { originAssignmentId: input.originAssignmentId } : {}),
+                ...(back !== undefined ? { assignmentReturn: { key: back.key, steps: back.steps + 1 } } : {}),
               });
             } else if (input.kind === "exit-detail") {
               // exit-detail: one level up from Student Detail is the
@@ -410,12 +425,12 @@ export function mountTeacherShell(
               });
             } else if (input.kind === "switch-to-class-assignments") {
               // Assignment Detail class switcher fallback: leave the Summary
-              // overlay for a fresh Classes mount, which consumes the
-              // `classesReturn` one-shot the switcher recorded and lands on
-              // the target class's Assignments section. PUSHED, unlike
-              // exit-assignment-detail, so Back returns to the Summary the
-              // teacher switched from.
-              navigateTo("classes", { fromPopstate: true });
+              // overlay and hand the target class to the fresh Classes mount.
+              // Push an entry so Back returns to the Summary the teacher left.
+              navigateTo("classes", {
+                fromPopstate: true,
+                workspaceReturn: { classId: input.classId, tab: "assignments" },
+              });
               currentWorkspaceClassId = input.classId;
               pushShellState({
                 kind: "shell-classes-workspace",
@@ -424,21 +439,60 @@ export function mountTeacherShell(
                 section: "assignments",
               });
             } else {
-              // exit-assignment-detail (in-app "Back to class"): leave the
-              // Summary overlay for a fresh Classes mount, which consumes the
-              // `classesReturn` one-shot the opener recorded and re-lands on
-              // that class's Assignments section. The Summary entry is
-              // REPLACED with the class Assignments entry - never a blind
-              // `history.back()`.
-              navigateTo("classes", { fromPopstate: true });
+              // Back to class hands its workspace to the fresh Classes mount
+              // and replaces the Summary entry with the class's Assignments.
+              const previous = currentHistoryState();
+              // A recovered Summary occupies the first student slot. Keep
+              // its key on this replacement so surviving students can recover it again.
+              const returnKey = previous?.kind === "shell-assignment-detail" &&
+                previous.classId === input.classId && previous.returnKey !== undefined &&
+                assignmentReturns.get(previous.returnKey) === "first-student"
+                ? previous.returnKey : undefined;
+              navigateTo("classes", {
+                fromPopstate: true,
+                workspaceReturn: { classId: input.classId, tab: "assignments" },
+              });
               currentWorkspaceClassId = input.classId;
               replaceShellState({
                 kind: "shell-classes-workspace",
                 surface: "classes",
                 classId: input.classId,
                 section: "assignments",
+                ...(returnKey !== undefined ? { returnKey } : {}),
               });
             }
+          },
+          returnToAssignment: (classId: string, assignmentId: string): boolean => {
+            if (returningToAssignment !== null) return true;
+            const current = currentHistoryState();
+            const back = current?.kind === "shell-student-detail" &&
+              current.classId === classId && current.originAssignmentId === assignmentId
+              ? current.assignmentReturn : undefined;
+            const target = back === undefined ? undefined : assignmentReturns.get(back.key);
+            if (target === undefined && back !== undefined && priorEntriesMatchSummary(classId, assignmentId, back.steps)) {
+              // Restored Student Detail already checked the assignment and
+              // roster. Reuse that check for the matching Summary restore.
+              returningToAssignment = { restoredOrigin: { classId, assignmentId } };
+              win.history.go(-back.steps);
+              return true;
+            }
+            if (back === undefined || target === undefined || back.steps >= win.history.length) {
+              // The trail cannot be verified. Keep the authorized class fallback.
+              replaceShellState({ kind: "shell-classes-workspace", surface: "classes", classId, section: "assignments" });
+              classesDetailController?.restoreWorkspace(classId, "assignments");
+              return true;
+            }
+            const summary: AssignmentDestination = {
+              kind: "shell-assignment-detail", surface: "classes", classId, assignmentId, returnKey: back.key,
+            };
+            const steps = target === "summary" ? back.steps : back.steps - 1;
+            if (steps > 0) {
+              returningToAssignment = target === "summary" ? {} : { fallback: summary };
+              win.history.go(-steps);
+              return true;
+            }
+            replaceShellState(summary);
+            return false;
           },
           registerController: (
             controller: ClassesDetailHistoryController,
@@ -550,20 +604,6 @@ export function mountTeacherShell(
           },
         }
       : null,
-    // Sprint 28.6C: class-workspace return-location seam (see `classesReturn`).
-    getClassesReturn: (): ClassWorkspaceReturn | null => classesReturn,
-    setClassesReturn: (loc: ClassWorkspaceReturn | null): void => {
-      classesReturn = loc;
-    },
-    // Student Progress & Assignment Membership Phase A, Slice 3:
-    // student-selection intent one-shot (see `classesStudentIntent`).
-    getClassesStudentIntent: (): AssignmentDetailStudentSelection | null =>
-      classesStudentIntent,
-    setClassesStudentIntent: (
-      intent: AssignmentDetailStudentSelection | null,
-    ): void => {
-      classesStudentIntent = intent;
-    },
     // Sprint 28.6F: the single class-management opener. Settings calls it to
     // open the shared Import / Create workflow; it records the intent and
     // performs the same navigation as clicking the Classes nav item, so both
@@ -595,6 +635,11 @@ export function mountTeacherShell(
       enterSupportOnly: (): void => {
         enterSupportOnly();
       },
+      leaveSupportOnly: (): void => {
+        if (!supportOnly) return;
+        supportOnly = false;
+        renderNav();
+      },
     },
   };
 
@@ -625,13 +670,20 @@ export function mountTeacherShell(
   // and the chosen surface mounts fresh.
   const navigateTo = (
     next: WorkspaceSurfaceKey,
-    options?: { readonly fromPopstate?: boolean },
+    options?: {
+      readonly fromPopstate?: boolean;
+      readonly historyState?: ShellHistoryState;
+      readonly workspaceReturn?: ClassWorkspaceReturn;
+      readonly studentIntent?: ClassesStudentIntent;
+    },
   ): void => {
     // Fails closed: My Units is never a destination unless it is enabled.
     if (next === "units" && !unitsEnabled) return;
     // A support-only teacher has no teaching-only destinations.
-    if ((supportOnly || workspaceUnresolved) && next !== "classes") return;
-    if (next === activeKey && !showingDetail) {
+    if (workspaceUnresolved && next !== "classes") return;
+    if (supportOnly && next !== "classes" && next !== "curriculum") return;
+    const hasClassesHandoff = options?.workspaceReturn !== undefined || options?.studentIntent !== undefined;
+    if (next === activeKey && !showingDetail && !hasClassesHandoff && outletHost.firstChild !== null) {
       // Selecting Curriculum while already in Curriculum (on a resource tab
       // or in Lesson Summary) returns to its landing view, Lessons. That is a
       // real user navigation, so it pushes one Curriculum entry; it is a
@@ -655,6 +707,7 @@ export function mountTeacherShell(
       }
       return;
     }
+    cancelNavigationRestore();
     showingDetail = false;
     // Browser Back/Forward support: leaving Classes (for any reason -
     // top nav, `navigateToSurface`, popstate) invalidates any registered
@@ -670,14 +723,24 @@ export function mountTeacherShell(
     unitsController = null;
     activeKey = next;
     outletHost.textContent = "";
-    mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
+    // The handoff belongs to this outlet only. A later Classes mount cannot
+    // see it, even if this mount's class-list read has not settled yet.
+    let workspaceReturn = options?.workspaceReturn ?? null;
+    let studentIntent = options?.studentIntent ?? null;
+    mountWorkspaceOutlet(outletHost, session, activeKey, {
+      ...workspaceDeps,
+      getClassesReturn: () => workspaceReturn,
+      setClassesReturn: (value) => { workspaceReturn = value; },
+      getClassesStudentIntent: () => studentIntent,
+      setClassesStudentIntent: (value) => { studentIntent = value; },
+    });
     renderNav();
     // Browser Back/Forward support: a popstate-driven call is restoring an
     // existing entry, never creating a new one. Real user-initiated
     // navigation pushes exactly one entry; the early return above already
     // prevents a duplicate push when the surface does not actually change.
     if (win && !options?.fromPopstate) {
-      pushShellState({ kind: "shell-surface", surface: next });
+      pushShellState(options?.historyState ?? { kind: "shell-surface", surface: next });
     }
   };
 
@@ -738,17 +801,27 @@ export function mountTeacherShell(
       case "shell-settings-integrations":
         initialState = requested;
         break;
-      default:
-        // Class-scoped entries need the asynchronously loaded class list;
-        // they land on Classes (parseShellHash never produces them).
-        initialState = { kind: "shell-surface", surface: "classes" };
+      case "shell-classes-workspace":
+      case "shell-assignment-detail":
+        initialState = requested;
+        break;
+      case "shell-student-detail":
+        initialState = requested;
+        if (requested.originAssignmentId !== undefined) {
+          const saved = currentHistoryState();
+          initialState = saved?.kind === "shell-student-detail" &&
+            hashForState(saved) === hashForState(requested) && saved.assignmentReturn !== undefined
+            ? { ...requested, assignmentReturn: saved.assignmentReturn }
+            : requested;
+        }
+        break;
     }
   }
   activeKey = initialState.surface;
 
   // Mounts the chosen initial surface, restores its nested destination, and
   // canonicalizes the current history entry.
-  const mountInitial = (): void => {
+  const mountInitial = (preserveHistory = false): void => {
     renderNav();
     mountWorkspaceOutlet(outletHost, session, activeKey, workspaceDeps);
 
@@ -777,12 +850,19 @@ export function mountTeacherShell(
     // navigation, so it replaces the current entry rather than pushing one -
     // otherwise every shell mount (including a session `rerun`) would grow
     // the history stack with a redundant entry.
-    if (win) {
+    if (win && !preserveHistory) {
       win.history.replaceState(
         initialState,
         "",
         urlWithHash(win.location.pathname, hashForState(initialState)),
       );
+    }
+    if (!preserveHistory && (
+      initialState.kind === "shell-classes-workspace" ||
+      initialState.kind === "shell-assignment-detail" ||
+      initialState.kind === "shell-student-detail"
+    )) {
+      restoreHistoryDestination?.(initialState, true);
     }
   };
 
@@ -796,7 +876,7 @@ export function mountTeacherShell(
   // twice. Until then the outlet shows a neutral loading status and no
   // navigation. Without the support seam nothing changes.
   const supportSeam = readStudentSupportSeam();
-  if (supportSeam !== null && activeKey !== "classes") {
+  if (supportSeam !== null && (activeKey !== "classes" || supportSeam.isSupportWorkspaceEligible !== undefined)) {
     resolvingWorkspace = true;
     const pending = doc.createElement("p");
     pending.className = "shell-status";
@@ -810,43 +890,83 @@ export function mountTeacherShell(
       resolvingWorkspace = false;
       outletHost.textContent = "";
       if (supportOnlyResult === true) supportOnly = true;
+      if (sharedFailed) workspaceUnresolved = true;
       // Support-only, or zero classes with an unresolved (failed) shared
       // read: Classes, which shows the landing or the neutral retry state.
       if (supportOnlyResult === true || sharedFailed) {
         initialState = { kind: "shell-surface", surface: "classes" };
         activeKey = "classes";
       }
-      mountInitial();
+      const destination = pendingStartupDestination;
+      pendingStartupDestination = undefined;
+      if (destination != null) {
+        // Replay before mounting the startup route so its initial replace
+        // cannot overwrite the selected entry or consume the preflight read.
+        archivedUnitsIntent = false;
+        openUnitIntent = null;
+        restoreHistoryDestination?.(destination);
+      }
+      // A refused traversal can leave the outlet empty. Mount the startup
+      // fallback without replacing the entry the browser already selected.
+      if (outletHost.firstChild === null) mountInitial(destination !== undefined);
       // A primed read not consumed by the surface just mounted is dropped,
       // so a later visit never receives a stale page-load result. (Classes
       // consumes the shared read only after its own class list arrives.)
       primedClasses = null;
       if (activeKey !== "classes") primedShared = null;
     };
-    const owned = deps.listClasses(session.uid);
-    primedClasses = owned;
-    owned.then(
-      (classes) => {
-        if (classes.length > 0) {
-          resolve(false, false);
-          return;
-        }
-        const shared = supportSeam.listShared();
-        primedShared = shared;
-        shared.then(
-          (students) => resolve(isSupportOnlyTeacher(0, students.length), false),
-          () => resolve(null, true),
-        );
-      },
-      // The class list itself failed: mount the request, which reports its
-      // own load failure.
-      () => {
-        primedClasses = null;
-        resolve(null, false);
-      },
-    );
-  } else {
-    mountInitial();
+    const readOwnedWorkspace = (): void => {
+      const owned = deps.listClasses(session.uid);
+      primedClasses = owned;
+      owned.then(
+        (classes) => {
+          if (!body.isConnected || !resolvingWorkspace) return;
+          if (classes.length > 0) {
+            resolve(false, false);
+            return;
+          }
+          const shared = supportSeam.listShared();
+          primedShared = shared;
+          shared.then(
+            (students) => {
+              const eligible = supportSeam.isSupportWorkspaceEligible?.() ?? isSupportOnlyTeacher(0, students.length);
+              resolve(eligible, false);
+              if (eligible || activeKey === "classes" || !supportSeam.reconcilePending) return;
+              // The Classes surface handles its own post-reconciliation refresh.
+              // A teacher arriving through another route needs the same redirect
+              // if a new authorization activates after the initial grant read.
+              void supportSeam.reconcilePending().then(async () => {
+                if (!body.isConnected || activeKey === "classes") return;
+                await supportSeam.listShared();
+                if (body.isConnected && supportSeam.isSupportWorkspaceEligible?.()) enterSupportOnly();
+              }).catch(() => undefined);
+            },
+            () => resolve(null, true),
+          );
+        },
+        // The class list itself failed: mount the request, which reports its
+        // own load failure.
+        () => {
+          primedClasses = null;
+          if (supportSeam.isSupportWorkspaceEligible !== undefined) {
+            pending.textContent = "We could not finish loading your workspace.";
+            const retry = doc.createElement("button");
+            retry.type = "button";
+            retry.textContent = "Try again";
+            retry.setAttribute("data-testid", "shell-workspace-retry");
+            retry.addEventListener("click", () => {
+              retry.remove();
+              pending.textContent = "Loading your workspace";
+              readOwnedWorkspace();
+            });
+            outletHost.appendChild(retry);
+            return;
+          }
+          resolve(null, false);
+        },
+      );
+    };
+    readOwnedWorkspace();
   }
 
   renderFooter(mount);
@@ -861,6 +981,9 @@ export function mountTeacherShell(
   // without the seam (or a harness that does not wire it) is unaffected.
   deps.assignmentDetail?.setOutletController?.({
     show: (render) => {
+      if (!body.isConnected) return;
+      cancelNavigationRestore();
+      classesDetailController = null;
       showingDetail = true;
       outletHost.textContent = "";
       render(outletHost);
@@ -876,8 +999,27 @@ export function mountTeacherShell(
   // pre-selected. Guarded so a shell built without the seam is unaffected.
   deps.assignmentDetail?.setStudentSelectionController?.({
     selectStudent: (selection) => {
-      classesStudentIntent = selection;
-      navigateTo("classes");
+      if (!body.isConnected || supportOnly || workspaceUnresolved) return;
+      const origin = currentHistoryState();
+      const matchingSummary = showingDetail && origin?.kind === "shell-assignment-detail" &&
+        origin.classId === selection.classId && origin.assignmentId === selection.returnToAssignmentId;
+      let key = matchingSummary ? origin.returnKey : undefined;
+      if (win !== null && (key === undefined || assignmentReturns.get(key) !== "summary")) {
+        key = win.crypto.getRandomValues(new Uint32Array(4)).join("-");
+        if (matchingSummary) replaceShellState({ ...origin, returnKey: key });
+        assignmentReturns.set(key, matchingSummary ? "summary" : "first-student");
+      }
+      navigateTo("classes", {
+        studentIntent: selection,
+        historyState: {
+          kind: "shell-student-detail",
+          surface: "classes",
+          classId: selection.classId,
+          studentId: selection.studentId,
+          originAssignmentId: selection.returnToAssignmentId,
+          ...(key !== undefined ? { assignmentReturn: { key, steps: 1 } } : {}),
+        },
+      });
     },
   });
 
@@ -907,8 +1049,7 @@ export function mountTeacherShell(
     // nested state in place. When it cannot (another surface, or Assignment
     // Summary occupies the outlet), a fresh Classes mount is needed; its
     // class list loads asynchronously, so the target class + section is
-    // handed over through the same `classesReturn` one-shot the in-app
-    // "Back to class" uses, which the mount applies once classes load.
+    // handed directly to the new mount, as with in-app "Back to class".
     const classesLive = (): boolean =>
       activeKey === "classes" && !showingDetail && classesDetailController !== null;
 
@@ -922,29 +1063,57 @@ export function mountTeacherShell(
         currentWorkspaceClassId = restored ? classId : null;
         return;
       }
-      classesReturn = { classId, tab: section === "setup" ? "assignments" : section };
-      navigateTo("classes", { fromPopstate: true });
+      navigateTo("classes", {
+        fromPopstate: true,
+        workspaceReturn: { classId, tab: section === "setup" ? "assignments" : section },
+      });
       currentWorkspaceClassId = classId;
     };
 
-    const handlePopstate = (event: PopStateEvent): void => {
-      const parsed = parseShellHistoryState(event.state);
-      if (parsed === null || resolvingWorkspace) return;
+    restoreHistoryDestination = (destination, fromStartup = false): void => {
+      const { fallback, restoredOrigin } = returningToAssignment ?? {};
+      cancelNavigationRestore();
+      const reachedRestoredOrigin = restoredOrigin !== undefined &&
+        win.location.href === summaryUrl(restoredOrigin.classId, restoredOrigin.assignmentId);
+      const verifiedReturn = reachedRestoredOrigin && destination?.kind === "shell-assignment-detail" &&
+        destination.classId === restoredOrigin.classId && destination.assignmentId === restoredOrigin.assignmentId;
+      if (reachedRestoredOrigin && !verifiedReturn && !supportOnly && !workspaceUnresolved) {
+        // The preceding URL matched, but its classic history state is only
+        // visible on arrival. Never restore a different or malformed route.
+        const { classId } = restoredOrigin;
+        replaceShellState({ kind: "shell-classes-workspace", surface: "classes", classId, section: "assignments" });
+        restoreClassWorkspace(classId, "assignments");
+        return;
+      }
+      if (destination === null) return;
+      let parsed = destination;
       // A dialog is never left open over the page Back/Forward restores.
       dismissOpenModals();
-      // Support-only: only the Student Support landing and a shared
-      // student's Student Detail are restorable. Any other entry (recorded
-      // before this shell entered support-only) lands on Student Support and
-      // is replaced, so it cannot be reached again by Back/Forward.
+      // While restricted, restore only Classes, shared Student Detail, and
+      // preview-only Curriculum once the support workspace is authorized.
+      // Replace stale teaching entries with the Student Support landing.
       if (
         (supportOnly || workspaceUnresolved) &&
-        !(parsed.kind === "shell-surface" && parsed.surface === "classes") &&
-        parsed.kind !== "shell-student-detail"
+        !(parsed.kind === "shell-surface" && (parsed.surface === "classes" || (supportOnly && parsed.surface === "curriculum"))) &&
+        !(parsed.kind === "shell-student-detail" && parsed.originAssignmentId === undefined) &&
+        !(supportOnly && parsed.kind === "shell-curriculum-tab")
       ) {
         navigateTo("classes", { fromPopstate: true });
         classesDetailController?.restoreToTopList();
         replaceShellState({ kind: "shell-surface", surface: "classes" });
         return;
+      }
+      if (parsed.surface === "units" && !unitsEnabled) return;
+      if (
+        fallback !== undefined &&
+        ((parsed.kind === "shell-student-detail" &&
+          parsed.classId === fallback.classId && parsed.originAssignmentId === fallback.assignmentId &&
+          parsed.assignmentReturn?.key === fallback.returnKey && parsed.assignmentReturn?.steps === 1) ||
+          (parsed.kind === "shell-classes-workspace" && parsed.classId === fallback.classId &&
+            parsed.section === "assignments" && parsed.returnKey === fallback.returnKey))
+      ) {
+        replaceShellState(fallback);
+        parsed = fallback;
       }
       switch (parsed.kind) {
         case "shell-surface": {
@@ -966,8 +1135,10 @@ export function mountTeacherShell(
           return;
         case "shell-assignment-detail": {
           if (!classesLive()) {
-            classesReturn = { classId: parsed.classId, tab: "assignments" };
-            navigateTo("classes", { fromPopstate: true });
+            navigateTo("classes", {
+              fromPopstate: true,
+              workspaceReturn: { classId: parsed.classId, tab: "assignments" },
+            });
           }
           currentWorkspaceClassId = parsed.classId;
           // Fails closed (stays on the class's Assignments section) when the
@@ -975,10 +1146,23 @@ export function mountTeacherShell(
           classesDetailController?.restoreAssignmentDetail(
             parsed.classId,
             parsed.assignmentId,
+            fromStartup ? "startup" : verifiedReturn ? "student-return" : "history",
           );
           return;
         }
         case "shell-student-detail":
+          if (parsed.originAssignmentId !== undefined) {
+            const intent: ClassesStudentIntent = {
+              classId: parsed.classId,
+              studentId: parsed.studentId,
+              returnToAssignmentId: parsed.originAssignmentId,
+            };
+            if (!classesLive() || !classesDetailController?.queueAssignmentStudent(intent)) {
+              navigateTo("classes", { fromPopstate: true, studentIntent: intent });
+            }
+            currentWorkspaceClassId = parsed.classId;
+            return;
+          }
           // The Students tab of `parsed.classId` is the entry directly
           // beneath this one in every path that pushed it, so it is already
           // the open workspace by the time this fires via ordinary
@@ -1006,7 +1190,6 @@ export function mountTeacherShell(
           }
           return;
         case "shell-units-archived":
-          if (!unitsEnabled) return;
           if (activeKey === "units" && !showingDetail && unitsController !== null) {
             unitsController.restoreArchived(true);
           } else {
@@ -1015,7 +1198,6 @@ export function mountTeacherShell(
           }
           return;
         case "shell-unit-results":
-          if (!unitsEnabled) return;
           if (activeKey === "units" && !showingDetail && unitsController !== null) {
             unitsController.restoreUnitResults(parsed.unitId, parsed.grade);
           } else {
@@ -1030,10 +1212,23 @@ export function mountTeacherShell(
           return;
       }
     };
+    const handlePopstate = (event: PopStateEvent): void => {
+      if (!body.isConnected) return;
+      const destination = parseShellHistoryState(event.state);
+      if (resolvingWorkspace) {
+        pendingStartupDestination = destination;
+      } else {
+        restoreHistoryDestination?.(destination);
+      }
+    };
     activeShellPopstateCleanup?.();
     win.addEventListener("popstate", handlePopstate);
     activeShellPopstateCleanup = () => {
+      cancelNavigationRestore();
+      resolvingWorkspace = false;
+      pendingStartupDestination = undefined;
       win.removeEventListener("popstate", handlePopstate);
     };
   }
+  if (!resolvingWorkspace) mountInitial();
 }

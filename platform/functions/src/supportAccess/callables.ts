@@ -1,9 +1,12 @@
-import { FieldValue, type Transaction } from "firebase-admin/firestore";
+import { issuedAfterRevocation, legacyRelationshipId, readGrantCutoff } from "./recipient-policy";
+import { ownerAuthorizationViews, recipientWorkspace } from "./recipient-authorizations";
+import { FieldValue, Timestamp, type Transaction } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   PlatformError,
   classDocRef,
+  classesCollectionRef,
   enrollmentDocRef,
   isTransactionContention,
   log,
@@ -64,6 +67,7 @@ const REVOKE_MANY_CHUNK = 50;
 
 export type SupportGrantView = {
   readonly grantId: string;
+  readonly relationshipId?: string;
   readonly classId: string;
   readonly studentId: string;
   readonly studentDisplayName: string;
@@ -376,7 +380,7 @@ export type SupportAccessGrantResponse = {
   readonly outcome: "shared" | "alreadyShared";
 };
 
-async function grantHandler(request: CallableRequest<unknown>): Promise<SupportAccessGrantResponse> {
+async function grantHandler(request: CallableRequest<unknown>, verifyOnly = false): Promise<SupportAccessGrantResponse> {
   const actor = await requireTeacher(request);
   const payload = asPayload(request.data);
   const classId = readId(payload, "classId");
@@ -391,11 +395,15 @@ async function grantHandler(request: CallableRequest<unknown>): Promise<SupportA
     throw new PlatformError("supportAccess.studentNotEnrolled", "That student is not active in this class.");
   }
 
-  const grantee = await resolveGrantee(granteeEmail, actor);
+  const grantee = await resolveGrantee(granteeEmail, actor).catch((err: unknown) => {
+    if (verifyOnly && err instanceof PlatformError && err.code === "supportAccess.granteeUnavailable") refreshRequired();
+    throw err;
+  });
   const grantId = studentSupportGrantIdFor(classId, studentId, grantee.uid);
 
+  if (verifyOnly) await assertLegacyAlreadyShared(actor, grantId);
   let outcome: GrantApplyOutcome = "alreadyShared";
-  try {
+  if (!verifyOnly) try {
     outcome = await runFirestoreTransaction(async (tx) => {
       const [existing] = await readGrantsInTransaction(tx, [grantId]);
       return applyGrantInTransaction(tx, actor, { grantId, classId, studentId, granteeUid: grantee.uid }, existing);
@@ -490,7 +498,7 @@ async function resolveRecipient(email: string, actor: StudentScopedReadActor): P
 // student's pairs commit in their own transaction (at most 10 grants and 10
 // audit events), so a failure is confined to that student and every result
 // reports exactly what committed. Students run one at a time to bound load.
-async function grantManyHandler(request: CallableRequest<unknown>): Promise<SupportAccessGrantManyResponse> {
+async function grantManyHandler(request: CallableRequest<unknown>, verifyOnly = false): Promise<SupportAccessGrantManyResponse> {
   const actor = await requireTeacher(request);
   const payload = asPayload(request.data);
   const classId = readId(payload, "classId");
@@ -503,6 +511,9 @@ async function grantManyHandler(request: CallableRequest<unknown>): Promise<Supp
     Promise.all(emails.map((email) => resolveRecipient(email, actor))),
     Promise.all(studentIds.map((studentId) => enrollmentDocRef(`${classId}__${studentId}`).get())),
   ]);
+  if (verifyOnly && recipients.some(recipient => !recipient.ok && recipient.reason === "granteeUnavailable")) {
+    refreshRequired();
+  }
   const enrolled = new Set<string>();
   studentIds.forEach((studentId, i) => {
     const snap = enrollmentSnaps[i];
@@ -524,6 +535,13 @@ async function grantManyHandler(request: CallableRequest<unknown>): Promise<Supp
     }
     if (pairs.size === 0) continue;
     const list = Array.from(pairs.values());
+    if (verifyOnly) {
+      for (const pair of list) {
+        await assertLegacyAlreadyShared(actor, pair.grantId);
+        outcomes.set(pair.grantId, "alreadyShared");
+      }
+      continue;
+    }
     try {
       // Outcomes are returned, not accumulated, so an SDK retry of the
       // transaction function never leaves stale results behind.
@@ -689,9 +707,17 @@ async function listForClassHandler(request: CallableRequest<unknown>): Promise<S
     rows.push({ id: doc.id, data });
   }
 
+  const cutoffs = new Map<string, ReturnType<typeof readGrantCutoff>>();
+  for (const { data } of rows) {
+    if (!cutoffs.has(data.granteeUid)) cutoffs.set(data.granteeUid, readGrantCutoff(data.granteeUid, actor));
+  }
+  await Promise.all(cutoffs.values());
   const resolveName = createRosterDisplayNameResolver({ classId, schoolId: actor.schoolId, districtId: actor.districtId });
-  const grants: SupportGrantView[] = await Promise.all(
+  const activeGrants = new Map<string, Timestamp>();
+  const views = await Promise.all(
     rows.map(async ({ id, data }) => {
+      if (!issuedAfterRevocation(data.grantedAt, await cutoffs.get(data.granteeUid))) return null;
+      if (data.grantedAt instanceof Timestamp) activeGrants.set(id, data.grantedAt);
       const [student, grantee] = await Promise.all([resolveName(data.studentId), readUser(data.granteeUid)]);
       return {
         grantId: id,
@@ -700,17 +726,23 @@ async function listForClassHandler(request: CallableRequest<unknown>): Promise<S
         studentDisplayName: student.displayName,
         granteeDisplayName: displayNameOf(grantee, "Teacher"),
         granteeEmail: normalizeEmail(grantee?.email) ?? null,
+        relationshipId: legacyRelationshipId(actor, data.granteeUid),
         grantedAt: millis(data.grantedAt),
       };
     }),
   );
+  const grants: SupportGrantView[] = views.filter(view => view !== null);
   grants.sort(
     (a, b) =>
       a.studentDisplayName.localeCompare(b.studentDisplayName) ||
       a.granteeDisplayName.localeCompare(b.granteeDisplayName) ||
       (a.grantId < b.grantId ? -1 : a.grantId > b.grantId ? 1 : 0),
   );
-  return { classId, grants };
+  if (payload.includeAuthorizations !== true) return { classId, grants };
+  const authorizations = await ownerAuthorizationViews(actor, classId, activeGrants);
+  const represented = new Set(authorizations.map(a => a.canonicalGrantId));
+  const pendingViews = await Promise.all(authorizations.map(async a => ({ ...a, studentDisplayName: (await resolveName(a.studentId as string)).displayName })));
+  return { classId, grants: [...grants.filter(g => !represented.has(g.grantId)), ...pendingViews] as SupportGrantView[] };
 }
 
 // ---------- supportAccessListMine ----------
@@ -720,7 +752,7 @@ function classBlockOf(classRecord: ClassRecord): string | null {
   return typeof block === "string" && block.trim().length > 0 ? block.trim() : null;
 }
 
-export type SupportAccessListMineResponse = { readonly students: readonly SharedStudentView[] };
+export type SupportAccessListMineResponse = { readonly students: readonly SharedStudentView[]; readonly workspace?: { supportOnly: boolean; recognizedRecipient: boolean } };
 
 async function listMineHandler(request: CallableRequest<unknown>): Promise<SupportAccessListMineResponse> {
   const actor = await requireTeacher(request);
@@ -739,14 +771,16 @@ async function listMineHandler(request: CallableRequest<unknown>): Promise<Suppo
   // Only grants that pass the full read check right now are listed, so the
   // list never offers a student whose Student Detail would be refused.
   const students: SharedStudentView[] = [];
+  const candidatesByOwner = new Map<string, { classId: string; studentId: string }>();
   for (const { id, data } of candidates) {
     let classRecord: ClassRecord;
     try {
       const access = await authorizeStudentScopedRead(actor, data.classId, data.studentId);
       if (access.via !== "grant") continue;
       classRecord = access.classRecord;
-    } catch {
-      continue;
+    } catch (err) {
+      if (err instanceof PlatformError && err.code === "classes.forbidden") continue;
+      throw err;
     }
     const resolveName = createRosterDisplayNameResolver({
       classId: data.classId,
@@ -754,6 +788,7 @@ async function listMineHandler(request: CallableRequest<unknown>): Promise<Suppo
       districtId: actor.districtId,
     });
     const [student, owner] = await Promise.all([resolveName(data.studentId), readUser(classRecord.teacherId)]);
+    candidatesByOwner.set(data.ownerTeacherId, data);
     students.push({
       grantId: id,
       classId: data.classId,
@@ -771,13 +806,33 @@ async function listMineHandler(request: CallableRequest<unknown>): Promise<Suppo
       (a.grantId < b.grantId ? -1 : a.grantId > b.grantId ? 1 : 0),
   );
   log.info("supportAccess.listedMine", { actorUserId: actor.uid, count: students.length });
-  return { students };
+  const workspace = await recipientWorkspace(actor, [...candidatesByOwner.keys()], candidatesByOwner).catch(async () => {
+    log.info("supportAccess.workspaceMaintenanceFailed", { actorUserId: actor.uid });
+    const owned = await classesCollectionRef().where("teacherId", "==", actor.uid).limit(1).get().catch(() => null);
+    return { supportOnly: owned?.empty ?? true, recognizedRecipient: false };
+  });
+  return { students, workspace };
 }
 
-export const supportAccessGrant = platformCallable({ maxInstances: 20 }, grantHandler);
-export const supportAccessGrantMany = platformCallable({ maxInstances: 20 }, grantManyHandler);
-export const supportAccessRevoke = platformCallable({ maxInstances: 20 }, revokeHandler);
-export const supportAccessRevokeMany = platformCallable({ maxInstances: 20 }, revokeManyHandler);
+function refreshRequired(): never {
+  throw new PlatformError("supportAccess.refreshRequired", "Refresh LyfeLabz to change Student Support access.");
+}
+async function requireSupportRefresh(request: CallableRequest<unknown>): Promise<never> {
+  await requireTeacher(request);
+  return refreshRequired();
+}
+
+async function assertLegacyAlreadyShared(actor: StudentScopedReadActor, grantId: string): Promise<void> {
+  const grant = (await studentSupportGrantDocRef(grantId).get()).data();
+  if (!grantMatchesId(grantId, grant) || grant.status !== "active" || grant.ownerTeacherId !== actor.uid ||
+    grant.schoolId !== actor.schoolId || grant.districtId !== actor.districtId ||
+    !issuedAfterRevocation(grant.grantedAt, await readGrantCutoff(grant.granteeUid, actor))) refreshRequired();
+}
+
+export const supportAccessGrant = platformCallable({ maxInstances: 20 }, request => grantHandler(request, true));
+export const supportAccessGrantMany = platformCallable({ maxInstances: 20 }, request => grantManyHandler(request, true));
+export const supportAccessRevoke = platformCallable({ maxInstances: 20 }, requireSupportRefresh);
+export const supportAccessRevokeMany = platformCallable({ maxInstances: 20 }, requireSupportRefresh);
 export const supportAccessListForClass = platformCallable({ maxInstances: 20 }, listForClassHandler);
 export const supportAccessListMine = platformCallable({ maxInstances: 20 }, listMineHandler);
 

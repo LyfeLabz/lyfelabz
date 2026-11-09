@@ -126,4 +126,19 @@ describe("Firestore Rules: studentSupportGrants (default-deny)", () => {
     await assertFails(getDoc(doc(grantee, ATTEMPT_PATH)));
     await assertFails(getDocs(query(collection(grantee, "attempts"), where("classId", "==", CLASS_ID))));
   });
+  it("denies direct access to V2.1 pending records and capability boundaries for every client", async () => {
+    const contexts = [testEnv.authenticatedContext(OWNER_UID, TEACHER_CLAIMS), testEnv.authenticatedContext(GRANTEE_UID, TEACHER_CLAIMS), testEnv.authenticatedContext(STUDENT_UID, { role: "student", schoolId: SCHOOL_ID, districtId: DISTRICT_ID }), testEnv.authenticatedContext("admin-uid", { role: "platformAdministrator" }), testEnv.unauthenticatedContext()];
+    const databases = contexts.map(ctx => ctx.firestore());
+    for (const name of ["supportRecipientRelationships", "supportStudentAuthorizations", "supportAccountBoundaries", "supportMutationOperations", "supportMutationGenerations", "supportRemovalJobs", "supportStudentAuthorizations/parent/mutationReceipts"]) {
+      await testEnv.withSecurityRulesDisabled(async ctx => { await setDoc(doc(ctx.firestore(), name, "existing"), { status: "active", email: "private@weston.org" }); });
+      for (const db of databases) {
+        await assertFails(getDoc(doc(db, name, "existing")));
+        await assertFails(getDocs(collection(db, name)));
+        await assertFails(setDoc(doc(db, name, "forged"), { status: "active" }));
+        await assertFails(updateDoc(doc(db, name, "existing"), { status: "revoked" }));
+        await assertFails(deleteDoc(doc(db, name, "existing")));
+      }
+    }
+  });
+
 });

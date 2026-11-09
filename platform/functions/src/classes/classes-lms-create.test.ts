@@ -1,3 +1,8 @@
+// Handler projection tests isolate the committing boundary; its real
+// authorization and concurrent-write behavior is covered by recipient-authorizations.emulator.test.ts.
+jest.mock("../supportAccess/recipient-policy", () => ({
+  createClassWithSupportBoundary: async (_actor: unknown, ref: { set: (data: unknown) => Promise<void> }, data: unknown) => ref.set(data),
+}));
 import type { CallableRequest } from "firebase-functions/v2/https";
 
 const mockClassGet = jest.fn();

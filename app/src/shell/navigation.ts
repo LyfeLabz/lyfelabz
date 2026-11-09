@@ -127,14 +127,8 @@ export const MY_UNITS_NAVIGATION_ITEM: NavigationItem = Object.freeze({
 // teaching-only item (Curriculum, My Units, Settings) is absent. Sign out
 // stays in the header.
 export const SUPPORT_NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = Object.freeze([
-  NAVIGATION_ITEMS[0]!,
-  Object.freeze({
-    key: "classes" as const,
-    label: "Student Support",
-    available: true,
-    targetSurface: "classes" as const,
-    variant: "item" as const,
-  }),
+  Object.freeze({ key: "classes" as const, label: "Student Support", available: true, targetSurface: "classes" as const, variant: "item" as const }),
+  NAVIGATION_ITEMS.find(item => item.key === "curriculum")!,
 ]);
 
 export function navigationItemsFor(

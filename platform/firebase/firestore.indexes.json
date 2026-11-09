@@ -1,5 +1,74 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "supportRemovalJobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pending", "order": "ASCENDING" },
+        { "fieldPath": "attemptedAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "supportStudentAuthorizations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "relationshipId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "studentSupportGrants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "granteeUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "ownerTeacherId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "studentSupportGrants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "granteeUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "supportRecipientRelationships",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "recipientUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
   "fieldOverrides": [
     {
       "collectionGroup": "launchGrants",

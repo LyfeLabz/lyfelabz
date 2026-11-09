@@ -1,7 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   log,
   writeAuditEvent,
@@ -192,8 +192,8 @@ async function handler(
   return projectResponse(result);
 }
 
-export const lmsClassesRefreshRoster = platformCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+export const lmsClassesRefreshRoster = teachingCallable(
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsClassesRefreshRosterHandler = handler;

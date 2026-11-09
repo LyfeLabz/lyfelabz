@@ -171,6 +171,10 @@ export type ClassWorkspaceReturn = {
 // stays inside a user gesture). Consumed exactly once per navigation.
 export type ClassManagementIntent = "create" | "import";
 
+// History restores carry only IDs. A live Assignment Summary click also has a display name.
+export type ClassesStudentIntent =
+  Omit<AssignmentDetailStudentSelection, "studentDisplayName"> & { readonly studentDisplayName?: string };
+
 // Browser Back/Forward support: bundles the notify/registerController
 // pair the shell needs to keep browser history in sync with this
 // surface's own nested navigation (opening a class into its Students
@@ -199,6 +203,8 @@ export type ClassManagementIntent = "create" | "import";
 // surface's mount, and hands the shell a restore capability keyed by
 // stable ids only (classId, studentId) - never a display name - for
 // popstate to call back into.
+type AssignmentRestoreMode = "history" | "startup" | "student-return";
+
 export type StudentDetailHistorySeam = {
   readonly notify: (
     input:
@@ -212,6 +218,7 @@ export type StudentDetailHistorySeam = {
           readonly kind: "enter-detail";
           readonly classId: string;
           readonly studentId: string;
+          readonly originAssignmentId?: string;
         }
       | { readonly kind: "exit-detail" }
       | {
@@ -222,7 +229,10 @@ export type StudentDetailHistorySeam = {
       | { readonly kind: "exit-assignment-detail"; readonly classId: string }
       | { readonly kind: "switch-to-class-assignments"; readonly classId: string },
   ) => void;
+  readonly returnToAssignment?: (classId: string, assignmentId: string) => boolean;
   readonly registerController: (controller: {
+    readonly cancelPendingRestore: () => void;
+    readonly queueAssignmentStudent: (intent: ClassesStudentIntent) => boolean;
     readonly restoreWorkspace: (
       classId: string,
       section?: ClassWorkspaceSection,
@@ -233,6 +243,7 @@ export type StudentDetailHistorySeam = {
     readonly restoreAssignmentDetail: (
       classId: string,
       assignmentId: string,
+      mode?: AssignmentRestoreMode,
     ) => boolean;
   }) => void;
 };
@@ -246,6 +257,7 @@ type ClassAssignmentsView = {
   readonly count: (classId: string) => number;
   readonly listRegistry: () => ReadonlyArray<AssignmentDetailMetadata>;
   readonly open: (classId: string, assignmentId: string) => void;
+  readonly returnToOrigin: (classId: string, assignmentId: string) => void;
   readonly summaryCallable: AssignmentSummaryCallable | null;
   readonly onGoToCurriculum: (() => void) | null;
   // Performance Operation 1: whether `listRegistry` is complete yet. Null
@@ -341,10 +353,10 @@ export type ClassesSurfaceDeps = {
   // immediately after consumption. Absent in harnesses that do not
   // exercise that path.
   readonly getClassesStudentIntent?:
-    | (() => AssignmentDetailStudentSelection | null)
+    | (() => ClassesStudentIntent | null)
     | null;
   readonly setClassesStudentIntent?:
-    | ((intent: AssignmentDetailStudentSelection | null) => void)
+    | ((intent: ClassesStudentIntent | null) => void)
     | null;
   // Sprint 28.6F: class-management intent one-shot (see shell.ts). Read once
   // on mount so a Settings "Import" / "Create" choice opens the matching
@@ -546,6 +558,8 @@ export function renderClassesSurface(
   const setClassesReturn = deps.setClassesReturn ?? null;
   const getClassesStudentIntent = deps.getClassesStudentIntent ?? null;
   const setClassesStudentIntent = deps.setClassesStudentIntent ?? null;
+  let studentIntent = getClassesStudentIntent?.() ?? null;
+  if (studentIntent !== null) setClassesStudentIntent?.(null);
   const getClassManagementIntent = deps.getClassManagementIntent ?? null;
   const setClassManagementIntent = deps.setClassManagementIntent ?? null;
   const updateClassOrder = deps.updateClassOrder ?? null;
@@ -595,11 +609,11 @@ export function renderClassesSurface(
   // that class's Assignments section (never an arbitrary occurrence), as a
   // new history entry above the originating Assignment Detail.
   const openClassAssignmentsList = (classId: string): void => {
-    setClassesReturn?.({ classId, tab: "assignments" });
     if (studentDetailHistory !== null) {
       studentDetailHistory.notify({ kind: "switch-to-class-assignments", classId });
       return;
     }
+    setClassesReturn?.({ classId, tab: "assignments" });
     navigateToSurface?.("classes");
   };
 
@@ -691,7 +705,7 @@ export function renderClassesSurface(
     opts?: { readonly fromHistory?: boolean },
   ): void => {
     if (assignmentDetail === null) return;
-    setClassesReturn?.({ classId, tab: "assignments" });
+    if (studentDetailHistory === null) setClassesReturn?.({ classId, tab: "assignments" });
     const options: AssignmentDetailOpenOptions = {
       backLabel: "Back to class",
       onBack: () => {
@@ -721,6 +735,10 @@ export function renderClassesSurface(
     count: countClassAssignments,
     listRegistry: listAllAssignments,
     open: openClassAssignment,
+    returnToOrigin: (classId, assignmentId) => {
+      if (studentDetailHistory?.returnToAssignment?.(classId, assignmentId)) return;
+      openClassAssignment(classId, assignmentId, { fromHistory: true });
+    },
     summaryCallable: assignmentSummary,
     onGoToCurriculum:
       navigateToSurface !== null ? () => navigateToSurface("curriculum") : null,
@@ -762,8 +780,16 @@ export function renderClassesSurface(
   type RosterEntry =
     | { readonly classId: string; readonly status: "pending"; readonly promise: Promise<RosterStudents> }
     | { readonly classId: string; readonly status: "ready"; readonly students: RosterStudents }
-    | { readonly classId: string; readonly status: "error" };
+    // Keeps the failed read so a later rerender shows the same error
+    // instead of starting another request.
+    | { readonly classId: string; readonly status: "error"; readonly promise: Promise<RosterStudents> };
   let currentRoster: RosterEntry | null = null;
+  // Navigation performance: a failed roster read is retried only after a
+  // deliberate teacher action (showing Students, Back to Students, a
+  // history restore, or Try again), never because the surface rerendered.
+  // Armed by those actions and consumed by the next workspace render. Lives
+  // in this Classes mount only.
+  let rosterRetryRequested = false;
 
   const startClassRosterFetch = (classId: string): RosterEntry | null => {
     const loader = loadRoster?.() ?? null;
@@ -790,7 +816,7 @@ export function renderClassesSurface(
         }
       },
       () => {
-        if (currentRoster === entry) currentRoster = { classId, status: "error" };
+        if (currentRoster === entry) currentRoster = { classId, status: "error", promise };
       },
     );
     return entry;
@@ -798,6 +824,7 @@ export function renderClassesSurface(
 
   // Returns the open class's roster entry, starting a fetch when there is
   // none for this class (or, when `retryError`, when the last fetch failed).
+  // A fetch already in flight is always reused, so retries never overlap.
   const ensureClassRoster = (
     classId: string,
     retryError: boolean,
@@ -844,6 +871,90 @@ export function renderClassesSurface(
     });
     return promise;
   };
+
+  // Student Detail's per-student assignment read for the CURRENT Student
+  // Detail visit only (at most one entry, in memory, never persisted). A
+  // visit begins each time the teacher opens Student Detail (a Students-list
+  // click, Previous/Next, or a Back/Forward restore), so every visit reads
+  // anew and a previously viewed student is never served from here. Within
+  // one visit, a rerender that does not change the selection (for example
+  // the roster arriving after Student Detail opened from an Assignment
+  // Detail name click) reuses the request already in flight instead of
+  // issuing another read. A failed read stays with the visit, so a passive
+  // rerender cannot retry it. Authorization and grouping stay server-side.
+  type StudentWorkEntry = {
+    readonly visit: number;
+    readonly classId: string;
+    readonly studentId: string;
+    readonly promise: ReturnType<AssessmentStudentAssignmentsForClassCallable>;
+  };
+  let studentDetailVisit = 0;
+  let currentStudentWork: StudentWorkEntry | null = null;
+  let currentGradeHistory: {
+    readonly classId: string;
+    readonly studentId: string;
+    readonly source: GradeImprovementsSeam;
+    readonly seam: GradeImprovementsSeam;
+  } | null = null;
+  const beginStudentDetailVisit = (): void => {
+    studentDetailVisit += 1;
+    currentStudentWork = null;
+    currentGradeHistory = null;
+  };
+
+  const gradeHistoryForVisit = (classId: string, studentId: string): GradeImprovementsSeam | null => {
+    const source = readGradeImprovementsSeam();
+    if (source === null) return null;
+    const held = currentGradeHistory;
+    if (held?.classId === classId && held.studentId === studentId && held.source === source) return held.seam;
+    // Roster completion can replace the DOM for the same visit after this
+    // request has started or even settled. Both renders share the read.
+    let history: ReturnType<GradeImprovementsSeam["listForStudent"]> | undefined;
+    const seam: GradeImprovementsSeam = {
+      ...source,
+      listForStudent: (input) => history ??= source.listForStudent(input),
+      reverse: async (input) => {
+        try {
+          return await source.reverse(input);
+        } finally {
+          // An Undo or its stale-event recovery needs current server history.
+          history = undefined;
+        }
+      },
+    };
+    currentGradeHistory = { classId, studentId, source, seam };
+    return seam;
+  };
+
+  const studentWorkForVisit = (
+    callable: AssessmentStudentAssignmentsForClassCallable,
+  ): AssessmentStudentAssignmentsForClassCallable => (input) => {
+    const held = currentStudentWork;
+    if (
+      held !== null &&
+      held.visit === studentDetailVisit &&
+      held.classId === input.classId &&
+      held.studentId === input.studentId
+    ) {
+      return held.promise;
+    }
+    const promise = callable(input);
+    const entry: StudentWorkEntry = {
+      visit: studentDetailVisit,
+      classId: input.classId,
+      studentId: input.studentId,
+      promise,
+    };
+    currentStudentWork = entry;
+    return promise;
+  };
+  const loadStudentWork =
+    loadExpectedAssignments === null
+      ? null
+      : (): AssessmentStudentAssignmentsForClassCallable | null => {
+          const callable = loadExpectedAssignments();
+          return callable === null ? null : studentWorkForVisit(callable);
+        };
 
   // Sprint 28.6H (Finding 1): whether the minimized "+ Add class" disclosure is
   // revealed in a populated Classes list. Closure-scoped (not part of the
@@ -913,6 +1024,7 @@ export function renderClassesSurface(
   };
 
   let state: ClassesState = { kind: "loading" };
+  let restoringStudent: { readonly classId: string; readonly studentId: string } | null = null;
   let importController: ImportController | null = null;
   // Sprint 30A.1 human-review finalization: class-card reorder state.
   // `draggedClassId` is only meaningful between a card's `dragstart` and
@@ -939,6 +1051,7 @@ export function renderClassesSurface(
   // sees the section or a re-render.
   let sharedStudents: ReadonlyArray<SharedStudent> = [];
   let sharedStudentsLoad: Promise<void> | null = null;
+  let pendingSharedStudent: { classId: string; studentId: string } | null = null;
   // False until the first shared read settles (either way). Until then a
   // zero-class teacher sees the existing "Loading classes" state rather than
   // the zero-class "add or import" prompt, which would be wrong for a
@@ -955,7 +1068,8 @@ export function renderClassesSurface(
     if (studentSupport === null || sharedStudentsLoad !== null) return;
     const settle = (students: ReadonlyArray<SharedStudent>, failed: boolean): void => {
       const changed =
-        students.length > 0 || sharedStudents.length > 0 || failed !== sharedStudentsFailed;
+        students.length > 0 || sharedStudents.length > 0 || failed !== sharedStudentsFailed ||
+        studentSupport.isSupportWorkspaceEligible?.() !== supportOnly();
       const wasHeld = !sharedStudentsSettled;
       sharedStudents = students;
       sharedStudentsFailed = failed;
@@ -963,7 +1077,7 @@ export function renderClassesSurface(
       sharedRetryPending = false;
       if (
         state.kind === "list" &&
-        (changed || (wasHeld && (state.classes.length === 0 || supportOnly())))
+        (pendingSharedStudent !== null || changed || (wasHeld && (state.classes.length === 0 || supportOnly())))
       ) {
         rerender();
       }
@@ -982,22 +1096,72 @@ export function renderClassesSurface(
     rerender();
   };
 
+  let reconciliationStarted = false;
+  let reconciliationFailed = false;
+  const reconcileShared = (): void => {
+    if (reconciliationStarted || !studentSupport?.reconcilePending) return;
+    reconciliationStarted = true;
+    reconciliationFailed = false;
+    void studentSupport.reconcilePending().then(async () => {
+      await sharedStudentsLoad;
+      if (mount.isConnected && state.kind === "list") {
+        sharedStudentsLoad = null;
+        loadSharedStudents();
+      }
+    }, () => {
+      reconciliationFailed = true;
+      if (mount.isConnected && state.kind === "list") rerender();
+    });
+  };
+  const renderReconciliationError = (): void => {
+    if (!reconciliationFailed) return;
+    const status = doc.createElement("p");
+    status.setAttribute("role", "status");
+    status.textContent = "We couldn't check for newly shared students.";
+    const retry = doc.createElement("button");
+    retry.type = "button";
+    retry.textContent = "Retry checking for new shares";
+    retry.addEventListener("click", () => {
+      reconciliationStarted = false;
+      reconcileShared();
+      rerender();
+    });
+    mount.append(status, retry);
+  };
+
   const rerender = (): void => {
     if (!mount.isConnected) return;
     mount.textContent = "";
+    if (pendingAssignmentRestore && pendingAssignmentRestore.mode !== "history") {
+      renderLoading(doc, mount, "Assignment Summary", "Loading assignment summary");
+      return;
+    }
+    if (restoringStudent !== null) {
+      renderLoading(doc, mount, "Student Detail", "Loading student detail");
+      return;
+    }
     const s: ClassesState = state;
     switch (s.kind) {
       case "loading":
         renderLoading(doc, mount, supportOnly() ? "Student Support" : "Classes");
         return;
       case "error":
-        renderErrorState(doc, mount, supportOnly() ? "Student Support" : "Classes");
+        renderErrorState(doc, mount, supportOnly() ? "Student Support" : "Classes", () => {
+          state = { kind: "loading" };
+          rerender();
+          loadClassList();
+        });
         return;
       case "list": {
         loadSharedStudents();
+        reconcileShared();
         // Both authoritative reads (owned classes of every status, and the
         // server-authorized shared list) prove the support-only condition.
-        if (isSupportOnlyTeacher(s.classes.length, sharedStudents.length)) {
+        const serverEligibility = studentSupport?.isSupportWorkspaceEligible;
+        if (serverEligibility !== undefined && sharedStudentsSettled && !sharedStudentsFailed) {
+          if (serverEligibility()) supportWorkspace?.enterSupportOnly();
+          else supportWorkspace?.leaveSupportOnly?.();
+        } else if (serverEligibility === undefined && isSupportOnlyTeacher(s.classes.length, sharedStudents.length)) {
           supportWorkspace?.enterSupportOnly();
         }
         // Zero owned classes and a failed (or retrying) shared read: the
@@ -1010,6 +1174,11 @@ export function renderClassesSurface(
           listAddMode === null &&
           s.lastCreated === null;
         supportWorkspace?.setUnresolved?.(unresolvedNav);
+        if (pendingSharedStudent !== null && sharedStudentsSettled) {
+          const { classId, studentId } = pendingSharedStudent;
+          pendingSharedStudent = null;
+          if (restoreSharedStudent(classId, studentId)) return;
+        }
         const unresolved = unresolvedNav && sharedStudentsFailed;
         if (supportOnly()) {
           renderStudentSupportLanding(doc, mount, {
@@ -1018,6 +1187,7 @@ export function renderClassesSurface(
             onOpen: onOpenSharedStudent,
             onRetry: retrySharedStudents,
           });
+          renderReconciliationError();
           return;
         }
         // Zero owned classes and a failed shared read: whether this is a
@@ -1073,6 +1243,7 @@ export function renderClassesSurface(
         } else if (sharedStudentsFailed) {
           mount.appendChild(renderSharedStudentsError(doc, retrySharedStudents));
         }
+        renderReconciliationError();
         return;
       }
       case "shared": {
@@ -1105,7 +1276,7 @@ export function renderClassesSurface(
           () => [],
           loadAttemptDetail,
           null,
-          readGradeImprovementsSeam(),
+          gradeHistoryForVisit(student.classId, student.studentId),
           true,
           seam.revisionContent,
         );
@@ -1137,22 +1308,30 @@ export function renderClassesSurface(
           return;
         }
         // Students-tab roster: served from the open class's in-memory entry;
-        // a failed fetch is retried only when Students is actually shown.
+        // a failed fetch is retried only when Students is shown by a
+        // deliberate action (see `rosterRetryRequested`). Any other rerender
+        // re-shows the same failure without a new request.
+        const retryRequested = rosterRetryRequested;
+        rosterRetryRequested = false;
         let rosterView: RosterView = { kind: "unwired" };
         if (loadRoster !== null) {
           const entry =
             summary.status === "active"
               ? ensureClassRoster(
                   summary.id,
-                  s.tab === "roster" && s.selectedStudentId === null,
+                  retryRequested && s.tab === "roster" && s.selectedStudentId === null,
                 )
               : null;
+          const retry = (): void => {
+            rosterRetryRequested = true;
+            rerender();
+          };
           rosterView =
-            entry === null || entry.status === "error"
+            entry === null
               ? { kind: "notReady" }
               : entry.status === "ready"
                 ? { kind: "ready", students: entry.students }
-                : { kind: "pending", promise: entry.promise };
+                : { kind: "pending", promise: entry.promise, retry };
         }
         // Student Detail's class-wide attempts: start reading them as soon as
         // the Students section is shown (one read per class session, never
@@ -1184,10 +1363,11 @@ export function renderClassesSurface(
           onBackFromStudent,
           onNavigateToNeighbor,
           classAttempts,
-          loadExpectedAssignments,
+          loadStudentWork,
           listAllAssignments,
           loadAttemptDetail,
           rosterSort,
+          s.selectedStudentId === null ? null : gradeHistoryForVisit(summary.id, s.selectedStudentId),
           studentSupport?.revisionContent ?? null,
         );
         return;
@@ -1369,6 +1549,7 @@ export function renderClassesSurface(
 
   const onOpenClass = (classId: string): void => {
     if (state.kind !== "list") return;
+    pendingSharedStudent = null;
     // Opening a class leaves any focused class-source task.
     listAddMode = null;
     const summary = state.classes.find((c) => c.id === classId);
@@ -1706,6 +1887,8 @@ export function renderClassesSurface(
       // entry, so switching tabs never refetches).
       rosterSnapshot: state.rosterSnapshot,
     };
+    // Showing Students is deliberate: a failed roster read may retry.
+    if (tab === "roster") rosterRetryRequested = true;
     rerender();
     // Browser Back/Forward: every class section is its own history entry
     // (see StudentDetailHistorySeam), so switching Assignments <-> Students
@@ -1719,6 +1902,7 @@ export function renderClassesSurface(
   const onSelectStudent = (studentId: string, displayName: string): void => {
     if (state.kind !== "workspace") return;
     const classId = state.selectedId;
+    beginStudentDetailVisit();
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -1731,13 +1915,6 @@ export function renderClassesSurface(
       studentDetailOrigin: "roster",
     };
     rerender();
-    // Browser Back/Forward support: only the plain Students-list entry
-    // point (this function) is tracked in history. The assignment-origin
-    // pre-selection consumed from `classesStudentIntent` on mount is
-    // deliberately excluded (see StudentDetailHistorySeam) - reconstructing
-    // that cross-surface Assignment Detail context from a URL is out of
-    // scope for this patch, so it keeps its pre-existing, non-history
-    // behavior unchanged.
     studentDetailHistory?.notify({ kind: "enter-detail", classId, studentId });
   };
 
@@ -1755,6 +1932,7 @@ export function renderClassesSurface(
   ): void => {
     if (state.kind !== "workspace") return;
     const classId = state.selectedId;
+    beginStudentDetailVisit();
     state = {
       kind: "workspace",
       classes: state.classes,
@@ -1766,13 +1944,16 @@ export function renderClassesSurface(
       rosterSnapshot: state.rosterSnapshot,
       studentDetailOrigin: state.studentDetailOrigin,
     };
+    const origin = state.studentDetailOrigin;
     rerender();
-    // Browser Back/Forward support: Previous/Next is real navigation to a
-    // different student, not a mere re-render of the same view, so it
-    // earns its own history entry exactly like the initial roster-click
-    // selection - the teacher can Back/Forward through A -> B -> C the
-    // same way they would through any other meaningful navigation.
-    studentDetailHistory?.notify({ kind: "enter-detail", classId, studentId });
+    studentDetailHistory?.notify({
+      kind: "enter-detail",
+      classId,
+      studentId,
+      ...(typeof origin === "object" && origin.kind === "assignment"
+        ? { originAssignmentId: origin.assignmentId }
+        : {}),
+    });
   };
 
   // Student Progress & Assignment Membership Phase A, Slice 2: captures the
@@ -1806,6 +1987,8 @@ export function renderClassesSurface(
       // nothing read `rosterSnapshot` while Detail was closed.
       rosterSnapshot: state.rosterSnapshot,
     };
+    // Back to Students deliberately re-enters the list.
+    rosterRetryRequested = true;
     rerender();
     // Browser Back/Forward support: keeps the URL/history entry in sync
     // with what is now on screen whether this ran from the in-app "Back to
@@ -1824,8 +2007,17 @@ export function renderClassesSurface(
   // controller below restores either depth.
   const openSharedStudent = (student: SharedStudent): void => {
     if (state.kind !== "list" && state.kind !== "shared") return;
+    pendingSharedStudent = null;
+    beginStudentDetailVisit();
     state = { kind: "shared", classes: state.classes, student };
     rerender();
+  };
+
+  const restoreSharedStudent = (classId: string, studentId: string): boolean => {
+    const shared = sharedStudents.find((student) => student.classId === classId && student.studentId === studentId);
+    if (shared === undefined) return false;
+    openSharedStudent(shared);
+    return true;
   };
 
   const onOpenSharedStudent = (student: SharedStudent): void => {
@@ -1889,68 +2081,92 @@ export function renderClassesSurface(
   // Detail can arrive while the assignment registry is still hydrating, from
   // any Classes view (the list, another class, a Students section). Rather
   // than failing closed for good, the restore establishes the target class's
-  // Assignments section (its loading state, matching the destination) and
-  // holds an explicit intent that does not depend on the visible section.
-  // Once the registry and class list are known it re-validates and opens
-  // Detail exactly as the synchronous restore would. It is canceled by any
-  // newer history restore, any click inside Classes, the surface leaving
-  // the document (another surface, Detail, or a new bootstrap), or a
-  // registry failure (the section then shows its Try again). Nothing here
-  // notifies history, so no entry is added.
+  // Assignments section as a fallback and holds an explicit intent. Startup
+  // and a return from restored Student Detail render a neutral loading view
+  // until the destination can open. An ordinary in-session restore
+  // still shows the section and lets a click inside Classes cancel it.
+  // Newer restores, surface teardown, and registry failure cancel either
+  // intent. Nothing here notifies history, so no entry is added.
   type PendingAssignmentRestore = {
     readonly classId: string;
     readonly assignmentId: string;
     readonly stopWatching: () => void;
+    readonly mode: AssignmentRestoreMode;
   };
   let pendingAssignmentRestore: PendingAssignmentRestore | null = null;
-  const cancelPendingAssignmentRestore = (): void => {
+  let pendingWorkspace: { classId: string; section: ClassWorkspaceSection } | null = null;
+  const stopPendingAssignmentRestore = (): void => {
     const pending = pendingAssignmentRestore;
     if (pending === null) return;
     pendingAssignmentRestore = null;
     pending.stopWatching();
-    mount.removeEventListener("click", cancelPendingAssignmentRestore, true);
+    mount.removeEventListener("click", cancelPendingHistoryRestore, true);
   };
+  const cancelPendingHistoryRestore = (): boolean => {
+    studentIntent = null;
+    pendingWorkspace = null;
+    pendingSharedStudent = null;
+    const wasShowingRestoreLoading = restoringStudent !== null ||
+      (pendingAssignmentRestore !== null && pendingAssignmentRestore.mode !== "history");
+    restoringStudent = null;
+    stopPendingAssignmentRestore();
+    return wasShowingRestoreLoading;
+  };
+  const hasClassAssignment = (classId: string, assignmentId: string): boolean =>
+    listAllAssignments().some((meta) =>
+      meta.assignmentId === assignmentId && meta.classId === classId && isRenderableCard(meta),
+    );
   const tryRestoreAssignmentDetail = (classId: string, assignmentId: string): boolean => {
-    const meta = listAllAssignments().find((m) => m.assignmentId === assignmentId);
-    if (meta === undefined || meta.classId !== classId || !isRenderableCard(meta)) {
-      return false;
-    }
+    if (!hasClassAssignment(classId, assignmentId)) return false;
     openClassAssignment(classId, assignmentId, { fromHistory: true });
     return true;
   };
-  const completePendingAssignmentRestore = (pending: PendingAssignmentRestore): void => {
-    // Still the newest intent and Classes still mounted (newer navigation
-    // cancels the intent; leaving Classes detaches the mount).
-    if (pendingAssignmentRestore !== pending || !mount.isConnected) return;
-    cancelPendingAssignmentRestore();
-    // Authorization/eligibility: the class must be one this teacher's
-    // loaded class list holds (the same posture as `restoreWorkspace`).
-    const classes = currentClassList();
-    if (classes === null || !classes.some((c) => c.id === pending.classId)) return;
-    // A genuinely missing (or no longer listable) assignment stays on the
-    // class's Assignments section, exactly as the synchronous path does.
-    tryRestoreAssignmentDetail(pending.classId, pending.assignmentId);
+  const completePendingAssignmentRestore = async (pending: PendingAssignmentRestore): Promise<void> => {
+    const isCurrent = (): boolean => pendingAssignmentRestore === pending && mount.isConnected;
+    if (!isCurrent()) return;
+    const { classId, assignmentId } = pending;
+    const target = currentClassList()?.find((c) => c.id === classId);
+    if (pending.mode !== "history") {
+      let eligible = false;
+      if (target?.status === "active" && !supportOnly() && hasClassAssignment(classId, assignmentId)) {
+        try {
+          // Startup needs a server check. Returning from restored Student
+          // Detail reuses the check that was required to show that student.
+          eligible = pending.mode === "student-return" ||
+            await assignmentDetail?.checkHistoryOrigin?.(classId, assignmentId) === true;
+        } catch {
+          // Fall back to the authorized class section on a failed read.
+        }
+      }
+      if (!isCurrent()) return;
+      stopPendingAssignmentRestore();
+      if (!eligible || supportOnly() || !tryRestoreAssignmentDetail(classId, assignmentId)) rerender();
+      return;
+    }
+    cancelPendingHistoryRestore();
+    if (target?.status === "active" && !supportOnly()) tryRestoreAssignmentDetail(classId, assignmentId);
   };
-  const deferAssignmentRestore = (classId: string, assignmentId: string): void => {
-    if (registryReadiness === null) return;
+  const deferAssignmentRestore = (classId: string, assignmentId: string, mode: AssignmentRestoreMode): void => {
     const readiness = registryReadiness;
+    const finish = (): void => {
+      void classesKnown.then(() => completePendingAssignmentRestore(pending));
+    };
     const pending: PendingAssignmentRestore = {
       classId,
       assignmentId,
-      stopWatching: watchRegistryReadiness(mount, readiness, (status) => {
+      mode,
+      stopWatching: readiness === null ? () => undefined : watchRegistryReadiness(mount, readiness, (status) => {
         if (pendingAssignmentRestore !== pending) return;
         if (status === "unavailable") {
-          cancelPendingAssignmentRestore();
-          return;
+          stopPendingAssignmentRestore();
+          if (mode !== "history") rerender();
         }
-        if (status !== "ready") return;
-        void classesKnown.then(() => {
-          completePendingAssignmentRestore(pending);
-        });
+        if (status === "ready") finish();
       }),
     };
     pendingAssignmentRestore = pending;
-    mount.addEventListener("click", cancelPendingAssignmentRestore, true);
+    if (mode === "history") mount.addEventListener("click", cancelPendingHistoryRestore, true);
+    if (readiness === null || readiness.status() === "ready") finish();
   };
 
   // The workspace half of `restoreWorkspace` (below), shared with the
@@ -2000,11 +2216,33 @@ export function renderClassesSurface(
           ? state.rosterSnapshot
           : undefined,
     };
+    // A Back/Forward restore is a deliberate navigation into the section.
+    rosterRetryRequested = true;
     rerender();
     return true;
   };
 
   studentDetailHistory?.registerController({
+    cancelPendingRestore: () => {
+      if (!mount.isConnected) return;
+      setClassesReturn?.(null);
+      if (cancelPendingHistoryRestore()) {
+        // A refused destination can leave this mount visible. Repaint only
+        // if the synchronous transition has left its loading view in place.
+        const loadingView = mount.firstChild;
+        queueMicrotask(() => {
+          if (mount.firstChild === loadingView) rerender();
+        });
+      }
+    },
+    queueAssignmentStudent: (intent) => {
+      // Retarget the pending list read. Once it settles, a new visit mounts
+      // fresh and runs the regular class and assignment eligibility checks.
+      if (state.kind !== "loading" || !mount.isConnected) return false;
+      cancelPendingHistoryRestore();
+      studentIntent = intent;
+      return true;
+    },
     // Fails closed (returns false, changes nothing) if the requested
     // class is not one the roster list knows about - the same
     // stale/unauthorized-safe posture as `restoreDetail` below, extended
@@ -2013,16 +2251,27 @@ export function renderClassesSurface(
     // per-section history. A needsSetup class can only show Setup; an
     // active class never restores into Setup.
     restoreWorkspace: (classId, section = "roster") => {
-      cancelPendingAssignmentRestore();
-      return restoreWorkspaceState(classId, section);
+      const wasShowingRestoreLoading = cancelPendingHistoryRestore();
+      if (state.kind === "loading") {
+        setClassesReturn?.(null);
+        pendingWorkspace = { classId, section };
+        return true;
+      }
+      const restored = restoreWorkspaceState(classId, section);
+      if (!restored && wasShowingRestoreLoading) rerender();
+      return restored;
     },
     restoreToTopList: () => {
-      cancelPendingAssignmentRestore();
+      const wasShowingRestoreLoading = cancelPendingHistoryRestore();
+      if (state.kind === "loading") setClassesReturn?.(null);
       if (state.kind === "shared") {
         closeSharedStudent();
         return;
       }
-      if (state.kind !== "workspace") return;
+      if (state.kind !== "workspace") {
+        if (wasShowingRestoreLoading) rerender();
+        return;
+      }
       listAddMode = null;
       currentRoster = null;
       currentClassAttempts = null;
@@ -2036,16 +2285,29 @@ export function renderClassesSurface(
       rerender();
     },
     restoreDetail: (classId, studentId) => {
-      cancelPendingAssignmentRestore();
-      // A shared student (Forward to its entry): only one already listed by
-      // the server-authorized Shared students read; fails closed otherwise.
+      const wasShowingRestoreLoading = cancelPendingHistoryRestore();
+      // A startup replay can reach Classes before either of its lists is ready.
+      // Wait for the authorized shared list, then match only the saved IDs.
+      if (state.kind === "list" || state.kind === "workspace") {
+        const owned = state.classes.some((summary) => summary.id === classId && summary.status === "active");
+        if (owned && !supportOnly() &&
+            (state.kind === "list" || state.selectedId !== classId || state.rosterSnapshot == null)) {
+          restoreRosterStudent(state.classes, { classId, studentId });
+          return true;
+        }
+      }
+      if (state.kind === "loading" || state.kind === "list") {
+        if (state.kind === "loading") setClassesReturn?.(null);
+        if (state.kind === "loading" || !sharedStudentsSettled) {
+          pendingSharedStudent = { classId, studentId };
+          if (wasShowingRestoreLoading) rerender();
+          return true;
+        }
+      }
       if (state.kind === "list" || state.kind === "shared") {
-        const shared = sharedStudents.find(
-          (s) => s.classId === classId && s.studentId === studentId,
-        );
-        if (shared === undefined) return false;
-        openSharedStudent(shared);
-        return true;
+        const restored = restoreSharedStudent(classId, studentId);
+        if (!restored && wasShowingRestoreLoading) rerender();
+        return restored;
       }
       if (state.kind !== "workspace") return false;
       if (state.selectedId !== classId) return false;
@@ -2053,6 +2315,7 @@ export function renderClassesSurface(
         (s) => s.studentId === studentId,
       );
       if (!match) return false;
+      beginStudentDetailVisit();
       state = {
         kind: "workspace",
         classes: state.classes,
@@ -2068,8 +2331,9 @@ export function renderClassesSurface(
       return true;
     },
     restoreList: () => {
-      cancelPendingAssignmentRestore();
+      const wasShowingRestoreLoading = cancelPendingHistoryRestore();
       if (state.kind !== "workspace" || state.selectedStudentId === null) {
+        if (wasShowingRestoreLoading) rerender();
         return;
       }
       onBackFromStudent();
@@ -2079,16 +2343,22 @@ export function renderClassesSurface(
     // hydrated registry, belongs to that class, and is one the class
     // Assignments section itself would list. The Summary surface then loads
     // its data through its own authorized callables exactly as on a click.
-    restoreAssignmentDetail: (classId, assignmentId) => {
-      cancelPendingAssignmentRestore();
-      if (tryRestoreAssignmentDetail(classId, assignmentId)) return true;
-      // Registry still hydrating: land on the target class's Assignments
-      // section (when the class list is loaded; otherwise the shell's
-      // `classesReturn` lands there) and hold the intent instead of failing
-      // closed for good (see `deferAssignmentRestore`).
-      if (registryReadiness !== null && registryReadiness.status() === "pending") {
-        restoreWorkspaceState(classId, "assignments");
-        deferAssignmentRestore(classId, assignmentId);
+    restoreAssignmentDetail: (classId, assignmentId, mode = "history") => {
+      const wasShowingRestoreLoading = cancelPendingHistoryRestore();
+      const waitWithoutControls = mode !== "history";
+      const target = currentClassList()?.find((summary) => summary.id === classId);
+      if (!waitWithoutControls && target?.status === "active" && !supportOnly() &&
+          tryRestoreAssignmentDetail(classId, assignmentId)) return true;
+      // Prepare the target class section as a fallback. On startup, install
+      // the intent first so even the class-list render stays on the loading view.
+      const waitForClass = state.kind === "loading" && hasClassAssignment(classId, assignmentId);
+      if (waitWithoutControls || waitForClass || registryReadiness?.status() === "pending") {
+        if (registryReadiness?.status() !== "unavailable") deferAssignmentRestore(classId, assignmentId, mode);
+        if (waitWithoutControls) rerender();
+        if (state.kind === "loading") pendingWorkspace = { classId, section: "assignments" };
+        else if (!restoreWorkspaceState(classId, "assignments") && wasShowingRestoreLoading) rerender();
+      } else if (wasShowingRestoreLoading && !restoreWorkspaceState(classId, "assignments")) {
+        rerender();
       }
       return false;
     },
@@ -2295,51 +2565,127 @@ export function renderClassesSurface(
     void ensureImportController()?.prepare();
   }
 
-  void deps
+  const openAssignmentStudent = (
+    classes: ReadonlyArray<ClassSummary>,
+    intent: ClassesStudentIntent,
+    displayName: string,
+    roster: RosterStudents | null,
+  ): void => {
+    beginStudentDetailVisit();
+    state = {
+      kind: "workspace",
+      classes,
+      selectedId: intent.classId,
+      tab: "roster",
+      setupForm: null,
+      selectedStudentId: intent.studentId,
+      selectedStudentDisplayName: displayName,
+      rosterSnapshot: roster,
+      studentDetailOrigin: { kind: "assignment", assignmentId: intent.returnToAssignmentId },
+    };
+    rerender();
+  };
+
+  const restoreRosterStudent = (
+    classes: ReadonlyArray<ClassSummary>,
+    target: { readonly classId: string; readonly studentId: string },
+  ): void => {
+    restoringStudent = target;
+    rerender();
+    const roster = ensureClassRoster(target.classId, true);
+    const finish = (students: RosterStudents | null): void => {
+      if (restoringStudent !== target || !mount.isConnected) return;
+      restoringStudent = null;
+      const student = students?.find((entry) => entry.studentId === target.studentId);
+      if (student !== undefined && !supportOnly()) {
+        beginStudentDetailVisit();
+        state = {
+          kind: "workspace",
+          classes,
+          selectedId: target.classId,
+          tab: "roster",
+          setupForm: null,
+          selectedStudentId: target.studentId,
+          selectedStudentDisplayName: student.studentDisplayName,
+          rosterSnapshot: students,
+          studentDetailOrigin: "roster",
+        };
+        rerender();
+      } else if (supportOnly() || !restoreWorkspaceState(target.classId, "roster")) {
+        rerender();
+      }
+    };
+    if (roster?.status === "ready") finish(roster.students);
+    else if (roster?.status === "pending") void roster.promise.then(finish, () => finish(null));
+    else finish(null);
+  };
+
+  const restoreAssignmentStudent = (
+    classes: ReadonlyArray<ClassSummary>,
+    intent: ClassesStudentIntent,
+  ): void => {
+    state = { kind: "list", classes, form: null, lastCreated: null, importState: idleImportState() };
+    restoringStudent = intent;
+    rerender();
+    const isCurrent = (): boolean => restoringStudent === intent && mount.isConnected;
+    const readTargetRoster = async (): Promise<RosterStudents | null> => {
+      const eligible = await assignmentDetail?.checkHistoryOrigin?.(intent.classId, intent.returnToAssignmentId);
+      if (!isCurrent() || !eligible || supportOnly()) return null;
+      const roster = ensureClassRoster(intent.classId, false);
+      if (roster === null || roster.status === "error") return null;
+      return roster.status === "ready" ? roster.students : roster.promise;
+    };
+    const finish = (students: RosterStudents | null): void => {
+      if (!isCurrent()) return;
+      restoringStudent = null;
+      if (supportOnly()) {
+        rerender();
+        return;
+      }
+      const student = students?.find((entry) => entry.studentId === intent.studentId);
+      if (student !== undefined) {
+        openAssignmentStudent(classes, intent, student.studentDisplayName, students);
+      } else {
+        restoreWorkspaceState(intent.classId, "assignments");
+      }
+    };
+    void readTargetRoster().then(finish, () => finish(null));
+  };
+
+  const loadClassList = (): void => void deps
     .listClasses(session.uid)
     .then((classes) => {
       knownClasses = classes;
       markClassesKnown();
       if (!mount.isConnected) return;
-      // Student Progress & Assignment Membership Phase A, Slice 3: one-shot
-      // student-selection restore. When the teacher just arrived from an
-      // Assignment Detail roster-name click, land directly on that
-      // student's Student Detail with an assignment-origin
-      // `studentDetailOrigin` so Back returns to that exact assignment
-      // (not the plain Students list). Consumed exactly once. Falls back
-      // to the ordinary list/restore path when the target class is no
-      // longer active (e.g. archived between the click and this mount).
-      const studentIntent = getClassesStudentIntent?.() ?? null;
-      if (studentIntent !== null) {
-        setClassesStudentIntent?.(null);
+      if (pendingSharedStudent !== null &&
+          classes.some((summary) => summary.id === pendingSharedStudent?.classId && summary.status === "active")) {
+        const target = pendingSharedStudent;
+        pendingSharedStudent = null;
+        state = { kind: "list", classes, form: null, lastCreated: null, importState: idleImportState() };
+        restoreRosterStudent(classes, target);
+        return;
+      }
+      if (pendingWorkspace !== null) {
+        const { classId, section } = pendingWorkspace;
+        pendingWorkspace = null;
+        setClassesReturn?.(null);
+        state = { kind: "list", classes, form: null, lastCreated: null, importState: idleImportState() };
+        if (!restoreWorkspaceState(classId, section)) rerender();
+        return;
+      }
+      const pendingStudent = studentIntent;
+      studentIntent = null;
+      if (pendingStudent !== null) {
         const target = classes.find(
-          (c) => c.id === studentIntent.classId && c.status === "active",
+          (c) => c.id === pendingStudent.classId && c.status === "active",
         );
         if (target !== undefined) {
-          state = {
-            kind: "workspace",
-            classes,
-            selectedId: studentIntent.classId,
-            tab: "roster",
-            setupForm: null,
-            selectedStudentId: studentIntent.studentId,
-            selectedStudentDisplayName: studentIntent.studentDisplayName,
-            rosterSnapshot: null,
-            studentDetailOrigin: {
-              kind: "assignment",
-              assignmentId: studentIntent.returnToAssignmentId,
-            },
-          };
-          // Student Progress & Assignment Membership Phase A, Slice 3: this
-          // mount never visited the Students tab, so no roster has been
-          // fetched yet (`rosterSnapshot: null` above means Previous/Next
-          // render absent for now, per the Slice 2 "missing snapshot"
-          // safety default). The render below starts the class's roster
-          // fetch in the background (`ensureClassRoster`), and its
-          // resolution re-renders Student Detail so Previous/Next become
-          // available a moment later without a teacher-visible loading
-          // state of their own.
-          rerender();
+          if (pendingStudent.studentDisplayName !== undefined) {
+            openAssignmentStudent(classes, pendingStudent, pendingStudent.studentDisplayName, null);
+          } else {
+            restoreAssignmentStudent(classes, pendingStudent);
+          }
           return;
         }
       }
@@ -2416,9 +2762,11 @@ export function renderClassesSurface(
     .catch(() => {
       markClassesKnown();
       if (!mount.isConnected) return;
+      cancelPendingHistoryRestore();
       state = { kind: "error" };
       rerender();
     });
+  loadClassList();
 
   // Sprint 28.6F: after the list (with any intent-opened control) has
   // rendered, move focus into the shared workflow so a Settings entry lands
@@ -2519,7 +2867,7 @@ function describeCreateError(err: unknown): string {
   return "We could not create the class. Try again in a moment.";
 }
 
-function renderLoading(doc: Document, mount: HTMLElement, headline = "Classes"): void {
+function renderLoading(doc: Document, mount: HTMLElement, headline = "Classes", message = "Loading classes"): void {
   appendHeadline(doc, mount, headline);
 
   const status = doc.createElement("p");
@@ -2527,7 +2875,7 @@ function renderLoading(doc: Document, mount: HTMLElement, headline = "Classes"):
   status.setAttribute("data-testid", "classes-status");
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
-  status.textContent = "Loading classes";
+  status.textContent = message;
   mount.appendChild(status);
 
   const region = doc.createElement("div");
@@ -2556,7 +2904,7 @@ function renderWorkspaceUnresolved(doc: Document, mount: HTMLElement, onRetry: (
   mount.appendChild(retry);
 }
 
-function renderErrorState(doc: Document, mount: HTMLElement, headline = "Classes"): void {
+function renderErrorState(doc: Document, mount: HTMLElement, headline: string, onRetry: () => void): void {
   appendHeadline(doc, mount, headline);
 
   const status = doc.createElement("p");
@@ -2574,8 +2922,14 @@ function renderErrorState(doc: Document, mount: HTMLElement, headline = "Classes
   retry.className = "shell-classes-error";
   retry.setAttribute("data-testid", "classes-error");
   retry.textContent =
-    "Reload the page to try again. If the problem continues, contact support.";
-  region.appendChild(retry);
+    "If the problem continues, contact support.";
+  const button = doc.createElement("button");
+  button.type = "button";
+  button.className = "shell-classes-import-retry";
+  button.setAttribute("data-testid", "classes-retry");
+  button.textContent = "Try again";
+  button.addEventListener("click", onRetry);
+  region.append(retry, button);
   mount.appendChild(region);
 }
 
@@ -4071,7 +4425,12 @@ type RosterView =
   // Reader wired but not initialized yet: loading, never a false empty state.
   | { readonly kind: "notReady" }
   | { readonly kind: "ready"; readonly students: RosterStudents }
-  | { readonly kind: "pending"; readonly promise: Promise<RosterStudents> };
+  // In flight or failed: a failure shows the error with a Try again button.
+  | {
+      readonly kind: "pending";
+      readonly promise: Promise<RosterStudents>;
+      readonly retry?: () => void;
+    };
 
 function renderClassWorkspaceState(
   doc: Document,
@@ -4106,6 +4465,7 @@ function renderClassWorkspaceState(
   listAssignments: () => ReadonlyArray<AssignmentDetailMetadata>,
   loadAttemptDetail: (() => AttemptGetForTeacherCallable | null) | null,
   rosterSort: RosterSortPreference,
+  gradeImprovements: GradeImprovementsSeam | null,
   revisionContent: AssessmentRevisionContentReader | null = null,
 ): void {
   const workspace = doc.createElement("div");
@@ -4202,13 +4562,13 @@ function renderClassWorkspaceState(
         studentDetailOrigin,
         onBackFromStudent,
         onNavigateToNeighbor,
-        (assignmentId: string) => assignmentsView.open(summary.id, assignmentId),
+        (assignmentId: string) => assignmentsView.returnToOrigin(summary.id, assignmentId),
         classAttempts,
         loadExpectedAssignments,
         listAssignments,
         loadAttemptDetail,
         rosterSort,
-        readGradeImprovementsSeam(),
+        gradeImprovements,
         false,
         revisionContent,
         assignmentsView.readiness,
@@ -4786,6 +5146,16 @@ function renderRosterSurface(
         errorMsg.textContent =
           "We couldn't load your students. Please try again.";
         error.appendChild(errorMsg);
+        const onRetry = view.retry;
+        if (onRetry !== undefined) {
+          const retry = doc.createElement("button");
+          retry.type = "button";
+          retry.className = "shell-classes-import-retry";
+          retry.setAttribute("data-testid", "roster-retry");
+          retry.textContent = "Try again";
+          retry.addEventListener("click", () => onRetry());
+          error.appendChild(retry);
+        }
         body.appendChild(error);
       });
     },

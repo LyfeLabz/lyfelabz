@@ -1,16 +1,9 @@
-// Student Support Workspace (V2 P3, docs/platform/STUDENT_SUPPORT_ACCESS.md
-// section 7). A teacher who owns zero classes of any status and has at least
-// one student shared with them sees the simplified Student Support workspace:
-// the same shell, with Classes presented as the Student Support landing and
-// every teaching-only surface (Curriculum, My Units, Settings) hidden and
-// refused.
-//
-// This is a presentation of the current server-authorized reads, never a
-// role: nothing is persisted, claimed, or cached across page loads. Once a
-// shell enters it, it stays for that shell's life (so revoking the last
-// grant shows an empty Student Support page rather than a sudden switch to
-// onboarding); the next page load re-evaluates from the reads alone. The
-// server authorizes every call either way.
+// Student Support Workspace V2.1: the server derives eligibility from active
+// recipient relationships or valid legacy grants, with any class ownership
+// preserving the full workspace. Support navigation offers Student Support
+// and preview-only Curriculum. This is not an identity role or claim.
+// The count helper below remains a compatibility fallback for V2 test seams;
+// production consumes the server decision, including the zero-student state.
 
 import type { SharedStudent } from "../supportAccess/types";
 
@@ -18,6 +11,9 @@ export type SupportWorkspaceSeam = {
   readonly isSupportOnly: () => boolean;
   // Idempotent. Called by whichever reader first proves the condition.
   readonly enterSupportOnly: () => void;
+  // V2.1: ending the last recipient relationship ends the designation.
+  // Backend teaching restrictions remain independently authoritative.
+  readonly leaveSupportOnly?: () => void;
   // The shell's own shared read from resolving a direct link, handed over
   // once so the Classes surface does not repeat it. Null otherwise.
   // True while the Classes surface shows the unresolved workspace (zero

@@ -1,3 +1,4 @@
+import { readGrantCutoff, issuedAfterRevocation } from "./recipient-policy";
 import {
   PlatformError,
   classDocRef,
@@ -66,10 +67,11 @@ async function assertActiveGrant(
   if (classRecord.status !== "active") forbidden();
 
   const grantId = studentSupportGrantIdFor(classId, studentId, actor.uid);
-  const [grantSnap, enrollmentSnap, ownerSnap] = await Promise.all([
+  const [grantSnap, enrollmentSnap, ownerSnap, cutoff] = await Promise.all([
     studentSupportGrantDocRef(grantId).get(),
     enrollmentDocRef(`${classId}__${studentId}`).get(),
     userRecordDocRef(classRecord.teacherId).get(),
+    readGrantCutoff(actor.uid, { ...actor, uid: classRecord.teacherId }),
   ]);
 
   const grant: StudentSupportGrantRecord | undefined = grantSnap.exists
@@ -78,6 +80,7 @@ async function assertActiveGrant(
   if (
     grant === undefined ||
     grant.status !== "active" ||
+    !issuedAfterRevocation(grant.grantedAt, cutoff) ||
     grant.classId !== classId ||
     grant.studentId !== studentId ||
     grant.granteeUid !== actor.uid ||

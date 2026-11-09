@@ -1,10 +1,10 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   classesCollectionRef,
   log,
-  platformCallable,
   PlatformError,
   requireDistrictContext,
   teacherPreferencesDocRef,
@@ -173,7 +173,8 @@ async function teacherClassOrderUpdateHandler(
   return { ok: true, classOrder: mergedOrder };
 }
 
-export const teacherClassOrderUpdate = platformCallable(
+export const teacherClassOrderUpdate = teachingCallable(
+  { maxInstances: 20 },
   teacherClassOrderUpdateHandler,
 );
 

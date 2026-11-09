@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type Transaction } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   assignmentReopenDocRef,
   assignmentDocRef,
@@ -256,7 +256,7 @@ async function assignmentsReopenHandler(
   return reopenAssignment(request, {});
 }
 
-export const assignmentsReopen = platformCallable(assignmentsReopenHandler);
+export const assignmentsReopen = teachingCallable({ maxInstances: 20 }, assignmentsReopenHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   assignmentDocRef,
   assignmentsCurrentDocRef,
@@ -430,7 +430,7 @@ async function assignmentsCurrentSetHandler(
   return response;
 }
 
-export const assignmentsCurrentSet = platformCallable(assignmentsCurrentSetHandler);
+export const assignmentsCurrentSet = teachingCallable({ maxInstances: 20 }, assignmentsCurrentSetHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

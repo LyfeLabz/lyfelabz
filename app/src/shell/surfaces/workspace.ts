@@ -39,13 +39,13 @@ import type {
 import {
   renderCurriculumSurface,
   type CurriculumAssignmentDetailSeam,
-  type AssignmentDetailStudentSelection,
   type LessonResultsIntent,
 } from "./curriculum";
 import {
   renderClassesSurface,
   type ClassManagementIntent,
   type ClassWorkspaceReturn,
+  type ClassesStudentIntent,
   type StudentDetailHistorySeam,
 } from "./classes";
 import { renderSettingsSurface } from "./settings";
@@ -217,10 +217,10 @@ export type WorkspaceDeps = {
   // teacher arrived via an Assignment Detail roster-name click. Absent in
   // harnesses that do not exercise that path.
   readonly getClassesStudentIntent?:
-    | (() => AssignmentDetailStudentSelection | null)
+    | (() => ClassesStudentIntent | null)
     | null;
   readonly setClassesStudentIntent?:
-    | ((intent: AssignmentDetailStudentSelection | null) => void)
+    | ((intent: ClassesStudentIntent | null) => void)
     | null;
   // Sprint 28.6F: the single class-management opener. Settings' "Classes &
   // Google Classroom" section calls it to open the shared Import / Create
@@ -265,6 +265,7 @@ export const WORKSPACE_SURFACES: Readonly<
       deps: WorkspaceDeps,
     ) =>
       renderCurriculumSurface(mount, session, {
+        previewOnly: deps.supportWorkspace?.isSupportOnly() === true,
         listClasses: deps.listClasses,
         integrations: deps.integrations ?? null,
         assignments: deps.assignments ?? null,

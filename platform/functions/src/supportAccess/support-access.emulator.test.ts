@@ -1,3 +1,10 @@
+// V2.1 workspace designation is covered by the recipient-authorization
+// emulator suite. Keep these legacy grant/revocation proofs on their original
+// Auth-free fixture seam; no real Auth endpoint is contacted.
+jest.mock("./recipient-authorizations", () => ({
+  ...jest.requireActual("./recipient-authorizations"),
+  recipientWorkspace: () => Promise.resolve(undefined),
+}));
 // Student Support Access (PDR-032) emulator-backed proofs for the single and
 // bulk grant/revoke callables.
 //

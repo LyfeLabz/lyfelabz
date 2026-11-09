@@ -1,3 +1,11 @@
+// This suite preserves the V2 grant/read helper contract. V2.1 pending
+// records, workspace designation and their real transactions have a separate
+// emulator suite; do not route those calls into this legacy in-memory store.
+jest.mock("./recipient-authorizations", () => ({
+  ...jest.requireActual("./recipient-authorizations"),
+  ownerAuthorizationViews: () => Promise.resolve([]),
+  recipientWorkspace: () => Promise.resolve(undefined),
+}));
 import type { CallableRequest } from "firebase-functions/v2/https";
 
 // Student Support Access (PDR-032) hermetic security suite. One in-memory
@@ -125,6 +133,7 @@ jest.mock("../shared/firestore/admin", () => ({
       return {
         ...base,
         doc: (id: string) => ({
+          get: () => Promise.resolve(snapOf(`${name}/${id}`)),
           collection: (sub: string) => queryOver((p) => p.startsWith(`${name}/${id}/${sub}/`) && p.split("/").length === 4),
         }),
       };

@@ -4,6 +4,7 @@ import { createTeacherUnitsMutationVerifier } from "./teacherUnits/backendCompat
 import { teacherUnitsReleaseBoundary } from "./teacherUnits/releaseBoundary";
 import { configureGoogleSignInProvider } from "./session/googleSignInProvider";
 import { createFirestoreListClasses } from "./classes/listClasses";
+import { doc, getDocFromServer } from "firebase/firestore";
 import {
   createFirestoreReadTeacherClassOrder,
   createFirebaseUpdateTeacherClassOrder,
@@ -690,6 +691,18 @@ async function run(): Promise<void> {
     const register = assignmentHydration.writer();
     const seam = Object.freeze({
       ...assignmentDetailSeamBase,
+      checkHistoryOrigin: async (classId: string, assignmentId: string): Promise<boolean> => {
+        const teacher = lastActiveTeacher;
+        const runToken = currentRunToken;
+        if (assignmentDetailSeam !== seam || teacher === null || assignmentId.includes("/")) return false;
+        // The existing owner-only get rule allows a fresh read of this one assignment.
+        const snapshot = await getDocFromServer(doc(db, "assignments", assignmentId));
+        const assignment = snapshot.data();
+        return runToken === currentRunToken && assignmentDetailSeam === seam &&
+          assignment?.teacherId === teacher.uid && assignment.schoolId === teacher.schoolId &&
+          assignment.classId === classId &&
+          (assignment.status === "published" || assignment.status === "closed");
+      },
       register: (metadata: Parameters<typeof assignmentDetailRegistry.register>[0]) => {
         register(metadata);
       },
@@ -848,9 +861,11 @@ async function run(): Promise<void> {
       installGradeImprovementsSeam(createGradeImprovementsCallables(functions));
       // Student Support Access (PDR-032): grant management, shared students,
       // the student-scoped attempts read, and question-review revision text.
-      installStudentSupportSeam(
-        createStudentSupportSeam(functions, createFirestoreAssessmentRevisionContentReader(db)),
-      );
+      const studentSupport = createStudentSupportSeam(functions, createFirestoreAssessmentRevisionContentReader(db));
+      installStudentSupportSeam(studentSupport);
+      // Reconcile new shares in the background. The Classes surface reads
+      // canonical grants independently and can retry reconciliation separately.
+      void studentSupport.reconcilePending?.().catch(() => undefined);
       createClass = createFirebaseCreateClass(functions);
       lmsCreateClass = createFirebaseLmsCreateClass(functions);
       activateClass = createFirebaseActivateClass(functions);

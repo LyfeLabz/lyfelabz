@@ -1,10 +1,10 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { randomBytes } from "node:crypto";
 
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   assignmentDocRef,
   assignmentLmsPublicationDocRef,
@@ -677,8 +677,8 @@ async function handler(
   };
 }
 
-export const lmsAssignmentsPublish = platformCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+export const lmsAssignmentsPublish = teachingCallable(
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsAssignmentsPublishHandler = handler;

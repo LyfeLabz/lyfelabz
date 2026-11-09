@@ -1,10 +1,10 @@
+import { teacherUnitsCallable } from "./teacher-units-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   PlatformError,
   isTeacherUnitColor,
-  platformCallable,
   type TeacherUnitColor,
 } from "../shared";
 import {
@@ -142,7 +142,7 @@ export function createTeacherUnitsUpdateHandler(enforcement: TeacherUnitsEnforce
 
 const teacherUnitsUpdateHandler = createTeacherUnitsUpdateHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsUpdate = platformCallable({ maxInstances: 20 }, teacherUnitsUpdateHandler);
+export const teacherUnitsUpdate = teacherUnitsCallable({ maxInstances: 20 }, "teacherUnitsUpdate", teacherUnitsUpdateHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsUpdateHandler = teacherUnitsUpdateHandler;

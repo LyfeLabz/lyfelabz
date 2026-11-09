@@ -1,7 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   classDocRef,
   enrollmentsCollectionRef,
@@ -254,7 +254,8 @@ async function enrollmentsListForClassHandler(
   return { classId: input.classId, students };
 }
 
-export const enrollmentsListForClass = platformCallable(
+export const enrollmentsListForClass = teachingCallable(
+  { maxInstances: 20 },
   enrollmentsListForClassHandler,
 );
 

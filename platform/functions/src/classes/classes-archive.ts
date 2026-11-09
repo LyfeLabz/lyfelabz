@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   assertClassSupports,
-  platformCallable,
   PlatformError,
   classArchiveDocRef,
   classDocRef,
@@ -180,7 +180,7 @@ async function classesArchiveHandler(
   };
 }
 
-export const classesArchive = platformCallable(classesArchiveHandler);
+export const classesArchive = teachingCallable({ maxInstances: 20 }, classesArchiveHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

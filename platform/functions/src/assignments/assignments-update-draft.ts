@@ -1,10 +1,10 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { Timestamp, type Transaction } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   assertAssignableActivity,
   parseAssignmentResourceType,
-  platformCallable,
   PlatformError,
   assignmentDocRef,
   assignmentDraftUpdateDocRef,
@@ -522,7 +522,7 @@ async function assignmentsUpdateDraftHandler(
   return { assignmentId: input.assignmentId, alreadyUpdated: false };
 }
 
-export const assignmentsUpdateDraft = platformCallable(assignmentsUpdateDraftHandler);
+export const assignmentsUpdateDraft = teachingCallable({ maxInstances: 20 }, assignmentsUpdateDraftHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

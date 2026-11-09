@@ -1,7 +1,7 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   classDocRef,
   log,
@@ -310,7 +310,8 @@ async function assignmentsCurrentRecipientsReconcileHandler(
   };
 }
 
-export const assignmentsCurrentRecipientsReconcile = platformCallable(
+export const assignmentsCurrentRecipientsReconcile = teachingCallable(
+  { maxInstances: 20 },
   assignmentsCurrentRecipientsReconcileHandler,
 );
 

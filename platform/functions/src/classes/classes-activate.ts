@@ -1,3 +1,4 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { randomBytes } from "node:crypto";
 
 import { type CallableRequest } from "firebase-functions/v2/https";
@@ -8,7 +9,6 @@ import {
   classDocRef,
   classesCollectionRef,
   log,
-  platformCallable,
   PlatformError,
   requireDistrictContext,
   runFirestoreTransaction,
@@ -384,7 +384,7 @@ async function classesActivateHandler(
   };
 }
 
-export const classesActivate = platformCallable(classesActivateHandler);
+export const classesActivate = teachingCallable({ maxInstances: 20 }, classesActivateHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

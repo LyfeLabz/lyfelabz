@@ -253,6 +253,7 @@ describe("lmsAssignmentsPublish production-binding contract (Sprint 25 B9)", () 
     // googleClassroomProductionSecrets so the Secret Manager value is bound
     // per worker; the sentinel proves the value came from config-firebase.
     expect(mockCapturedCallableOptions.value).toEqual({
+      maxInstances: 20,
       secrets: ["__gc_secret_sentinel__"],
     });
   });

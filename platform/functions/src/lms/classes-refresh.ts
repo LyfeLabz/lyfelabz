@@ -1,8 +1,8 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
-  platformCallable,
   PlatformError,
   lmsClassLinkBreakDocRef,
   lmsClassLinkDocRef,
@@ -444,8 +444,8 @@ async function handleOwnershipDrift(
   };
 }
 
-export const lmsClassesRefresh = platformCallable(
-  { secrets: [...googleClassroomProductionSecrets] },
+export const lmsClassesRefresh = teachingCallable(
+  { maxInstances: 20, secrets: [...googleClassroomProductionSecrets] },
   handler,
 );
 export const __lmsClassesRefreshHandler = handler;

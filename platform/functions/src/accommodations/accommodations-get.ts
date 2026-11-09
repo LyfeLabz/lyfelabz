@@ -1,9 +1,9 @@
+import { teachingCallable } from "../supportAccess/teaching-callable";
 import type { Timestamp } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
   PlatformError,
-  platformCallable,
   studentAccommodationDocRef,
   type ReadingAccessibilityConfig,
 } from "../shared";
@@ -123,7 +123,7 @@ async function accommodationsGetHandler(
   };
 }
 
-export const accommodationsGet = platformCallable(accommodationsGetHandler);
+export const accommodationsGet = teachingCallable({ maxInstances: 20 }, accommodationsGetHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

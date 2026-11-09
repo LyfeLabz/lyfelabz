@@ -1,3 +1,4 @@
+import { teacherUnitsCallable } from "./teacher-units-callable";
 import { FieldValue } from "firebase-admin/firestore";
 import { type CallableRequest } from "firebase-functions/v2/https";
 
@@ -7,7 +8,6 @@ import {
   TEACHER_UNITS_REORDER_MAX,
   isTransactionContention,
   log,
-  platformCallable,
   runFirestoreTransaction,
   teacherUnitUpdateDocRef,
   teacherUnitsCollectionRef,
@@ -312,7 +312,7 @@ export function createTeacherUnitsReorderHandler(enforcement: TeacherUnitsEnforc
 
 const teacherUnitsReorderHandler = createTeacherUnitsReorderHandler(PRODUCTION_TEACHER_UNITS_ENFORCEMENT);
 
-export const teacherUnitsReorder = platformCallable({ maxInstances: 20 }, teacherUnitsReorderHandler);
+export const teacherUnitsReorder = teacherUnitsCallable({ maxInstances: 20 }, "teacherUnitsReorder", teacherUnitsReorderHandler);
 
 // Exported for direct testing without the callable wrapper.
 export const __teacherUnitsReorderHandler = teacherUnitsReorderHandler;
