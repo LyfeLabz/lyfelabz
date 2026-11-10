@@ -18,6 +18,7 @@ import type { CurriculumAssignmentDetailSeam } from "./surfaces/curriculum";
 import { createAssignmentDetailRegistry } from "../assignments/detail/registry";
 import { createAssignmentRegistryHydration } from "../assignments/detail/hydration";
 import { mountTeacherShell, type ShellDeps } from "./shell";
+import { parseShellHash } from "./navigationHistory";
 import { _resetCurriculumSessionStateForTest } from "./surfaces/curriculum";
 import { _resetActiveAssignmentsSessionStateForTest } from "./surfaces/shared/activeAssignments";
 
@@ -61,7 +62,11 @@ const a1: AssignmentDetailMetadata = Object.freeze({
 
 type Items = ReadonlyArray<AssignmentDetailMetadata>;
 
-const mountShell = async () => {
+const mountShell = async (
+  initialState: ShellDeps["initialState"] = null,
+  checkHistoryOrigin?: CurriculumAssignmentDetailSeam["checkHistoryOrigin"],
+  listClasses: ShellDeps["listClasses"] = async () => classes,
+) => {
   const registry = createAssignmentDetailRegistry();
   const hydration = createAssignmentRegistryHydration(registry);
   const responses: Array<Deferred<Items>> = [];
@@ -89,13 +94,15 @@ const mountShell = async () => {
     },
     list: () => registry.list(),
     registryStatus: hydration.readiness,
+    checkHistoryOrigin,
   };
   const mount = document.createElement("div");
   document.body.appendChild(mount);
   mountTeacherShell(teacher, mount, {
     onSignOut: () => undefined,
     onLaunchPresentMode: () => undefined,
-    listClasses: async () => classes,
+    listClasses,
+    initialState,
     assignmentDetail: seam,
   } as unknown as ShellDeps);
   await settle();
@@ -191,6 +198,69 @@ describe("deferred Assignment Detail restore through the shell popstate path", (
       expect(window.history.length).toBe(historyLength);
     });
   }
+
+  test.each(["authorized", "denied", "left", "superseded"] as const)(
+    "startup waits for hydration and the origin check (%s)",
+    async (outcome) => {
+      const authorization = deferred<boolean>();
+      const check = jest.fn(() => authorization.promise);
+      const h = await mountShell(parseShellHash("#classes/assignment/c1/a1"), check);
+      expect(q(h.mount, "class-workspace")).toBeNull();
+      expect(q(h.mount, "classes-status")?.textContent).toBe("Loading assignment summary");
+      expect(check).not.toHaveBeenCalled();
+      expect(h.opened).toEqual([]);
+
+      h.responses[0]!.resolve([a1]);
+      await settle();
+      expect(check.mock.calls).toEqual([["c1", "a1"]]);
+      expect(h.opened).toEqual([]);
+      expect(q(h.mount, "active-assignment-open-a1")).toBeNull();
+      expect(q(h.mount, "classes-status")?.textContent).toBe("Loading assignment summary");
+
+      if (outcome === "left") click(h.mount, "nav-settings");
+      if (outcome === "superseded") {
+        window.dispatchEvent(new PopStateEvent("popstate", {
+          state: { kind: "shell-surface", surface: "classes" },
+        }));
+        await settle();
+        expect(q(h.mount, "class-card-c1")).not.toBeNull();
+      }
+      if (outcome === "denied") authorization.reject(new Error("permission-denied"));
+      else authorization.resolve(true);
+      await settle();
+      expect(h.opened).toEqual(outcome === "authorized" ? ["a1"] : []);
+      if (outcome === "left") expect(activeSurface(h.mount)).toBe("settings");
+      if (outcome === "denied") expect(workspace(h.mount)).toEqual({ classId: "c1", tab: "assignments" });
+      if (outcome === "superseded") expect(q(h.mount, "class-card-c1")).not.toBeNull();
+    },
+  );
+
+  test("startup hydration failure reveals the authorized fallback and its retry", async () => {
+    const check = jest.fn(async () => true);
+    const h = await mountShell(parseShellHash("#classes/assignment/c1/a1"), check);
+    expect(q(h.mount, "class-workspace")).toBeNull();
+    h.responses[0]!.reject(new Error("registry unavailable"));
+    await settle();
+    expect(workspace(h.mount)).toEqual({ classId: "c1", tab: "assignments" });
+    expect(q(h.mount, "class-assignments-retry")).not.toBeNull();
+    expect(check).not.toHaveBeenCalled();
+    expect(h.opened).toEqual([]);
+  });
+
+  test("startup class list failure clears the restore loading view even while hydration is pending", async () => {
+    const owned = deferred<typeof classes>();
+    const check = jest.fn(async () => true);
+    const h = await mountShell(parseShellHash("#classes/assignment/c1/a1"), check, () => owned.promise);
+    expect(q(h.mount, "classes-status")?.textContent).toBe("Loading assignment summary");
+    owned.reject(new Error("class list unavailable"));
+    await settle();
+    expect(q(h.mount, "classes-error")).not.toBeNull();
+    expect(q(h.mount, "class-workspace")).toBeNull();
+    h.responses[0]!.resolve([a1]);
+    await settle();
+    expect(check).not.toHaveBeenCalled();
+    expect(h.opened).toEqual([]);
+  });
 
   test("canceled by newer navigation inside Classes (Back to Classes)", async () => {
     const h = await mountShell();

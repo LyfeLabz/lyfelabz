@@ -53,5 +53,21 @@ Rollback compatibility values: `CURRENT` (live), `SAFE` (may be restored with ow
 - **Authenticated production acceptance:** PASS. Read-only teacher navigation, Student Detail, request deduplication, My Units, Unit Results, and Student Services passed. The signed-out teacher route redirected to Sign In.
 - **Staging acceptance:** the owner approved and used a single-use exception scoped to this exact SHA, project, and intent. PREPARE, predeploy, certification, and authenticated production acceptance passed.
 - **Evidence:** `LyfeLabz-Certification/production-hosting-deployment-fa50cb0-2026-11-08T23-46-26Z/` (SHA-256 manifest in archive).
+- **Status:** SUPERSEDED by release 6fd2380 on 2026-11-10.
+- **Rollback compatibility:** SAFE. Both versions remain FINALIZED, preserve the Physical Properties r3 page and route, and are the verified rollback pair for release 6fd2380.
+
+## 2026-11-10: release 6fd2380
+
+- **Release SHA:** `6fd2380922e2d7c53637bf2918419541bd5101e5`
+- **Scope:** Evolution Clicker homepage Easter egg (`index.html`, marketing publish manifest, `assets/easter-eggs/evolution-clicker-microbe.png`). Built on release fa50cb0 with only these three files changed (same content as main commit d0ec8c6). Paired Hosting release, intent `teacher-units-hosting-only`.
+- **Hosting app:** `d4bba4e4dea405b7` (released 2026-11-10T10:24:04.990Z)
+- **Hosting marketing:** `20a9e1c22c0ab5e2` (released 2026-11-10T10:24:04.988Z)
+- **Verified rollback pair:** app `57877ff8acfcb2a1`, marketing `3cc89fcdfaf080e7` (release `fa50cb0`), both FINALIZED.
+- **Backend pin:** build `5700f199e1c42a061ea681645b9d5c25fd1b361812da078fad17f7626103a0a0` from `3cbfdcf621bb1912c9f3188cbef8696e1b644593`, unchanged. Existing Rules and configuration approvals reused; no Functions, Rules, index, or configuration deployment.
+- **Teacher Units policy:** enabled, generation 6, unchanged.
+- **Certification:** CERTIFIED, `unchanged-enabled-backend-observed`. App matched 242 served paths. Marketing matched 85 served paths and retained 50 redirects. Catalog navigation passed 52 checks each from the apex and www hosts.
+- **Production verification:** homepage, PNG, and game returned 200; the served PNG matches the committed bytes. Typing `clicker` showed the image below the navigation; activating it requested the game in a new tab; the game loaded and gameplay advanced. Signed-out `/app/` redirected to Sign In. Authenticated teacher navigation was not exercised.
+- **Staging acceptance:** the owner approved a single-use exception scoped to this exact SHA, project, and intent. PREPARE, predeploy, and certification passed.
+- **Evidence:** `LyfeLabz-Certification/production-hosting-deployment-6fd2380-2026-11-10T10-24-04Z/` (SHA-256 manifest in archive).
 - **Status:** CURRENT
 - **Rollback compatibility:** CURRENT
