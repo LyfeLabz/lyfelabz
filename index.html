@@ -2352,6 +2352,81 @@ function toggleEduMode() {
 })();
 </script>
 
+<!-- CLICKER sequence easter egg: type "clicker" anywhere to reveal a link to Evolution Clicker -->
+<style>
+  #clicker-egg {
+    position: fixed; right: 16px; z-index: 999;
+    width: 90px; height: 90px;
+  }
+  #clicker-egg-open {
+    display: block; width: 100%; height: 100%; padding: 0; border: 0;
+    background: none; cursor: pointer; border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+  #clicker-egg-open:hover { transform: scale(1.06); }
+  #clicker-egg-open:focus-visible { outline: 2px solid var(--gold, #ffd166); outline-offset: 3px; }
+  #clicker-egg-open img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 50%; }
+  #clicker-egg-close {
+    position: absolute; top: -6px; right: -6px;
+    width: 22px; height: 22px; padding: 0; line-height: 20px;
+    border-radius: 50%; border: 1px solid var(--border, rgba(255,255,255,0.2));
+    background: rgba(11,14,26,0.9); color: #fff; font-size: 13px; cursor: pointer;
+  }
+  #clicker-egg-close:focus-visible { outline: 2px solid var(--gold, #ffd166); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { #clicker-egg-open { transition: none; } }
+</style>
+<script>
+(function() {
+  var seq     = 'clicker';
+  var buf     = '';
+  var timer   = null;
+  var TIMEOUT = 1800;
+  var GAME    = '/game_evolution-clicker.html';
+
+  function removeEgg() {
+    var egg = document.getElementById('clicker-egg');
+    if (egg) egg.remove();
+  }
+
+  function showClickerEgg() {
+    if (document.getElementById('clicker-egg')) return;
+    var nav = document.querySelector('nav');
+    var top = nav ? Math.round(nav.getBoundingClientRect().bottom) + 12 : 72;
+    var egg = document.createElement('div');
+    egg.id = 'clicker-egg';
+    egg.style.top = Math.max(top, 12) + 'px';
+    egg.innerHTML =
+      '<button type="button" id="clicker-egg-open" aria-label="Open the Evolution Clicker game in a new tab">' +
+        '<img src="/assets/easter-eggs/evolution-clicker-microbe.png" alt="" width="90" height="90">' +
+      '</button>' +
+      '<button type="button" id="clicker-egg-close" aria-label="Dismiss">&times;</button>';
+    document.body.appendChild(egg);
+    document.getElementById('clicker-egg-open').addEventListener('click', function() {
+      window.open(GAME, '_blank', 'noopener');
+      removeEgg();
+    });
+    document.getElementById('clicker-egg-close').addEventListener('click', removeEgg);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (ae && ae.isContentEditable)) return;
+    if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      buf += e.key.toLowerCase();
+      if (buf.length > seq.length) buf = buf.slice(-seq.length);
+      clearTimeout(timer);
+      timer = setTimeout(function() { buf = ''; }, TIMEOUT);
+      if (buf === seq) {
+        buf = '';
+        clearTimeout(timer);
+        showClickerEgg();
+      }
+    }
+  });
+})();
+</script>
+
 </main>
 <!-- Present Mode return script. See docs/platform/PRESENT_MODE_ARCHITECTURE.md section 14.4. -->
 <script src="assets/present-mode-return.js" defer></script>
