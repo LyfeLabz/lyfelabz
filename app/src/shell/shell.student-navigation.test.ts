@@ -178,7 +178,12 @@ const click = (mount: HTMLElement, testid: string): void => {
 };
 
 beforeEach(() => {
+  window.history.replaceState(null, "", "/app/teacher");
   _resetActiveAssignmentsSessionStateForTest();
+});
+
+afterEach(() => {
+  document.body.replaceChildren();
 });
 
 describe("Student Progress & Assignment Membership Phase A, Slice 3 - navigation chains", () => {
@@ -218,9 +223,16 @@ describe("Student Progress & Assignment Membership Phase A, Slice 3 - navigation
 
     // Back returns to the exact originating assignment (a1), not the
     // Students list, despite two intervening Next clicks.
+    const returned = new Promise<void>((resolve) => {
+      window.addEventListener("popstate", () => resolve(), { once: true });
+    });
     click(mount, "student-detail-back");
+    await returned;
     await flush();
 
+    expect(window.history.state).toMatchObject({
+      kind: "shell-assignment-detail", classId: "c1", assignmentId: "a1",
+    });
     const detail = mount.querySelector("[data-testid=detail-stub]");
     expect(detail).not.toBeNull();
     expect(detail?.getAttribute("data-assignment-id")).toBe("a1");

@@ -114,6 +114,8 @@ export type CurriculumAssignmentDetailSeam = {
   // assignment-dependent regions show a loading state then and refresh in
   // place when it settles. Absent (harnesses): `list` is complete.
   readonly registryStatus?: AssignmentRegistryReadiness;
+  // Server-backed eligibility check for a single assignment history target.
+  readonly checkHistoryOrigin?: (classId: string, assignmentId: string) => Promise<boolean>;
   // Sprint 16 Slice 1: stable per-tab seam allowing the Curriculum
   // surface to install (or clear) an invalidator that the entry point
   // invokes on every lifecycle registration. Absent-or-null keeps the
