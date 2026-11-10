@@ -23,7 +23,42 @@
 // the identity it resolved is still the signed-in one before it installs
 // anything; a stale completion installs nothing.
 
+import type { BootstrapAuthInput, Session } from "./types";
+
 export type AuthIdentity = { readonly uid: string } | null;
+
+// Records the identity a bootstrap resolved from auth, so a session that
+// carries no uid (an error after auth resolved, such as an unreadable user
+// record) can still be checked against the signed-in identity. Undefined
+// until auth resolves; stays undefined when auth itself failed.
+export function trackResolvedIdentity(input: BootstrapAuthInput): {
+  readonly input: BootstrapAuthInput;
+  readonly resolvedUid: () => string | null | undefined;
+} {
+  let resolved: string | null | undefined = undefined;
+  return {
+    input: {
+      waitForAuthState: async () => {
+        const user = await input.waitForAuthState();
+        resolved = user?.uid ?? null;
+        return user;
+      },
+    },
+    resolvedUid: () => resolved,
+  };
+}
+
+// The identity a resolved session belongs to. An error session belongs to
+// the identity its bootstrap resolved; undefined only when no identity was
+// ever resolved (auth initialization failed), which has nothing to check.
+export function bootstrapIdentity(
+  session: Session,
+  resolvedUid: string | null | undefined,
+): string | null | undefined {
+  if (session.kind === "error") return resolvedUid;
+  if (session.kind === "unauthenticated") return null;
+  return session.uid;
+}
 
 export type SubscribeAuthRerunDeps = {
   // Firebase `onAuthStateChanged` bound to the app's auth instance.

@@ -5,10 +5,13 @@ import * as fs from "fs";
 import * as path from "path";
 
 import {
+  bootstrapIdentity,
   subscribeAuthRerun,
+  trackResolvedIdentity,
   type AuthIdentity,
   type AuthRerunGate,
 } from "./authRerunSubscription";
+import type { Session } from "./types";
 
 // A faithful fake of Firebase auth: `currentUser` changes at once, while
 // `onAuthStateChanged` callbacks are queued (Firebase delivers them later)
@@ -167,6 +170,132 @@ describe("initial bootstrap race against an account change", () => {
   });
 });
 
+// Checkpoint 6C-2 (P3-1): a bootstrap that ends in an error (for example an
+// unreadable user record) is checked against the identity it resolved, like
+// any other session, so a later identity change never leaves the previous
+// user's error screen up.
+describe("error bootstrap and authentication changes", () => {
+  type Installed = { uid: string | null; kind: "error" | "ok" };
+  function harness(initial: AuthIdentity, failing: ReadonlySet<string>) {
+    const auth = fakeAuth(initial);
+    let token = 0;
+    let bootstraps = 0;
+    const installed: Installed[] = [];
+    const pending: Array<() => void> = [];
+    const gateRef: { current: AuthRerunGate | null } = { current: null };
+    // Mirrors `rerun` + `bootstrapIsSignedIn`: the identity is resolved from
+    // auth, the record read fails for uids in `failing`, and the resulting
+    // session (error or not) is installed only if still signed in.
+    const rerun = (): void => {
+      const runToken = ++token;
+      bootstraps += 1;
+      const uid = auth.readCurrentUid();
+      pending.push(() => {
+        if (runToken !== token) return;
+        const session: Session = uid !== null && failing.has(uid)
+          ? { kind: "error", reason: "userRecordUnreadable" }
+          : uid === null ? { kind: "unauthenticated" } : { kind: "suspendedUser", uid };
+        const identity = bootstrapIdentity(session, uid);
+        const result = identity === undefined ? "current" : gateRef.current!.check(identity);
+        if (result === "stale") rerun();
+        if (result === "current") installed.push({ uid, kind: session.kind === "error" ? "error" : "ok" });
+      });
+    };
+    gateRef.current = subscribe(auth, rerun);
+    rerun();
+    const finishAll = (): void => { while (pending.length > 0) pending.shift()!(); };
+    return { auth, installed, finishAll, rerun, bootstraps: () => bootstraps };
+  }
+
+  test("initial bootstrap failure, then an account switch before the first notification, reruns for B", () => {
+    const h = harness({ uid: "A" }, new Set(["A"]));
+    h.finishAll(); // A's error screen installed before any notification
+    expect(h.installed).toEqual([{ uid: "A", kind: "error" }]);
+    h.auth.switchTo({ uid: "B" });
+    h.auth.deliver(); // queued A (dropped as stale) then B
+    h.finishAll();
+    expect(h.installed).toEqual([{ uid: "A", kind: "error" }, { uid: "B", kind: "ok" }]);
+  });
+
+  test("a failure resolved after auth already switched installs nothing and reruns for B", () => {
+    const h = harness({ uid: "A" }, new Set(["A"]));
+    h.auth.switchTo({ uid: "B" });
+    h.finishAll(); // A's failure lands after the switch: stale
+    h.auth.deliver();
+    h.finishAll();
+    expect(h.installed).toEqual([{ uid: "B", kind: "ok" }]);
+  });
+
+  test("sign-out during an error state installs the signed-out state, before or after the first notification", () => {
+    const before = harness({ uid: "A" }, new Set(["A"]));
+    before.finishAll();
+    before.auth.switchTo(null);
+    before.auth.deliver();
+    before.finishAll();
+    expect(before.installed.map((i) => i.uid)).toEqual(["A", null]);
+
+    const after = harness({ uid: "A" }, new Set(["A"]));
+    after.auth.deliver();
+    after.finishAll();
+    after.auth.change(null);
+    after.finishAll();
+    expect(after.installed.map((i) => i.uid)).toEqual(["A", null]);
+  });
+
+  test("recovery after the authentication notification: Try again and a later switch each bootstrap once", () => {
+    const failing = new Set(["A"]);
+    const h = harness({ uid: "A" }, failing);
+    h.auth.deliver();
+    h.finishAll();
+    expect(h.installed).toEqual([{ uid: "A", kind: "error" }]);
+    failing.delete("A");
+    h.rerun(); // Try again
+    h.finishAll();
+    expect(h.installed[h.installed.length - 1]).toEqual({ uid: "A", kind: "ok" });
+    h.auth.change({ uid: "B" });
+    h.finishAll();
+    expect(h.installed[h.installed.length - 1]).toEqual({ uid: "B", kind: "ok" });
+    expect(h.bootstraps()).toBe(3);
+  });
+
+  test("no duplicate bootstrap for an unchanged identity after an error", () => {
+    const early = harness({ uid: "A" }, new Set(["A"]));
+    early.finishAll(); // error installed before the first notification
+    early.auth.deliver();
+    early.finishAll();
+    expect(early.bootstraps()).toBe(1);
+
+    const late = harness({ uid: "A" }, new Set(["A"]));
+    late.auth.deliver();
+    late.finishAll();
+    late.auth.change({ uid: "A" }); // repeated identical notification
+    late.finishAll();
+    expect(late.bootstraps()).toBe(1);
+    expect(late.installed).toEqual([{ uid: "A", kind: "error" }]);
+  });
+
+  test("bootstrapIdentity: an error belongs to the resolved identity; auth init failure has none", () => {
+    expect(bootstrapIdentity({ kind: "error", reason: "userRecordUnreadable" }, "A")).toBe("A");
+    expect(bootstrapIdentity({ kind: "error", reason: "authInitFailed" }, undefined)).toBeUndefined();
+    expect(bootstrapIdentity({ kind: "unauthenticated" }, null)).toBeNull();
+    expect(bootstrapIdentity({ kind: "suspendedUser", uid: "S" }, "S")).toBe("S");
+  });
+
+  test("trackResolvedIdentity records the uid auth resolved, null when signed out, undefined when auth failed", async () => {
+    const user = { uid: "A", email: null, getIdTokenResult: async () => ({ claims: {} }) };
+    const signedIn = trackResolvedIdentity({ waitForAuthState: async () => user });
+    expect(signedIn.resolvedUid()).toBeUndefined();
+    await expect(signedIn.input.waitForAuthState()).resolves.toBe(user);
+    expect(signedIn.resolvedUid()).toBe("A");
+    const signedOut = trackResolvedIdentity({ waitForAuthState: async () => null });
+    await signedOut.input.waitForAuthState();
+    expect(signedOut.resolvedUid()).toBeNull();
+    const failed = trackResolvedIdentity({ waitForAuthState: async () => { throw new Error("init"); } });
+    await expect(failed.input.waitForAuthState()).rejects.toThrow("init");
+    expect(failed.resolvedUid()).toBeUndefined();
+  });
+});
+
 describe("entry point wiring (regression pin)", () => {
   const source = fs.readFileSync(path.resolve(__dirname, "../index.ts"), "utf8");
   const runTail = source.slice(source.lastIndexOf("authGate = subscribeAuthRerun({"));
@@ -179,12 +308,23 @@ describe("entry point wiring (regression pin)", () => {
 
   test("a resolved bootstrap is checked against the signed-in identity before teacher dependencies", () => {
     const rerun = source.slice(source.indexOf("const rerun = async"));
-    const firstCheck = rerun.indexOf("if (!bootstrapIsSignedIn(session)) return;");
+    const CHECK = "if (!bootstrapIsSignedIn(session, resolvedAuth.resolvedUid())) return;";
+    const firstCheck = rerun.indexOf(CHECK);
     expect(firstCheck).toBeGreaterThan(rerun.indexOf("await bootstrapSession("));
     expect(firstCheck).toBeLessThan(rerun.indexOf('if (session.kind === "activeTeacher")'));
     const afterImport = rerun.slice(rerun.indexOf('await import("firebase/functions")'));
-    expect(afterImport.indexOf("if (!bootstrapIsSignedIn(session)) return;"))
+    expect(afterImport.indexOf(CHECK))
       .toBeLessThan(afterImport.indexOf("integrations = createIntegrationsDeps("));
+  });
+
+  test("error sessions are not exempt: the bootstrap reads auth through the identity tracker", () => {
+    const rerun = source.slice(source.indexOf("const rerun = async"));
+    expect(rerun.indexOf("trackResolvedIdentity(createAuthInput(auth))"))
+      .toBeLessThan(rerun.indexOf("await bootstrapSession("));
+    expect(rerun).toMatch(/bootstrapSession\(\s*resolvedAuth\.input,/);
+    const gate = source.slice(source.indexOf("const bootstrapIsSignedIn"), source.indexOf("const rerun = async"));
+    expect(gate).not.toMatch(/session\.kind === "error"\) return true/);
+    expect(gate).toContain("bootstrapIdentity(session, resolvedUid)");
   });
 
   test("no raw onAuthStateChanged(auth, ...) listener reruns unconditionally", () => {

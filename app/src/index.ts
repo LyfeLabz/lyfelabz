@@ -71,7 +71,12 @@ import { createAssignmentSummaryCallable } from "./assignments/summary/wire";
 import type { AssignmentSummaryCallable } from "./assignments/summary/types";
 import { createLessonResultsCallable } from "./assignments/summary/lessonResultsWire";
 import type { LessonResultsCallable } from "./assignments/summary/lessonResults";
-import { subscribeAuthRerun, type AuthRerunGate } from "./session/authRerunSubscription";
+import {
+  bootstrapIdentity,
+  subscribeAuthRerun,
+  trackResolvedIdentity,
+  type AuthRerunGate,
+} from "./session/authRerunSubscription";
 import { createFirebaseTeacherUnitsCallables } from "./teacherUnits/wire";
 import { createTeacherUnitCreateAttemptStore } from "./teacherUnits/createAttemptStore";
 import {
@@ -743,10 +748,19 @@ async function run(): Promise<void> {
   let authGate: AuthRerunGate | null = null;
   // True while `session` still belongs to the signed-in identity. A stale
   // resolution installs nothing; when auth has already settled elsewhere
-  // and no notification is coming, it reruns for the current identity.
-  const bootstrapIsSignedIn = (session: Session): boolean => {
-    if (authGate === null || session.kind === "error") return true;
-    const result = authGate.check(session.kind === "unauthenticated" ? null : session.uid);
+  // and no notification is coming, it reruns for the current identity. An
+  // error session is checked against the identity its bootstrap resolved,
+  // so a later identity change reruns instead of leaving the previous
+  // user's error screen up; only an auth initialization failure, which
+  // resolved no identity, has nothing to check.
+  const bootstrapIsSignedIn = (
+    session: Session,
+    resolvedUid: string | null | undefined,
+  ): boolean => {
+    if (authGate === null) return true;
+    const identity = bootstrapIdentity(session, resolvedUid);
+    if (identity === undefined) return true;
+    const result = authGate.check(identity);
     if (result === "stale") void rerun();
     return result === "current";
   };
@@ -781,12 +795,13 @@ async function run(): Promise<void> {
         };
       },
     });
+    const resolvedAuth = trackResolvedIdentity(createAuthInput(auth));
     const session = await bootstrapSession(
-      createAuthInput(auth),
+      resolvedAuth.input,
       createFirestoreInput(db),
     );
     if (runToken !== currentRunToken) return;
-    if (!bootstrapIsSignedIn(session)) return;
+    if (!bootstrapIsSignedIn(session, resolvedAuth.resolvedUid())) return;
     if (session.kind === "activeTeacher") {
       // Performance Operation 1: the Functions import is this branch's only
       // await before it installs shared dependencies, records the active
@@ -798,7 +813,7 @@ async function run(): Promise<void> {
       const { getFunctions, connectFunctionsEmulator } =
         await import("firebase/functions");
       if (runToken !== currentRunToken) return;
-      if (!bootstrapIsSignedIn(session)) return;
+      if (!bootstrapIsSignedIn(session, resolvedAuth.resolvedUid())) return;
       const functions = getFunctions(auth.app, "us-central1");
       const emulators = getEmulatorEndpoints();
       if (emulators !== null) {

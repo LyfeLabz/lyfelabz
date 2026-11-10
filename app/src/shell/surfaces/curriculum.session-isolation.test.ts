@@ -558,7 +558,9 @@ describe("P2: status is unknown while an Assign mutation is unresolved", () => {
     expect(seam.createDraft).toHaveBeenCalledTimes(2);
   });
 
-  test("a session boundary during a pending mutation does not leave the next session's rows disabled", async () => {
+  // P3-2 changed this contract: the same teacher's next session keeps the
+  // row unknown until the old request settles, then it is not left disabled.
+  test("a session boundary during a pending draft keeps the same teacher's row unknown only until the draft settles", async () => {
     const draft = deferred<unknown>();
     const seam = lifecycleSeam({ createDraft: jest.fn(() => draft.promise) });
     const deps = { listClasses: jest.fn().mockResolvedValue([cls()]), assignments: seam };
@@ -566,9 +568,12 @@ describe("P2: status is unknown while an Assign mutation is unresolved", () => {
     get<HTMLButtonElement>("assign-confirm").click(); await settle();
     rebootstrap();
     const b = start(teacher(), deps); await open(b);
-    expect(rowState()).toBe("neverAssigned");
+    expect(rowState()).toBe("unresolved");
     draft.resolve({}); await settle();
     expect(seam.publish).not.toHaveBeenCalled();
+    get<HTMLButtonElement>("assign-row-retry-c1").click(); await settle();
+    expect(rowState()).toBe("neverAssigned");
+    expect(get<HTMLInputElement>("assign-row-enabled-c1").disabled).toBe(false);
   });
 
   test("Set Current with a failed refresh drops the cached status, so reopening Assign reads fresh", async () => {
@@ -639,5 +644,142 @@ describe("P2: lifecycle invalidation is scoped to the affected lesson and class"
     expect(rowState()).toBe("neverAssigned");
     draft.resolve({}); await settle(); // lesson B settles and invalidates B/c1
     expect(rowState()).toBe("neverAssigned");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Checkpoint 6C-2 (P3-2): a creation request already sent by an obsolete
+// session stays unresolved for the SAME teacher and school only.
+// ---------------------------------------------------------------------------
+
+describe("P3-2: an unresolved creation across a same-teacher session boundary", () => {
+  // Session 1 confirms Assign; its LyfeLabz publish request is held open.
+  const publishInFlight = async (lms = lmsIntegrations()) => {
+    const published = deferred<unknown>();
+    const seam = lifecycleSeam({ publish: jest.fn(() => published.promise) });
+    const deps = { listClasses: jest.fn().mockResolvedValue([cls()]), assignments: seam, integrations: lms.deps };
+    const a = start(teacher(), deps); await open(a);
+    get<HTMLButtonElement>("assign-confirm").click(); await settle();
+    expect(seam.publish).toHaveBeenCalledTimes(1);
+    seam.lifecycleState.mockClear();
+    // The server has not committed the publish yet: a read would say never assigned.
+    seam.lifecycleState.mockResolvedValue(lifecycle());
+    return { published, seam, deps, lms };
+  };
+
+  test("same teacher, same school: sign-out and sign-in during publication offers no duplicate and sends no read", async () => {
+    const { published, seam, deps, lms } = await publishInFlight();
+    rebootstrap();
+    const next = start(teacher(), deps); await open(next);
+    expect(rowState()).toBe("unresolved");
+    expect(get<HTMLInputElement>("assign-row-enabled-c1").disabled).toBe(true);
+    // Repeated clicks and retries while the old request is unresolved.
+    for (let i = 0; i < 3; i++) {
+      get<HTMLButtonElement>("assign-row-retry-c1").click(); await settle();
+      get<HTMLButtonElement>("assign-confirm").click(); await settle();
+    }
+    expect(rowState()).toBe("unresolved");
+    expect(seam.lifecycleState).not.toHaveBeenCalled();
+    expect(seam.createDraft).toHaveBeenCalledTimes(1);
+    published.resolve({}); await settle();
+    // The obsolete session sends nothing further.
+    expect(lms.callables.publishAssignment).not.toHaveBeenCalled();
+  });
+
+  test("publication success after revocation: the open dialog stays unknown, then a fresh read shows it assigned", async () => {
+    const { published, seam, deps } = await publishInFlight();
+    rebootstrap();
+    const next = start(teacher(), deps); await open(next);
+    seam.lifecycleState.mockResolvedValue(assigned());
+    published.resolve({}); await settle();
+    expect(rowState()).toBe("unresolved");
+    expect(seam.lifecycleState).not.toHaveBeenCalled();
+    get<HTMLButtonElement>("assign-row-retry-c1").click(); await settle();
+    expect(rowState()).toBe("onePublishedFullyCurrent");
+    cancel(); await open(next);
+    expect(rowState()).toBe("onePublishedFullyCurrent");
+    expect(seam.createDraft).toHaveBeenCalledTimes(1);
+  });
+
+  test("publication failure after revocation: the hold is released and a confirmed never-assigned allows creation", async () => {
+    const { published, seam, deps } = await publishInFlight();
+    rebootstrap();
+    const next = start(teacher(), deps);
+    published.reject(new Error("deadline-exceeded")); await settle();
+    await open(next);
+    expect(seam.lifecycleState).toHaveBeenCalledTimes(1);
+    expect(rowState()).toBe("neverAssigned");
+    const box = get<HTMLInputElement>("assign-row-enabled-c1");
+    expect(box.disabled).toBe(false);
+    if (!box.checked) box.click();
+    seam.publish.mockResolvedValue({});
+    get<HTMLButtonElement>("assign-confirm").click(); await settle();
+    expect(seam.createDraft).toHaveBeenCalledTimes(2);
+  });
+
+  test("unknown status during reconciliation is never treated as never assigned", async () => {
+    const { published, seam, deps } = await publishInFlight();
+    rebootstrap();
+    const next = start(teacher(), deps); await open(next);
+    published.resolve({}); await settle();
+    seam.lifecycleState.mockRejectedValueOnce(new Error("unavailable"));
+    get<HTMLButtonElement>("assign-row-retry-c1").click(); await settle();
+    expect(rowState()).toBe("unresolved");
+    expect(get<HTMLInputElement>("assign-row-enabled-c1").disabled).toBe(true);
+    get<HTMLButtonElement>("assign-confirm").click(); await settle();
+    expect(seam.createDraft).toHaveBeenCalledTimes(1);
+  });
+
+  test("a different teacher signing in while publication is pending never sees the hold", async () => {
+    const { published, seam, deps } = await publishInFlight();
+    rebootstrap();
+    const other = start(teacher("B"), deps); await open(other);
+    expect(seam.lifecycleState).toHaveBeenCalledTimes(1);
+    expect(rowState()).toBe("neverAssigned");
+    expect(get<HTMLInputElement>("assign-row-enabled-c1").disabled).toBe(false);
+    // A's settlement does not touch B's lifecycle state or open dialog.
+    published.resolve({}); await settle();
+    expect(rowState()).toBe("neverAssigned");
+    cancel(); await open(other);
+    expect(seam.lifecycleState).toHaveBeenCalledTimes(1);
+  });
+
+  test("the same teacher in another school context never sees the hold", async () => {
+    const { published, seam, deps } = await publishInFlight();
+    const otherSchool = start(teacher("A", "school-2"), deps); await open(otherSchool);
+    expect(seam.lifecycleState).toHaveBeenCalledTimes(1);
+    expect(rowState()).toBe("neverAssigned");
+    expect(get<HTMLInputElement>("assign-row-enabled-c1").disabled).toBe(false);
+    published.resolve({}); await settle();
+    expect(rowState()).toBe("neverAssigned");
+  });
+
+  test("no permanent pending state: after settlement later sessions read normally", async () => {
+    const { published, seam, deps } = await publishInFlight();
+    rebootstrap();
+    start(teacher(), deps);
+    rebootstrap(); // a second boundary while still unresolved
+    const third = start(teacher(), deps); await open(third);
+    expect(rowState()).toBe("unresolved");
+    cancel();
+    published.resolve({}); await settle();
+    rebootstrap();
+    const fourth = start(teacher(), deps); await open(fourth);
+    expect(seam.lifecycleState).toHaveBeenCalledTimes(1);
+    expect(rowState()).toBe("neverAssigned");
+    expect(get<HTMLInputElement>("assign-row-enabled-c1").disabled).toBe(false);
+  });
+
+  test("entry point: the hold is not cleared by the session boundary but is released on every creation outcome", () => {
+    const source = readFileSync(resolve(__dirname, "curriculum.ts"), "utf8");
+    const boundary = source.slice(source.indexOf("export function invalidateCurriculumSession"));
+    expect(boundary.slice(0, boundary.indexOf("\n}\n"))).not.toContain("unresolvedCreations");
+    const lifecycleRun = source.slice(source.indexOf("async function runAssignmentLifecycle"));
+    const hold = lifecycleRun.indexOf("holdUnresolvedCreation(owner, row.classId, lesson.slug)");
+    expect(hold).toBeGreaterThan(0);
+    expect(hold).toBeLessThan(lifecycleRun.indexOf("await assignments.createDraft("));
+    // Draft failed, draft left unpublished, publish succeeded, publish failed.
+    const step = lifecycleRun.slice(hold, lifecycleRun.indexOf("// Publication did not complete"));
+    expect(step.match(/releaseCreation\(\);/g)?.length).toBe(4);
   });
 });

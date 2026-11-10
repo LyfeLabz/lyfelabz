@@ -476,8 +476,56 @@ function invalidateLifecycleEntry(classId: string, lessonSlug: string, notify: b
 // carried over) at each session boundary.
 let pendingLifecycleMutations = new Map<string, number>();
 
+// Assign creation requests (draft, then publish) already sent and not yet
+// settled, by teacher-and-school scope, then lifecycle cache key. Unlike
+// `pendingLifecycleMutations` this survives a session boundary, but only
+// for the SAME teacher and school: a request already sent keeps running
+// after sign-out, and until it settles a new session of that teacher must
+// treat the class's status as unknown rather than read it as never
+// assigned. Another teacher or school never sees it. It authorizes nothing
+// (the obsolete session still sends no further request) and each entry is
+// removed when its own request settles, succeeded or failed.
+const unresolvedCreations = new Map<string, Map<string, number>>();
+
+function teacherScopeKey(owner: { readonly uid: string; readonly schoolId: string }): string {
+  return `${owner.uid}\u0000${owner.schoolId}`;
+}
+
 function lifecycleMutationPending(classId: string, lessonSlug: string): boolean {
-  return (pendingLifecycleMutations.get(lifecycleCacheKey(classId, lessonSlug)) ?? 0) > 0;
+  const key = lifecycleCacheKey(classId, lessonSlug);
+  if ((pendingLifecycleMutations.get(key) ?? 0) > 0) return true;
+  if (curriculumOwner === null) return false;
+  return (unresolvedCreations.get(teacherScopeKey(curriculumOwner))?.get(key) ?? 0) > 0;
+}
+
+// Marks one class's creation request unresolved for `owner`'s teacher and
+// school. The returned release (call it once that request settles) unmarks
+// it and, when the signed-in teacher and school are still the same (this
+// session or a later one), invalidates the class so its next read is fresh.
+function holdUnresolvedCreation(
+  owner: CurriculumOwner,
+  classId: string,
+  lessonSlug: string,
+): () => void {
+  const scope = teacherScopeKey(owner);
+  const key = lifecycleCacheKey(classId, lessonSlug);
+  const entries = unresolvedCreations.get(scope) ?? new Map<string, number>();
+  unresolvedCreations.set(scope, entries);
+  entries.set(key, (entries.get(key) ?? 0) + 1);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    const count = (entries.get(key) ?? 0) - 1;
+    if (count > 0) entries.set(key, count);
+    else entries.delete(key);
+    if (entries.size === 0 && unresolvedCreations.get(scope) === entries) {
+      unresolvedCreations.delete(scope);
+    }
+    if (curriculumOwner !== null && teacherScopeKey(curriculumOwner) === scope) {
+      invalidateLifecycleEntry(classId, lessonSlug, true);
+    }
+  };
 }
 
 // Marks the classes pending and invalidates them; the returned settle (call
@@ -5133,6 +5181,12 @@ async function runAssignmentLifecycle(input: {
       // choice (see RowConfig.publishTiming), never from pre-filled values.
       const scheduledTime = row.availableAt;
 
+      // Held from before the draft request is sent until the LyfeLabz
+      // record's outcome is settled (draft failed, draft left unpublished,
+      // or the publish request settled), so a same-teacher session that
+      // starts meanwhile never reads this class as never assigned.
+      const releaseCreation = holdUnresolvedCreation(owner, row.classId, lesson.slug);
+
       // Step 1: authoritative draft. If this fails, no publish and no
       // LMS side effect.
       //
@@ -5159,6 +5213,7 @@ async function runAssignmentLifecycle(input: {
         });
       } catch {
         // Draft creation failed: nothing durable was saved for this class.
+        releaseCreation();
         return {
           classId: row.classId,
           assignmentId,
@@ -5171,6 +5226,7 @@ async function runAssignmentLifecycle(input: {
       // An obsolete session's completed draft authorizes no further step;
       // the durable draft stays recoverable like any unpublished draft.
       if (!isCurrent()) {
+        releaseCreation();
         return {
           classId: row.classId,
           assignmentId,
@@ -5185,7 +5241,9 @@ async function runAssignmentLifecycle(input: {
       // may be issued.
       try {
         await assignments.publish({ assignmentId });
+        releaseCreation();
       } catch {
+        releaseCreation();
         // Publication did not complete, but the durable draft from step 1
         // exists and is recoverable. This is NOT "the assignment was not
         // created" - the summary must say the assignment was saved and can
