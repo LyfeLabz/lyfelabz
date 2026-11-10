@@ -496,8 +496,18 @@ export type IntegrationsConnectionRecovery = {
   // True when LyfeLabz has observed, this session, that the provider's
   // durable connection needs the teacher to reconnect.
   readonly needsReconnect: (providerId: string) => boolean;
-  // Clear the signal for a provider after a successful reconnect.
-  readonly clear: (providerId: string) => void;
+  // Start one reconnect for a provider. The operation is owned by the
+  // session it started in and ordered from its start against publication
+  // attempts, so a slow reconnect never clears a newer signal.
+  readonly beginReconnect: (providerId: string) => IntegrationsReconnectOperation;
+};
+
+export type IntegrationsReconnectOperation = {
+  // False once the session that started the reconnect is obsolete.
+  readonly isCurrent: () => boolean;
+  // Clear the signal after a successful reconnect, unless a publication
+  // attempt that started later has re-armed it.
+  readonly complete: () => void;
 };
 
 export type IntegrationsDeps = {

@@ -4,6 +4,7 @@ import type {
 } from "../../../assignments/detail/types";
 import type {
   IntegrationsCallables,
+  IntegrationsConnectionRecovery,
   IntegrationsDeps,
   IntegrationsPublicationOutcome,
   OAuthHandoff,
@@ -97,6 +98,11 @@ export type PublicationConsentSeam = {
   // Try again). The automatic after-publish fallback omits it: a window
   // reserved outside a click would be blocked anyway.
   readonly reserveOAuthWindow?: () => OAuthWindowReservation | null;
+  // False once the session that started this handoff is obsolete. Checked
+  // before each consequential step (begin, browser handoff, completion);
+  // a request already dispatched is not cancelled, but its completion
+  // never starts the next step.
+  readonly isCurrent?: () => boolean;
 };
 
 // Consent coordinator. Bounds every incremental-consent handoff for one
@@ -157,6 +163,8 @@ function readHandoffErrorCode(err: unknown): string | undefined {
 export async function requestPublicationAuthorization(
   seam: PublicationConsentSeam,
 ): Promise<ClassroomAuthorizationResult> {
+  // An obsolete session never reserves a window or contacts the server.
+  if (seam.isCurrent !== undefined && !seam.isCurrent()) return "failed";
   // Reserve the Google window BEFORE the first await, while this call is
   // still inside the teacher's click. Released in `finally` on every path
   // (idempotent; a window the handoff used is already closed).
@@ -172,6 +180,8 @@ async function runPublicationAuthorization(
   seam: PublicationConsentSeam,
   reservation: OAuthWindowReservation | null,
 ): Promise<ClassroomAuthorizationResult> {
+  const isCurrent = seam.isCurrent ?? ((): boolean => true);
+  if (!isCurrent()) return "failed";
   let begun: { readonly authorizationUrl: string; readonly state: string };
   try {
     begun = await seam.beginConnection({
@@ -182,6 +192,7 @@ async function runPublicationAuthorization(
   } catch {
     return "failed";
   }
+  if (!isCurrent()) return "failed";
   let handed: { readonly code: string; readonly state: string };
   try {
     handed = await seam.openOAuth({
@@ -198,6 +209,7 @@ async function runPublicationAuthorization(
     if (code === "access_denied") return "declined";
     return "failed";
   }
+  if (!isCurrent()) return "failed";
   try {
     const completed = await seam.completeConnection({
       providerId: seam.providerId,
@@ -320,6 +332,9 @@ export type RunPublicationActionInput = {
   ) => Promise<IntegrationsPublicationOutcome>;
   readonly consent: PublicationConsentSeam;
   readonly coordinator: ConsentCoordinator;
+  // False once the initiating session is obsolete: no consent and no
+  // re-issue start after that, and the action reports `failed`.
+  readonly isCurrent?: () => boolean;
 };
 
 function classifyResolvedFailure(
@@ -354,7 +369,11 @@ function classifyThrown(
 export async function runPublicationAction(
   input: RunPublicationActionInput,
 ): Promise<PublicationActionResult> {
-  const { nonce, publish, consent, coordinator } = input;
+  const { nonce, publish, coordinator } = input;
+  const isCurrent = input.isCurrent ?? ((): boolean => true);
+  const consent: PublicationConsentSeam =
+    input.isCurrent !== undefined ? { ...input.consent, isCurrent } : input.consent;
+  if (!isCurrent()) return { kind: "failed" };
 
   let first: IntegrationsPublicationOutcome;
   try {
@@ -382,6 +401,7 @@ export async function runPublicationAction(
   // Insufficient scope: run incremental consent exactly once (bounded by
   // the coordinator), then re-issue the publish exactly once with the same
   // nonce.
+  if (!isCurrent()) return { kind: "failed" };
   const consentResult = await coordinator.ensureConsent(consent);
   if (consentResult === "identityMismatch") {
     // The teacher authorized with a different Google account. The durable
@@ -393,6 +413,7 @@ export async function runPublicationAction(
     return { kind: "permissionNotGranted" };
   }
 
+  if (!isCurrent()) return { kind: "failed" };
   let second: IntegrationsPublicationOutcome;
   try {
     second = await publish(nonce);
@@ -424,7 +445,7 @@ export async function runPublicationAction(
 // provider id, the title, and the optional topic (blueprint §8, §12). That
 // context is recorded by the Assign confirm path when a publication is
 // requested, and read by the entry point when it opens the detail view. It is
-// in-memory only, uid-scoped so a same-tab teacher swap cannot leak a prior
+// in-memory only, session-scoped so a same-tab teacher swap cannot leak a prior
 // teacher's context, and never persisted.
 //
 // Sprint 27 Phase 4 (blueprint Decision 4): the LyfeLabz assignment URL is no
@@ -440,27 +461,79 @@ export type LmsPublicationRetryContext = {
   readonly state: AssignmentLmsPublicationState;
 };
 
-let retryStore: {
+// Session scope for the two stores below: canonical teacher, school and
+// bootstrap generation. Object identity is the token. A response that
+// arrives under an obsolete scope (sign-out, teacher or school change, or a
+// same-UID rebootstrap) never writes, reads or clears either store.
+export type LmsSessionScope = {
   readonly uid: string;
-  readonly byAssignmentId: Map<string, LmsPublicationRetryContext>;
+  readonly schoolId: string;
+  readonly generation: number;
+};
+
+let lmsSessionGeneration = 0;
+let activeLmsScope: LmsSessionScope | null = null;
+// Request ownership inside one scope: a response may only replace state
+// recorded by a request that started no later than it did.
+let lmsRequestSequence = 0;
+
+/** Called synchronously at every bootstrap boundary. */
+export function invalidateLmsPublicationSession(): void {
+  lmsSessionGeneration += 1;
+  activeLmsScope = null;
+  retryStore = null;
+  connectionRecoveryStore = null;
+}
+
+// The current scope for this teacher and school, starting a new one (and
+// dropping the previous scope's state) when either differs.
+export function lmsPublicationSessionScope(uid: string, schoolId: string): LmsSessionScope {
+  if (activeLmsScope?.uid !== uid || activeLmsScope.schoolId !== schoolId) {
+    invalidateLmsPublicationSession();
+    activeLmsScope = Object.freeze({ uid, schoolId, generation: lmsSessionGeneration });
+  }
+  return activeLmsScope;
+}
+
+export function isCurrentLmsScope(scope: LmsSessionScope): boolean {
+  return scope === activeLmsScope;
+}
+
+export type LmsRequestTicket = {
+  readonly scope: LmsSessionScope;
+  readonly sequence: number;
+};
+
+// Taken when a publication request starts, before its first await.
+export function beginLmsRequest(scope: LmsSessionScope): LmsRequestTicket {
+  lmsRequestSequence += 1;
+  return Object.freeze({ scope, sequence: lmsRequestSequence });
+}
+
+let retryStore: {
+  readonly scope: LmsSessionScope;
+  readonly byAssignmentId: Map<string, { readonly sequence: number; readonly context: LmsPublicationRetryContext }>;
 } | null = null;
 
 export function recordLmsPublicationRetryContext(
-  uid: string,
+  ticket: LmsRequestTicket,
   context: LmsPublicationRetryContext,
 ): void {
-  if (retryStore === null || retryStore.uid !== uid) {
-    retryStore = { uid, byAssignmentId: new Map() };
+  if (!isCurrentLmsScope(ticket.scope)) return;
+  if (retryStore === null || retryStore.scope !== ticket.scope) {
+    retryStore = { scope: ticket.scope, byAssignmentId: new Map() };
   }
-  retryStore.byAssignmentId.set(context.assignmentId, context);
+  const existing = retryStore.byAssignmentId.get(context.assignmentId);
+  if (existing !== undefined && existing.sequence > ticket.sequence) return;
+  retryStore.byAssignmentId.set(context.assignmentId, { sequence: ticket.sequence, context });
 }
 
 export function readLmsPublicationRetryContext(
-  uid: string,
+  scope: LmsSessionScope,
   assignmentId: string,
 ): LmsPublicationRetryContext | null {
-  if (retryStore === null || retryStore.uid !== uid) return null;
-  return retryStore.byAssignmentId.get(assignmentId) ?? null;
+  if (!isCurrentLmsScope(scope) || retryStore === null || retryStore.scope !== scope) return null;
+  return retryStore.byAssignmentId.get(assignmentId)?.context ?? null;
 }
 
 export function clearLmsPublicationRetryContexts(): void {
@@ -482,7 +555,7 @@ export function clearLmsPublicationRetryContexts(): void {
 // reconnect action rather than a dead-end, and so it honestly forgets on
 // reload (a fresh session re-derives the signal from the next attempt).
 //
-// It is session-local, in-memory, uid-scoped, and never persisted - the
+// It is session-local, in-memory, session-scoped, and never persisted - the
 // same posture as the retry-context store above. It records ONLY the
 // reconnect-required condition. Identity mismatch is deliberately excluded:
 // its recovery lives in the publication surfaces (retry with the same
@@ -490,38 +563,60 @@ export function clearLmsPublicationRetryContexts(): void {
 // (definition §7.E, §18). The signal never carries any Google identity,
 // token, scope, or error code.
 let connectionRecoveryStore: {
-  readonly uid: string;
+  readonly scope: LmsSessionScope;
   readonly providers: Set<string>;
+  // Sequence of the request that last armed or cleared each provider.
+  readonly lastSequence: Map<string, number>;
 } | null = null;
 
+function writeConnectionSignal(ticket: LmsRequestTicket, providerId: string, needed: boolean): void {
+  if (!isCurrentLmsScope(ticket.scope)) return;
+  if (connectionRecoveryStore === null || connectionRecoveryStore.scope !== ticket.scope) {
+    connectionRecoveryStore = { scope: ticket.scope, providers: new Set(), lastSequence: new Map() };
+  }
+  const last = connectionRecoveryStore.lastSequence.get(providerId);
+  if (last !== undefined && last > ticket.sequence) return;
+  connectionRecoveryStore.lastSequence.set(providerId, ticket.sequence);
+  if (needed) connectionRecoveryStore.providers.add(providerId);
+  else connectionRecoveryStore.providers.delete(providerId);
+}
+
 export function recordConnectionReconnectNeeded(
-  uid: string,
+  ticket: LmsRequestTicket,
   providerId: string,
 ): void {
-  if (connectionRecoveryStore === null || connectionRecoveryStore.uid !== uid) {
-    connectionRecoveryStore = { uid, providers: new Set() };
-  }
-  connectionRecoveryStore.providers.add(providerId);
+  writeConnectionSignal(ticket, providerId, true);
 }
 
 export function readConnectionReconnectNeeded(
-  uid: string,
+  scope: LmsSessionScope,
   providerId: string,
 ): boolean {
-  if (connectionRecoveryStore === null || connectionRecoveryStore.uid !== uid) {
-    return false;
-  }
+  if (!isCurrentLmsScope(scope) || connectionRecoveryStore?.scope !== scope) return false;
   return connectionRecoveryStore.providers.has(providerId);
 }
 
 export function clearConnectionReconnectNeeded(
-  uid: string,
+  ticket: LmsRequestTicket,
   providerId: string,
 ): void {
-  if (connectionRecoveryStore === null || connectionRecoveryStore.uid !== uid) {
-    return;
-  }
-  connectionRecoveryStore.providers.delete(providerId);
+  writeConnectionSignal(ticket, providerId, false);
+}
+
+// The Settings surface's view of the signal, bound to one session scope. A
+// reconnect takes its request ticket when it starts and reuses it when it
+// completes, so it never clears a signal armed by a later publication.
+export function createConnectionRecovery(scope: LmsSessionScope): IntegrationsConnectionRecovery {
+  return {
+    needsReconnect: (providerId) => readConnectionReconnectNeeded(scope, providerId),
+    beginReconnect: (providerId) => {
+      const ticket = beginLmsRequest(scope);
+      return {
+        isCurrent: () => isCurrentLmsScope(scope),
+        complete: () => clearConnectionReconnectNeeded(ticket, providerId),
+      };
+    },
+  };
 }
 
 // Build the detail-view retry seam for an assignment, or null when there is
@@ -532,14 +627,14 @@ export function clearConnectionReconnectNeeded(
 // LyfeLabz assignment lifecycle. On resolution it updates the recorded
 // context state so a subsequent open reflects the latest outcome.
 export function createDetailLmsRetrySeam(input: {
-  readonly uid: string;
+  readonly scope: LmsSessionScope;
   readonly assignmentId: string;
   readonly integrations: IntegrationsDeps | null;
   readonly onReconnect?: () => void;
 }): AssignmentLmsRetrySeam | null {
-  const { uid, assignmentId, integrations, onReconnect } = input;
+  const { scope, assignmentId, integrations, onReconnect } = input;
   if (integrations === null) return null;
-  const context = readLmsPublicationRetryContext(uid, assignmentId);
+  const context = readLmsPublicationRetryContext(scope, assignmentId);
   if (context === null) return null;
   if (context.state === "succeeded") return null;
 
@@ -552,6 +647,7 @@ export function createDetailLmsRetrySeam(input: {
     completeConnection: integrations.callables.completeConnection,
     openOAuth: integrations.openOAuth,
     redirectUri: integrations.redirectUri,
+    isCurrent: () => isCurrentLmsScope(scope),
   };
   const clickConsent: PublicationConsentSeam =
     integrations.reserveOAuthWindow !== undefined
@@ -561,6 +657,11 @@ export function createDetailLmsRetrySeam(input: {
   return Object.freeze({
     initialState: context.state,
     retry: async (): Promise<AssignmentLmsPublicationState> => {
+      const isCurrent = (): boolean => isCurrentLmsScope(scope);
+      // An expired seam (its session ended) does nothing: no window, no
+      // server request, no recorded state.
+      if (!isCurrent()) return "failed";
+      const ticket = beginLmsRequest(scope);
       const nonce = mintNonce();
       let coordinator = createConsentCoordinator();
       // Unified onboarding authorization: when the last attempt stopped for
@@ -575,9 +676,10 @@ export function createDetailLmsRetrySeam(input: {
             authorization === "identityMismatch"
               ? "identityMismatch"
               : "permissionNotGranted";
-          recordLmsPublicationRetryContext(uid, { ...context, state: stopped });
+          recordLmsPublicationRetryContext(ticket, { ...context, state: stopped });
           return stopped;
         }
+        if (!isCurrent()) return "failed";
         // Already authorized for this action: never open a second window.
         coordinator = settledConsentCoordinator("notGranted");
       }
@@ -595,17 +697,18 @@ export function createDetailLmsRetrySeam(input: {
           }),
         consent,
         coordinator,
+        isCurrent,
       });
       const nextState: AssignmentLmsPublicationState = result.kind;
-      recordLmsPublicationRetryContext(uid, { ...context, state: nextState });
+      recordLmsPublicationRetryContext(ticket, { ...context, state: nextState });
       // Keep the session-local Settings recovery signal honest: a retry that
       // still finds the connection unusable arms "action needed" in Settings;
       // any other terminal outcome (including a now-successful publish) clears
       // it. Identity mismatch never arms it (definition §7.E, §7.F).
       if (result.kind === "reconnectRequired") {
-        recordConnectionReconnectNeeded(uid, context.providerId);
+        recordConnectionReconnectNeeded(ticket, context.providerId);
       } else {
-        clearConnectionReconnectNeeded(uid, context.providerId);
+        clearConnectionReconnectNeeded(ticket, context.providerId);
       }
       return nextState;
     },
@@ -615,6 +718,5 @@ export function createDetailLmsRetrySeam(input: {
 
 // Test-only reset for the session-scoped client stores.
 export function _resetLmsPublicationStateForTest(): void {
-  retryStore = null;
-  connectionRecoveryStore = null;
+  invalidateLmsPublicationSession();
 }

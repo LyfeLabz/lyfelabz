@@ -71,7 +71,7 @@ import { createAssignmentSummaryCallable } from "./assignments/summary/wire";
 import type { AssignmentSummaryCallable } from "./assignments/summary/types";
 import { createLessonResultsCallable } from "./assignments/summary/lessonResultsWire";
 import type { LessonResultsCallable } from "./assignments/summary/lessonResults";
-import { subscribeAuthRerun } from "./session/authRerunSubscription";
+import { subscribeAuthRerun, type AuthRerunGate } from "./session/authRerunSubscription";
 import { createFirebaseTeacherUnitsCallables } from "./teacherUnits/wire";
 import { createTeacherUnitCreateAttemptStore } from "./teacherUnits/createAttemptStore";
 import {
@@ -105,10 +105,12 @@ import { createAssignmentDetailMetadataReader } from "./assignments/detail/wire"
 import { renderAssignmentDetail } from "./assignments/detail/detail";
 import { createAssignmentRegistryHydration } from "./assignments/detail/hydration";
 import {
+  createConnectionRecovery,
   createDetailLmsRetrySeam,
   clearLmsPublicationRetryContexts,
-  clearConnectionReconnectNeeded,
-  readConnectionReconnectNeeded,
+  invalidateLmsPublicationSession,
+  lmsPublicationSessionScope,
+  type LmsSessionScope,
 } from "./shell/surfaces/shared/lmsPublication";
 import { createAssignmentsTeacherListCallable } from "./assignments/detail/hydrate-wire";
 import { createAssignmentsReopenCallable } from "./assignments/detail/reopen-wire";
@@ -136,11 +138,9 @@ import {
   type AssignmentRecipientCandidatesListCallable,
   type AssignmentsRecipientAddCallable,
 } from "./assignments/detail/late-recipient-wire";
-// Sprint 25 certification (B2) fix: drop the Curriculum surface's
-// module-scoped teacher class cache on every bootstrap transition so a
-// same-uid sign-out/sign-in (auth-session replacement) cannot let the
-// Assign dialog reuse the prior session's class rows.
-import { invalidateCurriculumClassCache } from "./shell/surfaces/curriculum";
+// Revoke all Curriculum session caches at the start of every bootstrap,
+// including same-UID refreshes and transitions to non-teacher sessions.
+import { invalidateCurriculumSession } from "./shell/surfaces/curriculum";
 import type {
   TeacherShellOutletController,
   TeacherShellStudentSelectionController,
@@ -360,6 +360,9 @@ async function run(): Promise<void> {
   // integrations, or `assignmentsTeacherList` hydration. When an
   // active-teacher session is unavailable, the Back handler falls back to
   // the full `rerun()` path.
+  // The Classroom retry/recovery scope of the current active-teacher
+  // bootstrap; null outside one (and from the start of every bootstrap).
+  let lmsScope: LmsSessionScope | null = null;
   let lastActiveTeacher: Extract<Session, { kind: "activeTeacher" }> | null =
     null;
   // Sprint 16 Slice 1: per-assignment invalidator installed by the
@@ -526,9 +529,9 @@ async function run(): Promise<void> {
       // fresh nonce and never re-runs the LyfeLabz assignment lifecycle.
       // Absent otherwise, so the pre-Phase-3 detail surface is unchanged.
       lmsRetry:
-        lastActiveTeacher !== null
+        lmsScope !== null
           ? (createDetailLmsRetrySeam({
-              uid: lastActiveTeacher.uid,
+              scope: lmsScope,
               assignmentId,
               integrations,
             }) ?? undefined)
@@ -736,8 +739,23 @@ async function run(): Promise<void> {
     return functions;
   };
 
+  // Installed before the initial bootstrap (see the end of `run`).
+  let authGate: AuthRerunGate | null = null;
+  // True while `session` still belongs to the signed-in identity. A stale
+  // resolution installs nothing; when auth has already settled elsewhere
+  // and no notification is coming, it reruns for the current identity.
+  const bootstrapIsSignedIn = (session: Session): boolean => {
+    if (authGate === null || session.kind === "error") return true;
+    const result = authGate.check(session.kind === "unauthenticated" ? null : session.uid);
+    if (result === "stale") void rerun();
+    return result === "current";
+  };
+
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
+    invalidateCurriculumSession();
+    invalidateLmsPublicationSession();
+    lmsScope = null;
     teacherUnits?.dispose?.();
     teacherUnits = null;
     renderLoadingSurface(mount);
@@ -768,6 +786,7 @@ async function run(): Promise<void> {
       createFirestoreInput(db),
     );
     if (runToken !== currentRunToken) return;
+    if (!bootstrapIsSignedIn(session)) return;
     if (session.kind === "activeTeacher") {
       // Performance Operation 1: the Functions import is this branch's only
       // await before it installs shared dependencies, records the active
@@ -779,6 +798,7 @@ async function run(): Promise<void> {
       const { getFunctions, connectFunctionsEmulator } =
         await import("firebase/functions");
       if (runToken !== currentRunToken) return;
+      if (!bootstrapIsSignedIn(session)) return;
       const functions = getFunctions(auth.app, "us-central1");
       const emulators = getEmulatorEndpoints();
       if (emulators !== null) {
@@ -792,6 +812,8 @@ async function run(): Promise<void> {
           // already connected
         }
       }
+      const teacherLmsScope = lmsPublicationSessionScope(session.uid, session.schoolId);
+      lmsScope = teacherLmsScope;
       integrations = createIntegrationsDeps({
         functions,
         listClasses,
@@ -801,12 +823,7 @@ async function run(): Promise<void> {
         // Sprint 26 Phase 4: bind the session-local reconnect signal to this
         // teacher so Settings renders "action needed" only for a condition
         // LyfeLabz actually observed this session (definition §7.F).
-        connectionRecovery: {
-          needsReconnect: (providerId) =>
-            readConnectionReconnectNeeded(session.uid, providerId),
-          clear: (providerId) =>
-            clearConnectionReconnectNeeded(session.uid, providerId),
-        },
+        connectionRecovery: createConnectionRecovery(teacherLmsScope),
       });
       assignments = createAssignmentsCallables(functions);
       updateClassOrder = createFirebaseUpdateTeacherClassOrder(functions);
@@ -1003,13 +1020,6 @@ async function run(): Promise<void> {
     // Curriculum scroll snapshot so no offset can restore against an
     // unrelated surface or teacher context.
     curriculumScrollGuard.invalidate();
-    // Sprint 25 (B2): the same bootstrap boundary drops the Curriculum
-    // class cache. Sign-out/sign-in as the same teacher keeps the uid, so
-    // the uid-keyed cache would otherwise survive the teardown and feed
-    // the Assign dialog stale rows. In-tab surface navigation does not
-    // pass through `rerun`, so the intended within-session prefetch cache
-    // is preserved; only a real auth transition clears it.
-    invalidateCurriculumClassCache();
 
     // Sprint 27 Phase 4: Google Classroom deep-link arrival handoff. When a
     // pending `/app/a/{assignmentId}` arrival is present, route by session
@@ -1320,20 +1330,21 @@ async function run(): Promise<void> {
     },
   });
 
-  await rerun();
-
-  // One logical bootstrap per auth state: Firebase fires this listener
-  // immediately with the user the initial `rerun` above already bootstrapped
-  // for; only a real identity change (sign-in, sign-out, account switch)
-  // reruns. See session/authRerunSubscription.ts.
+  // One logical bootstrap per auth state, observed from before the initial
+  // bootstrap: Firebase's first notification is the user the initial `rerun`
+  // below is resolving; only a real identity change (sign-in, sign-out,
+  // account switch) reruns, including one that happens while that initial
+  // bootstrap is still waiting. See session/authRerunSubscription.ts.
   const { onAuthStateChanged } = await import("firebase/auth");
-  subscribeAuthRerun({
-    bootstrappedUid: auth.currentUser?.uid ?? null,
+  authGate = subscribeAuthRerun({
     onAuthStateChanged: (callback) => onAuthStateChanged(auth, callback),
+    readCurrentUid: () => auth.currentUser?.uid ?? null,
     rerun: () => {
       void rerun();
     },
   });
+
+  await rerun();
 }
 
 void run();
