@@ -11,6 +11,7 @@ import {
   openLessonAssignDialog,
   invalidateCurriculumSession,
   invalidateCurriculumClassCache,
+  _resetCurriculumSessionStateForTest,
   type CurriculumSurfaceDeps,
 } from "./curriculum";
 import {
@@ -780,6 +781,59 @@ describe("P3-2: an unresolved creation across a same-teacher session boundary", 
     expect(hold).toBeLessThan(lifecycleRun.indexOf("await assignments.createDraft("));
     // Draft failed, draft left unpublished, publish succeeded, publish failed.
     const step = lifecycleRun.slice(hold, lifecycleRun.indexOf("// Publication did not complete"));
-    expect(step.match(/releaseCreation\(\);/g)?.length).toBe(4);
+    expect(step.match(/releaseCreation\(\);/g)?.length).toBe(3);
+    // The publish release sits outside the try that classifies the outcome.
+    const publishStep = step.slice(step.indexOf("await assignments.publish("));
+    expect(publishStep.indexOf("releaseCreation();")).toBeGreaterThan(publishStep.indexOf("} catch {"));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Checkpoint 6C-4 (N1, N2).
+// ---------------------------------------------------------------------------
+
+describe("6C-4: hold release cannot change outcomes; test reset clears holds", () => {
+  test("N1: a throwing open-dialog listener during release keeps a successful publish published and still posts to Classroom", async () => {
+    const published = deferred<unknown>();
+    const seam = lifecycleSeam({ publish: jest.fn(() => published.promise) });
+    const lms = lmsIntegrations();
+    const deps = { listClasses: jest.fn().mockResolvedValue([cls()]), assignments: seam, integrations: lms.deps };
+    const a = start(teacher(), deps); await open(a);
+    get<HTMLButtonElement>("assign-confirm").click(); await settle();
+    expect(seam.publish).toHaveBeenCalledTimes(1);
+    // Same session: reopen Assign so its lifecycle listener is registered,
+    // then make that listener's re-render throw during the release.
+    await open(a);
+    expect(rowState()).toBe("unresolved");
+    const replaceWith = jest.spyOn(Element.prototype, "replaceWith").mockImplementation(() => {
+      throw new Error("listener failure");
+    });
+    try {
+      published.resolve({}); await settle();
+      expect(replaceWith).toHaveBeenCalled();
+    } finally {
+      replaceWith.mockRestore();
+    }
+    // Successful publish stayed published: the Classroom step still ran.
+    expect(lms.callables.publishAssignment).toHaveBeenCalledTimes(1);
+    expect(seam.createDraft).toHaveBeenCalledTimes(1);
+  });
+
+  test("N2: the test-only reset removes a pending hold that a session boundary keeps", async () => {
+    const published = deferred<unknown>();
+    const seam = lifecycleSeam({ publish: jest.fn(() => published.promise) });
+    const deps = { listClasses: jest.fn().mockResolvedValue([cls()]), assignments: seam };
+    const a = start(teacher(), deps); await open(a);
+    get<HTMLButtonElement>("assign-confirm").click(); await settle();
+    rebootstrap();
+    const b = start(teacher(), deps); await open(b);
+    expect(rowState()).toBe("unresolved"); // production boundary keeps the hold
+    cancel();
+    seam.lifecycleState.mockClear();
+    _resetCurriculumSessionStateForTest();
+    const c = start(teacher(), deps); await open(c);
+    expect(seam.lifecycleState).toHaveBeenCalledTimes(1);
+    expect(rowState()).toBe("neverAssigned");
+    published.resolve({}); await settle();
   });
 });

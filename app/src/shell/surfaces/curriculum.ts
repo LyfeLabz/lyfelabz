@@ -462,7 +462,17 @@ function bumpLifecycleGeneration(scope: LifecycleInvalidation, notify = true): v
     const key = lifecycleCacheKey(scope.classId, scope.lessonSlug);
     lifecycleEntryGenerations.set(key, (lifecycleEntryGenerations.get(key) ?? 0) + 1);
   }
-  if (notify) for (const listener of [...lifecycleInvalidationListeners]) listener(scope);
+  if (!notify) return;
+  // The generation has already moved, so stale reads are refused either way.
+  // A throwing open-dialog listener must never reach the caller: releases and
+  // settles run after a request's outcome is decided and must not alter it.
+  for (const listener of [...lifecycleInvalidationListeners]) {
+    try {
+      listener(scope);
+    } catch {
+      // isolated: other listeners and the caller continue
+    }
+  }
 }
 
 function invalidateLifecycleEntry(classId: string, lessonSlug: string, notify: boolean): void {
@@ -5239,11 +5249,17 @@ async function runAssignmentLifecycle(input: {
       // Step 2: advance to published. The certified LyfeLabz assignment
       // record must reach `published` before any LMS-side publication
       // may be issued.
+      // The publish outcome is decided first; the hold is released after,
+      // outside the try, so its notification can never reclassify it.
+      let publishSucceeded = false;
       try {
         await assignments.publish({ assignmentId });
-        releaseCreation();
+        publishSucceeded = true;
       } catch {
-        releaseCreation();
+        publishSucceeded = false;
+      }
+      releaseCreation();
+      if (!publishSucceeded) {
         // Publication did not complete, but the durable draft from step 1
         // exists and is recoverable. This is NOT "the assignment was not
         // created" - the summary must say the assignment was saved and can
@@ -5555,6 +5571,8 @@ export function _showSuccessForTest(banner: HTMLElement, summary: string): void 
 
 export function _resetCurriculumSessionStateForTest(): void {
   invalidateCurriculumSession();
+  // Test-only: production session boundaries deliberately keep these.
+  unresolvedCreations.clear();
   clearStoredFilters();
   _resetLmsPublicationStateForTest();
 }
