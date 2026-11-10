@@ -110,4 +110,4 @@ function validateRulesEvidence(value, expectations) {
     rulesetResource: a.approvedRulesetResource, sourceHash: a.approvedDeployedSourceHash, localRulesSourceHash: a.localRulesSourceHash,
     reportSha256: a.testEvidence.reportSha256 });
 }
-module.exports = { KIND, MATRIX_VERSION, ROLES, RESOURCES, OPERATIONS, requiredCases, parseApproval, digestApproval, validateRulesEvidence };
+module.exports = { KIND, MATRIX_VERSION, ROLES, RESOURCES, OPERATIONS, requiredCases, parseApproval, digestApproval, validateReport, validateRulesEvidence };
