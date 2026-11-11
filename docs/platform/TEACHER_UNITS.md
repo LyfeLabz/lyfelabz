@@ -1,5 +1,9 @@
 # Teacher Units (U1A Foundation, U1B Membership and Ordering)
 
+## Option B completion, November 11, 2026
+
+Option B is COMPLETE: deployed from `3cbfdcf`, enabled in `lyfelabz-prod` (policy generation 6, build `5700f199`), B2 independent security review PASS (13 of 13 guarantees) and production operational readiness PASS. See the [Option B completion record](TEACHER_UNITS_OPTION_B_COMPLETION.md) for evidence, residual risks, rollback limitations and deferred items. Status statements below that describe a local, undeployed, interlocked or B2-pending candidate are historical.
+
 ## E2 release controls, October 27, 2026
 
 E2 changes local release/operator controls only. All nine callable handlers, teacher/current-school/district authorization, student/classroom isolation, policy schema 2, v3 discovery/mutations, build/placement compatibility and uncached transactional availability are unchanged. Ordinary builds remain closed-only. Policy-controlled builds still need explicit enabled server policy.
@@ -9,7 +13,7 @@ The active scoped deployment/receipt/current-release format is schema 2. The for
 E2 performs no availability transition or deployment. E3 must close any enabled legacy staging marker before replacing endpoints. Existing units/receipts remain intact. Historical sections below do not restore obsolete activation/qualification prerequisites or authorize a legacy fallback.
 
 
-**Status:** Option B B1a-B1g implementation is present in the local working tree, default-closed and not independently reviewed, deployed or activated by B1. Current architecture and remaining gates are below. The domain contract remains authoritative.
+**Historical status at B1h (October 26, 2026):** Option B B1a-B1g implementation was present in the local working tree, default-closed and not independently reviewed, deployed or activated by B1. Current status: complete and live (see the completion section above). Current architecture and remaining gates are below. The domain contract remains authoritative.
 
 ### Historical pre-Option-B status record
 
@@ -17,9 +21,9 @@ E2 performs no availability transition or deployment. E3 must close any enabled 
 
 **Canonical for:** the `TeacherUnit` domain type, the `teacherUnits/{unitId}` and `teacherUnitCreateReceipts/{receiptId}` collections, the `teacherUnits*` callables, and their security, consistency, and concurrency contract.
 
-## Current Option B availability contract (local B1 candidate)
+## Option B availability contract (recorded at the B1 candidate stage)
 
-The adopted architecture is [Option B](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md), with the exact schema and migration contract in the [implementation blueprint](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md). B1a-B1g are implemented locally; B1h consolidates their documentation. This uncommitted candidate is not independent security acceptance, staging certification, deployment approval or activation approval. No fresh cloud state is claimed. The recorded Release 1 production baseline did not contain Teacher Units endpoints; B1 performed no deployment.
+The adopted architecture is [Option B](ADR_MY_UNITS_OPTION_B_TRUSTED_OPERATOR_AVAILABILITY.md), with the exact schema and migration contract in the [implementation blueprint](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md). The domain guarantees below remain current. The following candidate-stage statement is historical: B1a-B1g are implemented locally; B1h consolidates their documentation. This uncommitted candidate is not independent security acceptance, staging certification, deployment approval or activation approval. No fresh cloud state is claimed. The recorded Release 1 production baseline did not contain Teacher Units endpoints; B1 performed no deployment.
 
 ### Authority and retained domain guarantees
 
@@ -39,11 +43,13 @@ Source `releaseAvailability.ts` returns false. Actual default `general` compilat
 
 ### Operator, evidence and recovery
 
-The [current operator runbook](U2_6_RELEASE_READINESS_RUNBOOK.md#current-option-b-operator-and-release-workflow) covers explicit targets, verified direct service-account credentials, retained access review, private dry-run plans, exact CAS and confirmation, atomic policy/history/canonical operator audit, linked readback, emergency close and separately approved closed-instance recovery. `checkEnable` is read-only and validates current release/Rules evidence; it does not enable. Real-project enable remains interlocked in CLI and controller pending independent review and separate release authorization. Synthetic transitions are isolated to demo tests.
+The [operator runbook](U2_6_RELEASE_READINESS_RUNBOOK.md#e2-simplified-release-and-operator-workflow) covers explicit targets, verified direct service-account credentials, retained access review, private dry-run plans, exact CAS and confirmation, atomic policy/history/canonical operator audit, linked readback, emergency close and separately approved closed-instance recovery. `checkEnable` is read-only and validates current release/Rules evidence; it does not enable. At B1h, real-project enable was interlocked in CLI and controller; E2 superseded that interlock, and the current enable path (fresh current-release evidence, owner decision, exact CAS and confirmation) is in the E2 workflow. Synthetic transitions are isolated to demo tests.
 
 G6 requires exact deployed Rules resource/hash and approved attachment digest. `exact` additionally requires equal local/deployed hashes; `reviewed-equivalent` permits only the explicitly reviewed byte pair and complete passing report. Default-deny/callable-only boundaries remain. Emulator checks and synthetic reports do not certify deployed Rules. A close readback is policy/history/audit-scoped, not fleet verification or data recall; retain the original plan after uncertainty and reconcile rather than resend.
 
-### Current acceptance and historical scope
+### Acceptance record and historical scope
+
+B2 and the remaining release gates below were satisfied or superseded: production release 2026-10-30, B2 PASS and operational readiness PASS on 2026-11-11 (see the completion record). The next paragraph is the original B1h text.
 
 One [integrated B2 review handoff](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md#b1h-integrated-review-handoff) replaces recertification of unused signing machinery. Then separately authorize staging provider/IAM/Rules/Hosting/authenticated acceptance, closed production deployment, and a reviewed activation mechanism/decision with final availability and fleet verification. No currently executable real-enable command is supplied. Historical sections below retain their original test/deployment claims and versioned semantics; the current contract above supersedes their active crypto/version/launch prerequisites, not their domain and uncertainty guarantees.
 
@@ -401,7 +407,9 @@ A teacher can start a create at school A, lose the response, and later be author
 - `teacherUnits.fidelity.test.ts`: the 280-interleaving post-commit matrix keeps every scenario and assertion and now has an explicit 60 s timeout (measured at about 7.6 s alone against the 20 s project default).
 - Synthetic Chromium evidence (real panel, controller, attempt store, RA-1 adapter and CSS; in-memory callables with held responses, failures and simulated second-session changes; native keyboard input): 82 of 82 checkpoints at 1280x900, 390x844 (touch) and 320x640 (touch), plus forced colors, reduced motion, 200% text with WCAG text spacing, and 320x256. This is not authenticated staging evidence and no screen reader was used; live-region behavior is verified from DOM mutations only.
 
-### Remaining activation prerequisites
+### Historical activation prerequisites (at U2.5/B1h)
+
+These prerequisites were satisfied or superseded by the production release and the 2026-11-11 B2 and operational readiness reviews (see the completion record). Original text:
 
 Current Option B gates are the integrated B2 review, separately authorized nine-endpoint closed deployment and placement coordination, actual deployed Rules approval/equivalence evidence, authenticated staging verification (including accessibility), and separate production/activation decisions. Rules deployment is conditional on a separately approved necessary source change, not a prerequisite merely to equalize hashes. Shell-wide forced-colors focus outside My Units remains outside the U2.5 change.
 

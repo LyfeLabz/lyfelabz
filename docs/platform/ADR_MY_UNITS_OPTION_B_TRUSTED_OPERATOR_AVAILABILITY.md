@@ -1,5 +1,9 @@
 # ADR: My Units trusted-operator availability (Option B)
 
+## Completion, November 11, 2026
+
+Option B is COMPLETE. It is deployed from `3cbfdcf` and enabled in `lyfelabz-prod` (generation 6). The B2 independent security review PASSED all 13 guarantees with no Critical or High findings, and production operational readiness PASSED. See the [Option B completion record](TEACHER_UNITS_OPTION_B_COMPLETION.md). The decisions in this document are unchanged; statements below that describe Option B as undeployed, interlocked or awaiting B2 are historical.
+
 ## E2 active release decision, October 27, 2026
 
 Owner-authorized E2 implements E1 Phase 1 locally. The active release profile is schema 2 in `scripts/teacher-units-release/option-b-observation.cjs`; schema-1 observers/receipts remain historical readers. Custom Cloud Build provenance, registry package verification, checkpoint qualification, desired/serving image equality and explicit Run executionEnvironment fields are retired as launch requirements. This deliberately relinquishes that supply-chain attestation, within the already accepted trusted deployer/operator boundary.
@@ -137,7 +141,9 @@ The finalized B1 local manifests are: B1a policy foundation (3 new); B1b version
 
 **Historical Operation 2C next operation: separately authorize B1a only.** Do not begin it in Operation 2C. Final activation remains a separate gate. Stop uncommitted.
 
-## Current B1h adoption and next gate
+## Historical B1h adoption and next gate
+
+Superseded: E2 replaced the live-enable interlock, production enable followed, and B2 completed on 2026-11-11 (see the completion record). Original B1h text follows.
 
 B1a-B1g now implement the corrected policy/protocol/build, nine-endpoint enforcement, canonical operator audit, CAS/readback/recovery, shared client lifecycle and release/Rules/preflight adapters. B1h updates only the twelve authorized documentation paths. Current domain guarantees are in [Teacher Units](TEACHER_UNITS.md); supported commands, credential profiles, initial unprepared policy behavior, closure/recovery and the live-enable interlock are in the [operator runbook](U2_6_RELEASE_READINESS_RUNBOOK.md#current-option-b-operator-and-release-workflow). The [integrated review handoff](MY_UNITS_OPTION_B_IMPLEMENTATION_BLUEPRINT.md#b1h-integrated-review-handoff) records the exact candidate hashes, batch traceability, focused evidence, limitations and substantive questions for Astra.
 

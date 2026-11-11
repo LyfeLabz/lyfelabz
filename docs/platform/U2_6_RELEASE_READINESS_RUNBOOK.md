@@ -2,6 +2,8 @@
 
 ## E2 simplified release and operator workflow
 
+**Current status (November 11, 2026):** Option B is complete and live in `lyfelabz-prod` (generation 6, build `5700f199` from `3cbfdcf`). B2 PASS and operational readiness PASS; see the [Option B completion record](TEACHER_UNITS_OPTION_B_COMPLETION.md). This E2 section is the current operator workflow. Statements in it about local uncommitted source and E3 next steps record the October 27 state.
+
 Active as of October 27, 2026 in LOCAL UNCOMMITTED source only. E2 supersedes older statements requiring the real-enable interlock, custom checkpoint/Build-provenance/registry qualification, exact desired/running image equality, explicit Run executionEnvironment and per-application-build Rules approval coupling. Historical evidence remains readable. No deployed state changes until separately authorized operations.
 
 **Release preparation**
@@ -44,7 +46,7 @@ Use `node scripts/teacher-units-release/cli.cjs availability <command>`. Every c
 
 Plans include private before-state and are saved create-only with mode 0600. Keep the exact saved plan and release record in approved private storage for reconciliation; do not publish credentials or student data. Policy/history/audit are transactional; history is not tamper-proof against trusted Admin writers. Backend closure is authoritative. A Hosting rollback alone cannot disable server access.
 
-If close cannot be confirmed, deploy the retained compatible closed-only build across all nine endpoints under explicit recovery authorization and verify all routes; never restore the legacy-marker runtime. Restore both recorded Hosting versions if required. Preserve units/receipts/audits. Re-enable requires fresh explicit approval.
+If close cannot be confirmed, deploy the retained compatible closed-only build across all nine endpoints under explicit recovery authorization and verify all routes; never restore the legacy-marker runtime. The retained closed-only ZIP is a verification reference, not a deploy input: Functions predeploy rebuilds, so recovery means a clean checkout of the recorded source, `npm ci`, the default (closed-only) build profile, the scoped nine-endpoint deploy, then confirming the rebuilt build ID matches the archive record. If a Hosting rollback is also required, use the applicable `SAFE` pair in [the production release ledger](PRODUCTION_RELEASE_LEDGER.md), not the pair in an older release record; later Hosting-only releases make those stale. Preserve units/receipts/audits. Re-enable requires fresh explicit approval.
 
 **E3 and production boundaries**
 
@@ -115,7 +117,7 @@ node scripts/teacher-units-release/cli.cjs availability show \
 - `unapproved gcloud impersonation target`, `ambient gcloud access-token override refused`, `choose exactly one operator authentication source`: fix the invocation or environment.
 - Access-review, project-identity and permission refusals are the existing operator gates. They are not specific to this source.
 
-**Authentication readiness is not authorization.** A successful `show` with this source proves only that the operator can authenticate. It authorizes nothing. Executing `close` on `lyfelabz-prod` still requires the owner's explicit emergency authorization for that operation, the saved dry-run plan and the exact confirmation digest. `enable` remains interlocked in code regardless of the authentication source.
+**Authentication readiness is not authorization.** A successful `show` with this source proves only that the operator can authenticate. It authorizes nothing. Executing `close` on `lyfelabz-prod` still requires the owner's explicit emergency authorization for that operation, the saved dry-run plan and the exact confirmation digest. `enable` additionally requires fresh current-release evidence and an explicit owner decision under the [E2 workflow](#e2-simplified-release-and-operator-workflow), regardless of the authentication source (the B1h code interlock was superseded by E2).
 
 **Privilege and least-privilege direction.** The pinned App Engine default service accounts hold project-wide `roles/editor`, far more than the operator needs (`datastore.databases.get`, `datastore.entities.get`, `datastore.entities.list`, `datastore.entities.create`, `datastore.entities.update`). Token Creator on the service account also includes signing permissions beyond `iam.serviceAccounts.getAccessToken`. The recommended longer-term change is a dedicated operator service account with a custom Firestore-only role, and an owner grant limited to `iam.serviceAccounts.getAccessToken` on it. That requires a separate, explicitly authorized code change (the pinned identity) and IAM changes. Firestore IAM cannot limit writes to individual collections, so even that role can write anywhere in the database.
 
@@ -184,7 +186,7 @@ Enabled generation `Number.MAX_SAFE_INTEGER` stays enabled. Ordinary close repor
 
 ### Release sequence and remaining acceptance
 
-Local build/test, staging certification, closed production deployment, activation approval and verified production availability are distinct states. B receipts explicitly report activation not approved, availability not verified and fleet verification not performed. Before any external operation: complete the integrated B2 review, select an exact reviewed clean source/dependency candidate and separately authorize the relevant environment/scope.
+Local build/test, staging certification, closed production deployment, activation approval and verified production availability are distinct states. B receipts explicitly report activation not approved, availability not verified and fleet verification not performed. (Historical B1h gate: B2 was completed on 2026-11-11 with PASS; see the completion record.) Before any external operation: complete the integrated B2 review, select an exact reviewed clean source/dependency candidate and separately authorize the relevant environment/scope.
 
 For later authorized B preparation/certification, use explicit `--project`, `--intent teacher-units`, and private `--rules-approval`, `--rules-report`, `--approval-digest`, `--configuration-approval` inputs. Preparation supports `--expect-sha`; certify reuses the prepared source/evidence and paired baselines. The same controlled compiler/backend profile is reconstructed by predeploy. `general` retains closed compilation and paired Hosting checks without a Teacher Units backend-readiness claim. The target-bound policy-capable profile, preparation and certification never enable policy.
 
