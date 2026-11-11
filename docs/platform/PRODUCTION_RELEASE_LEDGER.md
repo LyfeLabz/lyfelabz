@@ -69,5 +69,22 @@ Rollback compatibility values: `CURRENT` (live), `SAFE` (may be restored with ow
 - **Production verification:** homepage, PNG, and game returned 200; the served PNG matches the committed bytes. Typing `clicker` showed the image below the navigation; activating it requested the game in a new tab; the game loaded and gameplay advanced. Signed-out `/app/` redirected to Sign In. Authenticated teacher navigation was not exercised.
 - **Staging acceptance:** the owner approved a single-use exception scoped to this exact SHA, project, and intent. PREPARE, predeploy, and certification passed.
 - **Evidence:** `LyfeLabz-Certification/production-hosting-deployment-6fd2380-2026-11-10T10-24-04Z/` (SHA-256 manifest in archive).
+- **Status:** SUPERSEDED by release 39d4722 on 2026-11-11.
+- **Rollback compatibility:** SAFE. Both versions remain FINALIZED, preserve the Physical Properties r3 page and route, and are the verified rollback pair for release 39d4722.
+
+## 2026-11-11: release 39d4722
+
+- **Release SHA:** `39d4722d81a349ae1f0555552626feeb8effa35c`
+- **Scope:** Physical Properties standards corrections and Policy A (lesson content separated from assessment revisions). Built on release 6fd2380 with one cherry-picked commit (main `3cffc23`), exactly nine files changed. Curriculum Session Isolation (PR #5) is not included. Paired Hosting release, intent `teacher-units-hosting-only`.
+- **Served changes:** five app files (`lesson_physical-properties.html`, `app/lessons/lesson_physical-properties.html`, and the r1, r2 and r3 revision pages). Marketing content bytes unchanged. Goals 1 and 2 now carry 6.MS-ETS2-1(MA) and 6.MS-ETS2-2(MA); the buoyancy goal carries no code. Quiz sections, quiz scripts and revision IDs are unchanged; no assessment revision was created.
+- **Hosting app:** `eda9f724433207dc` (released 2026-11-11T20:25:22.276Z)
+- **Hosting marketing:** `b03dc5793bf53d54` (released 2026-11-11T20:25:22.193Z)
+- **Verified rollback pair:** app `d4bba4e4dea405b7`, marketing `20a9e1c22c0ab5e2` (release `6fd2380`), both FINALIZED.
+- **Backend pin:** build `5700f199e1c42a061ea681645b9d5c25fd1b361812da078fad17f7626103a0a0` from `3cbfdcf621bb1912c9f3188cbef8696e1b644593`, unchanged. Existing Rules and configuration approvals reused; no Functions, Rules, index, configuration or Firestore change.
+- **Teacher Units policy:** enabled, generation 6, unchanged. Placement fingerprint `ad477c4c` unchanged.
+- **Certification:** CERTIFIED, `unchanged-enabled-backend-observed`. App matched 242 served paths. Marketing matched 85 served paths and retained 50 redirects.
+- **Production verification:** read-only. All five Physical Properties pages returned 200 and matched the certified bytes; the apex lesson URL redirects to the app host. Authenticated teacher navigation was not exercised.
+- **Staging acceptance:** the owner approved a single-use exception scoped to this exact SHA, project and intent, conditional on PREPARE. PREPARE, predeploy, certification and read-only production lesson checks passed. The exception is consumed.
+- **Evidence:** `LyfeLabz-Certification/production-hosting-deployment-39d4722-2026-11-11T20-25-22Z/` (SHA-256 manifest in archive).
 - **Status:** CURRENT
 - **Rollback compatibility:** CURRENT
