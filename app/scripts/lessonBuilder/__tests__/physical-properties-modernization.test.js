@@ -95,16 +95,21 @@ describe.each(FILES)("Physical Properties lesson in %s", (rel) => {
     expect(hook.querySelectorAll("input, textarea, .predict-gated, img")).toHaveLength(0);
   });
 
-  test("learning goals: three concise goals with no unsupported Grade 6 code", () => {
+  test("learning goals: three concise goals with approved engineering codes on goals 1 and 2 only", () => {
     const goals = [...doc.querySelectorAll("#goals .goal-card")];
     expect(goals.map((g) => text(g.querySelector(".goal-text")))).toEqual([
       "Investigate and compare how materials behave when scratched, heated, squeezed, pulled, or tested with electricity and magnets.",
       "Use evidence from physical property tests to identify materials and choose the right material for a job.",
       "Explain how buoyancy allows a cargo ship to float and how adding cargo affects it.",
     ]);
-    expect(doc.querySelectorAll("#goals .goal-std")).toHaveLength(0);
+    expect(doc.querySelectorAll("#goals .goal-std")).toHaveLength(2);
+    expect(goals.map((g) => [...g.querySelectorAll(".goal-std")].map(text))).toEqual([
+      ["6.MS-ETS2-1(MA)"],
+      ["6.MS-ETS2-2(MA)"],
+      [],
+    ]);
     // Standards appear only beneath the hero and on goal chips: no standalone banners, no invented codes.
-    expect([...html.matchAll(/\b\d\.MS-[A-Z]+\d-\d+(\(MA\))?/g)].map((m) => m[0]).every((c) => c === "6.MS-PS1-7(MA)" || c === "6.MS-PS1-8(MA)")).toBe(true);
+    expect([...html.matchAll(/\b\d\.MS-[A-Z]+\d-\d+(\(MA\))?/g)].map((m) => m[0]).every((c) => ["6.MS-PS1-7(MA)", "6.MS-PS1-8(MA)", "6.MS-ETS2-1(MA)", "6.MS-ETS2-2(MA)"].includes(c))).toBe(true);
     expect(doc.querySelector("main .ls-focus")).not.toBeNull();
   });
 
@@ -1264,13 +1269,39 @@ describe("Physical Properties assessment r3", () => {
     expect(fs.readdirSync(PAYLOADS).filter((f) => f.startsWith("physical-properties."))).toEqual(["physical-properties.r1.json", "physical-properties.r2.json", "physical-properties.r3.json"]);
   });
 
-  test("r1 and r2 are preserved byte-for-byte, and their renditions display their own frozen quizzes", () => {
+  // Policy A (LESSON_BUILD_REFERENCE.md): renditions carry the current, editable
+  // instruction, so their whole-file bytes may change with reviewed content edits.
+  // What is frozen per revision is the assessment: the quiz section, the quiz
+  // script literal, and the revision declaration. These pins move only with a
+  // new, separately committed assessment revision.
+  const RENDITION_QUIZ_PINS = {
+    r1: ["143572cf6364d503", "fba3eda62a9d9eff"],
+    r2: ["143572cf6364d503", "605f5479e6f4c024"],
+    r3: ["143572cf6364d503", "7d5f1e315b14d871"],
+  };
+  test.each(["r1", "r2", "r3"])("the %s rendition keeps its frozen quiz section, quiz script, and revision tag", (rev) => {
+    const html = fs.readFileSync(path.join(RENDITIONS, `lesson_physical-properties__${rev}.html`), "utf8");
+    const h = (x) => sha256(x).slice(0, 16);
+    const a = html.indexOf('<section id="quiz"');
+    expect(a).toBeGreaterThan(0);
+    expect([h(html.slice(a, html.indexOf("</section>", a))), h(quizLiteral(html))]).toEqual(RENDITION_QUIZ_PINS[rev]);
+    expect(declaration(html)).toEqual({ schemaVersion: 1, lessonSlug: "physical-properties", assessmentRevisionId: `assessment_physical-properties__${rev}` });
+  });
+
+  test("r3 rendition displays exactly the r3 quiz the canonical pages display", () => {
+    const r3html = fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r3.html"), "utf8");
+    const r3quiz = quizLiteral(r3html);
+    for (const item of r3.items) {
+      expect(item.options).toHaveLength(4);
+      expect(r3quiz).toContain(JSON.stringify(item.stem).slice(1, -1));
+      for (const option of item.options) expect(r3quiz).toContain(option.text);
+    }
+  });
+
+  test("r1 and r2 payloads are preserved byte-for-byte, and their renditions display their own frozen quizzes", () => {
     // Committed payloads are immutable; frozen r1/r2 assignments keep routing to their renditions.
     expect(sha256(fs.readFileSync(path.join(PAYLOADS, "physical-properties.r1.json")))).toBe("ba874cb718b3b8f480ce67a814f85a37238549bf02eafcb64448a58f88fc9edd");
     expect(sha256(fs.readFileSync(path.join(PAYLOADS, "physical-properties.r2.json")))).toBe("9f69c56ba4121fa89515201fed6ef08c7475d0bd9adb31773851af04e40929a1");
-    // The r1/r2 renditions are byte-identical to the ones generated before r3 existed.
-    expect(sha256(fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r1.html")))).toBe("579716129ef74844c60b9aabb480d001566bb94e7e2e7eacc26730b910ba52e3");
-    expect(sha256(fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r2.html")))).toBe("46a1389221884551d9e62c5ef8bf159c102650b5c66414cfb6cfa203cb9f5ab8");
     expect(r1.revisionOrdinal).toBe(1);
     expect(r1.items).toHaveLength(10);
     const html = fs.readFileSync(path.join(RENDITIONS, "lesson_physical-properties__r1.html"), "utf8");

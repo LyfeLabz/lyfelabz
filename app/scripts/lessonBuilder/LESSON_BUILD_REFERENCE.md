@@ -291,6 +291,69 @@ Implemented (Slice 9B, build side only; nothing routes to it until 9D):
 - Editing a lesson's quiz literal still requires a new committed revision.
   Fidelity is exact, and deployed revisions are immutable.
 
+## Content and assessment independence (Policy A)
+
+Rule: current instructional content stays editable; each published
+assessment revision stays immutable. A rendition
+(`app/lessons/assessment-revisions/lesson_<slug>__r<N>.html`) is the current
+instruction plus one frozen quiz, so its whole-file bytes legitimately move
+with reviewed content edits. Tests must pin what is frozen (the quiz
+section, the quiz literal, the revision declaration, the committed payload
+bytes, and the revision-path table), never whole rendition files.
+
+A. Content-only edits. Instructional wording, explanations, examples,
+layout, accessibility, learning goals, standards codes, and ungraded
+activities may change without a new assessment revision. Standards codes
+are content-only for assessment revision purposes, but any standards
+alignment change must still be reviewed against what the lesson actually
+teaches and assesses.
+
+- Edit only the canonical source, then run `lessons:build`. The canonical v1
+  and v2 pages and every rendition of every committed revision regenerate
+  together and must stay synchronized (`lessons:verify` fails on drift).
+- Existing revisions keep their original questions, choices, keys, and
+  explanations. Each rendition's quiz literal and declaration are
+  byte-unchanged, and fidelity against its own payload still passes.
+
+B. Assessment edits. Any change to questions, answer choices, correct
+answers, answer explanations, scoring, item count, or
+assessment structure requires a new immutable revision through
+`authorAssessments.cjs` (see "Assessment revisions"), declared in the
+lesson config. Committed `<slug>.r<N>.json` files are never rewritten, and
+an unauthorized edit to a quiz literal fails canonical fidelity at build.
+
+C. Ambiguous edits. Vocabulary, instructional claims, embedded activities,
+and quiz-adjacent content need review for compatibility with every
+revision still in use (any revision an assignment may have frozen, not only
+the current one). A content edit must not contradict, give away, or
+invalidate an answer in any live revision. If it would, either keep the
+content compatible or author a new revision.
+
+- Show Your Thinking prompt-only changes may ship as reviewed content
+  changes with the matching test-pin updates, provided they do not alter
+  independently scored assessment behavior (canonical prompts remain
+  unversioned; addendum §9.4).
+
+D. Reading-adapted lessons. A lesson with a retained `reading-adapted`
+variant has additional obligations, unchanged by this policy:
+
+- A canonical content edit inside a variant's locked skeleton, scripts,
+  styles, or non-adaptable markup breaks the invariance gate until the
+  variant source carries the same edit.
+- After updating the variant source, the new bytes must be retained with
+  `build-variants.cjs --generate` (add-only artifact, append-only manifest
+  entry recording its `assessmentRevisionId`), and `variants:verify` must
+  find the current build as a retained revision. Publishing that revision
+  is a separate, explicitly authorized step.
+- Variant verification is never weakened to land a content edit.
+
+Acceptance case: the Physical Properties goal standards correction
+(goals 1 and 2 carry `6.MS-ETS2-1(MA)` and `6.MS-ETS2-2(MA)`) regenerated
+the canonical pages and the r1, r2, and r3 renditions with every quiz,
+declaration, payload, and path entry unchanged. Regression coverage:
+`assessmentRenditions.test.js` (Policy A block) and
+`physical-properties-modernization.test.js` (`RENDITION_QUIZ_PINS`).
+
 ## Launcher override contract
 
 The Sprint 17 launcher URL contract is `/lesson_<slug>.html?assignment=<id>`.

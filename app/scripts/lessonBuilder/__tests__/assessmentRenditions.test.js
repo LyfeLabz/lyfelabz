@@ -550,3 +550,70 @@ describe("revision-to-path table", () => {
     ]);
   });
 });
+
+describe("Policy A: content-only edits flow to every rendition; assessments stay frozen (real Physical Properties r1 + r2 + r3)", () => {
+  // In-memory only: the committed source, payloads, config, and artifacts are never written.
+  const PP = "physical-properties";
+  const ppCfg = configMod.loadConfig(PP);
+  const ppSource = read(ppCfg.canonicalSource);
+  const ppEntries = () => [1, 2, 3].map((n) => entry(`${PP}.r${n}.json`, JSON.parse(read(`platform/functions/src/scripts/assessments/${PP}.r${n}.json`))));
+  const ppBySlug = () => new Map([[PP, ppEntries()]]);
+  const ANCHOR = "Investigate and compare how materials behave";
+  const PROBE = "Investigate and compare (content-only probe) how materials behave";
+  const edited = () => {
+    expect(ppSource.split(ANCHOR)).toHaveLength(2);
+    return ppSource.replace(ANCHOR, PROBE);
+  };
+  const before = builder.buildAllTargets(ppCfg, ppSource, ppBySlug());
+  const after = builder.buildAllTargets(ppCfg, edited(), ppBySlug());
+
+  test("the content-only change appears in the canonical v1 and v2 pages", () => {
+    for (const t of [after.v1, after.v2]) {
+      expect(t.bytes).toContain(PROBE);
+      expect(t.bytes).not.toContain(ANCHOR);
+    }
+  });
+
+  test("the content-only change appears in every generated assessment-revision page", () => {
+    expect(after.renditions.map((r) => r.assessmentRevisionId)).toEqual([1, 2, 3].map((n) => `assessment_${PP}__r${n}`));
+    for (const r of after.renditions) expect(r.bytes).toContain(PROBE);
+  });
+
+  test("each historical quiz literal and revision tag is byte-unchanged by the content edit", () => {
+    after.renditions.forEach((r, i) => {
+      const prior = before.renditions[i];
+      expect(literalOf(r.bytes)).toBe(literalOf(prior.bytes));
+      expect(literalOf(r.bytes)).toBe(literalOf(read(prior.path)));
+      expect(N.readDeclaration(r.bytes)).toEqual(N.readDeclaration(prior.bytes));
+      expect(N.readDeclaration(r.bytes)).toEqual({ schemaVersion: 1, lessonSlug: PP, assessmentRevisionId: `assessment_${PP}__r${i + 1}` });
+      expect(F.checkFidelity(PP, ppEntries()[i].payload, F.extractCanonicalQuiz(r.bytes, PP))).toEqual([]);
+    });
+    for (const k of ["v1", "v2"]) {
+      expect(literalOf(after[k].bytes)).toBe(literalOf(before[k].bytes));
+      expect(N.readDeclaration(after[k].bytes)).toEqual(N.readDeclaration(before[k].bytes));
+    }
+  });
+
+  test("an unauthorized quiz change still fails assessment fidelity", () => {
+    const r3 = ppEntries()[2].payload;
+    const stem = JSON.stringify(r3.items[0].stem).slice(1, -1);
+    const lit = literalOf(edited());
+    expect(lit).toContain(stem);
+    const tampered = withLiteral(edited(), lit.replace(stem, `${stem} (unauthorized)`));
+    expect(() => builder.buildAllTargets(ppCfg, tampered, ppBySlug())).toThrow();
+    const r1Stem = JSON.stringify(ppEntries()[0].payload.items[0].stem).slice(1, -1);
+    const r1Lit = literalOf(after.renditions[0].bytes);
+    expect(r1Lit).toContain(r1Stem);
+    const tamperedRendition = withLiteral(after.renditions[0].bytes, r1Lit.replace(r1Stem, `${r1Stem} (unauthorized)`));
+    expect(F.checkFidelity(PP, ppEntries()[0].payload, F.extractCanonicalQuiz(tamperedRendition, PP)).length).toBeGreaterThan(0);
+    expect(() => N.assertQuizIs(tamperedRendition, PP, ppEntries()[0])).toThrow();
+  });
+
+  test("revision routing is unchanged by the content edit and matches the committed table", () => {
+    const table = JSON.parse(N.serializePathTable(N.buildRevisionPathTable([ppCfg], ppBySlug())));
+    const committed = JSON.parse(read("app/lessons/assessment-revisions/revision-paths.json")).lessons[PP];
+    expect(table.lessons[PP]).toEqual(committed);
+    expect(after.renditions.map((r) => `/${r.path}`)).toEqual(Object.values(committed));
+    expect(after.renditions.map((r) => r.path)).toEqual(before.renditions.map((r) => r.path));
+  });
+});
