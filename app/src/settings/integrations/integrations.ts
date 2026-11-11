@@ -433,6 +433,11 @@ export function renderIntegrationsSurface(
   const onReconnect = async (
     provider: IntegrationsProvider,
   ): Promise<void> => {
+    // Ownership and ordering are taken at the click; an obsolete session
+    // opens no window and contacts no server.
+    const operation = deps.connectionRecovery?.beginReconnect(provider.providerId) ?? null;
+    const isCurrent = (): boolean => operation?.isCurrent() ?? true;
+    if (!isCurrent()) return;
     // PDR-030i: reserve the authorization window synchronously from this
     // click, before the first server request.
     const reservation = deps.reserveOAuthWindow?.() ?? null;
@@ -444,25 +449,29 @@ export function renderIntegrationsSurface(
         redirectUri: deps.redirectUri,
         reconnect: true,
       });
+      if (!isCurrent()) return;
       const handoff = await deps.openOAuth({
         authorizationUrl: begin.authorizationUrl,
         redirectUri: deps.redirectUri,
         expectedState: begin.state,
         reservation,
       });
+      if (!isCurrent()) return;
       await deps.callables.completeConnection({
         providerId: provider.providerId,
         code: handoff.code,
         state: handoff.state,
         redirectUri: deps.redirectUri,
       });
-      deps.connectionRecovery?.clear(provider.providerId);
+      if (!isCurrent()) return;
+      operation?.complete();
       notice = {
         kind: "info",
         message: `${provider.displayName} is reconnected.`,
       };
       await refreshAfterMutation();
     } catch (err) {
+      if (!isCurrent()) return;
       notice = { kind: "error", message: describeConnectError(err, provider) };
       render();
     } finally {

@@ -2,6 +2,14 @@
  * @jest-environment jsdom
  */
 import { renderIntegrationsSurface } from "./integrations";
+import {
+  beginLmsRequest,
+  createConnectionRecovery,
+  invalidateLmsPublicationSession,
+  lmsPublicationSessionScope,
+  readConnectionReconnectNeeded,
+  recordConnectionReconnectNeeded,
+} from "../../shell/surfaces/shared/lmsPublication";
 import type {
   IntegrationsCallables,
   IntegrationsConnection,
@@ -230,7 +238,7 @@ describe("Sprint 24B Phase 1: Settings > Integrations account-level scope", () =
       ...makeDeps(),
       connectionRecovery: {
         needsReconnect: () => true,
-        clear: () => undefined,
+        beginReconnect: () => ({ isCurrent: () => true, complete: () => undefined }),
       },
     };
     renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
@@ -270,7 +278,7 @@ describe("Sprint 24B Phase 1: Settings > Integrations account-level scope", () =
       ...makeDeps(),
       connectionRecovery: {
         needsReconnect: () => false,
-        clear: () => undefined,
+        beginReconnect: () => ({ isCurrent: () => true, complete: () => undefined }),
       },
     };
     renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
@@ -313,7 +321,7 @@ describe("Sprint 24B Phase 1: Settings > Integrations account-level scope", () =
       ...makeDeps({ describeConnections: async () => Object.freeze([]) }),
       connectionRecovery: {
         needsReconnect: () => true,
-        clear: () => undefined,
+        beginReconnect: () => ({ isCurrent: () => true, complete: () => undefined }),
       },
     };
     renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
@@ -357,7 +365,7 @@ describe("Sprint 24B Phase 1: Settings > Integrations account-level scope", () =
       },
       connectionRecovery: {
         needsReconnect: () => true,
-        clear: (providerId) => cleared.push(providerId),
+        beginReconnect: (providerId) => ({ isCurrent: () => true, complete: () => { cleared.push(providerId); } }),
       },
     };
     const mount = mkMount();
@@ -859,7 +867,7 @@ describe("Settings > Integrations: authorization window reservation", () => {
         return reservation;
       },
       ...(opts.needsReconnect
-        ? { connectionRecovery: { needsReconnect: () => true, clear: () => undefined } }
+        ? { connectionRecovery: { needsReconnect: () => true, beginReconnect: () => ({ isCurrent: () => true, complete: () => undefined }) } }
         : {}),
     };
     return { deps, order, reservation, handedReservations, beginInputs };
@@ -912,5 +920,85 @@ describe("Settings > Integrations: authorization window reservation", () => {
     await settle();
     expect(h.order).toEqual(["reserve", "begin", "close"]);
     expect(mount.textContent).toMatch(/could not reach Google Classroom/i);
+  });
+});
+
+// Sol P2 (second audit): the real Settings reconnect path against the real
+// session-scoped recovery store, overlapping a Classroom publication.
+describe("Settings reconnect ownership and ordering", () => {
+  const deferred = <T,>() => {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>((res) => { resolve = res; });
+    return { promise, resolve };
+  };
+  const reconnectButton = (mount: HTMLElement): HTMLButtonElement | null =>
+    mount.querySelector<HTMLButtonElement>("[data-testid=integrations-reconnect-googleClassroom]");
+
+  beforeEach(() => {
+    invalidateLmsPublicationSession();
+    document.body.innerHTML = "";
+  });
+
+  const setup = (over: Partial<IntegrationsCallables>, reserve = jest.fn(() => null)) => {
+    const scope = lmsPublicationSessionScope("teacher-1", "school-1");
+    // A publication earlier this session observed the connection unusable.
+    recordConnectionReconnectNeeded(beginLmsRequest(scope), "googleClassroom");
+    const deps: IntegrationsDeps = {
+      ...makeDeps(over),
+      openOAuth: async () => ({ code: "c", state: "st" }),
+      reserveOAuthWindow: reserve,
+      connectionRecovery: createConnectionRecovery(scope),
+    } as IntegrationsDeps;
+    const mount = mkMount();
+    renderIntegrationsSurface(mount, deps, { onExit: () => undefined });
+    return { scope, mount, reserve };
+  };
+
+  test("a valid reconnect clears the signal", async () => {
+    const { scope, mount } = setup({});
+    await flush(); await flush();
+    reconnectButton(mount)!.click();
+    await flush(); await flush(); await flush();
+    expect(readConnectionReconnectNeeded(scope, "googleClassroom")).toBe(false);
+  });
+
+  test("a slow reconnect does not clear a reconnect-required signal from a newer publication", async () => {
+    const completion = deferred<{ connectionId: string; alreadyConnected: boolean }>();
+    const { scope, mount } = setup({ completeConnection: () => completion.promise });
+    await flush(); await flush();
+    reconnectButton(mount)!.click(); // the reconnect takes its ticket here
+    await flush(); await flush();
+    // A Classroom publication starting after it finds the connection unusable.
+    recordConnectionReconnectNeeded(beginLmsRequest(scope), "googleClassroom");
+    completion.resolve({ connectionId: "conn-1", alreadyConnected: false });
+    await flush(); await flush(); await flush();
+    expect(readConnectionReconnectNeeded(scope, "googleClassroom")).toBe(true);
+  });
+
+  test("a reconnect whose session ends mid-flight completes nothing and clears nothing in the new session", async () => {
+    const begun = deferred<{ authorizationUrl: string; state: string }>();
+    const complete = jest.fn(async () => ({ connectionId: "conn-1", alreadyConnected: false }));
+    const { mount } = setup({ beginConnection: () => begun.promise, completeConnection: complete });
+    await flush(); await flush();
+    reconnectButton(mount)!.click();
+    invalidateLmsPublicationSession();
+    const fresh = lmsPublicationSessionScope("teacher-1", "school-1");
+    recordConnectionReconnectNeeded(beginLmsRequest(fresh), "googleClassroom");
+    begun.resolve({ authorizationUrl: "u", state: "st" });
+    await flush(); await flush(); await flush();
+    expect(complete).not.toHaveBeenCalled();
+    expect(readConnectionReconnectNeeded(fresh, "googleClassroom")).toBe(true);
+  });
+
+  test("an expired Settings surface's Reconnect opens no window and contacts no server", async () => {
+    const begin = jest.fn(async () => ({ authorizationUrl: "u", state: "st" }));
+    const { mount, reserve } = setup({ beginConnection: begin });
+    await flush(); await flush();
+    const button = reconnectButton(mount)!;
+    invalidateLmsPublicationSession();
+    button.click();
+    await flush();
+    expect(reserve).not.toHaveBeenCalled();
+    expect(begin).not.toHaveBeenCalled();
   });
 });

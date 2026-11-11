@@ -55,9 +55,11 @@ import { mintAssignmentId } from "./shared/assignmentId";
 import { formatLocalDate, formatLocalTime } from "./shared/activeAssignments";
 import {
   CLASSROOM_AUTHORIZATION_MESSAGE,
+  beginLmsRequest,
   classifyTopicLoadError,
   clearConnectionReconnectNeeded,
   createConsentCoordinator,
+  lmsPublicationSessionScope,
   mintNonce,
   recordConnectionReconnectNeeded,
   recordLmsPublicationRetryContext,
@@ -65,6 +67,7 @@ import {
   runPublicationAction,
   _resetLmsPublicationStateForTest,
   type ClassroomAuthorizationResult,
+  type LmsSessionScope,
   type TopicLoadFailure,
 } from "./shared/lmsPublication";
 import type { AssignmentLmsPublicationState } from "../../assignments/detail/types";
@@ -323,7 +326,7 @@ function isValidClassroomMaxPoints(points: number): boolean {
 }
 
 // Session-remembered defaults. Sprint 6E is UI-only, so these live in
-// module scope and are cleared by a full page reload. When the
+// module scope and are cleared at each bootstrap/session boundary. When the
 // Assignment Foundation phase certifies teacher-preference persistence,
 // this surface will read from a real preference source.
 const DEFAULT_RELEASE_TIME = "07:45";
@@ -420,6 +423,183 @@ type Assignment = {
 // its unassigned state, mirroring section 8 of ASSIGN_EXPERIENCE.md.
 const sessionAssignments: Map<string, Assignment> = new Map();
 
+// One owner per bootstrap, further scoped by canonical teacher identity and
+// school. Object identity is the generation token; navigation reuses it.
+type CurriculumOwner = {
+  readonly kind: "activeTeacher";
+  readonly uid: string;
+  readonly schoolId: string;
+  readonly generation: number;
+  // The same session's Classroom retry/recovery scope.
+  readonly lms: LmsSessionScope;
+};
+let curriculumOwner: CurriculumOwner | null = null;
+let sessionGeneration = 0;
+const sessionDialogClosers = new Set<() => void>();
+let classCacheGeneration = 0;
+
+// Lifecycle validity at two widths: the whole cache (a class change or a
+// session boundary) and one class within one lesson (an Assign or Current
+// mutation). A read is used only if neither of its widths moved, so a change
+// to another lesson or class never discards it.
+let lifecycleGlobalGeneration = 0;
+const lifecycleEntryGenerations = new Map<string, number>();
+// Empty: the whole cache. Otherwise one class within one lesson.
+type LifecycleInvalidation = { readonly lessonSlug?: string; readonly classId?: string };
+// Open Assign dialogs, told when lifecycle results they rendered from are
+// invalidated.
+const lifecycleInvalidationListeners = new Set<(scope: LifecycleInvalidation) => void>();
+
+function lifecycleToken(classId: string, lessonSlug: string): string {
+  const entry = lifecycleEntryGenerations.get(lifecycleCacheKey(classId, lessonSlug)) ?? 0;
+  return `${lifecycleGlobalGeneration}/${entry}`;
+}
+
+function bumpLifecycleGeneration(scope: LifecycleInvalidation, notify = true): void {
+  if (scope.lessonSlug === undefined || scope.classId === undefined) {
+    lifecycleGlobalGeneration += 1;
+  } else {
+    const key = lifecycleCacheKey(scope.classId, scope.lessonSlug);
+    lifecycleEntryGenerations.set(key, (lifecycleEntryGenerations.get(key) ?? 0) + 1);
+  }
+  if (!notify) return;
+  // The generation has already moved, so stale reads are refused either way.
+  // A throwing open-dialog listener must never reach the caller: releases and
+  // settles run after a request's outcome is decided and must not alter it.
+  for (const listener of [...lifecycleInvalidationListeners]) {
+    try {
+      listener(scope);
+    } catch {
+      // isolated: other listeners and the caller continue
+    }
+  }
+}
+
+function invalidateLifecycleEntry(classId: string, lessonSlug: string, notify: boolean): void {
+  cachedLifecycleState.delete(lifecycleCacheKey(classId, lessonSlug));
+  bumpLifecycleGeneration({ lessonSlug, classId }, notify);
+}
+
+// Assign and Current mutations in flight, by lifecycle cache key. While one
+// is unresolved its class's status for that lesson is unknown: no read is
+// issued or cached for it and its row is not actionable. Replaced (never
+// carried over) at each session boundary.
+let pendingLifecycleMutations = new Map<string, number>();
+
+// Assign creation requests (draft, then publish) already sent and not yet
+// settled, by teacher-and-school scope, then lifecycle cache key. Unlike
+// `pendingLifecycleMutations` this survives a session boundary, but only
+// for the SAME teacher and school: a request already sent keeps running
+// after sign-out, and until it settles a new session of that teacher must
+// treat the class's status as unknown rather than read it as never
+// assigned. Another teacher or school never sees it. It authorizes nothing
+// (the obsolete session still sends no further request) and each entry is
+// removed when its own request settles, succeeded or failed.
+const unresolvedCreations = new Map<string, Map<string, number>>();
+
+function teacherScopeKey(owner: { readonly uid: string; readonly schoolId: string }): string {
+  return `${owner.uid}\u0000${owner.schoolId}`;
+}
+
+function lifecycleMutationPending(classId: string, lessonSlug: string): boolean {
+  const key = lifecycleCacheKey(classId, lessonSlug);
+  if ((pendingLifecycleMutations.get(key) ?? 0) > 0) return true;
+  if (curriculumOwner === null) return false;
+  return (unresolvedCreations.get(teacherScopeKey(curriculumOwner))?.get(key) ?? 0) > 0;
+}
+
+// Marks one class's creation request unresolved for `owner`'s teacher and
+// school. The returned release (call it once that request settles) unmarks
+// it and, when the signed-in teacher and school are still the same (this
+// session or a later one), invalidates the class so its next read is fresh.
+function holdUnresolvedCreation(
+  owner: CurriculumOwner,
+  classId: string,
+  lessonSlug: string,
+): () => void {
+  const scope = teacherScopeKey(owner);
+  const key = lifecycleCacheKey(classId, lessonSlug);
+  const entries = unresolvedCreations.get(scope) ?? new Map<string, number>();
+  unresolvedCreations.set(scope, entries);
+  entries.set(key, (entries.get(key) ?? 0) + 1);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    const count = (entries.get(key) ?? 0) - 1;
+    if (count > 0) entries.set(key, count);
+    else entries.delete(key);
+    if (entries.size === 0 && unresolvedCreations.get(scope) === entries) {
+      unresolvedCreations.delete(scope);
+    }
+    if (curriculumOwner !== null && teacherScopeKey(curriculumOwner) === scope) {
+      invalidateLifecycleEntry(classId, lessonSlug, true);
+    }
+  };
+}
+
+// Marks the classes pending and invalidates them; the returned settle (call
+// it once the mutation resolves, succeeded or failed) unmarks and
+// invalidates them again, so no read from before or during the mutation is
+// ever used afterwards.
+function beginLifecycleMutation(
+  classIds: ReadonlyArray<string>,
+  lessonSlug: string,
+  notifyOpenDialogs = true,
+): () => void {
+  const pending = pendingLifecycleMutations;
+  for (const classId of classIds) {
+    const key = lifecycleCacheKey(classId, lessonSlug);
+    pending.set(key, (pending.get(key) ?? 0) + 1);
+    invalidateLifecycleEntry(classId, lessonSlug, notifyOpenDialogs);
+  }
+  let settled = false;
+  return () => {
+    if (settled) return;
+    settled = true;
+    for (const classId of classIds) {
+      const key = lifecycleCacheKey(classId, lessonSlug);
+      const count = (pending.get(key) ?? 0) - 1;
+      if (count > 0) pending.set(key, count);
+      else pending.delete(key);
+    }
+    if (pending !== pendingLifecycleMutations) return;
+    for (const classId of classIds) invalidateLifecycleEntry(classId, lessonSlug, notifyOpenDialogs);
+  };
+}
+
+/** Called synchronously when bootstrap starts, before any authentication wait. */
+export function invalidateCurriculumSession(): void {
+  sessionGeneration += 1;
+  curriculumOwner = null;
+  for (const close of sessionDialogClosers) close();
+  sessionAssignments.clear();
+  sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
+  sessionPreferences.topic = "";
+  sessionPreferences.lmsTopicId = "";
+  cachedTopicsByLinkId.clear();
+  topicsInFlightByLinkId.clear();
+  topicLoadFailureByLinkId.clear();
+  sessionPersistedSlugs = null;
+  sessionFilters = null;
+  pendingLifecycleMutations = new Map();
+  invalidateCurriculumClassCache();
+}
+
+function curriculumSessionOwner(session: ActiveTeacher): CurriculumOwner {
+  if (curriculumOwner?.uid !== session.uid || curriculumOwner.schoolId !== session.schoolId) {
+    invalidateCurriculumSession();
+    curriculumOwner = Object.freeze({
+      kind: session.kind,
+      uid: session.uid,
+      schoolId: session.schoolId,
+      generation: sessionGeneration,
+      lms: lmsPublicationSessionScope(session.uid, session.schoolId),
+    });
+  }
+  return curriculumOwner;
+}
+
 // Teacher class list cache. Populated lazily on surface mount so the
 // dialog opens without a round trip. Keyed by uid to avoid returning a
 // prior teacher's cache after a sign-out/sign-in in the same tab.
@@ -501,6 +681,19 @@ type LifecycleStateEntry = {
 
 const cachedLifecycleState: Map<string, LifecycleStateEntry> = new Map();
 
+// Status not known (failed, still unknown, or invalidated before it could be
+// used). Never a confirmed absence: the row renders its Retry state and is
+// excluded from creation and Current decisions.
+function unknownLifecycleEntry(): LifecycleStateEntry {
+  return {
+    state: "neverAssigned",
+    candidates: [],
+    currentAssignmentId: null,
+    currentAssignmentResolution: "unresolved",
+    error: true,
+  };
+}
+
 function lifecycleCacheKey(classId: string, lessonSlug: string): string {
   return `${classId}::${lessonSlug}`;
 }
@@ -510,11 +703,25 @@ async function loadLifecycleStateForDialog(
   classIds: ReadonlyArray<string>,
   lessonSlug: string,
 ): Promise<Map<string, LifecycleStateEntry>> {
+  const owner = curriculumOwner;
+  const ownsSession = (): boolean => owner !== null && owner === curriculumOwner;
+  // Each class's read is valid only while its own lesson/class token holds
+  // and no mutation for it is pending; another lesson's change never
+  // discards it.
+  const tokens = new Map(classIds.map((id) => [id, lifecycleToken(id, lessonSlug)]));
+  const isCurrent = (classId: string): boolean =>
+    ownsSession() &&
+    tokens.get(classId) === lifecycleToken(classId, lessonSlug) &&
+    !lifecycleMutationPending(classId, lessonSlug);
   const result = new Map<string, LifecycleStateEntry>();
+  if (!ownsSession()) return result;
   const toFetch: string[] = [];
   for (const classId of classIds) {
-    const key = lifecycleCacheKey(classId, lessonSlug);
-    const cached = cachedLifecycleState.get(key);
+    if (lifecycleMutationPending(classId, lessonSlug)) {
+      result.set(classId, unknownLifecycleEntry());
+      continue;
+    }
+    const cached = cachedLifecycleState.get(lifecycleCacheKey(classId, lessonSlug));
     if (cached) {
       result.set(classId, cached);
     } else {
@@ -522,7 +729,7 @@ async function loadLifecycleStateForDialog(
     }
   }
   if (toFetch.length === 0) return result;
-  const settled = await Promise.allSettled(
+  await Promise.allSettled(
     toFetch.map(async (classId) => {
       const resp = await assignments.lifecycleState({ classId, lessonSlug });
       const entry: LifecycleStateEntry = {
@@ -531,34 +738,17 @@ async function loadLifecycleStateForDialog(
         currentAssignmentId: resp.currentAssignmentId,
         currentAssignmentResolution: resp.currentAssignmentResolution,
       };
+      if (!isCurrent(classId)) return;
       cachedLifecycleState.set(lifecycleCacheKey(classId, lessonSlug), entry);
       result.set(classId, entry);
     }),
   );
-  for (let i = 0; i < settled.length; i++) {
-    if (settled[i].status === "rejected") {
-      result.set(toFetch[i], {
-        state: "neverAssigned",
-        candidates: [],
-        currentAssignmentId: null,
-        currentAssignmentResolution: "unresolved",
-        error: true,
-      });
-    }
+  if (!ownsSession()) return new Map();
+  // Failed, invalidated, or now pending: unknown, never "never assigned".
+  for (const classId of classIds) {
+    if (!result.has(classId) || !isCurrent(classId)) result.set(classId, unknownLifecycleEntry());
   }
   return result;
-}
-
-function invalidateLifecycleCache(lessonSlug?: string): void {
-  if (!lessonSlug) {
-    cachedLifecycleState.clear();
-    return;
-  }
-  for (const key of cachedLifecycleState.keys()) {
-    if (key.endsWith(`::${lessonSlug}`)) {
-      cachedLifecycleState.delete(key);
-    }
-  }
 }
 
 const GRADE_FILTERS: ReadonlyArray<{
@@ -984,58 +1174,57 @@ function assignedClassCount(
   return classIds.size;
 }
 
-function ensureClasses(
-  uid: string,
-  listClasses: ListClasses,
-): Promise<void> {
-  if (cachedClasses && cachedClasses.uid === uid) return Promise.resolve();
+function ensureClasses(owner: CurriculumOwner, listClasses: ListClasses): Promise<void> {
+  const uid = owner.uid;
+  const generation = classCacheGeneration;
+  const isCurrent = (): boolean =>
+    owner === curriculumOwner && generation === classCacheGeneration;
+  if (!isCurrent()) return Promise.resolve();
+  if (cachedClasses?.uid === uid) return Promise.resolve();
   if (classesInFlight) return classesInFlight;
-  classesInFlight = listClasses(uid)
+  const request = listClasses(uid)
     .then((rows) => {
-      cachedClasses = Object.freeze({ uid, rows });
+      if (isCurrent()) cachedClasses = Object.freeze({ uid, rows });
     })
-    .catch(() => {
-      cachedClasses = Object.freeze({ uid, rows: Object.freeze([]) });
-    })
+    .catch(() => { /* Leave failures uncached so the next open retries. */ })
     .finally(() => {
-      classesInFlight = null;
+      if (classesInFlight === request) classesInFlight = null;
     });
-  return classesInFlight;
+  classesInFlight = request;
+  return request;
 }
 
-function ensureClassLinks(
-  uid: string,
-  integrations: IntegrationsDeps | null,
-): Promise<void> {
-  if (integrations === null || integrations.listClassLinks === undefined) {
-    if (!cachedClassLinks || cachedClassLinks.uid !== uid) {
-      cachedClassLinks = Object.freeze({ uid, linksByClassId: new Map() });
-    }
-    return Promise.resolve();
-  }
-  if (cachedClassLinks && cachedClassLinks.uid === uid) return Promise.resolve();
+function ensureClassLinks(owner: CurriculumOwner, integrations: IntegrationsDeps | null): Promise<void> {
+  const uid = owner.uid;
+  const generation = classCacheGeneration;
+  const isCurrent = (): boolean =>
+    owner === curriculumOwner && generation === classCacheGeneration;
+  if (!isCurrent()) return Promise.resolve();
+  if (integrations === null || integrations.listClassLinks === undefined) return Promise.resolve();
+  if (cachedClassLinks?.uid === uid) return Promise.resolve();
   if (classLinksInFlight) return classLinksInFlight;
-  const reader = integrations.listClassLinks;
-  classLinksInFlight = reader()
+  const request = integrations.listClassLinks()
     .then((rows) => {
+      if (!isCurrent()) return;
       const map = new Map<string, IntegrationsClassLink>();
       for (const r of rows) map.set(r.classId, r);
       cachedClassLinks = Object.freeze({ uid, linksByClassId: map });
     })
-    .catch(() => {
-      cachedClassLinks = Object.freeze({ uid, linksByClassId: new Map() });
-    })
+    .catch(() => { /* Leave failures uncached so the next open retries. */ })
     .finally(() => {
-      classLinksInFlight = null;
+      if (classLinksInFlight === request) classLinksInFlight = null;
     });
-  return classLinksInFlight;
+  classLinksInFlight = request;
+  return request;
 }
 
 function ensureTopics(
+  owner: CurriculumOwner | null,
   linkId: string,
   integrations: IntegrationsDeps | null,
 ): Promise<void> {
-  if (integrations === null) return Promise.resolve();
+  if (integrations === null || owner === null || owner !== curriculumOwner) return Promise.resolve();
+  const isCurrent = (): boolean => owner === curriculumOwner;
   // A successful load (including a course that legitimately has no topics) is
   // cached as authoritative for the session. A failed load is intentionally
   // NOT cached as a topic list: it records WHY it failed instead, so the
@@ -1051,16 +1240,17 @@ function ensureTopics(
   const p = integrations.callables
     .listClassTopics({ linkId })
     .then((rows) => {
+      if (!isCurrent()) return;
       cachedTopicsByLinkId.set(linkId, rows);
       topicLoadFailureByLinkId.delete(linkId);
     })
     .catch((err: unknown) => {
       // Do not cache a topic list. The call site reads the recorded reason
       // and shows it; a later attempt re-fetches.
-      topicLoadFailureByLinkId.set(linkId, classifyTopicLoadError(err));
+      if (isCurrent()) topicLoadFailureByLinkId.set(linkId, classifyTopicLoadError(err));
     })
     .finally(() => {
-      topicsInFlightByLinkId.delete(linkId);
+      if (topicsInFlightByLinkId.get(linkId) === p) topicsInFlightByLinkId.delete(linkId);
     });
   topicsInFlightByLinkId.set(linkId, p);
   return p;
@@ -1075,6 +1265,8 @@ export function renderCurriculumSurface(
     assignments: null,
   },
 ): void {
+  const owner = curriculumSessionOwner(session);
+  const ownsSession = (): boolean => owner === curriculumOwner;
   const integrations = deps.integrations ?? null;
   const assignments = deps.assignments ?? null;
   const assignmentDetail = deps.assignmentDetail ?? null;
@@ -1150,6 +1342,7 @@ export function renderCurriculumSurface(
     const origin = openResults;
     const action = ++resultsActionSeq;
     const stillActive = (): boolean =>
+      ownsSession() &&
       action === resultsActionSeq &&
       origin !== null &&
       openResults === origin &&
@@ -1236,9 +1429,9 @@ export function renderCurriculumSurface(
     returnTo: LessonResultsReturn,
     status: () => HTMLElement | null,
   ): LessonClassResultsSeam => ({
-    ready: ensureClasses(session.uid, deps.listClasses),
+    ready: ensureClasses(owner, deps.listClasses),
     describe: (classId) => {
-      const rows = cachedClasses?.uid === session.uid ? cachedClasses.rows : [];
+      const rows = ownsSession() && cachedClasses?.uid === session.uid ? cachedClasses.rows : [];
       const index = rows.findIndex((c) => c.id === classId);
       const row = rows[index];
       if (row !== undefined) return { name: row.title, order: index };
@@ -1595,6 +1788,7 @@ export function renderCurriculumSurface(
   }
 
   const openAssignDialog = (lesson: SurfaceableLesson, card: HTMLElement): void => {
+    if (!ownsSession()) return;
     void openDialog({
       doc,
       lesson,
@@ -1604,6 +1798,7 @@ export function renderCurriculumSurface(
       assignments,
       assignmentDetail,
       onConfirm: (summary) => {
+        if (!ownsSession()) return;
         refreshAssignControl(card, lesson, assignedClassCount(assignmentDetail, lesson.slug));
         showSuccess(successBanner, summary);
         // While this lesson's Results is open the grid's banner is hidden, so
@@ -1614,6 +1809,7 @@ export function renderCurriculumSurface(
         }
       },
       onLifecycleComplete: (assignmentIds) => {
+        if (!ownsSession()) return;
         // Re-derive the quiet assignment-history badge from the
         // persisted-assignment registry so the card only shows
         // "✓ Assigned" after at least one class successfully published,
@@ -1644,8 +1840,8 @@ export function renderCurriculumSurface(
 
   // Prefetch classes and their LMS link status so the dialog opens
   // with the class list and the LMS-linked class row shape ready.
-  void ensureClasses(session.uid, deps.listClasses);
-  void ensureClassLinks(session.uid, integrations);
+  void ensureClasses(owner, deps.listClasses);
+  void ensureClassLinks(owner, integrations);
 
   // Shell one-shot: open a lesson's Results on this mount (My Units' Results
   // action, or Back from a class's Assignment Detail, which re-enters the
@@ -2467,6 +2663,8 @@ export function applyLessonAssignState(
 }
 
 async function openDialog(input: OpenDialogInput): Promise<void> {
+  // My Units can enter this shared dialog before Curriculum has mounted.
+  const owner = curriculumSessionOwner(input.session);
   const {
     doc,
     lesson,
@@ -2542,10 +2740,13 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   // dialog (the same dismissal Escape performs) instead of leaving it over
   // the page Back restores. See shell/openModals.ts.
   let unregisterModal: () => void = () => undefined;
+  let onLifecycleInvalidated: ((scope: LifecycleInvalidation) => void) | null = null;
   const close = (): void => {
     if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     doc.removeEventListener("keydown", onKey);
     unregisterModal();
+    sessionDialogClosers.delete(close);
+    if (onLifecycleInvalidated !== null) lifecycleInvalidationListeners.delete(onLifecycleInvalidated);
   };
   const onKey = (ev: KeyboardEvent): void => {
     if (ev.key === "Escape") {
@@ -2555,6 +2756,8 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   };
   doc.addEventListener("keydown", onKey);
   unregisterModal = registerOpenModal(close);
+  sessionDialogClosers.add(close);
+  const isCurrent = (): boolean => owner === curriculumOwner && overlay.isConnected;
   cancel.addEventListener("click", close);
   overlay.addEventListener("click", (ev) => {
     if (ev.target === overlay) close();
@@ -2568,10 +2771,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   body.appendChild(loading);
 
   await Promise.all([
-    ensureClasses(session.uid, listClasses),
-    ensureClassLinks(session.uid, integrations),
+    ensureClasses(owner, listClasses),
+    ensureClassLinks(owner, integrations),
   ]);
-  if (!overlay.isConnected) return;
+  if (!isCurrent()) return;
 
   const classes = (cachedClasses?.rows ?? []).filter(
     (c): c is Extract<ClassSummary, { status: "active" }> =>
@@ -2595,6 +2798,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       : Promise.resolve(new Map());
 
   let lifecycleByClass: Map<string, LifecycleStateEntry> = new Map();
+  const lifecycleTokens = new Map(classes.map((c) => [c.id, lifecycleToken(c.id, lesson.slug)]));
   if (assignments !== null && classes.length > 0) {
     loading.textContent = "Checking assignment status";
     try {
@@ -2611,7 +2815,17 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     }
   }
   const publicationAuthorization = new Map(await authorizationPromise);
-  if (!overlay.isConnected) return;
+  if (!isCurrent()) return;
+  // Invalidated (or now mid-mutation) while the dialog was still loading:
+  // those rows start unknown.
+  for (const c of classes) {
+    if (
+      lifecycleTokens.get(c.id) !== lifecycleToken(c.id, lesson.slug) ||
+      lifecycleMutationPending(c.id, lesson.slug)
+    ) {
+      lifecycleByClass.set(c.id, unknownLifecycleEntry());
+    }
+  }
   body.removeChild(loading);
 
   if (classes.length === 0) {
@@ -2790,9 +3004,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       ...(integrations.reserveOAuthWindow !== undefined
         ? { reserveOAuthWindow: integrations.reserveOAuthWindow }
         : {}),
+      isCurrent,
     });
     authorizationInFlight = false;
-    if (!overlay.isConnected) return false;
+    if (!isCurrent()) return false;
     showAccessNotice(result);
     if (result !== "granted") return false;
     publicationAuthorization.set(providerId, true);
@@ -2800,11 +3015,11 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     return true;
   };
   accessButton.addEventListener("click", () => {
-    if (authorizationInFlight || submissionInFlight) return;
+    if (!isCurrent() || authorizationInFlight || submissionInFlight) return;
     void authorizeClassroom();
   });
   lyfelabzOnlyButton.addEventListener("click", () => {
-    if (authorizationInFlight || submissionInFlight) return;
+    if (!isCurrent() || authorizationInFlight || submissionInFlight) return;
     submit("lyfelabzOnly");
   });
   accessCancelButton.addEventListener("click", () => {
@@ -3061,14 +3276,11 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   // app/src/classes/classOrder.ts); Assign simply renders that order as
   // received and applies no secondary sort of its own.
   const rowLifecycleState: Map<string, LifecycleStateEntry> = new Map();
-  for (const c of classes) {
+  const renderClassRow = (
+    c: Extract<ClassSummary, { status: "active" }>,
+    lc: LifecycleStateEntry,
+  ): HTMLElement => {
     const link = linksByClassId.get(c.id) ?? null;
-    const lc: LifecycleStateEntry = lifecycleByClass.get(c.id) ?? {
-      state: "neverAssigned" as const,
-      candidates: [],
-      currentAssignmentId: null,
-      currentAssignmentResolution: "unresolved" as const,
-    };
     rowLifecycleState.set(c.id, lc);
     const retryCtx = assignments
       ? {
@@ -3079,9 +3291,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
           rowsHost,
           onConfirm,
           scheduleContext,
+          isCurrent,
         }
       : undefined;
-    const row = renderRow(
+    return renderRow(
       doc,
       c,
       rowState,
@@ -3093,7 +3306,40 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
       scheduleContext,
       (reload) => topicReloaders.push(reload),
     );
-    rowsHost.appendChild(row);
+  };
+  for (const c of classes) {
+    // Without the lifecycle callables there is no status to consult (the
+    // pre-lifecycle shape). With them, a class missing from the results is
+    // unknown, never a confirmed "never assigned".
+    const lc: LifecycleStateEntry =
+      lifecycleByClass.get(c.id) ??
+      (assignments !== null
+        ? unknownLifecycleEntry()
+        : {
+            state: "neverAssigned" as const,
+            candidates: [],
+            currentAssignmentId: null,
+            currentAssignmentResolution: "unresolved" as const,
+          });
+    rowsHost.appendChild(renderClassRow(c, lc));
+  }
+  // Lifecycle results this dialog rendered from were invalidated (a class
+  // change, or a same-lesson assignment change): every row returns to the
+  // unknown Retry state, so no creation or Current decision uses them.
+  if (assignments !== null) {
+    onLifecycleInvalidated = (scope) => {
+      if (!isCurrent() || (scope.lessonSlug !== undefined && scope.lessonSlug !== lesson.slug)) return;
+      for (const c of classes) {
+        if (scope.classId !== undefined && scope.classId !== c.id) continue;
+        const existing = Array.from(rowsHost.children).find(
+          (el) => el.getAttribute("data-class-id") === c.id,
+        );
+        const next = renderClassRow(c, unknownLifecycleEntry());
+        if (existing !== undefined) existing.replaceWith(next);
+      }
+      updateConfirmState();
+    };
+    lifecycleInvalidationListeners.add(onLifecycleInvalidated);
   }
   updateConfirmState();
 
@@ -3123,7 +3369,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     return ids;
   };
   confirm.addEventListener("click", () => {
-    if (submissionInFlight || authorizationInFlight) return;
+    if (!isCurrent() || submissionInFlight || authorizationInFlight) return;
     if (providerNeedingAuthorization(enabledClassroomCreationClassIds()) === null) {
       submit();
       return;
@@ -3133,13 +3379,13 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     // the teacher can allow access and confirm again, or deselect the
     // Classroom-linked classes.
     void authorizeClassroom().then((granted) => {
-      if (granted && overlay.isConnected) submit();
+      if (granted && isCurrent()) submit();
     });
   });
   const submit = (
     delivery: "classroom" | "lyfelabzOnly" = "classroom",
   ): void => {
-    if (submissionInFlight) return;
+    if (!isCurrent() || submissionInFlight) return;
     // Sprint 30A.1 UX correction: defense in depth mirroring the
     // `updateConfirmState` gate above - a Graded action with an invalid
     // Points value never proceeds, even if this handler is somehow
@@ -3318,7 +3564,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         : notProcessedNote,
     );
 
-    invalidateLifecycleCache(lesson.slug);
+    // Each half keeps its classes' status unknown (not actionable, never
+    // read or cached) until it settles, then invalidates them again.
+    const settleCreation = beginLifecycleMutation(creationRows.map((r) => r.classId), lesson.slug);
+    const settleUpdates = beginLifecycleMutation(updateRows.map((r) => r.classId), lesson.slug);
 
     // A mixed operation runs both halves; completion is reported once, after
     // both settle, with the union of their confirmed ids. Reporting from one
@@ -3348,7 +3597,9 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         onConfirm,
         onLifecycleComplete: halfComplete,
         delivery,
-      });
+      }).finally(settleCreation);
+    } else {
+      settleCreation();
     }
 
     if (updateRows.length > 0) {
@@ -3359,7 +3610,9 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
         assignments,
         onConfirm,
         onLifecycleComplete: halfComplete,
-      });
+      }).finally(settleUpdates);
+    } else {
+      settleUpdates();
     }
   };
 
@@ -3371,6 +3624,7 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
 }
 
 type RowRetryContext = {
+  isCurrent: () => boolean;
   assignments: AssignmentsCallables;
   lessonSlug: string;
   // Historical Assignment Resolution, Implementation Slice 11. Used only
@@ -3403,6 +3657,12 @@ async function refreshRowLifecycle(
   cls: Extract<ClassSummary, { status: "active" }>,
   retryContext: RowRetryContext,
 ): Promise<LifecycleStateEntry> {
+  const owner = curriculumOwner;
+  // Unknown until a pending mutation for this class settles.
+  if (lifecycleMutationPending(cls.id, retryContext.lessonSlug)) {
+    throw new Error("Curriculum lifecycle mutation pending");
+  }
+  const token = lifecycleToken(cls.id, retryContext.lessonSlug);
   const resp = await retryContext.assignments.lifecycleState({
     classId: cls.id,
     lessonSlug: retryContext.lessonSlug,
@@ -3413,6 +3673,14 @@ async function refreshRowLifecycle(
     currentAssignmentId: resp.currentAssignmentId,
     currentAssignmentResolution: resp.currentAssignmentResolution,
   };
+  if (
+    !retryContext.isCurrent() ||
+    owner !== curriculumOwner ||
+    token !== lifecycleToken(cls.id, retryContext.lessonSlug) ||
+    lifecycleMutationPending(cls.id, retryContext.lessonSlug)
+  ) {
+    throw new Error("Obsolete Curriculum lifecycle read");
+  }
   cachedLifecycleState.set(
     lifecycleCacheKey(cls.id, retryContext.lessonSlug),
     entry,
@@ -3447,10 +3715,12 @@ function attachRetryButton(
     `Retry loading assignment status for ${cls.title}`,
   );
   retryBtn.addEventListener("click", () => {
+    if (!retryContext.isCurrent()) return;
     retryBtn.disabled = true;
     retryBtn.textContent = "Retrying…";
     void refreshRowLifecycle(cls, retryContext)
       .then((entry) => {
+        if (!retryContext.isCurrent()) return;
         const newRow = renderRow(
           doc, cls, rowState, onChange, link, integrations, entry, retryContext,
         );
@@ -3458,6 +3728,7 @@ function attachRetryButton(
         onChange();
       })
       .catch(() => {
+        if (!retryContext.isCurrent()) return;
         retryBtn.disabled = false;
         retryBtn.textContent = "Retry";
       });
@@ -3748,6 +4019,7 @@ function renderSetOrChangeCurrentControl(input: {
   panel.appendChild(actions);
 
   confirmBtn.addEventListener("click", () => {
+    if (!retryContext.isCurrent()) return;
     // Confirming without an explicit selection never mutates - this is the
     // only validation this control performs, and it never substitutes a
     // default target of any kind.
@@ -3769,6 +4041,10 @@ function renderSetOrChangeCurrentControl(input: {
 
     void (async () => {
       let mutationSucceeded = false;
+      // This control re-renders its own row, so open dialogs are not told;
+      // the cache entry is dropped either way, so a failed refresh followed
+      // by reopening Assign reads fresh status.
+      const settleCurrent = beginLifecycleMutation([cls.id], retryContext.lessonSlug, false);
       try {
         await retryContext.assignments.currentSet({
           classId: cls.id,
@@ -3785,8 +4061,11 @@ function renderSetOrChangeCurrentControl(input: {
         // creation, and never claims success. It refreshes live lifecycle
         // state and requires the teacher to review and reselect.
         mutationSucceeded = false;
+      } finally {
+        settleCurrent();
       }
 
+      if (!retryContext.isCurrent()) return;
       // A row resolved here was locked (force-deselected) only because its
       // Current was unresolved; restore the selection it had before the
       // lock so it is included in Save like the rest of the selection.
@@ -3802,15 +4081,11 @@ function renderSetOrChangeCurrentControl(input: {
       try {
         entry = await refreshRowLifecycle(cls, retryContext);
       } catch {
-        entry = {
-          state: "neverAssigned",
-          candidates: [],
-          currentAssignmentId: null,
-          currentAssignmentResolution: "unresolved",
-          error: true,
-        };
+        if (!retryContext.isCurrent()) return;
+        entry = unknownLifecycleEntry();
         retryContext.rowLifecycleState.set(cls.id, entry);
       }
+      if (!retryContext.isCurrent()) return;
       const newRow = renderRow(
         doc, cls, rowState, onChange, link, integrations, entry, retryContext,
       );
@@ -3978,6 +4253,10 @@ function renderRow(
   // after the teacher allows Classroom access without reopening.
   onTopicSelect?: (reload: () => void) => void,
 ): HTMLElement {
+  const owner = curriculumOwner;
+  const rowIsCurrent = (): boolean =>
+    owner !== null && owner === curriculumOwner && row.isConnected &&
+    (retryContext?.isCurrent() ?? true);
   const cfg = rowState.get(cls.id);
   if (!cfg) throw new Error(`missing row state for class ${cls.id}`);
   // Only a creation row (below) renders the Post now / Schedule control;
@@ -4376,7 +4655,8 @@ function renderRow(
         select.appendChild(loadingOption);
         loadingOption.selected = true;
         select.setAttribute("data-topic-state", "loading");
-        void ensureTopics(link.linkId, integrations).then(() => {
+        void ensureTopics(owner, link.linkId, integrations).then(() => {
+          if (!rowIsCurrent()) return;
           const topics = cachedTopicsByLinkId.get(link.linkId);
           if (topics === undefined) {
             // The list could not be loaded. Say why in the selector itself
@@ -4679,8 +4959,11 @@ async function runReconcileUpdates(input: {
     assignmentIds: ReadonlyArray<string>,
   ) => void;
 }): Promise<void> {
+  const owner = curriculumOwner;
+  const isCurrent = (): boolean => owner !== null && owner === curriculumOwner;
   const { lesson, teacherUid, updateRows, assignments, onConfirm, onLifecycleComplete } =
     input;
+  if (!isCurrent()) return;
 
   const results = await Promise.allSettled(
     updateRows.map(async (row) => {
@@ -4706,6 +4989,7 @@ async function runReconcileUpdates(input: {
     }),
   );
 
+  if (!isCurrent()) return;
   const outcomes = results.map((r) =>
     r.status === "fulfilled"
       ? r.value
@@ -4843,6 +5127,11 @@ async function runAssignmentLifecycle(input: {
   // selection never posts some linked classes and silently skips others.
   readonly delivery?: "classroom" | "lyfelabzOnly";
 }): Promise<void> {
+  // The initiating session owns the whole operation: every later step
+  // re-checks it after the preceding await.
+  const owner = curriculumOwner;
+  if (owner === null) return;
+  const isCurrent = (): boolean => owner === curriculumOwner;
   const {
     lesson,
     teacherUid,
@@ -4902,6 +5191,12 @@ async function runAssignmentLifecycle(input: {
       // choice (see RowConfig.publishTiming), never from pre-filled values.
       const scheduledTime = row.availableAt;
 
+      // Held from before the draft request is sent until the LyfeLabz
+      // record's outcome is settled (draft failed, draft left unpublished,
+      // or the publish request settled), so a same-teacher session that
+      // starts meanwhile never reads this class as never assigned.
+      const releaseCreation = holdUnresolvedCreation(owner, row.classId, lesson.slug);
+
       // Step 1: authoritative draft. If this fails, no publish and no
       // LMS side effect.
       //
@@ -4928,6 +5223,7 @@ async function runAssignmentLifecycle(input: {
         });
       } catch {
         // Draft creation failed: nothing durable was saved for this class.
+        releaseCreation();
         return {
           classId: row.classId,
           assignmentId,
@@ -4937,12 +5233,33 @@ async function runAssignmentLifecycle(input: {
         };
       }
 
+      // An obsolete session's completed draft authorizes no further step;
+      // the durable draft stays recoverable like any unpublished draft.
+      if (!isCurrent()) {
+        releaseCreation();
+        return {
+          classId: row.classId,
+          assignmentId,
+          lyfelabzState: "savedNotPublished",
+          lmsRequested: wantsLms,
+          lmsState: "notRequested",
+        };
+      }
+
       // Step 2: advance to published. The certified LyfeLabz assignment
       // record must reach `published` before any LMS-side publication
       // may be issued.
+      // The publish outcome is decided first; the hold is released after,
+      // outside the try, so its notification can never reclassify it.
+      let publishSucceeded = false;
       try {
         await assignments.publish({ assignmentId });
+        publishSucceeded = true;
       } catch {
+        publishSucceeded = false;
+      }
+      releaseCreation();
+      if (!publishSucceeded) {
         // Publication did not complete, but the durable draft from step 1
         // exists and is recoverable. This is NOT "the assignment was not
         // created" - the summary must say the assignment was saved and can
@@ -4961,7 +5278,7 @@ async function runAssignmentLifecycle(input: {
       // class-centered Assignments section and Assignment Detail can
       // surface it (the registry is now consumed by Classes, not by a
       // Curriculum-side control). Only teacher-owned metadata is stored.
-      if (assignmentDetail !== null) {
+      if (isCurrent() && assignmentDetail !== null) {
         try {
           const meta: AssignmentDetailMetadata = {
             assignmentId,
@@ -4978,9 +5295,10 @@ async function runAssignmentLifecycle(input: {
         }
       }
 
-      // Step 3: optional LMS publication using the authoritative id.
+      // Step 3: optional LMS publication using the authoritative id. Never
+      // started (and no retry context recorded) for an obsolete session.
       const link = row.link;
-      if (!wantsLms || link === null || integrations === null) {
+      if (!wantsLms || link === null || integrations === null || !isCurrent()) {
         return {
           classId: row.classId,
           assignmentId,
@@ -4997,6 +5315,7 @@ async function runAssignmentLifecycle(input: {
       // it is never re-minted per HTTPS call and never shared across rows.
       const publishNonce = mintNonce();
       const publishCallables = integrations.callables;
+      const lmsTicket = beginLmsRequest(owner.lms);
       const result = await runPublicationAction({
         nonce: publishNonce,
         publish: (attemptNonce) =>
@@ -5015,12 +5334,22 @@ async function runAssignmentLifecycle(input: {
           redirectUri: integrations.redirectUri,
         },
         coordinator: consentCoordinator,
+        isCurrent,
       });
+      if (!isCurrent()) {
+        return {
+          classId: row.classId,
+          assignmentId,
+          lyfelabzState: "published",
+          lmsRequested: true,
+          lmsState: result.kind,
+        };
+      }
       // Record the retry context so the assignment detail view can offer a
       // teacher-initiated retry for a publication that did not succeed.
       // The latest state is recorded on every outcome, including success
       // (which suppresses the retry affordance).
-      recordLmsPublicationRetryContext(teacherUid, {
+      recordLmsPublicationRetryContext(lmsTicket, {
         assignmentId,
         linkId: link.linkId,
         providerId: link.providerId,
@@ -5034,9 +5363,9 @@ async function runAssignmentLifecycle(input: {
       // mismatch never does (its recovery is same-account retry, not a
       // Settings reconnect, §7.E). Any usable outcome clears a prior signal.
       if (result.kind === "reconnectRequired") {
-        recordConnectionReconnectNeeded(teacherUid, link.providerId);
+        recordConnectionReconnectNeeded(lmsTicket, link.providerId);
       } else {
-        clearConnectionReconnectNeeded(teacherUid, link.providerId);
+        clearConnectionReconnectNeeded(lmsTicket, link.providerId);
       }
       return {
         classId: row.classId,
@@ -5051,6 +5380,7 @@ async function runAssignmentLifecycle(input: {
     }),
   );
 
+  if (!isCurrent()) return;
   const publishedIds = outcomes
     .filter((o) => o.lyfelabzState === "published")
     .map((o) => o.assignmentId);
@@ -5213,34 +5543,17 @@ function summarizeOutcomes(
 // Class-cache invalidation
 // -----------------------------------------------------------------------------
 
-// Production cache invalidation. Sprint 25 certification (scenario B2)
-// exposed a pre-existing defect: the module-scoped teacher class cache
-// (`cachedClasses`) is warmed on Curriculum mount and keyed only by uid.
-// Because the SPA re-renders in place instead of reloading this module,
-// that cache survives two boundaries it should not:
-//   1. A same-session class mutation (create / import / activate)
-//      performed on the Classes surface. The Classes page reads classes
-//      fresh, but the Assign dialog keeps serving the pre-mutation list,
-//      so a newly created class is invisible in Assign until reload.
-//   2. A same-uid sign-out/sign-in (auth-session replacement). The uid
-//      key matches across the teardown, so the incoming session reuses
-//      the outgoing session's rows.
-//
-// This function narrowly drops the class-scoped caches (the class list
-// and the LMS class-link cache, plus any in-flight fetch) so the next
-// Assign open re-fetches from the injected reader. It deliberately does
-// NOT touch session preferences, filters, the assignment registries, or
-// the persisted-slug badges: those are not class data, and dropping them
-// would silently change unrelated behavior. Per-link LMS topics are left
-// intact because they are LMS-owned per linkId and are re-fetched lazily
-// for any newly appearing link; a class mutation does not invalidate the
-// topics of an existing link.
+// Class mutations keep remembered assignment settings and existing link topics,
+// but revoke pending class/link/lifecycle writes as well as their cached rows.
+// Bootstrap uses invalidateCurriculumSession instead to clear all teacher state.
 export function invalidateCurriculumClassCache(): void {
+  classCacheGeneration += 1;
   cachedClasses = null;
   classesInFlight = null;
   cachedClassLinks = null;
   classLinksInFlight = null;
   cachedLifecycleState.clear();
+  bumpLifecycleGeneration({});
 }
 
 // -----------------------------------------------------------------------------
@@ -5257,20 +5570,9 @@ export function _showSuccessForTest(banner: HTMLElement, summary: string): void 
 }
 
 export function _resetCurriculumSessionStateForTest(): void {
-  sessionAssignments.clear();
-  cachedClasses = null;
-  classesInFlight = null;
-  cachedClassLinks = null;
-  classLinksInFlight = null;
-  cachedTopicsByLinkId.clear();
-  topicsInFlightByLinkId.clear();
-  topicLoadFailureByLinkId.clear();
-  cachedLifecycleState.clear();
-  sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
-  sessionPreferences.topic = "";
-  sessionPreferences.lmsTopicId = "";
-  sessionPersistedSlugs = null;
-  sessionFilters = null;
+  invalidateCurriculumSession();
+  // Test-only: production session boundaries deliberately keep these.
+  unresolvedCreations.clear();
   clearStoredFilters();
   _resetLmsPublicationStateForTest();
 }

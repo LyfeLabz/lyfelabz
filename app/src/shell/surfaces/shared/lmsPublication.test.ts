@@ -28,8 +28,18 @@ import {
   recordLmsPublicationRetryContext,
   runPublicationAction,
   _resetLmsPublicationStateForTest,
+  beginLmsRequest,
+  invalidateLmsPublicationSession,
+  lmsPublicationSessionScope,
+  type LmsSessionScope,
   type PublicationConsentSeam,
 } from "./lmsPublication";
+
+// The current session scope for teacher u1, and a scope that is not (or is
+// no longer) current, as another teacher's or an obsolete bootstrap's.
+const s1 = (): LmsSessionScope => lmsPublicationSessionScope("u1", "school");
+const foreign = (uid: string): LmsSessionScope => ({ uid, schoolId: "school", generation: -1 });
+const t1 = () => beginLmsRequest(s1());
 
 const succeeded = (
   lmsAssignmentId = "gc-1",
@@ -438,25 +448,25 @@ describe("session-scoped retry store and detail seam", () => {
     _resetLmsPublicationStateForTest();
   });
 
-  test("record and read are uid-scoped", () => {
-    recordLmsPublicationRetryContext("u1", {
+  test("record and read are session-scoped", () => {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
       title: "T",
       state: "failed",
     });
-    expect(readLmsPublicationRetryContext("u1", "a1")?.state).toBe("failed");
+    expect(readLmsPublicationRetryContext(s1(), "a1")?.state).toBe("failed");
     // A different uid never sees the prior teacher's context.
-    expect(readLmsPublicationRetryContext("u2", "a1")).toBeNull();
+    expect(readLmsPublicationRetryContext(foreign("u2"), "a1")).toBeNull();
   });
 
   test("createDetailLmsRetrySeam returns null when there is no context or it succeeded", () => {
     const integrations = {} as unknown as IntegrationsDeps;
     expect(
-      createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations }),
+      createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations }),
     ).toBeNull();
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
@@ -464,7 +474,7 @@ describe("session-scoped retry store and detail seam", () => {
       state: "succeeded",
     });
     expect(
-      createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations }),
+      createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations }),
     ).toBeNull();
   });
 
@@ -488,7 +498,7 @@ describe("session-scoped retry store and detail seam", () => {
       },
     } as unknown as IntegrationsDeps;
 
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
@@ -497,7 +507,7 @@ describe("session-scoped retry store and detail seam", () => {
     });
 
     const seam = createDetailLmsRetrySeam({
-      uid: "u1",
+      scope: s1(),
       assignmentId: "a1",
       integrations,
     });
@@ -511,7 +521,7 @@ describe("session-scoped retry store and detail seam", () => {
     expect(publishNonces[0]).not.toBe("");
     expect(publishNonces[0]).toBe(publishNonces[1]);
     // The recorded state is updated so a re-open reflects success.
-    expect(readLmsPublicationRetryContext("u1", "a1")?.state).toBe("succeeded");
+    expect(readLmsPublicationRetryContext(s1(), "a1")?.state).toBe("succeeded");
   });
 
   test("a fresh explicit retry mints a different nonce from a previous action", async () => {
@@ -528,14 +538,14 @@ describe("session-scoped retry store and detail seam", () => {
         },
       },
     } as unknown as IntegrationsDeps;
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
       title: "T",
       state: "failed",
     });
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     await seam.retry();
     await seam.retry();
     expect(seen).toHaveLength(2);
@@ -553,23 +563,23 @@ describe("session-scoped connection-recovery signal", () => {
     _resetLmsPublicationStateForTest();
   });
 
-  test("record then read is uid- and provider-scoped; clear removes it", () => {
-    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
-    recordConnectionReconnectNeeded("u1", "google-classroom");
-    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(true);
+  test("record then read is session- and provider-scoped; clear removes it", () => {
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(false);
+    recordConnectionReconnectNeeded(t1(), "google-classroom");
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(true);
     // A different teacher never sees another teacher's signal.
-    expect(readConnectionReconnectNeeded("u2", "google-classroom")).toBe(false);
+    expect(readConnectionReconnectNeeded(foreign("u2"), "google-classroom")).toBe(false);
     // A different provider is unaffected.
-    expect(readConnectionReconnectNeeded("u1", "other")).toBe(false);
-    clearConnectionReconnectNeeded("u1", "google-classroom");
-    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+    expect(readConnectionReconnectNeeded(s1(), "other")).toBe(false);
+    clearConnectionReconnectNeeded(t1(), "google-classroom");
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(false);
   });
 
   test("a fresh session (reset) forgets the signal - it is not persisted", () => {
-    recordConnectionReconnectNeeded("u1", "google-classroom");
-    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(true);
+    recordConnectionReconnectNeeded(t1(), "google-classroom");
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(true);
     _resetLmsPublicationStateForTest();
-    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(false);
   });
 
   test("a detail retry that stays reconnect-required arms the signal for Settings", async () => {
@@ -582,21 +592,21 @@ describe("session-scoped connection-recovery signal", () => {
         publishAssignment: async () => failedWith("lms.connectionNotActive"),
       },
     } as unknown as IntegrationsDeps;
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
       title: "T",
       state: "failed",
     });
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     const next = await seam.retry();
     expect(next).toBe("reconnectRequired");
-    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(true);
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(true);
   });
 
   test("a detail retry that succeeds clears a previously armed signal", async () => {
-    recordConnectionReconnectNeeded("u1", "google-classroom");
+    recordConnectionReconnectNeeded(t1(), "google-classroom");
     const integrations = {
       redirectUri: "r",
       openOAuth: async () => ({ code: "c", state: "s" }),
@@ -606,17 +616,17 @@ describe("session-scoped connection-recovery signal", () => {
         publishAssignment: async () => succeeded(),
       },
     } as unknown as IntegrationsDeps;
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
       title: "T",
       state: "reconnectRequired",
     });
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     const next = await seam.retry();
     expect(next).toBe("succeeded");
-    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(false);
   });
 
   test("a detail retry that hits identity mismatch does NOT arm the Settings signal", async () => {
@@ -633,19 +643,19 @@ describe("session-scoped connection-recovery signal", () => {
         publishAssignment: async () => insufficient(),
       },
     } as unknown as IntegrationsDeps;
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "google-classroom",
       title: "T",
       state: "failed",
     });
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     const next = await seam.retry();
     expect(next).toBe("identityMismatch");
     // Identity mismatch recovery lives in the publication surface (same-account
     // retry), so Settings must not be armed as a required destination.
-    expect(readConnectionReconnectNeeded("u1", "google-classroom")).toBe(false);
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(false);
   });
 });
 
@@ -835,7 +845,7 @@ describe("detail retry after a permission refusal", () => {
   };
 
   const recordPermissionStop = (): void =>
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "googleClassroom",
@@ -846,7 +856,7 @@ describe("detail retry after a permission refusal", () => {
   test("asks for access first, from the click, then publishes exactly once", async () => {
     const { integrations, order } = makeRetryIntegrations({ grants: true });
     recordPermissionStop();
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     await expect(seam.retry()).resolves.toBe("succeeded");
     expect(order).toEqual(["begin", "open", "complete", "publish"]);
   });
@@ -854,10 +864,10 @@ describe("detail retry after a permission refusal", () => {
   test("a refusal publishes nothing", async () => {
     const { integrations, order } = makeRetryIntegrations({ grants: false });
     recordPermissionStop();
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     await expect(seam.retry()).resolves.toBe("permissionNotGranted");
     expect(order).not.toContain("publish");
-    expect(readLmsPublicationRetryContext("u1", "a1")?.state).toBe("permissionNotGranted");
+    expect(readLmsPublicationRetryContext(s1(), "a1")?.state).toBe("permissionNotGranted");
   });
 
   test("never opens a second Google window if Classroom still reports missing permission", async () => {
@@ -866,7 +876,7 @@ describe("detail retry after a permission refusal", () => {
       publish: async () => insufficient(),
     });
     recordPermissionStop();
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     await expect(seam.retry()).resolves.toBe("permissionNotGranted");
     expect(order.filter((o) => o === "open")).toHaveLength(1);
     expect(order.filter((o) => o === "publish")).toHaveLength(1);
@@ -967,14 +977,14 @@ describe("authorization window reservation", () => {
         })(),
       },
     } as unknown as IntegrationsDeps;
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "googleClassroom",
       title: "T",
       state: "failed",
     });
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     await expect(seam.retry()).resolves.toBe("succeeded");
     expect(reserves).toBe(0);
   });
@@ -1007,18 +1017,194 @@ describe("authorization window reservation", () => {
         },
       },
     } as unknown as IntegrationsDeps;
-    recordLmsPublicationRetryContext("u1", {
+    recordLmsPublicationRetryContext(t1(), {
       assignmentId: "a1",
       linkId: "l1",
       providerId: "googleClassroom",
       title: "T",
       state: "permissionNotGranted",
     });
-    const seam = createDetailLmsRetrySeam({ uid: "u1", assignmentId: "a1", integrations })!;
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
     const pending = seam.retry();
     expect(order).toEqual(["reserve", "begin"]);
     await expect(pending).resolves.toBe("succeeded");
     expect(order.filter((o) => o === "reserve")).toHaveLength(1);
     expect(order.filter((o) => o === "publish")).toHaveLength(1);
+  });
+});
+
+// Sol P2: retry and connection-recovery state is owned by a session scope
+// (teacher, school, bootstrap generation) and, within it, by request order.
+describe("session and request ownership of retry and recovery state", () => {
+  beforeEach(() => {
+    _resetLmsPublicationStateForTest();
+  });
+
+  const context = (state: "failed" | "succeeded" | "reconnectRequired") => ({
+    assignmentId: "a1",
+    linkId: "l1",
+    providerId: "google-classroom",
+    title: "T",
+    state,
+  });
+
+  test("a same-UID rebootstrap drops prior state and refuses the old session's late writes", () => {
+    const oldTicket = t1();
+    recordLmsPublicationRetryContext(oldTicket, context("failed"));
+    recordConnectionReconnectNeeded(oldTicket, "google-classroom");
+    const oldScope = s1();
+    invalidateLmsPublicationSession();
+    const fresh = s1();
+    expect(fresh).not.toBe(oldScope);
+    expect(readLmsPublicationRetryContext(fresh, "a1")).toBeNull();
+    expect(readConnectionReconnectNeeded(fresh, "google-classroom")).toBe(false);
+    // Late responses from the obsolete session.
+    recordLmsPublicationRetryContext(oldTicket, context("reconnectRequired"));
+    recordConnectionReconnectNeeded(oldTicket, "google-classroom");
+    expect(readLmsPublicationRetryContext(fresh, "a1")).toBeNull();
+    expect(readConnectionReconnectNeeded(fresh, "google-classroom")).toBe(false);
+    // The old scope itself reads nothing any more.
+    expect(readLmsPublicationRetryContext(oldScope, "a1")).toBeNull();
+  });
+
+  test("a school change for the same teacher starts a new scope", () => {
+    const oldTicket = t1();
+    recordLmsPublicationRetryContext(oldTicket, context("failed"));
+    const otherSchool = lmsPublicationSessionScope("u1", "school-2");
+    expect(readLmsPublicationRetryContext(otherSchool, "a1")).toBeNull();
+    recordConnectionReconnectNeeded(oldTicket, "google-classroom");
+    expect(readConnectionReconnectNeeded(otherSchool, "google-classroom")).toBe(false);
+  });
+
+  test("an older request's late response never overwrites newer retry or recovery state", () => {
+    const older = t1();
+    const newer = t1();
+    recordLmsPublicationRetryContext(newer, context("succeeded"));
+    clearConnectionReconnectNeeded(newer, "google-classroom");
+    recordLmsPublicationRetryContext(older, context("reconnectRequired"));
+    recordConnectionReconnectNeeded(older, "google-classroom");
+    expect(readLmsPublicationRetryContext(s1(), "a1")?.state).toBe("succeeded");
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(false);
+    // A newer request still replaces older state in the same session.
+    const latest = t1();
+    recordConnectionReconnectNeeded(latest, "google-classroom");
+    expect(readConnectionReconnectNeeded(s1(), "google-classroom")).toBe(true);
+  });
+
+  test("a detail retry whose session ends during publish starts no consent and records nothing", async () => {
+    let releasePublish!: (value: unknown) => void;
+    const begin = jest.fn(async () => ({ authorizationUrl: "u", state: "s" }));
+    const integrations = {
+      redirectUri: "r",
+      openOAuth: async () => ({ code: "c", state: "s" }),
+      callables: {
+        beginConnection: begin,
+        completeConnection: async () => ({ connectionId: "conn", alreadyConnected: false }),
+        publishAssignment: () =>
+          new Promise((resolve) => {
+            releasePublish = resolve;
+          }),
+      },
+    } as unknown as IntegrationsDeps;
+    recordLmsPublicationRetryContext(t1(), context("failed"));
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
+    const pending = seam.retry();
+    await Promise.resolve();
+    invalidateLmsPublicationSession();
+    const fresh = s1();
+    releasePublish({ status: "failed", errorCode: "lms.insufficientScope" });
+    await expect(pending).resolves.toBe("failed");
+    expect(begin).not.toHaveBeenCalled();
+    expect(readLmsPublicationRetryContext(fresh, "a1")).toBeNull();
+    expect(readConnectionReconnectNeeded(fresh, "google-classroom")).toBe(false);
+  });
+
+  test("a consent handoff stops before completion once its session is obsolete", async () => {
+    let current = true;
+    const complete = jest.fn(async () => ({ connectionId: "conn", alreadyConnected: false }));
+    const result = await requestPublicationAuthorization({
+      providerId: "google-classroom",
+      beginConnection: async () => ({ authorizationUrl: "u", state: "s" }),
+      completeConnection: complete,
+      openOAuth: async () => {
+        current = false;
+        return { code: "c", state: "s" };
+      },
+      redirectUri: "r",
+      isCurrent: () => current,
+    } as unknown as PublicationConsentSeam);
+    expect(result).toBe("failed");
+    expect(complete).not.toHaveBeenCalled();
+  });
+});
+
+// Sol P2 (second audit): an expired retry must stop before any popup.
+describe("expired retries open no window", () => {
+  beforeEach(() => {
+    _resetLmsPublicationStateForTest();
+  });
+
+  const permissionContext = {
+    assignmentId: "a1",
+    linkId: "l1",
+    providerId: "google-classroom",
+    title: "T",
+    state: "permissionNotGranted" as const,
+  };
+
+  test("an already-expired Assignment Detail retry reserves no window, calls no server and records nothing", async () => {
+    const reserve = jest.fn(() => null);
+    const begin = jest.fn(async () => ({ authorizationUrl: "u", state: "s" }));
+    const publish = jest.fn(async () => succeeded());
+    const integrations = {
+      redirectUri: "r",
+      openOAuth: jest.fn(async () => ({ code: "c", state: "s" })),
+      reserveOAuthWindow: reserve,
+      callables: { beginConnection: begin, completeConnection: jest.fn(), publishAssignment: publish },
+    } as unknown as IntegrationsDeps;
+    recordLmsPublicationRetryContext(t1(), permissionContext);
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
+    invalidateLmsPublicationSession(); // sign-out / rebootstrap before the click
+    const fresh = s1();
+    await expect(seam.retry()).resolves.toBe("failed");
+    expect(reserve).not.toHaveBeenCalled();
+    expect(begin).not.toHaveBeenCalled();
+    expect(publish).not.toHaveBeenCalled();
+    expect(readLmsPublicationRetryContext(fresh, "a1")).toBeNull();
+  });
+
+  test("a click-time authorization for an obsolete session reserves no window", async () => {
+    const reserve = jest.fn(() => null);
+    const begin = jest.fn(async () => ({ authorizationUrl: "u", state: "s" }));
+    const result = await requestPublicationAuthorization({
+      providerId: "google-classroom",
+      beginConnection: begin,
+      completeConnection: jest.fn(),
+      openOAuth: jest.fn(),
+      redirectUri: "r",
+      reserveOAuthWindow: reserve,
+      isCurrent: () => false,
+    } as unknown as PublicationConsentSeam);
+    expect(result).toBe("failed");
+    expect(reserve).not.toHaveBeenCalled();
+    expect(begin).not.toHaveBeenCalled();
+  });
+
+  test("a current session's user-initiated retry still reserves its window first", async () => {
+    const order: string[] = [];
+    const integrations = {
+      redirectUri: "r",
+      openOAuth: async () => ({ code: "c", state: "s" }),
+      reserveOAuthWindow: () => { order.push("reserve"); return null; },
+      callables: {
+        beginConnection: async () => { order.push("begin"); return { authorizationUrl: "u", state: "s" }; },
+        completeConnection: async () => ({ connectionId: "c", alreadyConnected: false, publicationAuthorized: true }),
+        publishAssignment: async () => { order.push("publish"); return succeeded(); },
+      },
+    } as unknown as IntegrationsDeps;
+    recordLmsPublicationRetryContext(t1(), permissionContext);
+    const seam = createDetailLmsRetrySeam({ scope: s1(), assignmentId: "a1", integrations })!;
+    await expect(seam.retry()).resolves.toBe("succeeded");
+    expect(order).toEqual(["reserve", "begin", "publish"]);
   });
 });
