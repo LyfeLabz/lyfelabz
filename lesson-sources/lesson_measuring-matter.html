@@ -1030,11 +1030,23 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 /* Triple beam balance */
 .tbb-grid {
   display: grid;
+  /* Left: instructions above the balance. Right: controls. */
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
-  gap: 1.4rem;
+  gap: 1rem 1.4rem;
   align-items: start;
-  margin-top: 1.2rem;
+  margin-top: 0.8rem;
 }
+/* Lab 1 compaction: fits the whole balance activity in a 1366 x 768
+   Chromebook view. Scoped to Lab 1 so Labs 2-4 keep their spacing. */
+#tbb-lab { padding: 1.1rem 1.3rem 1.2rem; }
+#tbb-lab .mlab-head { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.6rem; margin-bottom: 0.2rem; }
+.tbb-svg-wrap { margin-top: 0.3rem; }
+#tbb-lab .mlab-text, #tbb-lab .mlab-tip { line-height: 1.5; }
+#tbb-lab .mlab-tip { margin-top: 0.2rem; }
+.tbb-about { margin-top: 0.2rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); max-width: 760px; }
+.tbb-about summary { display: inline-flex; align-items: center; min-height: 44px; font-weight: 800; color: var(--text); cursor: pointer; }
+.tbb-about p { margin: 0 0 0.4rem; }
+.tbb-about strong { color: var(--text); }
 .tbb-svg-wrap { text-align: center; }
 .tbb-svg-wrap svg { width: 100%; max-width: 460px; height: auto; }
 .tbb-label {
@@ -1044,9 +1056,9 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--mass);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
-.tbb-objects { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.8rem; }
+.tbb-objects { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
 .tbb-obj span { margin-right: 0.25rem; }
 .tbb-obj, .tbb-nudge, .tbb-check, .tbb-reset {
   min-height: 44px;
@@ -1068,14 +1080,14 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .tbb-obj[aria-pressed="true"] { border-color: var(--mass); background: var(--mass-dim); color: var(--mass); }
 .tbb-check { background: rgba(59,200,232,0.12); border-color: rgba(59,200,232,0.55); }
 .tbb-check:hover { background: rgba(59,200,232,0.2); }
-.tbb-rider { margin-bottom: 0.6rem; }
+.tbb-rider { margin-bottom: 0.3rem; }
 .tbb-rider-label { display: block; font-size: 0.95rem; font-weight: 800; color: var(--text); }
 .tbb-step { font-weight: 700; color: var(--text-muted); }
 .tbb-rider-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .tbb-rider-row input[type=range] { flex: 1 1 6rem; min-width: 0; accent-color: var(--mass); cursor: pointer; }
 .tbb-nudge { min-width: 44px; padding: 0.3rem 0.6rem; font-size: 1.1rem; }
 .tbb-val { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 900; min-width: 4.5rem; text-align: right; color: var(--mass); }
-.tbb-status { margin: 0.8rem 0 0; text-align: left; font-size: 1rem; font-weight: 700; line-height: 1.5; color: var(--text); }
+.tbb-status { margin: 0.4rem 0 0; text-align: left; font-size: 1rem; font-weight: 700; line-height: 1.5; color: var(--text); }
 .tbb-answer-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .tbb-answer-row input {
   width: 7.5rem;
@@ -1090,7 +1102,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   font-weight: 800;
 }
 .tbb-unit { font-weight: 800; color: var(--text-muted); }
-.tbb-fb { margin-top: 0.8rem; font-size: 1rem; line-height: 1.55; }
+.tbb-fb { margin-top: 0.5rem; font-size: 1rem; line-height: 1.55; }
 .tbb-fb:empty { display: none; }
 .tbb-fb.ok, .tbb-fb.no { padding: 0.65rem 0.95rem; border-radius: 10px; }
 .tbb-fb.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
@@ -2392,37 +2404,44 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <h4 class="mlab-title">Measure Mass</h4>
           <p class="mlab-tool">Interactive Triple Beam Balance</p>
         </div>
-        <p class="mlab-text">A triple beam balance compares an object's mass with sliding masses called <strong>riders</strong>. Choose an object to set it on the pan, then move the riders until the pointer points to the <strong>center mark</strong>. When the balance is balanced, add the three rider readings to find the object's mass in grams.</p>
-        <p class="mlab-tip"><strong>Tip:</strong> Start with the hundreds rider. Move it forward until the pointer drops below the center mark, then move it back one step. Repeat with the tens rider, then the ones rider.</p>
         <div class="tbb-grid">
-          <div class="tbb-svg-wrap">
-            <svg id="tbb-svg" viewBox="20 36 444 198" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Triple beam balance with an object pan on the left, three beams with sliding riders, and a pointer on the right that moves above or below the center mark until the riders balance the object">
-              <rect x="30" y="215" width="410" height="14" rx="6" fill="rgba(255,255,255,0.18)"/>
-              <rect x="78" y="148" width="14" height="67" fill="rgba(255,255,255,0.22)"/>
-              <rect x="146" y="40" width="8" height="175" fill="rgba(255,255,255,0.22)"/>
-              <rect x="28" y="140" width="114" height="8" rx="4" fill="#9fb8cc"/>
-              <g id="tbb-object"></g>
-              <g id="tbb-beams"></g>
-              <rect x="424" y="50" width="18" height="90" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)"/>
-              <line x1="420" y1="95" x2="446" y2="95" stroke="#f5c842" stroke-width="2"/>
-              <text x="450" y="99" fill="#f5c842" font-size="11" font-weight="800" font-family="Nunito, sans-serif">0</text>
-              <g id="tbb-pointer" style="transition: transform 0.3s ease;">
-                <polygon points="402,92 402,98 433,95" fill="#3bc8e8"/>
-              </g>
-            </svg>
-            <p class="tbb-status" id="tbb-status" aria-live="polite" aria-atomic="true"></p>
+          <div class="tbb-main">
+            <p class="mlab-text">Choose an object. Move the riders until the pointer lines up with zero. Add the three rider readings to find its mass.</p>
+            <p class="mlab-tip"><strong>Tip:</strong> Adjust the hundreds rider first, then tens, then ones.</p>
+            <details class="tbb-about">
+              <summary>How to use the balance</summary>
+              <p>A triple beam balance compares an object's mass with sliding masses called <strong>riders</strong>. When the pointer lines up with the yellow zero mark, the riders equal the object's mass.</p>
+              <p>Move the hundreds rider forward until the pointer drops below zero, then move it back one step. Repeat with the tens rider, then the ones rider. Then add the three rider readings.</p>
+            </details>
+            <div class="tbb-svg-wrap">
+              <svg id="tbb-svg" viewBox="20 36 462 198" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Triple beam balance with an object pan on the left, three beams with sliding riders, and a pointer on the right that moves above or below the center mark until the riders balance the object">
+                <rect x="30" y="215" width="428" height="14" rx="6" fill="rgba(255,255,255,0.18)"/>
+                <rect x="78" y="148" width="14" height="67" fill="rgba(255,255,255,0.22)"/>
+                <rect x="146" y="40" width="8" height="175" fill="rgba(255,255,255,0.22)"/>
+                <rect x="28" y="140" width="114" height="8" rx="4" fill="#9fb8cc"/>
+                <g id="tbb-object"></g>
+                <g id="tbb-beams"></g>
+                <rect x="442" y="50" width="18" height="90" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)"/>
+                <line x1="438" y1="95" x2="464" y2="95" stroke="#f5c842" stroke-width="2"/>
+                <text x="468" y="99" fill="#f5c842" font-size="11" font-weight="800" font-family="Nunito, sans-serif">0</text>
+                <g id="tbb-pointer" style="transition: transform 0.3s ease;">
+                  <polygon points="420,92 420,98 451,95" fill="#3bc8e8"/>
+                </g>
+              </svg>
+              <p class="tbb-status" id="tbb-status" aria-live="polite" aria-atomic="true"></p>
+            </div>
           </div>
           <div class="tbb-controls">
             <div class="tbb-label" id="tbb-objects-label">Choose an object</div>
             <div class="tbb-objects" role="group" aria-labelledby="tbb-objects-label">
-              <button class="tbb-obj" type="button" aria-pressed="true" data-obj="rock"><span aria-hidden="true">🪨</span> Rock</button>
+              <button class="tbb-obj" type="button" aria-pressed="false" data-obj="rock"><span aria-hidden="true">🪨</span> Rock</button>
               <button class="tbb-obj" type="button" aria-pressed="false" data-obj="apple"><span aria-hidden="true">🍎</span> Apple</button>
               <button class="tbb-obj" type="button" aria-pressed="false" data-obj="baseball"><span aria-hidden="true">⚾</span> Baseball</button>
               <button class="tbb-obj" type="button" aria-pressed="false" data-obj="pencil"><span aria-hidden="true">✏️</span> Pencil</button>
               <button class="tbb-obj" type="button" aria-pressed="false" data-obj="mug"><span aria-hidden="true">☕</span> Coffee mug</button>
             </div>
             <div class="tbb-rider">
-              <label class="tbb-rider-label" for="tbb-h">Hundreds beam <span class="tbb-step">(100 g steps)</span></label>
+              <label class="tbb-rider-label" for="tbb-h">Hundreds <span class="tbb-step">(100 g)</span></label>
               <div class="tbb-rider-row">
                 <button class="tbb-nudge" type="button" data-rider="h" data-dir="-1" aria-label="Move the hundreds beam rider back one step">−</button>
                 <input type="range" id="tbb-h" min="0" max="500" step="100" value="0">
@@ -2431,7 +2450,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
               </div>
             </div>
             <div class="tbb-rider">
-              <label class="tbb-rider-label" for="tbb-t">Tens beam <span class="tbb-step">(10 g steps)</span></label>
+              <label class="tbb-rider-label" for="tbb-t">Tens <span class="tbb-step">(10 g)</span></label>
               <div class="tbb-rider-row">
                 <button class="tbb-nudge" type="button" data-rider="t" data-dir="-1" aria-label="Move the tens beam rider back one step">−</button>
                 <input type="range" id="tbb-t" min="0" max="100" step="10" value="0">
@@ -2440,7 +2459,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
               </div>
             </div>
             <div class="tbb-rider">
-              <label class="tbb-rider-label" for="tbb-o">Ones beam <span class="tbb-step">(0.1 g steps)</span></label>
+              <label class="tbb-rider-label" for="tbb-o">Ones <span class="tbb-step">(0.1 g)</span></label>
               <div class="tbb-rider-row">
                 <button class="tbb-nudge" type="button" data-rider="o" data-dir="-1" aria-label="Move the ones beam rider back one step">−</button>
                 <input type="range" id="tbb-o" min="0" max="10" step="0.1" value="0">
@@ -2449,12 +2468,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
               </div>
             </div>
             <div class="tbb-answer">
-              <label class="tbb-label" for="tbb-input">Your measurement (grams)</label>
+              <label class="tbb-label" for="tbb-input">Mass (g)</label>
               <div class="tbb-answer-row">
                 <input type="number" id="tbb-input" inputmode="decimal" step="0.1" min="0" max="610" placeholder="0.0">
                 <span class="tbb-unit" aria-hidden="true">g</span>
                 <button class="tbb-check" id="tbb-check" type="button">Check Measurement</button>
-                <button class="tbb-reset" id="tbb-reset" type="button">Reset riders</button>
+                <button class="tbb-reset" id="tbb-reset" type="button">Reset balance</button>
               </div>
             </div>
             <div class="tbb-fb" id="tbb-fb" aria-live="polite"></div>
@@ -3696,9 +3715,10 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     outputs[k] = document.getElementById('tbb-' + k + '-val');
   });
 
-  /* The chosen object always sits on the pan; choosing another swaps it. */
-  var selected = 'rock';
-  var justPlaced = true;
+  /* The pan starts empty and zeroed. The chosen object sits on the pan;
+     choosing another swaps it. null means the pan is empty (0 g). */
+  var selected = null;
+  var justPlaced = false;
   var lastStatus = null;
 
   /* Static beams, ticks, and numbers, plus one rider per beam. */
@@ -3729,7 +3749,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
   }
 
   function render() {
-    var o = OBJECTS[selected];
+    var o = selected ? OBJECTS[selected] : null;
     Object.keys(BEAMS).forEach(function(k){
       var b = BEAMS[k], n = steps(k);
       var text = k === 'o' ? (n / 10).toFixed(1) + ' g' : (n * b.step) + ' g';
@@ -3737,23 +3757,24 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       ranges[k].setAttribute('aria-valuetext', text.replace(' g', ' grams'));
       riders[k].setAttribute('x', X0 + ((n * b.step) / b.max) * W - 5);
     });
-    objectG.innerHTML = '<text x="85" y="134" font-size="34" text-anchor="middle">' + o.icon + '</text>';
+    objectG.innerHTML = o ? '<text x="85" y="134" font-size="34" text-anchor="middle">' + o.icon + '</text>' : '';
 
     /* Pointer: positive difference means the object outweighs the riders,
        so the beam end rises. Deflection grows with the size of the
        difference (full travel at 10 g or more) and is exactly zero only
        when the riders match the object's mass. */
-    var diff = o.tenths - riderTenths();
+    var diff = (o ? o.tenths : 0) - riderTenths();
     var d = diff === 0 ? 0 : (diff > 0 ? 1 : -1) * Math.min(1, Math.sqrt(Math.abs(diff) / 100));
     pointer.style.transform = 'translateY(' + (-d * TRAVEL) + 'px)';
 
     var msg;
     if (diff > 0) msg = 'The pointer is above the center mark. Move a rider forward to add more mass.';
     else if (diff < 0) msg = 'The pointer is below the center mark. The riders add too much mass, so move a rider back.';
+    else if (!o) msg = 'Balance zeroed. Choose an object.';
     else msg = 'The pointer is at the center mark. The balance is balanced. Add the three rider readings.';
     /* Right after a new object is set on the pan, name it so screen reader
        users hear the swap as well as the pointer position. */
-    if (justPlaced) msg = 'The ' + o.name + ' is on the pan. ' + msg;
+    if (justPlaced && o) msg = 'The ' + o.name + ' is on the pan. ' + msg;
     /* Only rewrite the live status when its meaning changes. */
     if (msg !== lastStatus) { lastStatus = msg; status.textContent = msg; }
   }
@@ -3786,8 +3807,18 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       render();
     });
   });
-  resetBtn.addEventListener('click', function(){ resetRiders(); input.value = ''; clearAttempt(); render(); });
+  /* Reset returns the instrument to its starting state: empty pan, riders
+     at zero, pointer at the center mark. */
+  resetBtn.addEventListener('click', function(){
+    selected = null;
+    resetRiders();
+    input.value = '';
+    clearAttempt();
+    objBtns.forEach(function(b){ b.setAttribute('aria-pressed', 'false'); });
+    render();
+  });
   checkBtn.addEventListener('click', function(){
+    if (!selected) return setFeedback('no', 'Choose an object to set it on the pan, then balance it.');
     var o = OBJECTS[selected];
     var answer = parseFloat(input.value);
     if (input.value.trim() === '' || isNaN(answer)) return setFeedback('no', 'Type the mass you read from the beams, in grams.');

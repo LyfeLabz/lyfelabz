@@ -7,7 +7,9 @@
 /*
  * Measuring Matter Measurement Lab and triple beam balance contract.
  *
- * Lab 1 is an interactive triple beam balance: choosing an object sets it
+ * Lab 1 is an interactive triple beam balance. It starts with an empty,
+ * zeroed pan (no object selected, riders at 0 g, pointer at the center
+ * mark); reset returns it to that state. Choosing an object sets it
  * on the pan at once (no separate place or remove step), then students
  * move three riders (100 g, 10 g, and 0.1 g steps) until the pointer reaches
  * the center mark, then add the rider readings themselves. The object's mass
@@ -101,7 +103,7 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
     }
     for (const b of $("tbb-lab").querySelectorAll("button")) expect(b.getAttribute("type")).toBe("button");
     for (const b of $("tbb-lab").querySelectorAll(".tbb-nudge")) expect(b.getAttribute("aria-label")).toMatch(/^Move the .+ rider (back|forward) one step$/);
-    expect(doc.querySelector('label[for="tbb-input"]').textContent).toBe("Your measurement (grams)");
+    expect(doc.querySelector('label[for="tbb-input"]').textContent).toBe("Mass (g)");
     expect($("tbb-status").getAttribute("aria-live")).toBe("polite");
     expect($("tbb-fb").getAttribute("aria-live")).toBe("polite");
     expect($("tbb-svg").getAttribute("role")).toBe("img");
@@ -123,14 +125,67 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
     for (const b of doc.querySelectorAll(".tbb-obj")) expect(b.textContent).not.toMatch(/\d/);
   });
 
-  test("the first object starts on the pan with the riders at zero, ready to balance", () => {
+  const EMPTY_STATUS =
+    "Balance zeroed. Choose an object.";
+  const expectEmptyZeroed = () => {
+    expect(doc.querySelectorAll('.tbb-obj[aria-pressed="true"]')).toHaveLength(0);
+    expect($("tbb-object").textContent).toBe("");
+    expect(["h", "t", "o"].map((k) => $("tbb-" + k).value)).toEqual(["0", "0", "0"]);
+    expect(["h", "t", "o"].map((k) => $("tbb-" + k + "-val").textContent)).toEqual(["0 g", "0 g", "0.0 g"]);
+    expect(pointerY()).toBe(0);
+    expect($("tbb-status").textContent).toBe(EMPTY_STATUS);
+  };
+
+  test("starts with an empty, zeroed, balanced instrument and no object selected", () => {
+    for (const b of doc.querySelectorAll(".tbb-obj")) expect(b.getAttribute("aria-pressed")).toBe("false");
+    expectEmptyZeroed();
+  });
+
+  test("the empty pan responds to the riders like a real instrument", () => {
+    set("t", 10);
+    expect(pointerY()).toBeGreaterThan(0);
+    expect($("tbb-status").textContent).toMatch(/below the center mark/);
+    expect(check("10")).toEqual({ cls: "tbb-fb no", text: "Choose an object to set it on the pan, then balance it." });
+    set("t", 0);
+    expect(pointerY()).toBe(0);
+  });
+
+  test("choosing the first object places it and unbalances the pointer", () => {
+    choose("rock");
     expect(doc.querySelector('.tbb-obj[aria-pressed="true"]').dataset.obj).toBe("rock");
     expect($("tbb-object").textContent).toBe("🪨");
-    expect(["h", "t", "o"].map((k) => $("tbb-" + k).value)).toEqual(["0", "0", "0"]);
     expect(pointerY()).toBeLessThan(0);
     expect($("tbb-status").textContent).toBe(
       "The rock is on the pan. The pointer is above the center mark. Move a rider forward to add more mass."
     );
+  });
+
+  test("Lab 1 uses the condensed instructions and short labels", () => {
+    const lab = $("tbb-lab");
+    expect(lab.querySelector(".mlab-text").textContent).toBe(
+      "Choose an object. Move the riders until the pointer lines up with zero. Add the three rider readings to find its mass."
+    );
+    expect(lab.querySelector(".mlab-tip").textContent).toBe("Tip: Adjust the hundreds rider first, then tens, then ones.");
+    const about = lab.querySelector("details.tbb-about");
+    expect(about.querySelector("summary").textContent).toBe("How to use the balance");
+    expect(about.hasAttribute("open")).toBe(false);
+    expect(["h", "t", "o"].map((k) => doc.querySelector(`label[for="tbb-${k}"]`).textContent)).toEqual([
+      "Hundreds (100 g)", "Tens (10 g)", "Ones (0.1 g)",
+    ]);
+  });
+
+  test("the pointer and the fixed zero mark sit right of the beams without overlapping them", () => {
+    const svg = $("tbb-svg");
+    const [vx, , vw] = svg.getAttribute("viewBox").split(" ").map(Number);
+    const xs = svg.querySelector("#tbb-pointer polygon").getAttribute("points").split(" ").map((p) => Number(p.split(",")[0]));
+    const zero = svg.querySelector('line[stroke="#f5c842"]');
+    const zeroText = svg.querySelector('text[fill="#f5c842"]');
+    const beamEnd = 168 + 232 + 8; // X0 + W + beam rect overhang
+    expect(Math.min(...xs)).toBeGreaterThan(beamEnd);
+    expect(Number(zero.getAttribute("x1"))).toBeGreaterThan(beamEnd);
+    expect(Number(zero.getAttribute("y1"))).toBe(95); // CENTER_Y: balanced pointer lines up with zero
+    expect(Number(zeroText.getAttribute("x")) + 10).toBeLessThanOrEqual(vx + vw);
+    expect(zero.closest("#tbb-pointer")).toBeNull(); // zero mark never moves
   });
 
   test("there is no separate place or remove step", () => {
@@ -154,6 +209,7 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
   });
 
   test("the pointer rises when the object outweighs the riders, falls when it does not, and centers only when equal", () => {
+    choose("rock");
     expect(pointerY()).toBeLessThan(0);
     expect($("tbb-status").textContent).toMatch(/above the center mark/);
     set("h", 500);
@@ -203,6 +259,7 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
   });
 
   test("moving a rider clears an earlier result so no stale success remains", () => {
+    choose("rock");
     set("h", 300);
     expect(check("300").cls).toBe("tbb-fb ok");
     set("t", 10);
@@ -210,6 +267,7 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
   });
 
   test("switching objects resets the riders, answer, feedback, and pointer for the new object", () => {
+    choose("rock");
     set("h", 300);
     expect(check("300").cls).toBe("tbb-fb ok");
     expect(pointerY()).toBe(0);
@@ -225,21 +283,26 @@ describe.each(FILES)("Measuring Matter Measurement Lab in %s", (rel) => {
   });
 
   test("choosing the object already on the pan keeps the student's work", () => {
+    choose("rock");
     set("h", 300);
     choose("rock");
     expect($("tbb-h").value).toBe("300");
     expect(pointerY()).toBe(0);
   });
 
-  test("reset returns the riders to zero and clears the attempt", () => {
+  test("reset restores the empty, zeroed, balanced starting state and clears the attempt", () => {
+    expect($("tbb-reset").textContent).toBe("Reset balance");
     choose("mug");
     set("h", 300); set("t", 50); set("o", 2.8);
     expect(check("352.8").cls).toBe("tbb-fb ok");
     click($("tbb-reset"));
-    expect(["h", "t", "o"].map((k) => $("tbb-" + k + "-val").textContent)).toEqual(["0 g", "0 g", "0.0 g"]);
+    expectEmptyZeroed();
     expect($("tbb-input").value).toBe("");
     expect($("tbb-fb").textContent).toBe("");
+    choose("mug");
     expect($("tbb-object").textContent).toBe("☕");
+    expect(pointerY()).toBeLessThan(0);
+    expect($("tbb-status").textContent).toMatch(/^The coffee mug is on the pan\./);
   });
 
   test("step buttons move one notch and stay within each beam", () => {
