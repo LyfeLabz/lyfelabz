@@ -50,6 +50,36 @@ const mockLogInfo = jest.fn();
 const mockLaunchResolve = jest.fn();
 const mockCreateLaunchResolver = jest.fn(() => ({ resolve: mockLaunchResolve }));
 
+// Teacher Units Expansion P1: the unit projection's policy gate and its
+// Firestore seams. Default policy is "closed", so every pre-existing test
+// sees `units: []` and is otherwise unchanged.
+const mockReadUnitPolicy: jest.Mock = jest.fn(() => Promise.resolve("closed"));
+const unitRegistry = new Map<string, Record<string, unknown>>();
+const classRegistry = new Map<string, Record<string, unknown>>();
+const mockUnitQueryGet: jest.Mock = jest.fn();
+const mockTeacherUnitsCollectionRef: jest.Mock = jest.fn(() => {
+  const filters: Array<[string, unknown]> = [];
+  const query = {
+    where: (field: string, _op: string, value: unknown) => {
+      filters.push([field, value]);
+      return query;
+    },
+    limit: () => query,
+    get: () => mockUnitQueryGet(filters),
+  };
+  return query;
+});
+const mockClassDocRef: jest.Mock = jest.fn((classId: string) => ({
+  get: () => {
+    const data = classRegistry.get(classId);
+    return Promise.resolve({ exists: data !== undefined, data: () => data });
+  },
+}));
+
+jest.mock("./teacher-unit-projection-policy", () => ({
+  readTeacherUnitProjectionPolicy: () => mockReadUnitPolicy(),
+}));
+
 jest.mock("firebase-admin/firestore", () => ({}));
 
 jest.mock("firebase-functions/v2/https", () => ({
@@ -70,6 +100,9 @@ jest.mock("../shared", () => {
     assignmentRecipientsCollectionGroupRef: mockRecipientsCollectionGroupRef,
     requireDistrictContext: mockRequireDistrictContext,
     createRequestLaunchPresentationResolver: mockCreateLaunchResolver,
+    classDocRef: mockClassDocRef,
+    teacherUnitsCollectionRef: mockTeacherUnitsCollectionRef,
+    isTeacherUnitColor: jest.requireActual("../shared/types/teacher-unit").isTeacherUnitColor,
   };
 });
 
@@ -196,6 +229,16 @@ beforeEach(() => {
   // Default: canonical-expected student (no differentiation fields attached).
   mockLaunchResolve.mockResolvedValue({ kind: "expectedCanonical" });
   mockCreateLaunchResolver.mockReturnValue({ resolve: mockLaunchResolve });
+  mockReadUnitPolicy.mockResolvedValue("closed");
+  unitRegistry.clear();
+  classRegistry.clear();
+  mockUnitQueryGet.mockImplementation((filters: Array<[string, unknown]>) =>
+    Promise.resolve({
+      docs: Array.from(unitRegistry.entries())
+        .filter(([, data]) => filters.every(([field, value]) => data[field] === value))
+        .map(([id, data]) => ({ id, data: () => data })),
+    }),
+  );
 });
 
 describe("assignmentsListForStudent - authorization", () => {
@@ -1090,6 +1133,7 @@ describe("assignmentsListForStudent - strict Current + scheduled availability", 
       "historyOnlyGroups",
       "items",
       "supersededAssignmentIds",
+      "units",
     ]);
   });
 });
@@ -1162,5 +1206,327 @@ describe("assignmentsListForStudent - frozen assessment revision (F5.3 Slice 9C-
       __assignmentsListForStudentHandler(makeRequest({ assessmentRevisionId: R2 })),
     ).rejects.toMatchObject({ code: expect.any(String) });
     expect(mockLaunchResolve).not.toHaveBeenCalled();
+  });
+});
+
+// Teacher Units Expansion P1: read-only projection of the class owner's
+// current active units onto the cards this response already returns.
+describe("assignmentsListForStudent - Teacher Units projection (P1)", () => {
+  const L1 = "lesson_alpha";
+  const L2 = "lesson_beta";
+  const L3 = "lesson_gamma";
+  const OTHER_TEACHER = "teacher-2";
+  const CLASS_B = "class-b";
+
+  function seedClass(classId: string, overrides: Record<string, unknown> = {}) {
+    classRegistry.set(classId, {
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
+      title: "Science",
+      status: "active",
+      grade: "7",
+      block: "A",
+      createdAt: {},
+      ...overrides,
+    });
+  }
+
+  function seedUnit(unitId: string, overrides: Record<string, unknown> = {}) {
+    unitRegistry.set(unitId, {
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
+      grade: "7",
+      title: `Title ${unitId}`,
+      description: "SECRET DESCRIPTION",
+      color: "teal",
+      status: "active",
+      archivedAt: null,
+      createdAt: { toMillis: () => 1 },
+      updatedAt: { toMillis: () => 1 },
+      resourceIds: [],
+      sortOrder: 1,
+      revision: 3,
+      ...overrides,
+    });
+  }
+
+  function seedWork(entries: Array<[string, string, RecipientOverrides?]>) {
+    mockRecipientsGet.mockResolvedValue({
+      docs: entries.map(([id, , overrides]) => recipientDoc(id, overrides ?? {})),
+    });
+    for (const [id, lessonSlug, overrides] of entries) {
+      seedAssignment(id, {
+        lessonSlug,
+        ...(overrides?.classId ? { classId: overrides.classId } : {}),
+        ...(overrides?.teacherId ? { teacherId: overrides.teacherId } : {}),
+      });
+    }
+  }
+
+  beforeEach(() => {
+    mockReadUnitPolicy.mockResolvedValue("enabled");
+    seedClass(CLASS_ID);
+  });
+
+  test("single teacher, class and unit", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: [L1] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units).toEqual([
+      { unitId: "u1", title: "Title u1", color: "teal", assignmentIds: ["a1"] },
+    ]);
+  });
+
+  test("units follow teacher order (sortOrder, createdAt, unitId); resources follow resourceIds order", async () => {
+    seedWork([["a1", L1], ["a2", L2], ["a3", L3]]);
+    seedUnit("u-late", { sortOrder: 2, resourceIds: [L1] });
+    seedUnit("u-first", { sortOrder: 1, resourceIds: [L3, L2] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units.map((u) => [u.unitId, u.assignmentIds])).toEqual([
+      ["u-first", ["a3", "a2"]],
+      ["u-late", ["a1"]],
+    ]);
+  });
+
+  test("an assignment matching several units is placed once, in the first unit in teacher order", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u-b", { sortOrder: 1, createdAt: { toMillis: () => 5 }, resourceIds: [L1] });
+    seedUnit("u-a", { sortOrder: 1, createdAt: { toMillis: () => 5 }, resourceIds: [L1] });
+    seedUnit("u-0", { sortOrder: 3, resourceIds: [L1] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units).toEqual([
+      expect.objectContaining({ unitId: "u-a", assignmentIds: ["a1"] }),
+    ]);
+  });
+
+  test("multiple classes are never merged into one entry, even for the same owner and unit", async () => {
+    seedClass(CLASS_B);
+    seedWork([["a1", L1], ["b1", L1, { classId: CLASS_B }]]);
+    seedUnit("u1", { resourceIds: [L1] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units.map((u) => [u.unitId, u.assignmentIds])).toEqual([
+      ["u1", ["a1"]],
+      ["u1", ["b1"]],
+    ]);
+  });
+
+  test("multiple teachers: each class uses only its own owner's units", async () => {
+    seedClass(CLASS_B, { teacherId: OTHER_TEACHER });
+    seedWork([["a1", L1], ["b1", L1, { classId: CLASS_B, teacherId: OTHER_TEACHER }]]);
+    seedUnit("u-mine", { resourceIds: [L1] });
+    seedUnit("u-other", { teacherId: OTHER_TEACHER, resourceIds: [L1] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units.map((u) => [u.unitId, u.assignmentIds])).toEqual([
+      ["u-mine", ["a1"]],
+      ["u-other", ["b1"]],
+    ]);
+  });
+
+  test("grade filtering: a unit for another grade is never exposed", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u-g6", { grade: "6", resourceIds: [L1] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units).toEqual([]);
+  });
+
+  test("school filtering: the owner's units at another school are never read into the projection", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u-old-school", { schoolId: "school-z", resourceIds: [L1] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units).toEqual([]);
+    const [filters] = mockUnitQueryGet.mock.calls[0] as [Array<[string, unknown]>];
+    expect(filters).toEqual([["teacherId", TEACHER_UID], ["schoolId", SCHOOL_ID]]);
+  });
+
+  test("archived units are excluded; their assignments fall back to a later active unit or stay ungrouped", async () => {
+    seedWork([["a1", L1], ["a2", L2]]);
+    seedUnit("u-arch", { status: "archived", sortOrder: 1, resourceIds: [L1, L2] });
+    seedUnit("u-act", { sortOrder: 2, resourceIds: [L2] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units.map((u) => [u.unitId, u.assignmentIds])).toEqual([["u-act", ["a2"]]]);
+  });
+
+  test("unassigned resources, descriptions and resourceIds never cross the boundary; empty units omitted", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: ["lesson_unassigned", L1, "simulation_gravity-wells"] });
+    seedUnit("u-empty", { sortOrder: 0, resourceIds: ["lesson_unassigned"] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units).toEqual([
+      { unitId: "u1", title: "Title u1", color: "teal", assignmentIds: ["a1"] },
+    ]);
+    const json = JSON.stringify(res);
+    expect(json).not.toContain("lesson_unassigned");
+    expect(json).not.toContain("gravity-wells");
+    expect(json).not.toContain("SECRET DESCRIPTION");
+    expect(json).not.toContain(TEACHER_UID);
+    expect(json).not.toContain(SCHOOL_ID);
+  });
+
+  test("policy closed -> empty units, no unit or class reads, items unchanged", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: [L1] });
+    mockReadUnitPolicy.mockResolvedValue("enabled");
+    const open = await __assignmentsListForStudentHandler(makeRequest());
+    mockReadUnitPolicy.mockResolvedValue("closed");
+    mockUnitQueryGet.mockClear();
+    mockClassDocRef.mockClear();
+    const closed = await __assignmentsListForStudentHandler(makeRequest());
+    expect(closed.units).toEqual([]);
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+    expect(mockClassDocRef).not.toHaveBeenCalled();
+    expect(closed.items).toEqual(open.items);
+    expect(closed.supersededAssignmentIds).toEqual(open.supersededAssignmentIds);
+    expect(closed.historyOnlyGroups).toEqual(open.historyOnlyGroups);
+  });
+
+  test("no matching units -> empty units, items unchanged", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: [L2] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units).toEqual([]);
+    expect(res.items.map((i) => i.assignmentId)).toEqual(["a1"]);
+  });
+
+  test("policy read failure or unit read failure degrades to empty units without failing the list", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: [L1] });
+    mockReadUnitPolicy.mockRejectedValueOnce(new Error("unavailable"));
+    const a = await __assignmentsListForStudentHandler(makeRequest());
+    expect(a.units).toEqual([]);
+    expect(a.items).toHaveLength(1);
+    mockUnitQueryGet.mockRejectedValueOnce(new Error("unavailable"));
+    const b = await __assignmentsListForStudentHandler(makeRequest());
+    expect(b.units).toEqual([]);
+    expect(b.items).toHaveLength(1);
+  });
+
+  test("class ownership/school mismatch or needsSetup class -> no units for that class", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: [L1] });
+    seedClass(CLASS_ID, { teacherId: OTHER_TEACHER });
+    expect((await __assignmentsListForStudentHandler(makeRequest())).units).toEqual([]);
+    seedClass(CLASS_ID, { schoolId: "school-z" });
+    expect((await __assignmentsListForStudentHandler(makeRequest())).units).toEqual([]);
+    classRegistry.set(CLASS_ID, { teacherId: TEACHER_UID, schoolId: SCHOOL_ID, status: "needsSetup" });
+    expect((await __assignmentsListForStudentHandler(makeRequest())).units).toEqual([]);
+    classRegistry.delete(CLASS_ID);
+    expect((await __assignmentsListForStudentHandler(makeRequest())).units).toEqual([]);
+  });
+
+  test("archived class keeps its grade, so its work is still organized", async () => {
+    seedClass(CLASS_ID, { status: "archived" });
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: [L1] });
+    expect((await __assignmentsListForStudentHandler(makeRequest())).units).toHaveLength(1);
+  });
+
+  test("differentiation metadata and assignment ids are preserved alongside units", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: [L1] });
+    mockLaunchResolve.mockResolvedValue({
+      kind: "differentiated",
+      presentation: { variantKey: "v" },
+      launchRef: "ref-1",
+    });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.items[0]).toMatchObject({
+      assignmentId: "a1",
+      presentation: { variantKey: "v" },
+      launchRef: "ref-1",
+    });
+    expect(res.units[0]?.assignmentIds).toEqual(["a1"]);
+  });
+
+  test("a recipient or assignment the student cannot see is never placed (no visibility expansion)", async () => {
+    mockRecipientsGet.mockResolvedValue({
+      docs: [recipientDoc("a1"), recipientDoc("x-other", { studentId: OTHER_UID })],
+    });
+    seedAssignment("a1", { lessonSlug: L1 });
+    seedAssignment("x-other", { lessonSlug: L2 });
+    seedAssignment("x-draft", { lessonSlug: L3, status: "draft" });
+    seedUnit("u1", { resourceIds: [L1, L2, L3] });
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units).toEqual([expect.objectContaining({ assignmentIds: ["a1"] })]);
+  });
+
+  test("unit reads run concurrently with presentation resolution (not after it)", async () => {
+    seedWork([["a1", L1]]);
+    seedUnit("u1", { resourceIds: [L1] });
+    let unitQueryStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+      unitQueryStarted = resolve;
+    });
+    const base = mockUnitQueryGet.getMockImplementation() as (f: unknown) => unknown;
+    mockUnitQueryGet.mockImplementation((filters: unknown) => {
+      unitQueryStarted();
+      return base(filters);
+    });
+    // Resolution completes only once the unit query has been issued; a
+    // sequential implementation would never get there.
+    mockLaunchResolve.mockImplementation(() =>
+      Promise.race([
+        started.then(() => ({ kind: "expectedCanonical" })),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("projection not concurrent")), 2000)),
+      ]),
+    );
+    const res = await __assignmentsListForStudentHandler(makeRequest());
+    expect(res.units).toEqual([expect.objectContaining({ assignmentIds: ["a1"] })]);
+  });
+
+  test("authorization failure still throws before any unit read", async () => {
+    const err = new PlatformError("claim-stale", "stale claim");
+    mockRequireDistrictContext.mockRejectedValue(err);
+    await expect(__assignmentsListForStudentHandler(makeRequest())).rejects.toBe(err);
+    expect(mockReadUnitPolicy).not.toHaveBeenCalled();
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+  });
+
+  describe("Current occurrences", () => {
+    const pointers = new Map<string, string>();
+    beforeEach(() => {
+      pointers.clear();
+      mockAssignmentsCurrentDocRef.mockImplementation((classId: string, lessonSlug: string) => ({
+        get: () => {
+          const assignmentId = pointers.get(`${classId}/${lessonSlug}`);
+          return Promise.resolve(
+            assignmentId === undefined
+              ? { exists: false, data: () => undefined }
+              : {
+                  exists: true,
+                  data: () => ({
+                    classId, lessonSlug, assignmentId, teacherId: TEACHER_UID, schoolId: SCHOOL_ID,
+                    setAt: {}, setBy: TEACHER_UID, source: "teacherResolution",
+                  }),
+                },
+          );
+        },
+      }));
+    });
+    afterEach(() => {
+      mockAssignmentsCurrentDocRef.mockImplementation(() => ({ get: mockCurrentDocGet }));
+    });
+
+    test("superseded occurrences are never placed; only the Current item's card is", async () => {
+      seedWork([["old-1", L1], ["old-2", L1], ["cur", L1]]);
+      pointers.set(`${CLASS_ID}/${L1}`, "cur");
+      seedUnit("u1", { resourceIds: [L1] });
+      const res = await __assignmentsListForStudentHandler(makeRequest());
+      expect(res.items.map((i) => i.assignmentId)).toEqual(["cur"]);
+      expect(res.supersededAssignmentIds).toEqual(["old-1", "old-2"]);
+      expect(res.units).toEqual([expect.objectContaining({ unitId: "u1", assignmentIds: ["cur"] })]);
+    });
+
+    test("a history-only group is placed whole, with its ids unchanged", async () => {
+      seedWork([["old-1", L1], ["cur", L1], ["a2", L2]]);
+      seedAssignment("cur", { lessonSlug: L1, status: "closed" });
+      pointers.set(`${CLASS_ID}/${L1}`, "cur");
+      seedUnit("u1", { resourceIds: [L2, L1] });
+      const res = await __assignmentsListForStudentHandler(makeRequest());
+      expect(res.items.map((i) => i.assignmentId)).toEqual(["a2"]);
+      expect(res.historyOnlyGroups).toEqual([{ assignmentIds: ["cur", "old-1"] }]);
+      expect(res.units).toEqual([
+        expect.objectContaining({ unitId: "u1", assignmentIds: ["a2", "cur", "old-1"] }),
+      ]);
+    });
   });
 });

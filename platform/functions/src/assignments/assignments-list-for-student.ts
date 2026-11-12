@@ -18,6 +18,13 @@ import {
   occurrenceScopeOf,
   resolveCurrentOccurrenceGroup,
 } from "./current-occurrence-group";
+import {
+  loadVerifiedClassGrade,
+  projectTeacherUnitsForScopes,
+  type AssignmentUnitProjection,
+  type UnitProjectionCard,
+  type UnitProjectionScope,
+} from "./teacher-unit-projection";
 
 // Sprint 17 Slice 2: certified student assignment-discovery callable.
 //
@@ -122,6 +129,15 @@ export type AssignmentsListForStudentResponse = {
   readonly historyOnlyGroups: ReadonlyArray<{
     readonly assignmentIds: ReadonlyArray<string>;
   }>;
+  // Teacher Units Expansion P1 (additive): the class owner's CURRENT active
+  // Teacher Units, projected onto the cards above. Each entry lists ids of
+  // `items` and of `historyOnlyGroups` (all ids of a placed group, so any one
+  // of a group's ids locates it). `supersededAssignmentIds` are never placed:
+  // they belong to their Current item's card. Entries are per class + unit,
+  // in deterministic order; a card is in at most one entry; cards in no entry
+  // are "other assigned work". Empty when Teacher Units is closed or
+  // unavailable. See `teacher-unit-projection.ts`.
+  readonly units: ReadonlyArray<AssignmentUnitProjection>;
 };
 
 // Forbidden top-level keys on the discovery request. The callable never
@@ -465,6 +481,16 @@ async function assignmentsListForStudentHandler(
   // degrades that item to canonical (§8.5 row 8) without failing the list.
   const launchResolver = createRequestLaunchPresentationResolver();
 
+  // Teacher Units Expansion P1: the unit projection depends only on the
+  // visible cards (already decided above), so it runs concurrently with the
+  // per-item presentation resolution below. It never rejects.
+  const unitsPromise = projectStudentUnits(
+    memberships,
+    collapsed.map(({ record }) => record.assignmentId),
+    historyOnlyGroups,
+    actor.schoolId,
+  );
+
   const items: AssignmentsListForStudentItem[] = [];
   for (const { record, relatedAssignmentIds } of collapsed) {
     const rawTitle = record.title;
@@ -530,7 +556,53 @@ async function assignmentsListForStudentHandler(
     }),
   );
 
-  return { items, supersededAssignmentIds, historyOnlyGroups };
+  const units = await unitsPromise;
+
+  return { items, supersededAssignmentIds, historyOnlyGroups, units };
+}
+
+// Teacher Units Expansion P1: one projection scope per (class, owning
+// teacher) among the cards this response already returns. Ownership comes
+// from the verified memberships (recipient + assignment cross-checked), the
+// grade from the authoritative class record; nothing comes from the request.
+async function projectStudentUnits(
+  memberships: ReadonlyArray<Membership>,
+  itemAssignmentIds: ReadonlyArray<string>,
+  historyOnlyGroups: AssignmentsListForStudentResponse["historyOnlyGroups"],
+  schoolId: string,
+): Promise<AssignmentUnitProjection[]> {
+  const byId = new Map(memberships.map((m) => [m.assignmentId, m]));
+  const scopes = new Map<
+    string,
+    { classId: string; teacherId: string; cards: UnitProjectionCard[] }
+  >();
+  const addCard = (assignmentIds: ReadonlyArray<string>): void => {
+    const first = assignmentIds[0];
+    const record = first === undefined ? undefined : byId.get(first);
+    if (!record) return;
+    const key = `${record.classId}\u0000${record.teacherId}`;
+    const card: UnitProjectionCard = { assignmentIds, lessonSlug: record.lessonSlug };
+    const scope = scopes.get(key);
+    if (scope) scope.cards.push(card);
+    else scopes.set(key, { classId: record.classId, teacherId: record.teacherId, cards: [card] });
+  };
+  for (const assignmentId of itemAssignmentIds) addCard([assignmentId]);
+  for (const group of historyOnlyGroups) addCard(group.assignmentIds);
+
+  const ordered: UnitProjectionScope[] = Array.from(scopes.values())
+    .sort((a, b) =>
+      a.classId !== b.classId
+        ? (a.classId < b.classId ? -1 : 1)
+        : a.teacherId < b.teacherId ? -1 : a.teacherId > b.teacherId ? 1 : 0,
+    )
+    .map((scope) => ({
+      classId: scope.classId,
+      teacherId: scope.teacherId,
+      schoolId,
+      grade: () => loadVerifiedClassGrade(scope.classId, scope.teacherId, schoolId),
+      cards: scope.cards,
+    }));
+  return projectTeacherUnitsForScopes(ordered, "assignmentsListForStudent");
 }
 
 export const assignmentsListForStudent = platformCallable(

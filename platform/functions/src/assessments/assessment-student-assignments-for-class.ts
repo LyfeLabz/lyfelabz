@@ -17,6 +17,12 @@ import {
   occurrenceScopeOf,
   resolveCurrentOccurrenceGroup,
 } from "../assignments/current-occurrence-group";
+import {
+  classGradeOf,
+  projectTeacherUnitsForScopes,
+  type AssignmentUnitProjection,
+  type UnitProjectionCard,
+} from "../assignments/teacher-unit-projection";
 import { authorizeStudentScopedRead } from "../supportAccess/authorize";
 
 // Student Progress & Assignment Membership, Phase A Slice 4: certified
@@ -127,6 +133,14 @@ export type AssessmentStudentAssignmentsForClassResponse = {
   readonly studentId: string;
   readonly assignments: readonly AssessmentStudentExpectedAssignment[];
   readonly groups: readonly AssessmentStudentAssignmentGroup[];
+  // Teacher Units Expansion P1 (additive): the class OWNER's current active
+  // Teacher Units for this class's grade, projected onto `groups`. Each entry
+  // lists every assignment id of each placed group (any one of a group's ids
+  // locates it); a group is in at most one entry; groups in no entry are
+  // "other assigned work". Same rules for the owner and for a support-grant
+  // holder (who sees exactly what the owner sees for this one student).
+  // Empty when Teacher Units is closed or unavailable.
+  readonly units: readonly AssignmentUnitProjection[];
 };
 
 const TOKEN_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{0,62}[a-zA-Z0-9])?$/;
@@ -401,6 +415,31 @@ async function assessmentStudentAssignmentsForClassHandler(
     districtId: actor.districtId,
   };
 
+  // Teacher Units Expansion P1: started only AFTER `authorizeStudentScopedRead`
+  // admitted the caller, so the policy and unit reads overlap the recipient,
+  // session and grouping work below. Owner, school and grade come from the
+  // authorized class record (no extra class read); only this student's
+  // verified groups are placed, once they exist. The cards promise is only
+  // ever resolved (never rejected); if the request fails first it simply
+  // stays pending and the projection result is discarded. The projection
+  // itself never rejects.
+  let supplyUnitCards: (cards: readonly UnitProjectionCard[]) => void = () => undefined;
+  const unitCards = new Promise<readonly UnitProjectionCard[]>((resolve) => {
+    supplyUnitCards = resolve;
+  });
+  const unitsPromise = projectTeacherUnitsForScopes(
+    [
+      {
+        classId: input.classId,
+        teacherId: access.ownerTeacherId,
+        schoolId: access.classRecord.schoolId,
+        grade: classGradeOf(access.classRecord),
+        cards: unitCards,
+      },
+    ],
+    "assessmentStudentAssignmentsForClass",
+  );
+
   // Canonical query: enumerate every recipient document for the requested
   // student across every assignment, scoped to this class and this
   // teacher's ownership after the read. Reuses the collection-group index
@@ -481,7 +520,12 @@ async function assessmentStudentAssignmentsForClassHandler(
     }),
   );
 
-  return { classId: input.classId, studentId: input.studentId, assignments, groups };
+  supplyUnitCards(
+    groups.map((group) => ({ assignmentIds: group.assignmentIds, lessonSlug: group.lessonSlug })),
+  );
+  const units = await unitsPromise;
+
+  return { classId: input.classId, studentId: input.studentId, assignments, groups, units };
 }
 
 export const assessmentStudentAssignmentsForClass = platformCallable(

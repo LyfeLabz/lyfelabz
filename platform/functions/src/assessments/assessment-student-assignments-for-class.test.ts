@@ -87,6 +87,36 @@ const mockAssignmentsCollectionRef = jest.fn(() =>
   ),
 );
 
+// Teacher Units Expansion P1: unit projection seams. Default policy is
+// "closed", so every pre-existing test sees `units: []`. Grant, enrollment
+// and owner-user records back the REAL `authorizeStudentScopedRead` grant
+// path for the support-teacher projection tests.
+const mockReadUnitPolicy: jest.Mock = jest.fn(() => Promise.resolve("closed"));
+jest.mock("../assignments/teacher-unit-projection-policy", () => ({
+  readTeacherUnitProjectionPolicy: () => mockReadUnitPolicy(),
+}));
+const unitRows: Row[] = [];
+const mockUnitQueryGet: jest.Mock = jest.fn();
+const mockTeacherUnitsCollectionRef = jest.fn(() => {
+  const filters: Array<[string, unknown]> = [];
+  const query = {
+    where: (field: string, _op: string, value: unknown) => {
+      filters.push([field, value]);
+      return query;
+    },
+    limit: () => query,
+    get: () => mockUnitQueryGet(filters),
+  };
+  return query;
+});
+const docStore = new Map<string, Record<string, unknown>>();
+const storeDocRef = (collection: string) => (id: string) => ({
+  get: () => {
+    const data = docStore.get(`${collection}/${id}`);
+    return Promise.resolve({ exists: data !== undefined, data: () => data });
+  },
+});
+
 jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
@@ -102,6 +132,12 @@ jest.mock("../shared", () => {
     assignmentRecipientsCollectionGroupRef: mockRecipientsCollectionGroupRef,
     assessmentSessionsCollectionRef: mockAssessmentSessionsCollectionRef,
     classDocRef: mockClassDocRef,
+    teacherUnitsCollectionRef: mockTeacherUnitsCollectionRef,
+    isTeacherUnitColor: jest.requireActual("../shared/types/teacher-unit").isTeacherUnitColor,
+    studentSupportGrantIdFor: (c: string, s: string, g: string) => `${c}__${s}__${g}`,
+    studentSupportGrantDocRef: storeDocRef("studentSupportGrants"),
+    enrollmentDocRef: storeDocRef("enrollments"),
+    userRecordDocRef: storeDocRef("users"),
   };
 });
 
@@ -224,6 +260,16 @@ beforeEach(() => {
   classFixture.present = false;
   classFixture.data = null;
   mockRequireDistrictContext.mockResolvedValue(VALID_CONTEXT);
+  mockReadUnitPolicy.mockResolvedValue("closed");
+  unitRows.length = 0;
+  docStore.clear();
+  mockUnitQueryGet.mockImplementation((filters: Array<[string, unknown]>) =>
+    Promise.resolve({
+      docs: unitRows
+        .filter((row) => filters.every(([field, value]) => row.data[field] === value))
+        .map((row) => ({ id: row.id, data: () => row.data })),
+    }),
+  );
 });
 
 describe("assessmentStudentAssignmentsForClass", () => {
@@ -598,5 +644,228 @@ describe("assessmentStudentAssignmentsForClass groups (Current occurrence groupi
     const res = await run();
     expect(res.groups).toEqual([]);
     expect(res.assignments).toEqual([]);
+  });
+});
+
+// Teacher Units Expansion P1: the class OWNER's current active units,
+// projected onto this one student's verified groups, for the owner and for a
+// support-grant holder, only after `authorizeStudentScopedRead` admits them.
+describe("assessmentStudentAssignmentsForClass units (Teacher Units P1)", () => {
+  const GRANTEE_UID = "teacher-support";
+  const L1 = "lesson_alpha";
+  const L2 = "lesson_beta";
+
+  function seedUnit(id: string, overrides: Record<string, unknown> = {}): void {
+    unitRows.push({
+      id,
+      data: {
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        grade: "7",
+        title: `Title ${id}`,
+        description: "SECRET DESCRIPTION",
+        color: "teal",
+        status: "active",
+        archivedAt: null,
+        createdAt: { toMillis: () => 1 },
+        updatedAt: { toMillis: () => 1 },
+        resourceIds: [],
+        sortOrder: 1,
+        revision: 1,
+        ...overrides,
+      },
+    });
+  }
+
+  function seedWork(): void {
+    seedClass({ grade: "7", block: "A" });
+    seedRecipient("a1");
+    seedRecipient("a2");
+    seedAssignment("a1", { lessonSlug: L1 });
+    seedAssignment("a2", { lessonSlug: L2 });
+    seedUnit("u1", { resourceIds: ["lesson_unassigned", L2, L1] });
+    seedUnit("u-other-teacher", { teacherId: OTHER_TEACHER_UID, sortOrder: 0, resourceIds: [L1, L2] });
+    seedUnit("u-g6", { grade: "6", sortOrder: 0, resourceIds: [L1, L2] });
+    seedUnit("u-arch", { status: "archived", sortOrder: 0, resourceIds: [L1, L2] });
+    seedUnit("u-school-b", { schoolId: OTHER_SCHOOL_ID, sortOrder: 0, resourceIds: [L1, L2] });
+  }
+
+  function seedGrant(overrides: Record<string, unknown> = {}): void {
+    docStore.set(`studentSupportGrants/${CLASS_ID}__${STUDENT_ID}__${GRANTEE_UID}`, {
+      classId: CLASS_ID, studentId: STUDENT_ID, ownerTeacherId: TEACHER_UID, granteeUid: GRANTEE_UID,
+      schoolId: SCHOOL_ID, districtId: DISTRICT_ID, status: "active", grantedAt: {}, grantedBy: TEACHER_UID,
+      ...overrides,
+    });
+    docStore.set(`enrollments/${CLASS_ID}__${STUDENT_ID}`, {
+      classId: CLASS_ID, studentId: STUDENT_ID, schoolId: SCHOOL_ID, status: "active",
+    });
+    docStore.set(`users/${TEACHER_UID}`, {
+      authUid: TEACHER_UID, status: "active", role: "teacher", schoolId: SCHOOL_ID,
+    });
+  }
+
+  const asGrantee = () =>
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_CONTEXT, uid: GRANTEE_UID });
+  const call = () =>
+    __assessmentStudentAssignmentsForClassHandler(
+      makeRequest({ classId: CLASS_ID, studentId: STUDENT_ID }),
+    );
+  const EXPECTED_UNITS = [
+    { unitId: "u1", title: "Title u1", color: "teal", assignmentIds: ["a2", "a1"] },
+  ];
+
+  beforeEach(() => {
+    mockReadUnitPolicy.mockResolvedValue("enabled");
+  });
+
+  test("owner: only own, same-school, same-grade, active units; resource order; no unassigned data", async () => {
+    seedWork();
+    const res = await call();
+    expect(res.units).toEqual(EXPECTED_UNITS);
+    const json = JSON.stringify(res.units);
+    expect(json).not.toContain("lesson_unassigned");
+    expect(json).not.toContain("SECRET DESCRIPTION");
+    const [filters] = mockUnitQueryGet.mock.calls[0] as [Array<[string, unknown]>];
+    expect(filters).toEqual([["teacherId", TEACHER_UID], ["schoolId", SCHOOL_ID]]);
+  });
+
+  test("authorized support teacher sees exactly the owner's projection for this student", async () => {
+    seedWork();
+    seedGrant();
+    asGrantee();
+    const res = await call();
+    expect(res.units).toEqual(EXPECTED_UNITS);
+    expect(res.groups.map((g) => g.operationalAssignmentId)).toEqual(["a1", "a2"]);
+  });
+
+  test("revoked support grant -> classes.forbidden before any unit read", async () => {
+    seedWork();
+    seedGrant({ status: "revoked" });
+    asGrantee();
+    await expectRejectedCode(call(), "classes.forbidden");
+    expect(mockReadUnitPolicy).not.toHaveBeenCalled();
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+  });
+
+  test("grant for a different student does not admit this student", async () => {
+    seedWork();
+    seedGrant({ studentId: "student-2" });
+    asGrantee();
+    await expectRejectedCode(call(), "classes.forbidden");
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+  });
+
+  test("unrelated teacher with no grant -> classes.forbidden, no unit read", async () => {
+    seedWork();
+    asGrantee();
+    await expectRejectedCode(call(), "classes.forbidden");
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+  });
+
+  test("cross-school caller -> classes.forbidden, no unit read", async () => {
+    seedWork();
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_CONTEXT, schoolId: OTHER_SCHOOL_ID });
+    await expectRejectedCode(call(), "classes.forbidden");
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+  });
+
+  test("a student outside the class yields no groups and no units", async () => {
+    seedWork();
+    const res = await __assessmentStudentAssignmentsForClassHandler(
+      makeRequest({ classId: CLASS_ID, studentId: "student-elsewhere" }),
+    );
+    expect(res.groups).toEqual([]);
+    expect(res.units).toEqual([]);
+  });
+
+  test("policy closed -> empty units, no unit read, groups unchanged", async () => {
+    seedWork();
+    const open = await call();
+    mockReadUnitPolicy.mockResolvedValue("closed");
+    mockUnitQueryGet.mockClear();
+    const closed = await call();
+    expect(closed.units).toEqual([]);
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+    expect(closed.groups).toEqual(open.groups);
+    expect(closed.assignments).toEqual(open.assignments);
+  });
+
+  test("class without a grade (pre-existing fixtures) -> empty units, no unit read", async () => {
+    seedClass();
+    seedRecipient("a1");
+    seedAssignment("a1", { lessonSlug: L1 });
+    seedUnit("u1", { resourceIds: [L1] });
+    const res = await call();
+    expect(res.units).toEqual([]);
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+  });
+
+  test("policy and unit reads overlap the recipient work (started right after authorization)", async () => {
+    seedWork();
+    let unitQueryStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+      unitQueryStarted = resolve;
+    });
+    const base = mockUnitQueryGet.getMockImplementation() as (f: unknown) => unknown;
+    mockUnitQueryGet.mockImplementation((filters: unknown) => {
+      unitQueryStarted();
+      return base(filters);
+    });
+    // The recipient query resolves only once the unit query was issued.
+    mockRecipientsCollectionGroupRef.mockImplementationOnce(() => {
+      const query = makeQuery(recipientsFixture);
+      return {
+        where: (field: string, op: string, value: unknown) => {
+          const inner = query.where(field, op, value);
+          return {
+            where: inner.where,
+            get: () =>
+              Promise.race([
+                started.then(() => inner.get()),
+                new Promise<never>((_, reject) =>
+                  setTimeout(() => reject(new Error("projection not concurrent")), 2000),
+                ),
+              ]),
+          };
+        },
+        get: query.get,
+      };
+    });
+    const res = await call();
+    expect(res.units).toEqual(EXPECTED_UNITS);
+  });
+
+  test("a failure after authorization still surfaces its own error", async () => {
+    seedWork();
+    const boom = new Error("sessions unavailable");
+    mockAssessmentSessionsCollectionRef.mockImplementationOnce(() => ({
+      where: () => ({ where: () => { throw boom; }, get: () => Promise.reject(boom) }),
+      get: () => Promise.reject(boom),
+    }));
+    await expect(call()).rejects.toBe(boom);
+  });
+
+  test("unit read failure degrades to empty units without failing the request", async () => {
+    seedWork();
+    mockUnitQueryGet.mockRejectedValueOnce(new Error("unavailable"));
+    const res = await call();
+    expect(res.units).toEqual([]);
+    expect(res.groups).toHaveLength(2);
+  });
+
+  test("an inactive (history-only) group is placed whole", async () => {
+    seedClass({ grade: "7", block: "A" });
+    seedRecipient("old");
+    seedRecipient("cur");
+    seedAssignment("old", { lessonSlug: L1 });
+    seedAssignment("cur", { lessonSlug: L1, status: "closed" });
+    pointerRegistry.set(`${CLASS_ID}/${L1}`, {
+      classId: CLASS_ID, lessonSlug: L1, assignmentId: "cur", teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID, setAt: {}, setBy: TEACHER_UID, source: "teacherResolution",
+    });
+    seedUnit("u1", { resourceIds: [L1] });
+    const res = await call();
+    expect(res.groups).toEqual([expect.objectContaining({ resolution: "inactive", assignmentIds: ["cur", "old"] })]);
+    expect(res.units).toEqual([expect.objectContaining({ unitId: "u1", assignmentIds: ["cur", "old"] })]);
   });
 });
