@@ -1,6 +1,6 @@
 # LyfeLabz Production Release Ledger
 
-Append-only record of certified production Hosting releases for `lyfelabz-prod`. Add a new entry at the bottom for each release; never edit earlier entries except to update a superseded or rollback status line. Current platform state lives in `CURRENT_PLATFORM_STATE.md`.
+Append-only record of production Hosting and Cloud Functions releases for `lyfelabz-prod`. Add a new entry at the bottom for each release; never edit earlier entries except to update a superseded or rollback status line. Current platform state lives in `CURRENT_PLATFORM_STATE.md`.
 
 Rules for this file:
 
@@ -87,4 +87,25 @@ Rollback compatibility values: `CURRENT` (live), `SAFE` (may be restored with ow
 - **Staging acceptance:** the owner approved a single-use exception scoped to this exact SHA, project and intent, conditional on PREPARE. PREPARE, predeploy, certification and read-only production lesson checks passed. The exception is consumed.
 - **Evidence:** `LyfeLabz-Certification/production-hosting-deployment-39d4722-2026-11-11T20-25-22Z/` (SHA-256 manifest in archive).
 - **Status:** CURRENT
+- **Rollback compatibility:** CURRENT
+
+## 2026-11-13: Functions release 21372c7 (Teacher Units P1)
+
+- **Recorded:** 2026-11-13 (closeout entry date; not the deploy timestamp, which this entry does not record).
+- **Release SHA:** `21372c74774cf968ceb82c74866289f561ad4927`
+- **Scope:** Teacher Units P1, secure unit projections in student assignment APIs. Functions-only deploy of two Functions. No Hosting, Firestore Rules, Storage Rules, index or configuration change. Hosting release 39d4722 remains the current Hosting pair.
+- **Functions deployed:** `assignmentsListForStudent` (revision `assignmentslistforstudent-00014-zeh`); `assessmentStudentAssignmentsForClass` (revision `assessmentstudentassignmentsforclass-00005-dez`). Both ACTIVE with 100% traffic.
+- **Unchanged:** all nine Teacher Units management Functions.
+- **Teacher Units policy:** enabled, generation 6, unchanged.
+- **Production operational verification:** PASS. Teacher: one authenticated Student Detail request returned 200 with valid authentication and a normal success event; Student Detail displayed correctly. Student: six authenticated requests reached the new revision, all returned 200 with six valid authentication checks and six matching success events; My Science displayed normally. No unexpected errors, timeouts or projection warnings.
+- **Performance:** previous revision 163 requests, median 0.53 s. New revision 6 authenticated requests, median 1.08 s, five of six cold starts. Sample size is insufficient to establish or rule out a regression.
+- **P2 projection verification (OPEN, not production-certified):**
+  1. Populated unit projections are correct.
+  2. Unit grouping and ordering.
+  3. Archived and unauthorized unit filtering.
+  4. Unassigned resources and private descriptions do not leak.
+  5. Authorized support-teacher behavior.
+  6. Latency recheck after representative school-day traffic.
+- **Prepared rollback source:** `20ee0d1fbb5229b748e6e4052348287ac5acf6a2` (Functions rollback remains available).
+- **Status:** CURRENT (Functions `assignmentsListForStudent` and `assessmentStudentAssignmentsForClass`)
 - **Rollback compatibility:** CURRENT
