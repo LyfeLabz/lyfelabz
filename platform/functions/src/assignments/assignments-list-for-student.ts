@@ -605,7 +605,10 @@ async function projectStudentUnits(
   return projectTeacherUnitsForScopes(ordered, "assignmentsListForStudent");
 }
 
+// Production reports a maximum of 20 instances; omitting it would reset the
+// cap on deploy (guarded by scripts/student-support-release/function-scaling.test.cjs).
 export const assignmentsListForStudent = platformCallable(
+  { maxInstances: 20 },
   assignmentsListForStudentHandler,
 );
 

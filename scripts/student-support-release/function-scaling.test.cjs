@@ -15,6 +15,8 @@ const endpoints = [
   'supportAccessListForClass', 'supportAccessListMine',
   // Student autosave restore changes this callable; production reports 20.
   'assessmentSessionsBegin',
+  // Teacher Units P1 adds the unit projection here; production reports 20.
+  'assignmentsListForStudent',
 ];
 
 for (const id of endpoints) {

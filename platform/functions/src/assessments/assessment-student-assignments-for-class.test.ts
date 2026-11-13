@@ -869,3 +869,205 @@ describe("assessmentStudentAssignmentsForClass units (Teacher Units P1)", () => 
     expect(res.units).toEqual([expect.objectContaining({ unitId: "u1", assignmentIds: ["cur", "old"] })]);
   });
 });
+
+// Teacher Units P1, production lineage: production runs Student Support V2
+// (`3cbfdcf`), not V2.1. These tests pin the projection to the REAL V2
+// `authorizeStudentScopedRead` grant path (grant + enrollment + owner checks,
+// no revocation-boundary cutoff) so a support teacher sees exactly the
+// owner's authorized projection for one granted student and nothing else.
+describe("assessmentStudentAssignmentsForClass units under production Student Support V2", () => {
+  const SUPPORT_UID = "teacher-support-v2";
+  const OTHER_STUDENT_ID = "student-2";
+  const L1 = "lesson_alpha";
+  const L2 = "lesson_beta";
+  const L3 = "lesson_gamma";
+
+  function seedUnit(id: string, overrides: Record<string, unknown> = {}): void {
+    unitRows.push({
+      id,
+      data: {
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        grade: "7",
+        title: `Title ${id}`,
+        description: "PRIVATE UNIT DESCRIPTION",
+        color: "teal",
+        status: "active",
+        archivedAt: null,
+        createdAt: { toMillis: () => 1 },
+        updatedAt: { toMillis: () => 1 },
+        resourceIds: [],
+        sortOrder: 1,
+        revision: 1,
+        ...overrides,
+      },
+    });
+  }
+
+  function seedRecipientFor(studentId: string, assignmentId: string): void {
+    recipientsFixture.push({
+      id: studentId,
+      data: {
+        assignmentId,
+        studentId,
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+        assignedAt: {},
+        assignedBy: TEACHER_UID,
+        source: "classPublication",
+        status: "assigned",
+      },
+    });
+  }
+
+  // student-1 is assigned a1 (L1) and a2 (L2); student-2 is assigned only
+  // a3 (L3). Unit u1 also lists an unassigned resource; the other units are
+  // out of scope (other teacher, other grade, archived, other school).
+  function seedWork(): void {
+    seedClass({ grade: "7", block: "A" });
+    seedRecipientFor(STUDENT_ID, "a1");
+    seedRecipientFor(STUDENT_ID, "a2");
+    seedRecipientFor(OTHER_STUDENT_ID, "a3");
+    seedAssignment("a1", { lessonSlug: L1 });
+    seedAssignment("a2", { lessonSlug: L2 });
+    seedAssignment("a3", { lessonSlug: L3 });
+    seedUnit("u1", { resourceIds: ["lesson_unassigned", L2, L1] });
+    seedUnit("u2", { sortOrder: 2, resourceIds: [L3] });
+    seedUnit("u-other-teacher", { teacherId: OTHER_TEACHER_UID, sortOrder: 0, resourceIds: [L1, L2] });
+    seedUnit("u-g6", { grade: "6", sortOrder: 0, resourceIds: [L1, L2] });
+    seedUnit("u-arch", { status: "archived", sortOrder: 0, resourceIds: [L1, L2] });
+    seedUnit("u-school-b", { schoolId: OTHER_SCHOOL_ID, sortOrder: 0, resourceIds: [L1, L2] });
+  }
+
+  // A valid V2 grant for (CLASS_ID, studentId, SUPPORT_UID), the student's
+  // active enrollment, and the owner's active teacher record.
+  function seedValidGrant(
+    studentId: string = STUDENT_ID,
+    overrides: {
+      grant?: Record<string, unknown>;
+      enrollment?: Record<string, unknown>;
+      owner?: Record<string, unknown>;
+    } = {},
+  ): void {
+    docStore.set(`studentSupportGrants/${CLASS_ID}__${studentId}__${SUPPORT_UID}`, {
+      classId: CLASS_ID, studentId, ownerTeacherId: TEACHER_UID, granteeUid: SUPPORT_UID,
+      schoolId: SCHOOL_ID, districtId: DISTRICT_ID, status: "active", grantedAt: {}, grantedBy: TEACHER_UID,
+      ...overrides.grant,
+    });
+    docStore.set(`enrollments/${CLASS_ID}__${studentId}`, {
+      classId: CLASS_ID, studentId, schoolId: SCHOOL_ID, status: "active",
+      ...overrides.enrollment,
+    });
+    docStore.set(`users/${TEACHER_UID}`, {
+      authUid: TEACHER_UID, status: "active", role: "teacher", schoolId: SCHOOL_ID,
+      ...overrides.owner,
+    });
+  }
+
+  const asOwner = () => mockRequireDistrictContext.mockResolvedValue(VALID_CONTEXT);
+  const asSupport = (overrides: Record<string, unknown> = {}) =>
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_CONTEXT, uid: SUPPORT_UID, ...overrides });
+  const callFor = (studentId: string) =>
+    __assessmentStudentAssignmentsForClassHandler(
+      makeRequest({ classId: CLASS_ID, studentId }),
+    );
+
+  const STUDENT_1_UNITS = [
+    { unitId: "u1", title: "Title u1", color: "teal", assignmentIds: ["a2", "a1"] },
+  ];
+
+  beforeEach(() => {
+    mockReadUnitPolicy.mockResolvedValue("enabled");
+  });
+
+  test("owner and V2 support teacher receive identical responses for the granted student", async () => {
+    seedWork();
+    seedValidGrant();
+
+    asOwner();
+    const ownerResponse = await callFor(STUDENT_ID);
+    asSupport();
+    const supportResponse = await callFor(STUDENT_ID);
+
+    expect(ownerResponse.units).toEqual(STUDENT_1_UNITS);
+    expect(supportResponse).toEqual(ownerResponse);
+    // Both projections query the OWNER's units, never the support teacher's.
+    const filters = mockUnitQueryGet.mock.calls.map(([f]) => f as Array<[string, unknown]>);
+    expect(filters).toEqual([
+      [["teacherId", TEACHER_UID], ["schoolId", SCHOOL_ID]],
+      [["teacherId", TEACHER_UID], ["schoolId", SCHOOL_ID]],
+    ]);
+  });
+
+  test("support projection never exposes unassigned resources, other students' work, or out-of-scope units", async () => {
+    seedWork();
+    seedValidGrant();
+    asSupport();
+    const res = await callFor(STUDENT_ID);
+    const json = JSON.stringify(res.units);
+    expect(json).not.toContain("lesson_unassigned");
+    expect(json).not.toContain("PRIVATE UNIT DESCRIPTION");
+    expect(json).not.toContain("a3");
+    expect(json).not.toContain("u2");
+    for (const id of ["u-other-teacher", "u-g6", "u-arch", "u-school-b"]) {
+      expect(json).not.toContain(id);
+    }
+    for (const unit of res.units) {
+      expect(Object.keys(unit).sort()).toEqual(["assignmentIds", "color", "title", "unitId"]);
+      for (const assignmentId of unit.assignmentIds) {
+        expect(res.assignments.map((a) => a.assignmentId)).toContain(assignmentId);
+      }
+    }
+  });
+
+  test.each<[string, Parameters<typeof seedValidGrant>[1] | null, Record<string, unknown>]>([
+    ["no grant", null, {}],
+    ["revoked grant", { grant: { status: "revoked" } }, {}],
+    ["grant issued to a different support teacher", { grant: { granteeUid: "teacher-someone-else" } }, {}],
+    ["grant naming a different owner", { grant: { ownerTeacherId: OTHER_TEACHER_UID } }, {}],
+    ["grant from a different school", { grant: { schoolId: OTHER_SCHOOL_ID } }, {}],
+    ["grant from a different district", { grant: { districtId: "district-2" } }, {}],
+    ["inactive student enrollment", { enrollment: { status: "removed" } }, {}],
+    ["owner no longer an active teacher", { owner: { status: "suspended" } }, {}],
+    ["support teacher in a different school", {}, { schoolId: OTHER_SCHOOL_ID }],
+  ])("support teacher without a valid V2 grant (%s) -> classes.forbidden, no policy or unit read", async (_label, grant, actor) => {
+    seedWork();
+    if (grant !== null) seedValidGrant(STUDENT_ID, grant);
+    asSupport(actor);
+    await expectRejectedCode(callFor(STUDENT_ID), "classes.forbidden");
+    expect(mockReadUnitPolicy).not.toHaveBeenCalled();
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+  });
+
+  test("support teacher granted for one student is refused for another student in the same class", async () => {
+    seedWork();
+    seedValidGrant(STUDENT_ID);
+    // The other student is genuinely enrolled; only the grant is missing.
+    docStore.set(`enrollments/${CLASS_ID}__${OTHER_STUDENT_ID}`, {
+      classId: CLASS_ID, studentId: OTHER_STUDENT_ID, schoolId: SCHOOL_ID, status: "active",
+    });
+    asSupport();
+    await expectRejectedCode(callFor(OTHER_STUDENT_ID), "classes.forbidden");
+    expect(mockReadUnitPolicy).not.toHaveBeenCalled();
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+
+    // The owner still sees that student's own projection, which never
+    // includes the granted student's assignments.
+    asOwner();
+    const ownerView = await callFor(OTHER_STUDENT_ID);
+    expect(ownerView.units).toEqual([
+      { unitId: "u2", title: "Title u2", color: "teal", assignmentIds: ["a3"] },
+    ]);
+  });
+
+  test("archived class refuses the support teacher even with an otherwise valid grant", async () => {
+    seedWork();
+    classFixture.data = { ...(classFixture.data as Record<string, unknown>), status: "archived" };
+    seedValidGrant();
+    asSupport();
+    await expectRejectedCode(callFor(STUDENT_ID), "classes.forbidden");
+    expect(mockUnitQueryGet).not.toHaveBeenCalled();
+  });
+});
