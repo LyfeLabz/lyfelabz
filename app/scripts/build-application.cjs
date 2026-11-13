@@ -24,7 +24,7 @@ const PROFILES = Object.freeze({
 const NAMESPACE = 'teacher-units-availability-contract';
 const SOURCE_EXTENSIONS = Object.freeze(['.ts', '.json']);
 const OPTIONS = Object.freeze({ entryPoints: ['src/index.ts'], bundle: true, format: 'esm', target: 'es2022', outfile: 'dist/bundle.js', metafile: true, write: false, preserveSymlinks: true, resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.css', '.json'] });
-const ALLOWED_CONSUMERS = new Set(['app/src/index.ts', 'app/src/shell/surfaces/curriculum.ts', 'app/src/shell/surfaces/teacherUnitsPanel.ts']);
+const ALLOWED_CONSUMERS = new Set(['app/src/index.ts', 'app/src/shell/surfaces/curriculum.ts', 'app/src/shell/surfaces/teacherUnitsPanel.ts', 'app/src/assignments/studentList/wire.ts']);
 function hash(bytes) { return crypto.createHash('sha256').update(bytes).digest('hex'); }
 function canonical(value) {
   if (Array.isArray(value)) return JSON.stringify(value.map(v => JSON.parse(canonical(v))));

@@ -2297,3 +2297,274 @@ describe("My Science - progressive loading", () => {
     expect(t.resultsCalls).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("My Science - Teacher Units P2B unit sections", () => {
+  type Unit = {
+    unitId: string;
+    title: string;
+    color: string | null;
+    assignmentIds: ReadonlyArray<string>;
+  };
+  type ListResponse = {
+    items: ReadonlyArray<ReturnType<typeof okItem>>;
+    supersededAssignmentIds?: ReadonlyArray<string>;
+    historyOnlyGroups?: ReadonlyArray<{ assignmentIds: ReadonlyArray<string> }>;
+    units?: ReadonlyArray<Unit>;
+  };
+  const item = (over: Record<string, unknown>) =>
+    okItem(over) as unknown as ReturnType<typeof okItem>;
+
+  async function render(
+    list: ListResponse,
+    attempts: ReadonlyArray<ReturnType<typeof okAttempt>> = [],
+    onLaunchAssignment?: jest.Mock,
+  ): Promise<HTMLElement> {
+    const { deps } = makeDeps({
+      studentAssignmentsList: (() => () => Promise.resolve(list)) as never,
+      studentResultsList: resultsSeam(attempts),
+      ...(onLaunchAssignment ? { onLaunchAssignment } : {}),
+    });
+    const mount = mkMount();
+    createRouteTable(deps).activeStudent(studentSession(), mount);
+    await flush();
+    return mount;
+  }
+
+  const sections = (mount: HTMLElement): HTMLElement[] =>
+    Array.from(mount.querySelectorAll<HTMLElement>("[data-testid=my-science-unit]"));
+  const unitHeadings = (mount: HTMLElement): Array<string | null> =>
+    Array.from(mount.querySelectorAll("[data-testid=my-science-unit-heading]")).map(
+      (h) => h.textContent,
+    );
+  const launchIds = (root: ParentNode): string[] =>
+    Array.from(root.querySelectorAll<HTMLElement>("[data-testid=my-science-card]")).map(
+      (c) =>
+        (c.querySelector("[data-assignment-launch-url]")?.getAttribute(
+          "data-assignment-launch-url",
+        ) ?? "").replace(/^.*#assignment=/, ""),
+    );
+
+  const three = [
+    item({ assignmentId: "a-life", lessonSlug: "what-is-life", publishedAt: 1 }),
+    item({ assignmentId: "a-earth", lessonSlug: "layers-of-time", publishedAt: 2 }),
+    item({ assignmentId: "a-tech", lessonSlug: "engineering-design", publishedAt: 3 }),
+  ];
+
+  test("no units: the domain interface is byte-identical to a response without the field", async () => {
+    const a = await render({ items: three });
+    const b = await render({ items: three, units: [] });
+    const c = await render({
+      items: three,
+      units: [{ unitId: "u", title: "Unmatched", color: "teal", assignmentIds: ["zzz"] }],
+    });
+    expect(a.querySelector("[data-testid=my-science-domain]")).not.toBeNull();
+    expect(sections(a)).toHaveLength(0);
+    expect(b.innerHTML).toBe(a.innerHTML);
+    expect(c.innerHTML).toBe(a.innerHTML);
+  });
+
+  test("one unit: teacher card order (no unfinished-first sort), then Other assigned work last", async () => {
+    const mount = await render(
+      {
+        items: three,
+        units: [
+          { unitId: "u1", title: "Unit One", color: "teal", assignmentIds: ["a-tech", "a-life"] },
+        ],
+      },
+      // a-tech completed; teacher order still puts it first.
+      [okAttempt({ assignmentId: "a-tech" })],
+    );
+    expect(mount.querySelector("[data-testid=my-science-domain]")).toBeNull();
+    expect(unitHeadings(mount)).toEqual(["Unit One", "Other assigned work"]);
+    const [u1, other] = sections(mount);
+    expect(launchIds(u1)).toEqual(["a-tech", "a-life"]);
+    expect(u1.getAttribute("data-unit-color")).toBe("teal");
+    expect(other.getAttribute("data-unit-other")).toBe("true");
+    expect(other.hasAttribute("data-unit-color")).toBe(false);
+    expect(launchIds(other)).toEqual(["a-earth"]);
+    // Completed / ready indicators, score, and attempts survive in a unit.
+    const done = u1.querySelector<HTMLElement>("[data-testid=my-science-card]")!;
+    expect(done.getAttribute("data-complete")).toBe("true");
+    expect(done.querySelector("[data-testid=my-science-card-score]")?.textContent).toContain("90%");
+    expect(done.querySelector("[data-testid=my-science-card-attempts]")).not.toBeNull();
+    expect(done.querySelector("[data-testid=assignments-launch]")).not.toBeNull();
+    const ready = u1.querySelectorAll<HTMLElement>("[data-testid=my-science-card]")[1];
+    expect(ready.getAttribute("data-status")).toBe("ready");
+    // Grid list reused; no ids or unit metadata leak into the text.
+    expect(u1.querySelector("ul[data-testid=my-science-list]")).not.toBeNull();
+    expect(mount.textContent).not.toContain("u1");
+    expect(mount.textContent).not.toContain("teal");
+  });
+
+  test("multiple units keep server order; same unitId in two entries stays two sections; no Other when all placed", async () => {
+    const mount = await render({
+      items: three,
+      units: [
+        { unitId: "u2", title: "Waves", color: null, assignmentIds: ["a-earth"] },
+        { unitId: "u1", title: "Life", color: "coral", assignmentIds: ["a-life"] },
+        { unitId: "u2", title: "Waves", color: null, assignmentIds: ["a-tech", "a-earth"] },
+      ],
+    });
+    expect(unitHeadings(mount)).toEqual(["Waves", "Life", "Waves"]);
+    const s = sections(mount);
+    expect(launchIds(s[0])).toEqual(["a-earth"]);
+    expect(launchIds(s[1])).toEqual(["a-life"]);
+    expect(launchIds(s[2])).toEqual(["a-tech"]);
+    expect(s[0].getAttribute("data-unit-color")).toBe("none");
+    expect(mount.querySelector("[data-unit-other]")).toBeNull();
+  });
+
+  test("unmatched work keeps the existing domain display order under Other assigned work", async () => {
+    const mount = await render({
+      items: three,
+      units: [{ unitId: "u", title: "Only Life", color: "blue", assignmentIds: ["a-life"] }],
+    });
+    // Existing order: Earth & Space before Tech & Engineering.
+    expect(launchIds(sections(mount)[1])).toEqual(["a-earth", "a-tech"]);
+  });
+
+  test("current card is placed by a related assignment id; superseded ids never place a card", async () => {
+    const cur = item({
+      assignmentId: "a-cur",
+      lessonSlug: "engineering-design",
+      relatedAssignmentIds: ["a-old"],
+    });
+    const placedByRelated = await render({
+      items: [cur, three[0]],
+      supersededAssignmentIds: [],
+      units: [{ unitId: "u", title: "Design", color: "gold", assignmentIds: ["a-old"] }],
+    });
+    expect(launchIds(sections(placedByRelated)[0])).toEqual(["a-cur"]);
+
+    const supersededOnly = await render({
+      items: [cur, three[0]],
+      supersededAssignmentIds: ["a-old"],
+      units: [{ unitId: "u", title: "Design", color: "gold", assignmentIds: ["a-old"] }],
+    });
+    // The only referenced id is superseded: flat fallback (domain UI).
+    expect(sections(supersededOnly)).toHaveLength(0);
+    expect(supersededOnly.querySelector("[data-testid=my-science-domain]")).not.toBeNull();
+  });
+
+  test("history-only group card and orphan card are placed by any of their ids", async () => {
+    const mount = await render(
+      {
+        items: [three[0]],
+        historyOnlyGroups: [{ assignmentIds: ["h-1", "h-2"] }],
+        units: [
+          { unitId: "u", title: "Past", color: "slate", assignmentIds: ["h-2", "orph"] },
+        ],
+      },
+      [
+        okAttempt({ attemptId: "x1", assignmentId: "h-2" }),
+        okAttempt({ attemptId: "x2", assignmentId: "orph", percentage: 70, score: 7 }),
+      ],
+    );
+    const [past, other] = sections(mount);
+    const cards = past.querySelectorAll<HTMLElement>("[data-testid=my-science-card]");
+    expect(cards).toHaveLength(2);
+    for (const c of Array.from(cards)) {
+      expect(c.querySelector("[data-testid=my-science-card-title]")?.textContent).toBe(
+        "Assignment no longer listed",
+      );
+      expect(c.querySelector("[data-testid=assignments-launch]")).toBeNull();
+    }
+    expect(launchIds(other)).toEqual(["a-life"]);
+  });
+
+  test("differentiated launch routing is unchanged inside a unit", async () => {
+    const onLaunchAssignment = jest.fn();
+    const rev = `pr${"a".repeat(64)}`;
+    const mount = await render(
+      {
+        items: [
+          item({
+            presentation: {
+              variantKey: "reading-adapted",
+              presentationRevisionId: rev,
+              path: `app/lessons/variants/lesson_what-is-life__${rev}.html`,
+            },
+            launchRef: "0123456789abcdef0123456789abcdef",
+          }),
+        ],
+        units: [{ unitId: "u", title: "Life", color: "green", assignmentIds: ["assign-1"] }],
+      },
+      [],
+      onLaunchAssignment,
+    );
+    const btn = sections(mount)[0].querySelector<HTMLButtonElement>(
+      "[data-testid=assignments-launch]",
+    )!;
+    expect(btn.getAttribute("data-assignment-launch-url")).toBe(
+      "/app/lessons/lesson_what-is-life.html#assignment=assign-1",
+    );
+    btn.click();
+    expect(onLaunchAssignment).toHaveBeenCalledWith(
+      expect.objectContaining({ differentiated: true }),
+    );
+  });
+
+  test("heading hierarchy: one h1, unit headings are h2, card titles below", async () => {
+    const mount = await render({
+      items: three,
+      units: [{ unitId: "u", title: "Unit", color: "teal", assignmentIds: ["a-life"] }],
+    });
+    expect(mount.querySelectorAll("h1")).toHaveLength(1);
+    for (const h of Array.from(mount.querySelectorAll("[data-testid=my-science-unit-heading]"))) {
+      expect(h.tagName).toBe("H2");
+      expect(h.closest("section")).not.toBeNull();
+    }
+    const cardHeading = mount.querySelector("[data-testid=my-science-card-title]")!;
+    expect(Number(cardHeading.tagName.slice(1))).toBeGreaterThan(2);
+    // Always expanded: no collapse controls on unit sections.
+    expect(mount.querySelector("[data-testid=my-science-unit] > button")).toBeNull();
+    expect(mount.querySelector("[data-testid=my-science-unit] [aria-expanded=true]")).toBeNull();
+  });
+
+  test("attempts enrichment redraw keeps unit grouping and launch focus; loading then enriched", async () => {
+    let resolveList!: (v: ListResponse) => void;
+    let resolveResults!: (v: { attempts: ReadonlyArray<ReturnType<typeof okAttempt>> }) => void;
+    const { deps } = makeDeps({
+      studentAssignmentsList: (() => () =>
+        new Promise<ListResponse>((r) => (resolveList = r))) as never,
+      studentResultsList: (() => () =>
+        new Promise((r) => (resolveResults = r))) as never,
+    });
+    const mount = mkMount();
+    document.body.appendChild(mount);
+    createRouteTable(deps).activeStudent(studentSession(), mount);
+    resolveList({
+      items: three,
+      units: [{ unitId: "u", title: "Unit", color: "teal", assignmentIds: ["a-tech"] }],
+    });
+    await flush();
+    const panel = mount.querySelector<HTMLElement>("[data-testid=my-science-panel]")!;
+    expect(panel.getAttribute("aria-busy")).toBe("true");
+    expect(unitHeadings(mount)).toEqual(["Unit", "Other assigned work"]);
+    const btn = sections(mount)[0].querySelector<HTMLElement>("[data-testid=assignments-launch]")!;
+    btn.focus();
+    resolveResults({ attempts: [okAttempt({ assignmentId: "a-tech" })] });
+    await flush();
+    expect(panel.getAttribute("aria-busy")).toBeNull();
+    expect(unitHeadings(mount)).toEqual(["Unit", "Other assigned work"]);
+    const active = document.activeElement as HTMLElement;
+    expect(active.getAttribute("data-assignment-launch-url")).toContain("#assignment=a-tech");
+    expect(
+      sections(mount)[0].querySelector("[data-testid=my-science-card]")?.getAttribute("data-complete"),
+    ).toBe("true");
+    mount.remove();
+  });
+
+  test("list error still shows the retry callout (units irrelevant)", async () => {
+    const { deps } = makeDeps({
+      studentAssignmentsList: (() => () => Promise.reject(new Error("x"))) as never,
+      studentResultsList: resultsSeam([]),
+    });
+    const mount = mkMount();
+    createRouteTable(deps).activeStudent(studentSession(), mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=assignments-error]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=assignments-retry]")).not.toBeNull();
+    expect(sections(mount)).toHaveLength(0);
+  });
+});

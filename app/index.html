@@ -7452,6 +7452,29 @@
     color: var(--tw-ink-muted);
   }
 
+  /* Teacher Units P2B: a unit section mirrors the domain section. The h2
+     carries the unit title (color is never the only indicator); the
+     teacher-selected color is a subtle left accent from the shared unit
+     tokens, and a unit without a color ("none") or the trailing "Other
+     assigned work" section shows no accent. Always expanded. */
+  body:not(:has(#app-root > .shell-header)) .my-science-unit {
+    margin: 1.5rem 0 0;
+    text-align: left;
+  }
+  body:not(:has(#app-root > .shell-header)) .my-science-unit-heading {
+    margin: 0 0 0.6rem;
+    padding-left: 0.6rem;
+    border-left: 4px solid var(--unit-accent, transparent);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--tw-ink);
+  }
+  body:not(:has(#app-root > .shell-header)) .my-science-unit[data-unit-color="none"] .my-science-unit-heading,
+  body:not(:has(#app-root > .shell-header)) .my-science-unit[data-unit-other] .my-science-unit-heading {
+    padding-left: 0;
+    border-left: 0;
+  }
+
   /* Card grid (Sprint 28.6H, Finding 15): within each domain the assignment
      cards form a responsive grid that uses the desktop width - ~3 across on
      desktop, 2 on tablet, 1 on narrow phones - instead of one tall column.

@@ -38,7 +38,9 @@ import type {
   AssignmentsListForStudentItem,
   AssignmentsListForStudentResponse,
   HistoryOnlyGroup,
+  StudentAssignmentUnit,
 } from "../../assignments/studentList/types";
+import { groupWorkItemsByUnit } from "../../assignments/studentList/unitGrouping";
 import {
   planAssignmentLaunch,
   type LaunchPlan,
@@ -1215,6 +1217,11 @@ type MyScienceItem = {
   readonly completed: boolean;
   readonly publishedAt: number | null;
   readonly lessonSlug: string | null;
+  // Teacher Units P2B: every assignment id this card represents, used only to
+  // join the server unit projection (never rendered). Current card: its id
+  // plus `relatedAssignmentIds`; history-only card: every id of its group;
+  // orphan card: its own id.
+  readonly representedAssignmentIds: ReadonlyArray<string>;
 };
 
 // Sprint 28.6H (Finding 17): My Science shows OBJECTIVE status only. A
@@ -1352,6 +1359,7 @@ export const makeActiveStudentSurface =
           listResponse.historyOnlyGroups ?? [],
           attempts,
           launch,
+          listResponse.units,
         );
         if (focusedLaunch !== null) {
           const again = Array.from(
@@ -1557,6 +1565,7 @@ function buildMyScienceItems(
       publishedAt:
         typeof item.publishedAt === "number" ? item.publishedAt : null,
       lessonSlug: item.lessonSlug,
+      representedAssignmentIds: represented,
     });
   }
   // Historical completed work: a completed attempt whose assignment is no
@@ -1591,6 +1600,7 @@ function buildMyScienceItems(
         completed: true,
         publishedAt: null,
         lessonSlug: null,
+        representedAssignmentIds: ids,
       });
     }
     for (const [assignmentId, group] of byAssignment) {
@@ -1608,6 +1618,7 @@ function buildMyScienceItems(
         completed: true,
         publishedAt: null,
         lessonSlug: null,
+        representedAssignmentIds: [assignmentId],
       });
     }
   }
@@ -1649,6 +1660,7 @@ function renderMyScience(
   historyOnlyGroups: ReadonlyArray<HistoryOnlyGroup>,
   attempts: ReadonlyArray<StudentAttemptSummary> | null,
   launch: ((plan: LaunchPlan) => void) | undefined,
+  units?: ReadonlyArray<StudentAssignmentUnit>,
 ): void {
   const doc = mount.ownerDocument;
   const work = buildMyScienceItems(items, superseded, historyOnlyGroups, attempts);
@@ -1675,11 +1687,54 @@ function renderMyScience(
     ...STUDENT_DOMAIN_ORDER,
     "other",
   ];
+  const domains: Array<{ key: LessonTopic | "other"; bucket: MyScienceItem[] }> = [];
   for (const key of order) {
     const bucket = byTopic.get(key);
     if (!bucket || bucket.length === 0) continue;
     bucket.sort(compareMyScienceItems);
+    domains.push({ key, bucket });
+  }
 
+  // Teacher Units P2B: when the server projection places at least one card,
+  // My Science shows one section per projection entry (server order, teacher
+  // card order, no re-sorting) and then "Other assigned work" in the existing
+  // domain display order. Otherwise (no units, empty, malformed, or no
+  // matches) the existing domain interface below is rendered unchanged.
+  const grouping = groupWorkItemsByUnit({
+    items: domains.flatMap((d) => d.bucket),
+    assignmentIdsOf: (it) => it.representedAssignmentIds,
+    units,
+    supersededAssignmentIds: [...superseded],
+  });
+  if (grouping.kind === "grouped") {
+    for (const group of grouping.units) {
+      const section = renderMyScienceUnitSection(
+        doc,
+        group.title,
+        group.items,
+        launch,
+        degraded,
+      );
+      // The wire parser already admits only the closed palette (else null);
+      // null is the neutral "none" token, as in the teacher Units surface.
+      section.setAttribute("data-unit-color", group.color ?? "none");
+      mount.appendChild(section);
+    }
+    if (grouping.other.items.length > 0) {
+      const other = renderMyScienceUnitSection(
+        doc,
+        grouping.other.label,
+        grouping.other.items,
+        launch,
+        degraded,
+      );
+      other.setAttribute("data-unit-other", "true");
+      mount.appendChild(other);
+    }
+    return;
+  }
+
+  for (const { key, bucket } of domains) {
     const section = doc.createElement("section");
     section.className = "my-science-domain";
     section.setAttribute("data-testid", "my-science-domain");
@@ -1700,6 +1755,35 @@ function renderMyScience(
     section.appendChild(list);
     mount.appendChild(section);
   }
+}
+
+// Teacher Units P2B: one always-expanded unit section (or the trailing
+// "Other assigned work" section). A real h2 names the unit, so the
+// teacher-selected color is only a subtle accent, never the sole indicator.
+// Cards reuse renderMyScienceCard and the existing responsive grid list.
+function renderMyScienceUnitSection(
+  doc: Document,
+  title: string,
+  cards: ReadonlyArray<MyScienceItem>,
+  launch: ((plan: LaunchPlan) => void) | undefined,
+  degraded: boolean,
+): HTMLElement {
+  const section = doc.createElement("section");
+  section.className = "my-science-unit";
+  section.setAttribute("data-testid", "my-science-unit");
+  const heading = doc.createElement("h2");
+  heading.className = "my-science-unit-heading";
+  heading.setAttribute("data-testid", "my-science-unit-heading");
+  heading.textContent = title;
+  section.appendChild(heading);
+  const list = doc.createElement("ul");
+  list.className = "shell-list";
+  list.setAttribute("data-testid", "my-science-list");
+  for (const it of cards) {
+    list.appendChild(renderMyScienceCard(doc, it, launch, degraded));
+  }
+  section.appendChild(list);
+  return section;
 }
 
 // One attempt in a tile's history: the attempt's own score and its own

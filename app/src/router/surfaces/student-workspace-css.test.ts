@@ -174,3 +174,26 @@ describe("Reassignment model - the tile's attempt-history disclosure is styled",
     expect(body as string).toMatch(/display:\s*none/);
   });
 });
+
+describe("Teacher Units P2B - My Science unit sections are styled", () => {
+  test("unit heading uses the shared unit accent token as a subtle left accent", () => {
+    const body = ruleBody(html, `${SCOPE} .my-science-unit-heading`);
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/border-left:\s*4px solid var\(--unit-accent, transparent\)/);
+  });
+  test("neutral and Other assigned work sections show no accent", () => {
+    const body = ruleBody(
+      html,
+      `${SCOPE} .my-science-unit[data-unit-other] .my-science-unit-heading`,
+    );
+    expect(body).not.toBeNull();
+    expect(body as string).toMatch(/border-left:\s*0/);
+    expect(
+      ruleBody(html, `${SCOPE} .my-science-unit[data-unit-color="none"] .my-science-unit-heading`),
+    ).toBe(body);
+  });
+  test("unit sections reuse the existing card grid list", () => {
+    expect(ruleBody(html, `${SCOPE} [data-testid=my-science-list]`)).toMatch(/display:\s*grid/);
+    expect(ruleBody(html, `${SCOPE} .my-science-unit`)).not.toBeNull();
+  });
+});
