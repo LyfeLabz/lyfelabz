@@ -260,6 +260,137 @@ describe("createAssignmentsListForStudentCallable", () => {
     }
   });
 
+  describe("Teacher Units projection (units)", () => {
+    const fetchWith = async (raw: unknown) => {
+      resetInvocations();
+      callableResponse = raw;
+      return createAssignmentsListForStudentCallable(fakeFunctions)();
+    };
+    const validUnit = (over: Record<string, unknown> = {}) => ({
+      unitId: "unit-1",
+      title: "Matter",
+      color: "teal",
+      assignmentIds: ["assign-1"],
+      ...over,
+    });
+
+    test("missing units parses as none and leaves existing fields unchanged", async () => {
+      const res = await fetchWith({
+        items: [okItem()],
+        supersededAssignmentIds: ["old"],
+        historyOnlyGroups: [{ assignmentIds: ["h"] }],
+      });
+      expect(res.units).toEqual([]);
+      expect(res.items).toEqual([okItem()]);
+      expect(res.supersededAssignmentIds).toEqual(["old"]);
+      expect(res.historyOnlyGroups).toEqual([{ assignmentIds: ["h"] }]);
+    });
+
+    test("carries valid units verbatim and frozen", async () => {
+      const res = await fetchWith({ items: [okItem()], units: [validUnit()] });
+      expect(res.units).toEqual([validUnit()]);
+      expect(Object.isFrozen(res.units)).toBe(true);
+      expect(Object.isFrozen(res.units?.[0])).toBe(true);
+      expect(Object.isFrozen(res.units?.[0].assignmentIds)).toBe(true);
+    });
+
+    test("preserves server unit order, id order, and same-unitId entries per class", async () => {
+      const res = await fetchWith({
+        items: [],
+        units: [
+          validUnit({ unitId: "u2", assignmentIds: ["c", "a"] }),
+          validUnit({ unitId: "u1", assignmentIds: ["b"] }),
+          validUnit({ unitId: "u2", assignmentIds: ["d"] }),
+        ],
+      });
+      expect(res.units?.map((u) => [u.unitId, u.assignmentIds])).toEqual([
+        ["u2", ["c", "a"]],
+        ["u1", ["b"]],
+        ["u2", ["d"]],
+      ]);
+    });
+
+    test("a non-array units value parses as none", async () => {
+      for (const units of [null, "u", 5, { unitId: "u" }]) {
+        const res = await fetchWith({ items: [okItem()], units });
+        expect(res.units).toEqual([]);
+        expect(res.items).toHaveLength(1);
+      }
+    });
+
+    test("drops units missing unitId, title, or an assignmentIds array", async () => {
+      const res = await fetchWith({
+        items: [],
+        units: [
+          validUnit({ unitId: "" }),
+          validUnit({ unitId: undefined }),
+          validUnit({ title: "" }),
+          validUnit({ title: 3 }),
+          validUnit({ assignmentIds: "assign-1" }),
+          validUnit({ assignmentIds: undefined }),
+          null,
+          "junk",
+          validUnit({ unitId: "keep" }),
+        ],
+      });
+      expect(res.units?.map((u) => u.unitId)).toEqual(["keep"]);
+    });
+
+    test("filters invalid individual assignment ids and keeps an empty unit", async () => {
+      const res = await fetchWith({
+        items: [],
+        units: [
+          validUnit({ assignmentIds: ["a", "", 4, null, "b"] }),
+          validUnit({ unitId: "empty", assignmentIds: [] }),
+        ],
+      });
+      expect(res.units?.[0].assignmentIds).toEqual(["a", "b"]);
+      expect(res.units?.[1].assignmentIds).toEqual([]);
+    });
+
+    test("invalid or absent color falls back to null", async () => {
+      const res = await fetchWith({
+        items: [],
+        units: [
+          validUnit({ color: "hotpink" }),
+          validUnit({ color: 7 }),
+          validUnit({ color: undefined }),
+          validUnit({ color: null }),
+          validUnit({ color: "slate" }),
+        ],
+      });
+      expect(res.units?.map((u) => u.color)).toEqual([null, null, null, null, "slate"]);
+    });
+
+    test("only allowlisted unit fields are carried (no private description)", async () => {
+      const res = await fetchWith({
+        items: [],
+        units: [validUnit({ description: "private", resourceIds: ["x"], sortOrder: 1 })],
+      });
+      expect(Object.keys(res.units?.[0] ?? {}).sort()).toEqual([
+        "assignmentIds",
+        "color",
+        "title",
+        "unitId",
+      ]);
+    });
+
+    test("malformed units never break assignments", async () => {
+      const res = await fetchWith({
+        items: [okItem(), okItem({ assignmentId: "assign-2" })],
+        units: [null, { unitId: 1 }, validUnit({ assignmentIds: { a: 1 } })],
+      });
+      expect(res.items.map((i) => i.assignmentId)).toEqual(["assign-1", "assign-2"]);
+      expect(res.units).toEqual([]);
+    });
+
+    test("units are preserved when the items root is malformed", async () => {
+      const res = await fetchWith({ items: null, units: [validUnit()] });
+      expect(res.items).toEqual([]);
+      expect(res.units).toEqual([validUnit()]);
+    });
+  });
+
   test("propagates callable failures so the surface can render a recoverable error", async () => {
     callableRejection = new Error("network");
     const callable = createAssignmentsListForStudentCallable(fakeFunctions);

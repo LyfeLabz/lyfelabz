@@ -1,8 +1,10 @@
 import type { Functions } from "firebase/functions";
 import { httpsCallable } from "firebase/functions";
 
+import { isTeacherUnitColor } from "../../teacherUnits/unitColor";
 import type {
   HistoryOnlyGroup,
+  StudentAssignmentUnit,
   AssignmentsListForStudentCallable,
   AssignmentsListForStudentItem,
   AssignmentsListForStudentResponse,
@@ -131,6 +133,36 @@ function parseHistoryOnlyGroups(raw: unknown): ReadonlyArray<HistoryOnlyGroup> {
   return Object.freeze(out);
 }
 
+// Teacher Units projection, parsed defensively: a non-array is none, and a
+// malformed entry (non-object, empty unitId/title, non-array assignmentIds)
+// is dropped. Invalid ids are filtered, an invalid color falls back to null
+// (neutral). Server order of units and ids is preserved verbatim; nothing is
+// merged, derived, or reordered. Only allowlisted fields are copied, so any
+// extra server field (e.g. a description) never reaches the client. A
+// malformed projection only ever degrades to the flat My Science list; it
+// can never affect `items`.
+function parseUnits(raw: unknown): ReadonlyArray<StudentAssignmentUnit> {
+  if (!Array.isArray(raw)) return Object.freeze([]);
+  const out: StudentAssignmentUnit[] = [];
+  for (const entry of raw) {
+    if (entry === null || typeof entry !== "object") continue;
+    const record = entry as CallableRecord;
+    const { unitId, title, color, assignmentIds } = record;
+    if (!isNonEmptyString(unitId)) continue;
+    if (!isNonEmptyString(title)) continue;
+    if (!Array.isArray(assignmentIds)) continue;
+    out.push(
+      Object.freeze({
+        unitId,
+        title,
+        color: isTeacherUnitColor(color) ? color : null,
+        assignmentIds: Object.freeze(assignmentIds.filter(isNonEmptyString)),
+      }),
+    );
+  }
+  return Object.freeze(out);
+}
+
 function parseResponse(raw: unknown): AssignmentsListForStudentResponse {
   const record = (raw ?? {}) as CallableRecord;
   const items = record.items;
@@ -138,11 +170,13 @@ function parseResponse(raw: unknown): AssignmentsListForStudentResponse {
     record.supersededAssignmentIds,
   );
   const historyOnlyGroups = parseHistoryOnlyGroups(record.historyOnlyGroups);
+  const units = parseUnits(record.units);
   if (!Array.isArray(items)) {
     return Object.freeze({
       items: Object.freeze([]),
       supersededAssignmentIds,
       historyOnlyGroups,
+      units,
     });
   }
   const parsed: AssignmentsListForStudentItem[] = [];
@@ -154,6 +188,7 @@ function parseResponse(raw: unknown): AssignmentsListForStudentResponse {
     items: Object.freeze(parsed),
     supersededAssignmentIds,
     historyOnlyGroups,
+    units,
   });
 }
 

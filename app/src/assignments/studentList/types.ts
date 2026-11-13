@@ -14,6 +14,8 @@
 // identifier that is not the assignmentId of an assignment the caller
 // is authorized to work on.
 
+import type { TeacherUnitColor } from "../../teacherUnits/unitColor";
+
 // F5.2 §7.1 - the server-selected differentiated presentation for one launch.
 // The server (Op C, Slice 4) is the sole authority for whether a presentation
 // applies, which pair, and the exact opaque revision `path`. The client mirrors
@@ -72,6 +74,23 @@ export type AssignmentsListForStudentResponse = {
   // work for the group as ONE non-launchable history card and never
   // resurrects an older occurrence. Absent (older server) means none.
   readonly historyOnlyGroups?: ReadonlyArray<HistoryOnlyGroup>;
+  // Teacher Units P1 (additive, server-authoritative): the class owner's
+  // current active units projected onto the cards above, in server order.
+  // Entries are per class + unit (the same unitId may appear once per class
+  // scope). Organizational only: never decides visibility or launchability.
+  // Absent (older server or units unavailable) means none.
+  readonly units?: ReadonlyArray<StudentAssignmentUnit>;
+};
+
+// One server-projected unit. Only the student-safe fields the server sends;
+// descriptions and other Teacher Units metadata never cross the boundary.
+export type StudentAssignmentUnit = {
+  readonly unitId: string;
+  readonly title: string;
+  // Null when absent or outside the closed palette (neutral default).
+  readonly color: TeacherUnitColor | null;
+  // Assignment ids of the cards placed in this unit, in teacher card order.
+  readonly assignmentIds: ReadonlyArray<string>;
 };
 
 export type HistoryOnlyGroup = {
