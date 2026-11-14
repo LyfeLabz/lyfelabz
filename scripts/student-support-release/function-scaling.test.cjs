@@ -17,6 +17,8 @@ const endpoints = [
   'assessmentSessionsBegin',
   // Teacher Units P1 adds the unit projection here; production reports 20.
   'assignmentsListForStudent',
+  // Assessment timestamp fix changes these callables; declare the maximum of 20.
+  'assessmentAttemptsList', 'assessmentAttemptsListForClass',
 ];
 
 for (const id of endpoints) {
