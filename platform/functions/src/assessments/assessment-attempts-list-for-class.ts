@@ -14,6 +14,7 @@ import {
   createRosterDisplayNameResolver,
   type ResolvedRosterDisplayName,
 } from "../enrollments/resolve-roster-display-name";
+import { completedAtMillis } from "./best-attempt";
 
 // Approved teacher-visible summary of a completed attempt in one owned
 // class per Sprint 12D Slice 1. The projection deliberately excludes every
@@ -263,6 +264,17 @@ async function assessmentAttemptsListForClassHandler(
     if (data.teacherId !== actor.uid) continue;
     if (data.schoolId !== actor.schoolId) continue;
     if (data.districtId !== actor.districtId) continue;
+    // A record without a finite canonical completion instant cannot be
+    // ordered or projected. Skip it (never substitute createdAt or invent a
+    // timestamp) so one malformed legacy record cannot fail the whole list.
+    if (completedAtMillis(data.submittedAt) === null) {
+      safeLog(() =>
+        log.warn("assessmentAttempts.malformedSubmittedAtSkipped", {
+          attemptId: doc.id,
+        }),
+      );
+      continue;
+    }
     admitted.push({ id: doc.id, data });
   }
 

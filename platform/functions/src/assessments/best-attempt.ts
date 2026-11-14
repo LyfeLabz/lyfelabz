@@ -24,7 +24,7 @@ function isFiniteNumber(value: unknown): value is number {
 // instant, and Firestore document creation time is not part of the
 // certified schema. We convert the timestamp to a finite millisecond
 // number so the comparison remains total and deterministic.
-function completedAtMillis(value: unknown): number | null {
+export function completedAtMillis(value: unknown): number | null {
   if (value === null || value === undefined) return null;
   if (typeof value === "object" && value !== null) {
     const maybe = value as { toMillis?: () => unknown };

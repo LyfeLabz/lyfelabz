@@ -137,6 +137,7 @@ describe("assessmentAttemptsList", () => {
     mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
     mockAttemptsCollectionRef.mockClear();
     mockLogInfo.mockReset();
+    mockLogWarn.mockReset();
     attemptsFixture.length = 0;
   });
 
@@ -280,5 +281,95 @@ describe("assessmentAttemptsList", () => {
     // The query builder in the mock is a fluent chain; the last query
     // returned to `.get()` must have the studentId filter present.
     expect(mockAttemptsCollectionRef).toHaveBeenCalled();
+  });
+
+  describe("legacy / malformed submittedAt robustness", () => {
+    const MALFORMED: ReadonlyArray<[string, Record<string, unknown>]> = [
+      ["missing", { submittedAt: undefined }],
+      ["null", { submittedAt: null }],
+      ["string", { submittedAt: "2026-09-04T10:10:19Z" }],
+      ["number", { submittedAt: 1_788_516_619_850 }],
+      ["plain map", { submittedAt: { seconds: 1_788_516_619, nanoseconds: 0 } }],
+      ["NaN toMillis", { submittedAt: { toMillis: () => Number.NaN } }],
+      ["Infinity toMillis", { submittedAt: { toMillis: () => Number.POSITIVE_INFINITY } }],
+      ["non-number toMillis", { submittedAt: { toMillis: () => "1000" } }],
+    ];
+
+    it.each(MALFORMED)(
+      "skips a record whose submittedAt is %s without failing the list",
+      async (_label, overrides) => {
+        seedAttempt({ attemptId: "valid", submittedAt: { toMillis: () => 4_000 } });
+        const bad = seedAttempt({ attemptId: "legacy", ...overrides });
+        if (!("submittedAt" in overrides) || overrides.submittedAt === undefined) {
+          delete bad.data.submittedAt;
+        }
+        const result = await __assessmentAttemptsListHandler(makeRequest());
+        expect(result.attempts.map((a) => a.attemptId)).toEqual(["valid"]);
+        expect(mockLogWarn).toHaveBeenCalledTimes(1);
+        expect(mockLogWarn).toHaveBeenCalledWith(
+          "assessmentAttempts.malformedSubmittedAtSkipped",
+          { attemptId: "legacy" },
+        );
+      },
+    );
+
+    it("skips a staging-style legacy fixture (createdAt, no submittedAt, no percentage) without substituting createdAt", async () => {
+      const bad = seedAttempt({
+        attemptId: "staging-cert-legacy-attempt",
+        status: "finalized",
+        createdAt: { toMillis: () => 9_999 },
+      });
+      delete bad.data.submittedAt;
+      delete bad.data.percentage;
+      const result = await __assessmentAttemptsListHandler(makeRequest());
+      expect(result.attempts).toEqual([]);
+    });
+
+    it("returns mixed valid records newest first with scores and percentages unchanged", async () => {
+      seedAttempt({ attemptId: "old", attemptNumber: 1, score: 1, maxScore: 4, percentage: 25, submittedAt: { toMillis: () => 1_000 } });
+      seedAttempt({ attemptId: "bad1", submittedAt: null });
+      seedAttempt({ attemptId: "new", attemptNumber: 3, score: 4, maxScore: 4, percentage: 100, submittedAt: { toMillis: () => 5_000 } });
+      seedAttempt({ attemptId: "bad2", submittedAt: "not-a-timestamp" });
+      seedAttempt({ attemptId: "mid", attemptNumber: 2, score: 3, maxScore: 4, percentage: 75, submittedAt: { toMillis: () => 3_000 } });
+      const result = await __assessmentAttemptsListHandler(makeRequest());
+      expect(
+        result.attempts.map((a) => [a.attemptId, a.attemptNumber, a.score, a.maxScore, a.percentage, a.submittedAt]),
+      ).toEqual([
+        ["new", 3, 4, 4, 100, 5_000],
+        ["mid", 2, 3, 4, 75, 3_000],
+        ["old", 1, 1, 4, 25, 1_000],
+      ]);
+      expect(mockLogWarn).toHaveBeenCalledTimes(2);
+      expect(mockLogWarn.mock.calls.map((c) => c[1])).toEqual([
+        { attemptId: "bad1" },
+        { attemptId: "bad2" },
+      ]);
+    });
+
+    it("emits no warning when every record has a valid submittedAt", async () => {
+      seedAttempt({ attemptId: "a1", submittedAt: { toMillis: () => 1_000 } });
+      seedAttempt({ attemptId: "a2", submittedAt: { toMillis: () => 2_000 } });
+      const result = await __assessmentAttemptsListHandler(makeRequest());
+      expect(result.attempts.map((a) => a.attemptId)).toEqual(["a2", "a1"]);
+      expect(mockLogWarn).not.toHaveBeenCalled();
+    });
+
+    it("warning payload carries only the attempt ID (no student, class, or score data)", async () => {
+      seedAttempt({ attemptId: "legacy", submittedAt: null });
+      await __assessmentAttemptsListHandler(makeRequest());
+      const payload = mockLogWarn.mock.calls[0][1] as Record<string, unknown>;
+      expect(Object.keys(payload)).toEqual(["attemptId"]);
+      const serialized = JSON.stringify(mockLogWarn.mock.calls);
+      for (const forbidden of ["studentId", "studentDisplayName", "classId", "teacherId", "schoolId", "districtId", "score", "percentage", "responses"]) {
+        expect(serialized).not.toContain(forbidden);
+      }
+    });
+
+    it("does not admit a malformed record that fails the district boundary, and does not warn about it", async () => {
+      seedAttempt({ attemptId: "foreign", districtId: "district-other", submittedAt: null });
+      const result = await __assessmentAttemptsListHandler(makeRequest());
+      expect(result.attempts).toEqual([]);
+      expect(mockLogWarn).not.toHaveBeenCalled();
+    });
   });
 });

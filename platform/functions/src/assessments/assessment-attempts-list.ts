@@ -8,6 +8,7 @@ import {
   requireDistrictContext,
   type AssessmentAttemptRecord,
 } from "../shared";
+import { completedAtMillis } from "./best-attempt";
 
 // Approved student-visible summary of a completed attempt per
 // Sprint 12C Slice 1. The projection deliberately excludes every field the
@@ -167,6 +168,17 @@ async function assessmentAttemptsListHandler(
     if (!data) continue;
     if (data.districtId !== actor.districtId) continue;
     if (data.schoolId !== actor.schoolId) continue;
+    // A record without a finite canonical completion instant cannot be
+    // ordered or projected. Skip it (never substitute createdAt or invent a
+    // timestamp) so one malformed legacy record cannot fail the whole list.
+    if (completedAtMillis(data.submittedAt) === null) {
+      safeLog(() =>
+        log.warn("assessmentAttempts.malformedSubmittedAtSkipped", {
+          attemptId: doc.id,
+        }),
+      );
+      continue;
+    }
     summaries.push(projectAttemptSummary(doc.id, data));
   }
 
